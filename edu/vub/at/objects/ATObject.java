@@ -27,13 +27,15 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.NATException;
+
 /**
  * @author tvc
  *
  * ATObject represents the public interface of an AmbientTalk/2 object.
  * Any value representing an ambienttalk object should implement this interface.
  */
-public interface ATObject {
+public interface ATObject extends ATConversions {
 
 	/* ------------------------------
 	 * -- Message Sending Protocol --
@@ -48,14 +50,14 @@ public interface ATObject {
 	 *  - <tt>beforeMessage</tt> when a message has been received but not yet processed
 	 *  - <tt>afterMessage</tt> when the received message has been processed
 	 */
-	public ATObject meta_invoke(ATMessage msg) throws ATException;
+	public ATObject meta_invoke(ATMessage msg) throws NATException;
 	
 	/**
 	 * Query an object for a given field or method.
 	 * @param msg
 	 * @return a 'boolean' denoting whether the object responds to the message
 	 */
-	public ATBoolean meta_respondsTo(ATMessage msg) throws ATException;
+	public ATBoolean meta_respondsTo(ATMessage msg) throws NATException;
 	
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
@@ -68,7 +70,7 @@ public interface ATObject {
 	 * 
 	 * Triggers the <tt>slotSelected</tt> event on this object's beholders (mirror observers).
 	 */
-	public ATObject meta_select(ATMessage msg) throws ATException;
+	public ATObject meta_select(ATMessage msg) throws NATException;
 	
 	/**
 	 * Sets the value of the given field name to the value given.
@@ -79,7 +81,7 @@ public interface ATObject {
 	 * @return nil
 	 * @throws ATException if the field to set cannot be found.
 	 */
-	public ATNil meta_assignField(ATSymbol name, ATObject value) throws ATException;
+	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException;
 	
 	/* ------------------------------------
 	 * -- Extension and cloning protocol --
@@ -99,7 +101,7 @@ public interface ATObject {
 	 * 
 	 * Initializing the clone is the responsibility of the method named <new>.
 	 */
-	public ATObject meta_clone() throws ATException;
+	public ATObject meta_clone() throws NATException;
 	
 	/**
 	 * Create an is-a extension of the receiver object.
@@ -109,7 +111,7 @@ public interface ATObject {
 	 * 
 	 * @return a fresh object whose dynamic parent points to <this> with 'is-a' semantics.
 	 */
-	public ATObject meta_extend(ATClosure code) throws ATException;
+	public ATObject meta_extend(ATClosure code) throws NATException;
 	
 	/**
 	 * Create a shares-a extension of the receiver object.
@@ -120,7 +122,7 @@ public interface ATObject {
 	 * 
 	 * @return a fresh object whose dynamic parent points to <this> with 'shares-a' semantics.
 	 */
-	public ATObject meta_share(ATClosure code) throws ATException;
+	public ATObject meta_share(ATClosure code) throws NATException;
 	
 	/* ---------------------------------
 	 * -- Structural Access Protocol  --
@@ -137,7 +139,7 @@ public interface ATObject {
 	 * 
 	 * TODO: return value = nil? argument = a field mirror or a pair (symbol, value)?
 	 */
-	public ATNil meta_addField(ATField field) throws ATException;
+	public ATNil meta_addField(ATField field) throws NATException;
 	
 	/**
 	 * Adds a method slot to an object at runtime.
@@ -150,7 +152,7 @@ public interface ATObject {
 	 * 
 	 * TODO: return value = nil? argument = a method mirror or a closure mirror?
 	 */
-	public ATNil meta_addMethod(ATMethod method) throws ATException;
+	public ATNil meta_addMethod(ATMethod method) throws NATException;
 	
 	/**
 	 * Queries an object for one of its field slots.
@@ -160,7 +162,7 @@ public interface ATObject {
 	 * @return a mirror on this object's field slot.
 	 * @throws ATException if the field cannot be found.
 	 */
-	public ATField meta_getField(ATSymbol selector) throws ATException;
+	public ATField meta_getField(ATSymbol selector) throws NATException;
 	
 	/**
 	 * Queries an object for one of its method slots.
@@ -170,7 +172,7 @@ public interface ATObject {
 	 * @return a mirror on this object's method slot.
 	 * @throws ATException if the method cannot be found.
 	 */
-	public ATMethod meta_getMethod(ATSymbol selector) throws ATException;
+	public ATMethod meta_getMethod(ATSymbol selector) throws NATException;
 	
 	/**
 	 * Queries an object for a list of all of its field slots.
@@ -180,7 +182,7 @@ public interface ATObject {
 	 * 
 	 * @return a table of ATField mirrors.
 	 */
-	public ATTable meta_listFields() throws ATException;
+	public ATTable meta_listFields() throws NATException;
 	
 	/**
 	 * Queries an object for a list of all of its method slots.
@@ -190,6 +192,6 @@ public interface ATObject {
 	 * 
 	 * @return a table of ATMethod mirrors.
 	 */
-	public ATTable meta_listMethods() throws ATException;
+	public ATTable meta_listMethods() throws NATException;
 	
 }
