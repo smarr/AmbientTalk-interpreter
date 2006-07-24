@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATConversions.java created on Jul 23, 2006 at 2:20:16 PM
+ * ATMethod.java created on Jul 24, 2006 at 9:42:24 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,21 +27,33 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.TypeException;
-
 /**
  * @author smostinc
  *
- * ATConversions is an interface defining all conversion functions between different
- * types of ambienttalk language elements. 
+ * ATMethods are ambienttalk's representation of methods as named functions. These
+ * functions do not close over an environment allowing for them to be shared between 
+ * different clones. The environment is to be supplied during lookup (which wraps 
+ * ATMethods into ATClosures). As a consequence it is not possible to
+ * a) get hold of an ATMethod at the base-level (since lookup implies wrapping)
+ * b) directly apply an ATMethod (as application requires context parameters)
  */
-public interface ATConversions {
+public interface ATMethod extends ATObject {
 
-	public boolean isClosure();
-	public boolean isSymbol();
-	public boolean isTable();
+	/**
+	 * Structural access to the name of the method. Note that all methods (defined
+	 * using def name( ...args... ) { ... } of def foo: arg bar: arg { ... }) retain
+	 * the name with which they were first bound. Literal blocks which may be created
+	 * outside of a definition are implicitly named lambda.
+	 */
+	public ATSymbol getName();
 	
-	public ATClosure asClosure() throws TypeException;
-	public ATSymbol asSymbol() throws TypeException;
-	public ATTable asTable() throws TypeException;
+	/**
+	 * Structural access to the argument list of the method.
+	 */
+	public ATTable getArguments();
+	
+	/**
+	 * Structural access to the body of the method.
+	 */
+	public ATAbstractGrammar getBody();
 }

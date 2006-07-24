@@ -194,4 +194,24 @@ public interface ATObject extends ATConversions {
 	 */
 	public ATTable meta_listMethods() throws NATException;
 	
+	/* ---------------------
+	 * -- Mirror Fields   --
+	 * --------------------- */
+	
+	/**
+	 * Objects have a classical dynamic parent chain created using extension 
+	 * primitives. This getter method allows accessing the parent alongside
+	 * this dynamic parent chain to be accessed as a field of the object's 
+	 * mirror.
+	 */
+	public ATObject getDynamicParent();
+	
+	/**
+	 * Objects also have a lexical parent which is the scope in which their 
+	 * definitions are nested. This scope is visible using receiverless messages.
+	 * This getter method allows accessing the parent alongside the lexical nesting
+	 * chain to be accessed as a field of the object's mirror.
+	 */
+	public ATObject getLexicalParent();
+	
 }

@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATConversions.java created on Jul 23, 2006 at 2:20:16 PM
+ * NATMethod.java created on Jul 24, 2006 at 11:30:35 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,23 +25,42 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
+package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.TypeException;
+import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATSymbol;
+import edu.vub.at.objects.ATTable;
 
 /**
  * @author smostinc
  *
- * ATConversions is an interface defining all conversion functions between different
- * types of ambienttalk language elements. 
+ * NATMethod implements methods as named functions which are in fact simply containers
+ * for a name, a table of arguments and a body.
  */
-public interface ATConversions {
+public class NATMethod extends NATNil implements ATMethod {
 
-	public boolean isClosure();
-	public boolean isSymbol();
-	public boolean isTable();
+	private final ATSymbol 			name_;
+	private final ATTable 			arguments_;
+	private final ATAbstractGrammar	body_;
 	
-	public ATClosure asClosure() throws TypeException;
-	public ATSymbol asSymbol() throws TypeException;
-	public ATTable asTable() throws TypeException;
+	
+	public NATMethod(ATSymbol name, ATTable arguments, ATAbstractGrammar body) {
+		name_ 		= name;
+		arguments_ 	= arguments;
+		body_ 		= body;
+	}
+
+	public ATSymbol getName() {
+		return name_;
+	}
+
+	public ATTable getArguments() {
+		return arguments_;
+	}
+
+	public ATAbstractGrammar getBody() {
+		return body_;
+	}
+
 }

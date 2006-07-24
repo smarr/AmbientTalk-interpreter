@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATConversions.java created on Jul 23, 2006 at 2:20:16 PM
+ * ATContext.java created on Jul 23, 2006 at 11:35:12 AM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,21 +27,28 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.TypeException;
-
 /**
  * @author smostinc
  *
- * ATConversions is an interface defining all conversion functions between different
- * types of ambienttalk language elements. 
+ * ATContext describes a triplet of scope pointers used during evaluation, namely
+ * one for the lexical scope (where the lookup starts for receiverless messages),
+ * one for the late-bound receiver and one for the parent object.
  */
-public interface ATConversions {
-
-	public boolean isClosure();
-	public boolean isSymbol();
-	public boolean isTable();
+public interface ATContext extends ATObject {
 	
-	public ATClosure asClosure() throws TypeException;
-	public ATSymbol asSymbol() throws TypeException;
-	public ATTable asTable() throws TypeException;
+	/**
+	 * Structural access to the lexical environment of the current context.
+	 */
+	public ATObject getLexicalEnvironment();
+	
+	/**
+	 * Structural access to the receiver (self pseudovariable) in the current context.
+	 */
+	public ATObject getLateBoundReceiver();
+	
+	/**
+	 * Structural access to the parent (super pseudovariable) in the current context.
+	 */
+	public ATObject getParentObject();
+
 }

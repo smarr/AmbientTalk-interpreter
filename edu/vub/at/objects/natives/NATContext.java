@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATConversions.java created on Jul 23, 2006 at 2:20:16 PM
+ * NATContext.java created on Jul 24, 2006 at 11:22:36 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,23 +25,54 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
+package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.TypeException;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
 
 /**
  * @author smostinc
  *
- * ATConversions is an interface defining all conversion functions between different
- * types of ambienttalk language elements. 
+ * NATContext is a purely functional implementation of the ATContext interface.
+ * It allows for storing the context parameters (scope self super) in such a way 
+ * that no ill-placed assignment may affect other frames on the stack.
  */
-public interface ATConversions {
+public class NATContext extends NATNil implements ATContext {
 
-	public boolean isClosure();
-	public boolean isSymbol();
-	public boolean isTable();
+	private final ATObject scope_;
+	private final ATObject self_;
+	private final ATObject super_;
 	
-	public ATClosure asClosure() throws TypeException;
-	public ATSymbol asSymbol() throws TypeException;
-	public ATTable asTable() throws TypeException;
+	NATContext(ATObject scope, ATObject self, ATObject zuper) {
+		scope_ = scope;
+		self_ = self;
+		super_ = zuper;
+	}
+
+	public ATObject getLexicalEnvironment() {
+		return scope_;
+	}
+
+	public ATObject getLateBoundReceiver() {
+		return self_;
+	}
+
+	public ATObject getParentObject() {
+		return super_;
+	}
+
+	public ATContext withLexicalEnvironment(ATObject scope) {
+		return new NATContext(scope, self_, super_);
+	}
+	
+	public ATContext withParentObject(ATObject zuper) {
+		return new NATContext(scope_, self_, zuper);
+	}
+	
+	public ATContext withDynamicReceiver(ATObject self, ATObject zuper) {
+		return new NATContext(scope_, self, zuper);		
+	}
+	
+	
+	
 }

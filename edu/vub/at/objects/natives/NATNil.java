@@ -49,7 +49,7 @@ import edu.vub.at.objects.mirrors.BaseInterfaceAdaptor;
  *
  * NATNil implements default semantics for all test and conversion methods.
  */
-public class NATNil implements ATAbstractGrammar, BaseNil {
+public class NATNil implements ATNil, ATAbstractGrammar, BaseNil {
 
 	private static NATNil _nil = null;
 	
@@ -60,27 +60,7 @@ public class NATNil implements ATAbstractGrammar, BaseNil {
 			_nil = new NATNil();
 		return _nil;
 	}
-	
-	public boolean isArray()  { return false; }
-	public boolean isSymbol() { return false; }
-	
-	public ATTable asArray() throws TypeException {
-		throw new TypeException("Object could not be transformed into an array.", this);
-	}
-	
-	public ATSymbol asSymbol() throws TypeException {
-		throw new TypeException("Object could not be transformed into a symbol.", this);		
-	}
-
-	public ATObject invoke(ATSymbol selector, ATTable arguments) throws NATException {
-		return NATObject.cast(
-			BaseInterfaceAdaptor.deifyInvocation(
-				this.getBaseInterface(),
-				this,
-				selector,
-				arguments));
-	}
-	
+		
 	/* ------------------------------
 	 * -- Message Sending Protocol --
 	 * ------------------------------ */
@@ -167,6 +147,8 @@ public class NATNil implements ATAbstractGrammar, BaseNil {
 	 * -- Structural Access Protocol  --
 	 * --------------------------------- */
 	
+	// TODO field access translated into getter/setter method invocations
+	
 	public ATNil meta_addField(ATField field) throws NATException {
 		throw new IllegalOperation("Cannot add fields to an object of type " + this.getClass().getName());
 	}
@@ -212,6 +194,25 @@ public class NATNil implements ATAbstractGrammar, BaseNil {
 		return null;
 	}
 
+	/* ------------------------------
+	 * -- ATObject Mirror Fields   --
+	 * ------------------------------ */
+	
+	/**
+	 * Only true extending objects have a dynamic pointer, others return nil
+	 */
+	public ATObject getDynamicParent() {
+		return NATNil.instance();
+	};
+	
+	/**
+	 * By default numbers, tables and so on do not have lexical parents,
+	 */
+	public ATObject getLexicalParent() {
+		return NATNil.instance();
+	}
+
+	
 	/* ---------------------------------
 	 * -- Value Conversion Protocol   --
 	 * --------------------------------- */
@@ -220,8 +221,24 @@ public class NATNil implements ATAbstractGrammar, BaseNil {
 		return false;
 	}
 
+	public boolean isSymbol() {
+		return false;
+	}
+
+	public boolean isTable() {
+		return false;
+	}
+
 	public ATClosure asClosure() throws TypeException {
 		throw new TypeException("Expected a closure given :", this);
+	}
+
+	public ATSymbol asSymbol() throws TypeException {
+		throw new TypeException("Expected a symbol given :", this);
+	}
+
+	public ATTable asTable() throws TypeException {
+		throw new TypeException("Expected a table given :", this);
 	}
 
 
