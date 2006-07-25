@@ -28,10 +28,29 @@ public class ATParserTest extends TestCase {
 
 			CommonAST parseTree = (CommonAST)parser.getAST();
 			System.out.println(parseTree.toStringList());
-			assertEquals(expectedOutput, parseTree.toStringList());
+			assertEquals((expectedOutput + "null").replace(" ",""), parseTree.toStringList().replace(" ",""));
 		} catch(Exception e) { 
 			fail("Exception: "+e); 
 		}
+	}
+	
+	/**
+	 * Tests for the validity of all statement abstract grammar elements.
+	 * @covers all individual statement abstract grammar elements
+	 */
+	public void testStatementGrammar() {
+		testParse("a;b;c",
+				 "(begin (symbol a) (symbol b) (symbol c))");
+		testParse("def x := 5",
+				 "(begin (define-field (symbol x) (number 5)))");
+		testParse("def f(a,b) { 5 }",
+				 "(begin (define-method (apply (symbol f) (table (symbol a) (symbol b))) (begin (number 5))))");
+		testParse("def foo: x bar: y { 5 }",
+				 "(begin (define-method (apply (symbol foo:bar:) (table (symbol x) (symbol y))) (begin (number 5))))");
+		testParse("def t[5] { a }",
+				 "(begin (define-table (symbol t) (number 5) (symbol a)))");
+		testParse("x := 7",
+				 "(begin (field-set (symbol x) (number 7)))");
 	}
 	
 	/**
@@ -41,34 +60,34 @@ public class ATParserTest extends TestCase {
 	public void testSimple() {
 		testParse(
 				"f(1, 2)",
-				" ( begin ( apply f ( list 1 2 ) ) ) null");
+				" (begin (apply (symbol f) (table (number 1) (number 2))))");
 	}
 	/**
-	 * Tests grammar support for invocations. 
+	 * Tests grammar support for message sends. 
 	 * @covers selection invocation exp
 	 * @covers canonical send invocation exp
 	 * @covers keywordlist send invocation exp 
 	 */
-	public void testInvocation() {
+	public void testMessageSending() {
 	    testParse(
 	    		"object.no().demeter().law",
-	    		" ( begin ( selection ( invocation ( invocation object ( apply no ) ) ( apply demeter ) ) law ) ) null");
+	    		" ( begin ( select ( send ( send (symbol object) ( apply (symbol no) ) ) ( apply (symbol demeter) ) ) (symbol law) ) )");
 	    testParse(
 	    		"object.keyworded: message send: test",
-	    		" ( begin ( invocation object ( keywordlist ( keyworded: message ) ( send: test ) ) ) ) null");
+	    		" ( begin ( send (symbol object) ( keywordlist ( keyworded: (symbol message) ) ( send: (symbol test) ) ) ) )");
 	}
 	
 	/**
 	 * Tests grammar support for currying invocations - e.g. following references
-	 * with an arbitrary amount of invocation expressions.
+	 * with an arbitrary amount of send expressions.
 	 * @covers table
-	 * @covers tabulation invocation exp
+	 * @covers tabulation send exp
 	 * @covers canonical application
 	 */
 	public void testCurrying() {
 	    testParse(
 	    		"[ { display: \"test\" }, { x, y | x < y } ][2](a ,b)",
-	    		" ( begin ( apply ( table-get ( table ( block ( begin ( keywordlist ( display: \"test\" ) ) ) ) ( block ( vars x y ) ( begin ( < x y ) ) ) ) 2 ) ( list a b ) ) ) null");		
+	    		" ( begin ( apply ( table-get ( table ( closure ( begin ( keywordlist ( display: (text \"test\" ) ) ) ) ) ( closure ( table (symbol x) (symbol y) ) ( begin ( < (symbol x) (symbol y) ) ) ) ) (number 2) ) ( table (symbol a) (symbol b) ) ) )");		
 	}
 	
 	/**
@@ -78,16 +97,16 @@ public class ATParserTest extends TestCase {
 	public void testTrailingKeywords() {
 	    testParse(
 	    		"if: c1 then: if: c2 then: a else: b", 
-	    		" ( begin ( keywordlist ( if: c1 ) ( then: ( keywordlist ( if: c2 ) ( then: a ) ( else: b ) ) ) ) ) null");
+	    		" ( begin ( keywordlist ( if: (symbol c1) ) ( then: ( keywordlist ( if: (symbol c2) ) ( then: (symbol a) ) ( else: (symbol b) ) ) ) ) )");
 	    testParse(
 	    		"if: c1 then: ( if: c2 then: a ) else: b", 
-	    		" ( begin ( keywordlist ( if: c1 ) ( then: ( keywordlist ( if: c2 ) ( then: a ) ) ) ( else: b ) ) ) null");
+	    		" ( begin ( keywordlist ( if: (symbol c1) ) ( then: ( keywordlist ( if: (symbol c2) ) ( then: (symbol a) ) ) ) ( else: (symbol b) ) ) )");
 	}
 
 	/**
 	 * Tests the definition of a prototype point object.
 	 * @covers definition
-	 * @covers assignment 
+	 * @covers assignment
 	 */
 	public void testPointDefinition() {
 		testParse(
@@ -99,7 +118,14 @@ public class ATParserTest extends TestCase {
 				"    y := anY \n" +
 				"  } \n" +
 				"} \n",
-				" ( begin ( def point ( keywordlist ( object: ( block ( vars x y ) ( begin ( def ( apply getX ) ( begin x ) ) ( def ( apply getY ) ( begin y ) ) ( def ( keywordlist ( withX: anX ) ( Y: aY ) ) ( begin ( := x anX ) ( := y anY ) ) ) ) ) ) ) ) ) null");
-	}
+				"(begin" +
+				  "(define-field (symbol point)" +
+				                "(keywordlist (object: (closure (table (symbolx) (symboly))" +
+				                                               "(begin (define-method (apply (symbol getX)) (begin (symbol x)))" +
+				                                                      "(define-method (apply (symbol getY)) (begin (symbol y)))" +
+				                                                      "(define-method (apply (symbol withX:Y:) (table (symbol anX) (symbol aY)))" +
+				                                                                      "(begin (field-set (symbol x) (symbol anX))" +
+				                                                                             "(field-set (symbol y) (symbol anY))))))))))");
+		}
 	
 }
