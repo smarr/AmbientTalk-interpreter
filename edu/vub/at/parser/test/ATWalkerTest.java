@@ -4,7 +4,7 @@ import edu.vub.at.parser.ATLexer;
 import edu.vub.at.parser.ATParser;
 import edu.vub.at.parser.ATTreeWalker;
 
-import java.io.StringBufferInputStream;
+import java.io.ByteArrayInputStream;
 
 import junit.framework.TestCase;
 import antlr.CommonAST;
@@ -17,8 +17,7 @@ public class ATWalkerTest extends TestCase {
 	
 	private void testWalker(String walkerInput) {
         try {
-            ATLexer lexer =
-                new ATLexer(new StringBufferInputStream(walkerInput));
+            ATLexer lexer = new ATLexer(new ByteArrayInputStream(walkerInput.getBytes()));
             ATParser parser = new ATParser(lexer);
             // Parse the input expression
             parser.program();
@@ -27,7 +26,7 @@ public class ATWalkerTest extends TestCase {
             System.out.println(t.toStringList());
             ATTreeWalker walker = new ATTreeWalker();
             // Traverse the tree created by the parser
-            walker.prog(t);
+            walker.program(t);
         } catch(Exception e) {
             fail("exception: "+e);
         }

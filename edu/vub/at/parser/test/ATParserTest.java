@@ -3,13 +3,10 @@ package edu.vub.at.parser.test;
 import edu.vub.at.parser.ATLexer;
 import edu.vub.at.parser.ATParser;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.StringBufferInputStream;
 
 import antlr.CommonAST;
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.debug.misc.ASTFrame;
 import junit.framework.TestCase;
 
 public class ATParserTest extends TestCase {
@@ -20,8 +17,7 @@ public class ATParserTest extends TestCase {
 
 	private void testParse(String parserInput, String expectedOutput) {
 		try {
-			InputStream input = new StringBufferInputStream(parserInput);
-			
+			InputStream input = new ByteArrayInputStream(parserInput.getBytes());
 			ATLexer lexer = new ATLexer(input);
 			ATParser parser = new ATParser(lexer);
 			parser.program();
