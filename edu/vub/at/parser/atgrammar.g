@@ -11,7 +11,8 @@ options {
 program : semicolonlist EOF;
 
 // Any list of statements separated by semicolons can be seen as arguments to a begin native.
-semicolonlist : statement (SMC! statement)* { #semicolonlist = #([BEGIN, "begin"], #semicolonlist); };
+// TODO: allow an optional final semicolon
+semicolonlist : statement (SMC! statement)* { #semicolonlist = #([AGBEGIN,"begin"], #semicolonlist); };
 
 // Statements can be either definitions assignments or ordinary expressions
 statement: definition | assignment | expression;
@@ -19,22 +20,60 @@ statement: definition | assignment | expression;
 // Definitions start with ambienttalk/2's only reserved word def
 // def <name> := <expression> defines a variable which can be assigned later.
 // def <apl> { <body> } defines an immutable function.
-definition: "def"^ (NAM EQL! expression | application LBC! semicolonlist RBC!);
+// def <name>[size-exp] { <init-expression> } defines and initializes a new table of a given size
+definition!: "def" nam:variable EQL val:expression { #definition = #([AGDEFFIELD,"define-field"], nam, val); }
+           | "def" inv:parameterlist LBC bdy:semicolonlist RBC { #definition = #([AGDEFMETH,"define-method"], inv, bdy); }
+           | "def" tbl:variable LBR siz:expression RBR LBC init:expression RBC { #definition = #([AGDEFTABLE,"define-table"], tbl, siz, init); };
 
-// Function application can be done in two distinct mechanisms, either using a 
-// canonical format ( foobar( a1, a2 ) ) or using keywordlists (foo: a1 bar: a2).
-// The latter format is used often in conjunction with blocks.
-application: canonical
-           | keywordlist;
+// Parameter lists can be either canonical lists of the form <fun(a,b,c)>
+// or keyworded lists of the form <foo: a bar: b>
+parameterlist: canonicalparameterlist
+             | keywordparameterlist;
+
+canonicalparameterlist!: var:variable LPR (pars:variablelist)? RPR { #canonicalparameterlist = #([AGAPL,"apply"], var, pars); }; 
+
+// See the documentation at the keywordlist rule for more information. The difference between
+// keywordparameterlist and keywordlist lies in the ability to either parse a varlist or a commalist.
+// EXAMPLE:
+//  <foo: x bar: y> is parsed as:
+// p = ( foo: ( symbol x ) ) ( bar: ( symbol y ) )
+//  where p.getText() = foo:
+//        p.getFirstChild() = (symbol x)
+//        p.getNextSibling() = (bar: (symbol y))
+// at each step in the algorithm, the current keyword is appended to the previously parsed keywords,
+// while the only child of the current tree (the argument variable) is added to the arguments
+// After processing all keywords, an APL tree is returned whose selector is the concatenation of the keywords and whose
+// argument table contains the argument variables, e.g.:
+// (apply (symbol foo:bar:) (table (symbol x) (symbol y)))
+keywordparameterlist: (keywordparam)+ {
+	AST currentKey = #keywordparameterlist;
+	AST arguments = currentKey.getFirstChild(); // a pointer to the very first argument to which subsequent arguments are attached as siblings
+	AST lastArgument = arguments;
+	AST composedSelectorToken = new antlr.CommonAST();
+	composedSelectorToken.setType(KEY);
+	java.lang.StringBuffer composedSelector = new java.lang.StringBuffer(currentKey.getText());
+	while (currentKey.getNextSibling() != null) {
+	  currentKey = currentKey.getNextSibling();
+	  composedSelector.append(currentKey.getText());
+	  lastArgument.setNextSibling(currentKey.getFirstChild());
+	  lastArgument = lastArgument.getNextSibling();
+	}
+	composedSelectorToken.setText(composedSelector.toString());
+	#keywordparameterlist = #([AGAPL, "apply"], #([AGSYM,"symbol"], composedSelectorToken),
+	    										  #([AGTAB,"table"], arguments));
+};
+
+keywordparam: KEY^ variable;
 
 // Assignment of a variable is similar to its definition albeit without the word def.
 // TODO the lhs of an assignment can also be (at least) a tabulation. 
-assignment: NAM EQL^ expression;
+assignment!: var:variable EQL val:expression { #assignment = #([AGASSFIELD, "field-set"], var, val); };
 
 // Expressions are split up according to precedence. Ambienttalk/2's keyworded message
 // sends have lowest priority and are therefore the highest applicable rule.
 expression: keywordlist
-          | comparand (CMP^ comparand)*;
+          | rcv:comparand (opr:CMP^ arg:comparand)*;
+// { #expression = #([AGSND,"send"], rcv, opr, arg); };
 
 // Comparands are expression types delimited by comparators so that they can 
 // be composed of additive expressions or any higher ranking operations.
@@ -55,9 +94,9 @@ invocation!: r:reference c:curried_invocations[#r] { #invocation = #c; };
 
 // References are the most fundamental elements of the language, namely primitive 
 // values (numbers and  strings), variables, blocks, inline tables and subexpressions
-reference: NBR^
-         | FRC^
-         | TXT^
+reference:! nbr:NBR { #reference = #([AGNBR,"number"],nbr); }
+         |! frc:FRC { #reference = #([AGFRC,"fraction"],frc); }
+         |! txt:TXT { #reference = #([AGTXT,"text"],txt); }
          | variable
          | subexpression
          | block
@@ -75,14 +114,19 @@ curried_invocations![AST functor]:
 
 // Invocation expressions are a single curried expression whether to apply, tabulate or
 // invoke its functor. 
-invoke_expression[AST functor] 
-	: LPR! (commalist[true])? RPR!  { #invoke_expression = #([APPLY,"apply"], #functor, #invoke_expression); }
-	| LBR! expression RBR! { #invoke_expression = #([SMC,"table-get"], #functor, #invoke_expression); }
-	| (DOT variable LPR | DOT KEY) => DOT! application { #invoke_expression = #([SMC,"invocation"], #functor, #invoke_expression); }
-	| DOT! variable { #invoke_expression = #([SMC,"selection"], #functor, #invoke_expression);};
+invoke_expression![AST functor]:
+	  LPR (args:commalist)? RPR  { #invoke_expression = #([AGAPL,"apply"], functor, args); }
+	| LBR idx:expression RBR { #invoke_expression = #([AGTBL,"table-get"], functor, idx); }
+	| (DOT variable LPR | DOT KEY) => DOT apl:application { #invoke_expression = #([AGSND,"send"], functor, apl); }
+	| DOT var:variable { #invoke_expression = #([AGSEL,"select"], functor, var);};
 
+// Function application can be done using two distinct mechanisms, either using a 
+// canonical format ( foobar( a1, a2 ) ) or using keywordlists (foo: a1 bar: a2).
+// The latter format is used often in conjunction with blocks.
+application: canonical
+           | keywordlist;
 
-canonical: variable LPR! (commalist[true])? RPR! { #canonical = #([SMC,"apply"], #canonical); }; 
+canonical!: var:variable LPR (args:commalist)? RPR { #canonical = #([AGAPL,"apply"], var, args); }; 
 
 // Keyworded message sends are an alternation of keywords (names ending with a colon)
 // and ordinary expressions. They allow for elegant ways to write control structures
@@ -101,31 +145,29 @@ keywordlist: singlekeyword
 singlekeyword: (KEY^ expression);
 
 // This rule unwraps an expression of its delimiter parentheses.
-subexpression!
-	: LPR e:expression RPR { #subexpression = #e; };
+subexpression!: LPR e:expression RPR { #subexpression = #e; };
 
 // Inline syntax for nameless functions (lambdas or blocks)
-block!
-	: LBC! vars:variablelist PIP! body:semicolonlist RBC!
-		{ #block = #([SMC, "block"], #vars, #body); }
-	| LBC! no_args_body:semicolonlist RBC! 
-		{ #block = #([SMC, "block"], #no_args_body); };
+block!:
+      LBC pars:variablelist PIP body:semicolonlist RBC
+		{ #block = #([AGCLO, "closure"], pars, body); }
+	| LBC no_args_body:semicolonlist RBC
+		{ #block = #([AGCLO, "closure"], null, no_args_body); };
 
 // Inline syntax for table expressions
-table: LBR! (commalist[false])? RBR! { #table = #([COM, "table"], #table); };
+table!: LBR (slots:commalist)? RBR { #table = #slots; };
 
 // Parses a list of expressions separated by commas. 
 // USAGE: canonical function application (arguments) and inline tables
 // @param generateImaginaryNode - generate an additional tree node?
-commalist[boolean generateImaginaryNode]: expression (COM! expression)* 
-	{ if(generateImaginaryNode)
-		#commalist = #([LIST,"list"], #commalist);
-	};
+commalist: expression (COM! expression)* 
+	{ #commalist = #([AGTAB,"table"], #commalist); };
 
 // Parses a list of variables
-variablelist: variable (COM! variable)* { #variablelist = #([COM, "vars"], #variablelist); };
+variablelist: variable (COM! variable)* { #variablelist = #([AGTAB, "table"], #variablelist); };
 
-variable: NAM | operator;
+variable!: var:NAM { #variable = #([AGSYM,"symbol"], var); }
+         | opr:operator { #variable = #([AGSYM, "symbol"], opr); };
 
 operator: CMP | ADD | MUL | POW;
 
@@ -140,16 +182,36 @@ options {
 // OUTPUT TOKENS
 // These tokens are never produced by the scanner itself as they are protected. 
 // However they are used to annotate the resulting ANTLR tree, so that the walker
-// can easily produce the correct Java ATParsetree elements.
+// can easily produce the correct Java ATAbstractGrammar elements.
 // Each token definition aligns the token with its printed representation.
-protected BEGIN: "begin"
-	; 
+// Statements
+protected AGBEGIN   : "begin";         // AGBegin(EXP[] exps)
+// Definitions
+protected AGDEFFIELD: "define-field";  // AGDefField(REF nam, EXP val)
+protected AGDEFMETH : "define-method"; // AGDefMethod(REF sel, TBL arg, BGN bdy)
+protected AGDEFTABLE: "define-table";  // AGDefTable(REF tbl, EXP siz, EXP ini)
+// Assignments
+protected AGASSFIELD: "field-set";     // AGAssignField (REF nam, EXP val)
+protected AGASSTABLE: "table-set";     // AGAssignTable (REF nam, EXP idx, EXP val)
+// Expressions
+protected AGSND     : "send";          // AGMessageSend (EXP? rcv, REF sel, TBL arg)
+protected AGSUP     : "super-send";    // AGSuperSend (REF sel, TBL arg)
+protected AGAPL     : "apply";         // AGApplication (REF sel, TBL arg)
+protected AGSEL     : "select";        // AGSelection (EXP? rcv, REF sel)
+protected AGMSG     : "message";       // AGMessage (REF sel, TBL arg)
+protected AGTBL     : "table-get";     // AGTabulation (EXP? tbl, EXP idx)
+protected AGSYM     : "symbol";        // AGSymbol (TXT nam)
+protected AGQUO     : "quote";         // AGQuote (EXP exp)
+protected AGUNQ     : "unquote";       // AGUnquote (EXP exp)
+protected AGUQS     : "unquote-splice";// AGUnquoteSplice (EXP exp)
+// Literals
+protected AGNBR     : "number";        // NATNumber (<nbr>)
+protected AGFRC     : "fraction";      // NATFraction (<frc>)
+protected AGTXT     : "text";          // NATText (<txt>)
+protected AGTAB     : "table";         // NATTable (<tbl>)
+protected AGCLO     : "closure";       // NATClosure (TBL arg, BGN bdy)
 
-protected APPLY: "apply"
-	; 
-
-protected LIST: "list"
-	; 
+//add AGMeta/AGBase?
 
 // Protected Scanner Tokens
 protected DIGIT: '0'..'9'
@@ -312,10 +374,43 @@ protected ESC
 	
 class ATTreeWalker extends TreeParser;
 
-prog : #( BEGIN (expr)+ );
+statement : #(AGBEGIN (statement)+ )
+          | definition
+          | assignment
+          ;
 
-expr : #( APPLY fun:expr args:list )
-	 | NAM
-	 | NBR;
+definition: #(AGDEFFIELD nam:AGSYM val:expression)
+          | #(AGDEFMETH #(AGAPL sel:AGSYM pars:AGTAB) bdy:AGBEGIN)
+          | #(AGDEFTABLE tbl:AGSYM siz:expression ini:expression)
+          ;
 
-list : #( LIST (expr)+ );
+assignment: #(AGASSFIELD nam:AGSYM val:expression)
+          | #(AGASSTABLE tbl:expression idx:expression val2:expression)
+          ;
+
+expression: #(AGSND sndrcv:expression sndsel:AGSYM sndargs:AGTAB)
+          | #(AGSUP supsel:AGSYM supargs:AGTAB)
+          | #(AGAPL aplsel:AGSYM aplargs:AGTAB)
+          | #(AGSEL selrcv:expression selsel:AGSYM)
+          | #(AGMSG msgsel:AGSYM msgargs:AGTAB)
+          | #(AGTBL tblnam:expression tblidx:expression)
+          | #(AGSYM symnam:AGTXT)
+          | #(AGQUO quoexp:expression)
+          | #(AGUNQ unqexp:expression)
+          | #(AGUQS uqsexp:expression)
+          | binop
+          | literal
+          ;
+
+binop:      #(CMP cop1:expression cop2:expression)
+          | #(ADD aop1:expression aop2:expression)
+          | #(MUL mop1:expression mop2:expression)
+          | #(POW pop1:expression pop2:expression)
+          ;
+          
+literal:    #(AGNBR nbr:INT)
+          | #(AGFRC frc:FRC)
+          | #(AGTXT txt:TXT)
+          | #(AGTAB (expression)* )
+          | #(AGCLO par:AGTAB body:AGBEGIN)
+          ;
