@@ -34,6 +34,6 @@ import edu.vub.at.objects.ATAbstractGrammar;
  *
  * The common interface to all assignment AG nodes.
  */
-public interface ATAssignment extends ATAbstractGrammar {
+public interface ATAssignment extends ATStatement {
 
 }

@@ -34,6 +34,6 @@ import edu.vub.at.objects.ATAbstractGrammar;
  *
  * ATExpression is the common interface of all expression abstract grammar elements.
  */
-public interface ATExpression extends ATAbstractGrammar {
+public interface ATExpression extends ATStatement {
 
 }

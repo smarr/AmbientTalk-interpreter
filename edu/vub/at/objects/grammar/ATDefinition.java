@@ -35,6 +35,6 @@ import edu.vub.at.objects.ATAbstractGrammar;
  * ATDefinition is the common interface of all definition AG nodes.
  * It is used for documentation/classification purposes.
  */
-public interface ATDefinition extends ATAbstractGrammar {
+public interface ATDefinition extends ATStatement {
 
 }
