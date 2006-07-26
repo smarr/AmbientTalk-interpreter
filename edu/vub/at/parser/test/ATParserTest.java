@@ -25,7 +25,7 @@ public class ATParserTest extends TestCase {
 			CommonAST parseTree = (CommonAST)parser.getAST();
 			System.out.println(parseTree.toStringList());
 			assertEquals((expectedOutput + "null").replace(" ",""), parseTree.toStringList().replace(" ",""));
-		} catch(Exception e) { 
+		} catch(Exception e) {
 			fail("Exception: "+e); 
 		}
 	}
@@ -47,6 +47,8 @@ public class ATParserTest extends TestCase {
 				 "(begin (define-table (symbol t) (number 5) (symbol a)))");
 		testParse("x := 7",
 				 "(begin (field-set (symbol x) (number 7)))");
+		testParse("x[5] := 7",
+		          "(begin (table-set (table-get ( symbol x ) ( number 5 ) ) (number 7)))");
 	}
 	
 	/**
@@ -70,7 +72,7 @@ public class ATParserTest extends TestCase {
 	    		" ( begin ( select ( send ( send (symbol object) ( apply (symbol no) ) ) ( apply (symbol demeter) ) ) (symbol law) ) )");
 	    testParse(
 	    		"object.keyworded: message send: test",
-	    		" ( begin ( send (symbol object) ( keywordlist ( keyworded: (symbol message) ) ( send: (symbol test) ) ) ) )");
+	    		" ( begin ( send (symbol object) ( apply ( symbol keyworded:send:) (table (symbol message) (symbol test) ) ) ) )");
 	}
 	
 	/**
@@ -83,7 +85,7 @@ public class ATParserTest extends TestCase {
 	public void testCurrying() {
 	    testParse(
 	    		"[ { display: \"test\" }, { x, y | x < y } ][2](a ,b)",
-	    		" ( begin ( apply ( table-get ( table ( closure ( begin ( keywordlist ( display: (text \"test\" ) ) ) ) ) ( closure ( table (symbol x) (symbol y) ) ( begin ( < (symbol x) (symbol y) ) ) ) ) (number 2) ) ( table (symbol a) (symbol b) ) ) )");		
+	    		" ( begin ( apply ( table-get ( table ( closure (table ) ( begin ( apply (symbol display:) (table (text \"test\" ) ) ) ) ) ( closure ( table (symbol x) (symbol y) ) ( begin ( < (symbol x) (symbol y) ) ) ) ) (number 2) ) ( table (symbol a) (symbol b) ) ) )");		
 	}
 	
 	/**
@@ -93,10 +95,10 @@ public class ATParserTest extends TestCase {
 	public void testTrailingKeywords() {
 	    testParse(
 	    		"if: c1 then: if: c2 then: a else: b", 
-	    		" ( begin ( keywordlist ( if: (symbol c1) ) ( then: ( keywordlist ( if: (symbol c2) ) ( then: (symbol a) ) ( else: (symbol b) ) ) ) ) )");
+	    		" ( begin ( apply (symbol if:then:) (table (symbol c1) ( apply (symbol if:then:else:) (table (symbol c2) (symbol a) (symbol b) ) ) ) ) )");
 	    testParse(
 	    		"if: c1 then: ( if: c2 then: a ) else: b", 
-	    		" ( begin ( keywordlist ( if: (symbol c1) ) ( then: ( keywordlist ( if: (symbol c2) ) ( then: (symbol a) ) ) ) ( else: (symbol b) ) ) )");
+	    		" ( begin ( apply (symbol if:then:else:) (table (symbol c1) ( apply (symbol if:then:) (table (symbol c2) (symbol a) ) ) (symbol b) ) ) )");
 	}
 
 	/**
@@ -116,7 +118,7 @@ public class ATParserTest extends TestCase {
 				"} \n",
 				"(begin" +
 				  "(define-field (symbol point)" +
-				                "(keywordlist (object: (closure (table (symbolx) (symboly))" +
+				                "(apply (symbol object:) (table (closure (table (symbolx) (symboly))" +
 				                                               "(begin (define-method (apply (symbol getX)) (begin (symbol x)))" +
 				                                                      "(define-method (apply (symbol getY)) (begin (symbol y)))" +
 				                                                      "(define-method (apply (symbol withX:Y:) (table (symbol anX) (symbol aY)))" +
