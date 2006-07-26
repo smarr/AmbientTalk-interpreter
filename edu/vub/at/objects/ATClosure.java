@@ -32,12 +32,14 @@ import edu.vub.at.exceptions.NATException;
 /**
  * @author smostinc
  *
+ * The public interface to a native AmbientTalk closure (a piece of code + enclosing environment).
+ * 
  * Since ATMethods are always wrapped either at creation time (blocks) or during 
  * lookup (methods), ATClosures are by definition the only way methods and blocks 
  * can be encountered at the ambienttalk base level. Since closures encapsulate a
  * context, they can be readily be applied. 
  */
-public interface ATClosure extends ATObject {
+public interface ATClosure extends ATNil {
 
 	/**
 	 * Applies a closure to the given arguments

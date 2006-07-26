@@ -34,6 +34,9 @@ import edu.vub.at.exceptions.NATException;
  *
  * ATObject represents the public interface of an AmbientTalk/2 object.
  * Any value representing an ambienttalk object should implement this interface.
+ * 
+ * Some meta methods defined in this interface will give rise to events in the receiver object's
+ * beholders (i.e. the observers of the object's mirror).
  */
 public interface ATObject extends ATConversions {
 

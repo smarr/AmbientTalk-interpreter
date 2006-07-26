@@ -28,6 +28,8 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.TypeException;
+import edu.vub.at.objects.grammar.ATStatement;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  * @author smostinc
@@ -44,4 +46,5 @@ public interface ATConversions {
 	public ATClosure asClosure() throws TypeException;
 	public ATSymbol asSymbol() throws TypeException;
 	public ATTable asTable() throws TypeException;
+	public ATStatement asStatement() throws TypeException;
 }
