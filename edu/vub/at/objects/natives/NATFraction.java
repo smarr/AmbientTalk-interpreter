@@ -46,7 +46,7 @@ public final class NATFraction extends NATAbstractGrammar implements ATFraction 
 	 * This method currently serves as a hook for fraction creation.
 	 * Currently fraction objects are not reused, but this might change in the future.
 	 */
-	public static final NATFraction atValue(int javaFrc) {
+	public static final NATFraction atValue(double javaFrc) {
 		return new NATFraction(javaFrc);
 	}
 	

@@ -40,6 +40,8 @@ import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
  */
 public final class NATTable extends NATAbstractGrammar implements ATTable {
 
+	public final static NATTable EMPTY = new NATTable(new ATObject[] {});
+	
 	private final ATObject[] elements_;
 	
 	public NATTable(ATObject[] elements) {

@@ -27,21 +27,16 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.IllegalOperation;
-import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.TypeException;
 import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATSymbol;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.BaseNil;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.BaseInterfaceAdaptor;
 
 /**
@@ -49,7 +44,7 @@ import edu.vub.at.objects.mirrors.BaseInterfaceAdaptor;
  *
  * NATNil implements default semantics for all test and conversion methods.
  */
-public class NATNil implements ATNil, ATAbstractGrammar, BaseNil {
+public class NATNil implements ATNil, BaseNil {
 
 	private static NATNil _nil = null;
 	
@@ -167,7 +162,7 @@ public class NATNil implements ATNil, ATAbstractGrammar, BaseNil {
 	}
 
 	public ATTable meta_listFields() throws NATException {
-		return NATTable.empty();
+		return NATTable.EMPTY;
 	}
 
 	public ATTable meta_listMethods() throws NATException {
@@ -187,11 +182,10 @@ public class NATNil implements ATNil, ATAbstractGrammar, BaseNil {
 	}
 
 	/**
-	 * All NATobject are self-quoting.
+	 * Quoting a native object returns itself, except for pure AG elements.
 	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	/* ------------------------------
@@ -228,19 +222,17 @@ public class NATNil implements ATNil, ATAbstractGrammar, BaseNil {
 	public boolean isTable() {
 		return false;
 	}
-
+	
 	public ATClosure asClosure() throws TypeException {
-		throw new TypeException("Expected a closure given :", this);
+		throw new TypeException("Expected a closure, given :", this);
 	}
 
 	public ATSymbol asSymbol() throws TypeException {
-		throw new TypeException("Expected a symbol given :", this);
+		throw new TypeException("Expected a symbol, given :", this);
 	}
 
 	public ATTable asTable() throws TypeException {
-		throw new TypeException("Expected a table given :", this);
+		throw new TypeException("Expected a table, given :", this);
 	}
-
-
 
 }
