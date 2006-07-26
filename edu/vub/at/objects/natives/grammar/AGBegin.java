@@ -29,11 +29,10 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
-import edu.vub.at.objects.grammar.ATStatement;
+import edu.vub.at.objects.natives.NATNumber;
 
 /**
  * @author tvc
@@ -56,11 +55,11 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	 */
 	public ATObject meta_eval(ATContext ctx) {
 		NATNumber siz = statements_.getLength().asNativeNumber();
-		int lastIdx = siz.implValue - 1;
+		int lastIdx = siz.javaValue - 1;
 		for (int i = 0; i < lastIdx; i++) {
-			statements_.at(NATNumber.atValue(i)).meta_eval(ctx);
+			statements_.at(NATNumber.atValue(i)).asStatement().meta_eval(ctx);
 		}
-		return statements_.at(NATNumber.atValue(lastIdx)).meta_eval(ctx);
+		return statements_.at(NATNumber.atValue(lastIdx)).asStatement().meta_eval(ctx);
 	}
 
 	/**

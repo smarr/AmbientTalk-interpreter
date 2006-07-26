@@ -69,7 +69,7 @@ public final class AGDefMethod extends NATAbstractGrammar implements ATDefMethod
 	 */
 	public ATObject meta_eval(ATContext ctx) {
 		// TODO Auto-generated method stub
-		return super.meta_eval(ctx);
+		return null;
 	}
 
 	/* (non-Javadoc)
@@ -77,7 +77,7 @@ public final class AGDefMethod extends NATAbstractGrammar implements ATDefMethod
 	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) {
 		// TODO Auto-generated method stub
-		return super.meta_quote(ctx);
+		return null;
 	}
 
 }
