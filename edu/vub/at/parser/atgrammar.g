@@ -109,11 +109,13 @@ invocation!: r:reference c:curried_invocation[#r] { #invocation = #c; };
 
 // References are the most fundamental elements of the language, namely primitive 
 // values (numbers and  strings), variables, blocks, inline tables and subexpressions
+// A reference can also be a quotation or a first-class message creation operation
 reference:! nbr:NBR { #reference = #([AGNBR,"number"],nbr); }
          |! frc:FRC { #reference = #([AGFRC,"fraction"],frc); }
          |! txt:TXT { #reference = #([AGTXT,"text"],txt); }
          | quotation
          | variable
+         | DOT! message
          | LPR! subexpression
          | LBC! block
          | LBR! table;
@@ -168,6 +170,9 @@ keywordlist: singlekeyword
 // This rule groups a keyword and the adjoined expression into a single tree element.
 singlekeyword: KEY^ expression;
 
+// First-class message creation syntax: .m() or .key:val
+message!: apl:application { #message = #([AGMSG,"message"], apl); };
+
 // This rule unwraps an expression of its delimiter parentheses.
 subexpression!: e:expression RPR { #subexpression = #e; };
 
@@ -178,6 +183,7 @@ block!: pars:variablelist PIP body:semicolonlist RBC
 		 { #block = #([AGCLO, "closure"], #([AGTAB,"table"], #([AGTAB]) ), no_args_body); };
 
 // Inline syntax for table expressions
+// TODO: test whether this definition works with the empty table
 table!: (slots:commalist)? RBR { #table = #slots; };
 
 // Parses a list of expressions separated by commas. 
@@ -400,52 +406,126 @@ protected ESC
 		)
 	;
 	
-{ import edu.vub.at.objects.grammar.*;
+{ import edu.vub.at.objects.ATObject;
+  import edu.vub.at.objects.natives.*;
+  import edu.vub.at.objects.grammar.*;
   import edu.vub.at.objects.natives.grammar.*; }
 class ATTreeWalker extends TreeParser;
-program returns [NATAbstractGrammar ag] { ag = null; }: #(AGBEGIN (stmt:statement)+ ) {
-	System.out.println(stmt.toStringList());
-	ag = new AGBegin(null);
+{ // begin TreeWalker preamble
+
+// this auxiliary function converts operator syntax such as <a+b> into a message send of the form <a.+(b)>
+public AGMessageSend operatorToSend(AST opr, ATExpression receiver, ATExpression operand) {
+	return new AGMessageSend(receiver,
+	                         AGSymbol.alloc(NATText.atValue(opr.getText())),
+	                         new NATTable(new ATObject[] { operand }));
 }
+
+// transforms a sibling AST into an object array
+// e.g. ((symbol a) (symbol b) (symbol c))
+//  => ATObject[] { (symbol a) (symbol b) (symbol c) }
+public ATObject[] transformAstToArray(AST list) {
+	AST next = list;
+	int size = 1;
+	// first, calculate the number of sibling nodes
+	while (next.getNextSibling() != null) {
+	  next = next.getNextSibling();
+	  size++;
+	}
+	// once size is known, create array and fill it
+	ATObject[] arr = new ATObject[size];
+	next = list;
+	for (int i=0; i < size; i++) {
+		// FIXME arr[i] = next;
+		next = next.getNextSibling();
+	}
+	return arr;
+}
+	
+} // end TreeWalker preamble
+
+program returns [NATAbstractGrammar ag] { ag = null; }
+          : ag=begin
           ;
 
-statement : definition
-          | assignment
-          | expression
+statement returns [ATStatement stmt] { stmt = null; }
+          : stmt=definition
+          | stmt=assignment
+          | stmt=expression
           ;
 
-definition: #(AGDEFFIELD nam:AGSYM val:expression)
-          | #(AGDEFMETH #(AGAPL sel:AGSYM pars:AGTAB) bdy:AGBEGIN)
-          | #(AGDEFTABLE tbl:AGSYM siz:expression ini:expression)
+definition returns [ATDefinition def]
+  { def = null;
+  	ATSymbol nam;
+  	NATTable pars;
+  	ATExpression idx, val;
+  	ATBegin bdy; }
+          : #(AGDEFFIELD nam=symbol val=expression) { def = new AGDefField(nam, val); }
+          | #(AGDEFMETH #(AGAPL nam=symbol pars=table) bdy=begin) { def = new AGDefMethod(nam, pars, bdy); }
+          | #(AGDEFTABLE #(AGTBL nam=symbol idx=expression) val=expression) { def = new AGDefTable(nam,idx,val); }
           ;
 
-assignment: #(AGASSFIELD nam:AGSYM val:expression)
-          | #(AGASSTABLE tbl:AGTBL ass:expression)
+assignment returns [ATAssignment ass]
+  { ass = null;
+    ATSymbol nam;
+    ATExpression tbl, val, idx; }
+          : #(AGASSFIELD nam=symbol val=expression) { ass = new AGAssignField(nam, val); }
+          | #(AGASSTABLE #(AGTBL tbl=expression idx=expression) val=expression) { ass = new AGAssignTable(tbl, idx, val); }
           ;
 
-expression: #(AGSND sndrcv:expression sndsel:AGSYM sndargs:AGTAB)
-          | #(AGSUP supsel:AGSYM supargs:AGTAB)
-          | #(AGAPL aplsel:AGSYM aplargs:AGTAB)
-          | #(AGSEL selrcv:expression selsel:AGSYM)
-          | #(AGMSG msgsel:AGSYM msgargs:AGTAB)
-          | #(AGTBL tblnam:expression tblidx:expression)
-          | #(AGSYM symnam:AGTXT)
-          | #(AGQUO quoexp:statement)
-          | #(AGUNQ unqexp:expression)
-          | #(AGUQS uqsexp:expression)
-          | binop
-          | literal
-          ;
-
-binop:      #(CMP cop1:expression cop2:expression)
-          | #(ADD aop1:expression aop2:expression)
-          | #(MUL mop1:expression mop2:expression)
-          | #(POW pop1:expression pop2:expression)
+expression returns [ATExpression exp]
+  { exp = null;
+  	ATExpression rcv, idx, qexp;
+  	ATStatement qstmt;
+  	ATSymbol sel;
+  	NATTable arg; }
+          : #(AGSND rcv=expression sel=symbol arg=table) { exp = new AGMessageSend(rcv,sel,arg); }
+          | #(AGSUP sel=symbol arg=table) { exp = new AGSuperSend(sel,arg); }
+          | #(AGAPL sel=symbol arg=table) { exp = new AGApplication(sel, arg); }
+          | #(AGSEL rcv=expression sel=symbol) { exp = new AGSelection(rcv, sel); }
+          | #(AGMSG #(AGAPL sel=symbol arg=table)) { exp = new AGMessageCreation(sel, arg); }
+          | #(AGTBL rcv=expression idx=expression) { exp = new AGTabulation(rcv, idx); }
+          | #(AGQUO qstmt=statement) { exp = new AGQuote(qstmt); }
+          | #(AGUNQ qexp=expression) { exp = new AGUnquote(qexp); }
+          | #(AGUQS qexp=expression) { exp = new AGUnquoteSplice(qexp); }
+          | exp=symbol
+          | exp=binop
+          | exp=literal
           ;
           
-literal:    #(AGNBR nbr:INT)
-          | #(AGFRC frc:FRC)
-          | #(AGTXT txt:TXT)
-          | #(AGTAB (expression)* )
-          | #(AGCLO par:AGTAB body:AGBEGIN)
+binop returns [ATMessageSend snd]
+  { snd = null;
+    ATExpression exp1, exp2; }
+          : #(cmp:CMP exp1=expression exp2=expression) { snd = operatorToSend(cmp, exp1, exp2); }
+          | #(add:ADD exp1=expression exp2=expression) { snd = operatorToSend(add, exp1, exp2); }
+          | #(mul:MUL exp1=expression exp2=expression) { snd = operatorToSend(mul, exp1, exp2); }
+          | #(pow:POW exp1=expression exp2=expression) { snd = operatorToSend(pow, exp1, exp2); }
+          ;
+          
+literal returns[ATExpression lit]
+  { lit = null;
+  	NATTable par;
+  	ATBegin body; }
+          : #(AGNBR nbr:INT) { lit = NATNumber.atValue(Integer.parseInt(nbr.getText())); }
+          | #(AGFRC frc:FRC) { lit = NATFraction.atValue(Double.parseDouble(frc.getText())); }
+          | #(AGTXT txt:TXT) { lit = NATText.atValue(txt.getText()); }
+          | lit=table
+          | #(AGCLO par=table body=begin) { lit = new AGClosureLiteral(par, body); }
+          ;
+          
+symbol returns [AGSymbol sym] { sym = null; }
+          : #(AGSYM txt:NAM) { sym = AGSymbol.alloc(NATText.atValue(txt.getText())); }
+          ;
+
+// TODO: find a way to extract an array from a (...)* or (...)+ construct
+table returns [NATTable tab]
+  { tab = null; ATExpression expr; }
+          : #(AGTAB (expr=expression)* ) { 
+          	System.out.println(#table.toStringList());
+          	tab = new NATTable(null); }
+          ;
+          
+begin returns [AGBegin bgn] { bgn = null; ATStatement stmt; }
+          : #(AGBEGIN (stmt=statement)+ ) {
+          	System.out.println(#begin.toStringList());
+          	bgn = new AGBegin(new NATTable(null)); }
           ;
