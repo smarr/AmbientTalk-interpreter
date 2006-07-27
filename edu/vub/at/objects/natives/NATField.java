@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATParsetree.java created on Jul 23, 2006 at 11:17:27 AM
+ * NATField.java created on Jul 27, 2006 at 2:27:53 AM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,34 +25,49 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
+package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  * @author smostinc
  *
- * ATAbstractGrammar contains all methods to be understood by any parsetree element
- * in the ambienttalk/2 programming language. As the parsetree is a first-class
- * entity (it can be manipulated in the language using the MOP) parsetree elements
- * are also ATObjects.
+ * NATField implements a causally connected field of an object. Rather than storing
+ * these fields directly in every object, we choose to only make people pay when they
+ * choose to reify them.
  */
-public interface ATAbstractGrammar extends ATObject {
+public class NATField extends NATNil implements ATField {
 
-	/**
-	 * Evaluates a particular parsetree with respect to a particular context.
-	 * @param ctx - context (object) to lookup bindings in.
-	 * @throws NATException 
-	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException;
+	private final ATSymbol name_;
+	private NATObject receiver_;
 	
-	/**
-	 * Quotes a parsetree, in other words allows the parsetree to return itself
-	 * instead of evaluating. This mode is triggered when a quotation parsetree
-	 * element was encountered and is switched off again when an unquotation 
-	 * parsetree element is found. The context is passed on behalf of these possible
-	 * future evaluations.
-	 * @param ctx - context passed on to be used in subsequent evaluations.
-	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx);
+	public NATField(ATSymbol name, NATObject receiver) {
+		name_ = name;
+		receiver_ = receiver;
+	}
+
+	public ATSymbol getName() {
+		return name_;
+	}
+
+	public ATObject getValue() {
+		try {
+			return receiver_.getField(name_);
+		} catch (NATException e) {
+			// TODO XIllegalOperation should be an unchecked exception (maybe two variants)
+			// Since the field was selected from the receiver, it should always be found
+			throw new RuntimeException("Incorrectly initialised field accessed", e);
+		}
+	}
+
+	public ATObject setValue(ATObject newValue) throws NATException {
+		ATObject result = getValue();
+		receiver_.meta_assignField(name_, newValue);
+		return result;
+	}
+
 }

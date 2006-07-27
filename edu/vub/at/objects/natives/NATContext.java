@@ -43,7 +43,7 @@ public class NATContext extends NATNil implements ATContext {
 	private final ATObject self_;
 	private final ATObject super_;
 	
-	NATContext(ATObject scope, ATObject self, ATObject zuper) {
+	public NATContext(ATObject scope, ATObject self, ATObject zuper) {
 		scope_ = scope;
 		self_ = self;
 		super_ = zuper;

@@ -28,6 +28,7 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  * @author tvc
@@ -45,35 +46,77 @@ public interface ATObject extends ATConversions {
 	 * ------------------------------ */
 	
 	/**
-	 * Invoke a method corresponding to the given message.
-	 * @param msg the message denoting the method to invoke
+	 * Sends a newly created message (by default using the actor's ATMessageFactory) 
+	 * asynchronously to itself. The message may be scheduled in the actor's outbox
+	 * if the current ATObject is a remote reference.
+	 * @param sender, the object on whose behalf the message was sent.
+	 * @param selector, the name of the message being sent.
+	 * @param arguments, eagerly evaluated table of arguments.
+	 * 
+	 * Triggers the following events on this object's beholders (mirror observers):
+	 *  - <tt>createdMessage</tt> when a message object was created.
+	 *  - <tt>sentMessage</tt> when the message was sent by the actor.
+	 */
+	public ATNil meta_send(ATObject sender, ATSymbol selector, ATTable arguments) throws NATException;
+	
+	/**
+	 * Invoke a method corresponding to the selector (and located along the dynamic 
+	 * parent chain) with the given arguments
+	 * @param selector the name of the method to be invoked
+	 * @param arguments the table of arguments passed to the method
 	 * @return return value of the method
 	 * 
 	 * Triggers the following events on this object's beholders (mirror observers):
-	 *  - <tt>beforeMessage</tt> when a message has been received but not yet processed
-	 *  - <tt>afterMessage</tt> when the received message has been processed
+	 *  - <tt>methodFound</tt> when a method has been found but not yet applied
+	 *  - <tt>methodInvoked</tt> when the received method has been applied
 	 */
-	public ATObject meta_invoke(ATMessage msg) throws NATException;
+	public ATObject meta_invoke(ATSymbol selector, ATTable arguments) throws NATException;
 	
 	/**
-	 * Query an object for a given field or method.
-	 * @param msg
-	 * @return a 'boolean' denoting whether the object responds to the message
+	 * Invoke a function corresponding to the selector (and located along the lexical 
+	 * parent chain) with the given arguments
+	 * @param selector the name of the method to be invoked
+	 * @param arguments the table of arguments passed to the method
+	 * @return return value of the method
+	 * 
+	 * Triggers the following events on this object's beholders (mirror observers):
+	 *  - <tt>functionFound</tt> when a function has been found but not yet applied
+	 *  - <tt>functionApplied</tt> when the received function has been applied
+	 */	
+	public ATObject meta_call(ATSymbol selector, ATTable arguments) throws NATException;
+	
+	/**
+	 * Query an object for a given field or method which is visible to the outside world.
+	 * In other words only methods in the dynamic parent chain are considered.
+	 * @param selector the name of the method
+	 * @return a 'boolean' denoting whether the object responds to a message o.selector
 	 */
-	public ATBoolean meta_respondsTo(ATMessage msg) throws NATException;
+	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException;
 	
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
 	 * ------------------------------------------ */
 	
 	/**
-	 * Select a slot (field | method) from an object whose name corresponds to msg.selector
-	 * @param msg a message encapsulating the selector to lookup
+	 * Select a slot (field | method) from an object's dynamic parent chain whose name
+	 * corresponds to the given selector.
+	 * @param receiver the dynamic receiver to which method closures should bind self.
+	 * @param selector the name of the field or method sought for. 
 	 * @return the contents of the slot
 	 * 
 	 * Triggers the <tt>slotSelected</tt> event on this object's beholders (mirror observers).
 	 */
-	public ATObject meta_select(ATMessage msg) throws NATException;
+	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException;
+	
+	/**
+	 * Select a slot (field | method) from an object's lexical parent chain whose name
+	 * corresponds to the given selector.
+	 * @param selector the name of the field or method sought for. 
+	 * @return the contents of the slot
+	 * 
+	 * Triggers the <tt>slotSelected</tt> event on this object's beholders (mirror observers).
+	 */
+	public ATObject meta_lookup(ATSymbol selector) throws NATException;
 	
 	/**
 	 * Sets the value of the given field name to the value given.

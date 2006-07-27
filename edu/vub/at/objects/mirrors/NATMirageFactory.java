@@ -27,11 +27,13 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.objects.ATArray;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATSymbol;
-import edu.vub.at.objects.natives.NATArray;
-import edu.vub.at.objects.natives.NATSymbol;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -70,9 +72,10 @@ class MirageInvocationHandler implements InvocationHandler {
 	 * @param args - a table of arguments
 	 */
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		ATSymbol selector = NATSymbol.getInstance(method.getName());
-		ATArray arguments = new NATArray(args);
-		return mirrorRepresentation_.invoke(selector, arguments);
+		// TODO check the meta insert, guess it should be - meta_ instead of +
+		ATSymbol selector = AGSymbol.alloc(NATText.atValue("meta_" + method.getName()));
+		ATTable arguments = new NATTable(args);
+		return mirrorRepresentation_.meta_invoke(selector, arguments);
 	}
 
 	

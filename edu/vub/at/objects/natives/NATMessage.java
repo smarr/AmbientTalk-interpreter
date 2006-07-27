@@ -27,12 +27,13 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.SelectorNotFound;
+import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATSymbol;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * @author smostinc
@@ -64,25 +65,18 @@ public class NATMessage extends NATNil implements ATMessage {
 		return sender_;
 	}
 
-	public ATBoolean hasReceiver() {
-		return NATBoolean.instance(receiver_ == null);
-	}
-
-	public ATObject getReceiver() throws SelectorNotFound {
-		if(receiver_ == null) {
-			throw new SelectorNotFound("receiver", this);
-		} else {
-			return receiver_;
-		}
+	public ATObject getReceiver() {
+		return receiver_;
 	}
 
 	public ATSymbol getSelector() {
 		return selector_;
 	}
 
-	public ATTable getArguments() throws SelectorNotFound {
+	public ATTable getArguments() throws XSelectorNotFound {
 		if(arguments_ == null) {
-			throw new SelectorNotFound("arguments", this);
+			throw new XSelectorNotFound(
+					AGSymbol.alloc(NATText.atValue("arguments")), this);
 		} else {
 			return arguments_;
 		}

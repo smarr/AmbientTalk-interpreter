@@ -28,10 +28,10 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.ReflectionException;
-import edu.vub.at.objects.ATArray;
+import edu.vub.at.exceptions.XReflectionFailure;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATSymbol;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -76,9 +76,9 @@ class MirrorInvocationHandler implements InvocationHandler {
 	 */
 	public Object invoke(Object proxy, Method method, Object[] args) throws NATException {
 		String selector = method.getName();
-		if(selector == "invoke") {
+		if(selector == "meta_invoke") {
 			ATSymbol methodName = ((ATObject)args[0]).asSymbol();
-			ATArray arguments = ((ATObject)args[1]).asArray();
+			ATTable arguments = ((ATObject)args[1]).asTable();
 			
 			return BaseInterfaceAdaptor.deifyInvocation(
 					objectRepresentation_.getClass(), 
@@ -88,7 +88,7 @@ class MirrorInvocationHandler implements InvocationHandler {
 			} else {
 				// TODO We can send the method to a NATMirror (or this?) to defer implementation.
 				// method.invoke(mirrorImplementation_, args);
-				throw new ReflectionException("Attempted to invoke a method directly on a mirror");
+				throw new XReflectionFailure("Attempted to invoke a method directly on a mirror");
 		}
 	}
 

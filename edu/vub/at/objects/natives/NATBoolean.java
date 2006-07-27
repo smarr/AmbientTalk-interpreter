@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATParsetree.java created on Jul 23, 2006 at 11:17:27 AM
+ * NATBoolean.java created on Jul 23, 2006 at 12:52:29 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,34 +25,44 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
+package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.objects.ATBoolean;
 
 /**
  * @author smostinc
  *
- * ATAbstractGrammar contains all methods to be understood by any parsetree element
- * in the ambienttalk/2 programming language. As the parsetree is a first-class
- * entity (it can be manipulated in the language using the MOP) parsetree elements
- * are also ATObjects.
+ * NATBoolean is simply a container class for ambienttalk booleans. The native 
+ * implementations of true and false can be accessed using the class's atValue
+ * method.
  */
-public interface ATAbstractGrammar extends ATObject {
+public class NATBoolean {
 
 	/**
-	 * Evaluates a particular parsetree with respect to a particular context.
-	 * @param ctx - context (object) to lookup bindings in.
-	 * @throws NATException 
+	 * Returns the corresponding ATBoolean given a java truth value
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException;
+	public static ATBoolean atValue(boolean b) {
+		if(b) {
+			return NATTrue.instance_;
+		} else {
+			return NATFalse.instance_;
+		}
+	}
 	
-	/**
-	 * Quotes a parsetree, in other words allows the parsetree to return itself
-	 * instead of evaluating. This mode is triggered when a quotation parsetree
-	 * element was encountered and is switched off again when an unquotation 
-	 * parsetree element is found. The context is passed on behalf of these possible
-	 * future evaluations.
-	 * @param ctx - context passed on to be used in subsequent evaluations.
-	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx);
+	private static class NATTrue extends NATNil implements ATBoolean {
+		private static NATTrue instance_ = new NATTrue();
+		
+		public boolean isFalse() {	return false;	}
+
+		public boolean isTrue() {		return true;		}
+	}
+
+	private static class NATFalse extends NATNil implements ATBoolean {
+		private static NATFalse instance_= new NATFalse();
+		
+		public boolean isFalse() {	return true;		}
+
+		public boolean isTrue() {		return false;	}
+	}
+
 }

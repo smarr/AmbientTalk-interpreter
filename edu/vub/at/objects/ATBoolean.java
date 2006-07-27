@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATParsetree.java created on Jul 23, 2006 at 11:17:27 AM
+ * ATBoolean.java created on Jul 26, 2006 at 9:53:31 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,32 +27,14 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
-
 /**
  * @author smostinc
  *
- * ATAbstractGrammar contains all methods to be understood by any parsetree element
- * in the ambienttalk/2 programming language. As the parsetree is a first-class
- * entity (it can be manipulated in the language using the MOP) parsetree elements
- * are also ATObjects.
+ * TODO document the class ATBoolean
  */
-public interface ATAbstractGrammar extends ATObject {
+public interface ATBoolean extends ATObject {
 
-	/**
-	 * Evaluates a particular parsetree with respect to a particular context.
-	 * @param ctx - context (object) to lookup bindings in.
-	 * @throws NATException 
-	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException;
+	boolean isTrue();
 	
-	/**
-	 * Quotes a parsetree, in other words allows the parsetree to return itself
-	 * instead of evaluating. This mode is triggered when a quotation parsetree
-	 * element was encountered and is switched off again when an unquotation 
-	 * parsetree element is found. The context is passed on behalf of these possible
-	 * future evaluations.
-	 * @param ctx - context passed on to be used in subsequent evaluations.
-	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx);
+	boolean isFalse();
 }

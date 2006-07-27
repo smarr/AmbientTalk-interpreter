@@ -29,8 +29,8 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATMethod;
-import edu.vub.at.objects.ATSymbol;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  * @author smostinc

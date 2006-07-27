@@ -42,10 +42,19 @@ public final class NATTable extends NATAbstractGrammar implements ATTable {
 
 	public final static NATTable EMPTY = new NATTable(new ATObject[] {});
 	
-	private final ATObject[] elements_;
+	public final ATObject[] elements_;
 	
 	public NATTable(ATObject[] elements) {
 		elements_ = elements;
+	}
+	
+	public NATTable(Object[] javaArray) {
+		elements_ = new ATObject[javaArray.length];
+		
+		for(int i = 0; i < javaArray.length; i++) {
+			Object element = javaArray[i];
+			elements_[i] = NATObject.cast(element);
+		}
 	}
 	
 	public ATNumber getLength() { return NATNumber.atValue(elements_.length); }

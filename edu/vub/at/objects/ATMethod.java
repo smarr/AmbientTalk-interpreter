@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.objects.grammar.ATSymbol;
+
 /**
  * @author smostinc
  *

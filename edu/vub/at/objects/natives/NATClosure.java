@@ -27,13 +27,14 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.ATActor;
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * @author smostinc
@@ -70,8 +71,7 @@ public class NATClosure extends NATNil implements ATClosure {
 				/* scope = implementor.addFrame() */
 				makeCallFrame(implementor), 
 				/* self = ` lexically defined ` */
-				implementor.meta_select(
-						ATActor.currentActor().getMessageFactory().createReceiverlessSelection(NATNil.instance(), NATSymbol._SELF_)), 
+				implementor.meta_lookup(AGSymbol.self), 
 				/* super = implementor.getNext() */
 				implementor.getDynamicParent()));
 	}
@@ -102,16 +102,15 @@ public class NATClosure extends NATNil implements ATClosure {
 		ATObject lexEnv = context_.getLexicalEnvironment();
 
 		// save the current binding of self so that we can restore it.
-		ATObject save =	lexEnv.meta_select(
-				ATActor.currentActor().getMessageFactory().createReceiverlessSelection(NATNil.instance(), NATSymbol._SELF_));
+		ATObject save =	lexEnv.meta_lookup(AGSymbol.self);
 		
 		// update the binding of self to correspond to the self in the context.
-		lexEnv.meta_assignField(NATSymbol._SELF_, context_.getLateBoundReceiver());		
+		lexEnv.meta_assignField(AGSymbol.self, context_.getLateBoundReceiver());		
 
 		ATObject result =  method_.getBody().meta_eval(context_);
 		
 		// restore the saved binding for the self variable.
-		lexEnv.meta_assignField(NATSymbol._SELF_, save);
+		lexEnv.meta_assignField(AGSymbol.self, save);
 		return result;
 	}
 
@@ -123,4 +122,13 @@ public class NATClosure extends NATNil implements ATClosure {
 		return method_;
 	}
 
+	public boolean isClosure() {
+		return true;
+	}
+
+	public ATClosure asClosure() throws XTypeMismatch {
+		return this;
+	}
+
+	
 }

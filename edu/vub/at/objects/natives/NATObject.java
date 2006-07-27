@@ -27,18 +27,22 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.SelectorNotFound;
+import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATMessage;
+import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATSymbol;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
@@ -70,7 +74,7 @@ public class NATObject extends NATNil implements ATObject{
 	}	
 	
 	/**
-	 * Constructs a new ambienttalk object based on a set of parent pointers
+	 * Constructs a new ambienttalk object based on a set of parent pointers. 
 	 * @param dynamicParent - the parent object of the newly created object
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
 	 */
@@ -79,11 +83,17 @@ public class NATObject extends NATNil implements ATObject{
 		lexicalParent_ = lexicalParent;
 	}
 	
-	public static ATObject cast(ATObject o) { return o; }
-	
-	public static ATObject cast(Object o) { 
-		// TODO Wrapping
-		throw new RuntimeException("Not just yet");
+	/**
+	 * Allows converting an ordinary Object into an ATObject, wrapping it if necessary.
+	 */ 
+	public static ATObject cast(Object o) {
+		// Our own "dynamic dispatch"
+		if(o instanceof ATObject) {
+			return (ATObject)o;
+		} else {
+			// TODO Wrapping
+			throw new RuntimeException("Ordinary java objects are not wrapped yet.");			
+		}
 	}
 	
 	/* ------------------------------
@@ -91,36 +101,53 @@ public class NATObject extends NATNil implements ATObject{
 	 * ------------------------------ */
 
 	/**
-	 * The default behaviour of meta_invoke for most ambienttalk language values is
-	 * to check whether the requested functionality is provided in the interface 
-	 * they export to the base-level. Therefore the BaseInterfaceAdaptor will try to 
-	 * invoke the requested message, based on the passed selector and arguments.
+	 * Asynchronous messages sent to an object ( o<-m( args )) are handled by the 
+	 * actor in which the object is contained. The actor first creates a first-
+	 * class message object and will subsequently send it. This method is a hook 
+	 * allowing intercepting such message sends at the granularity of an object, 
+	 * rather than for all objects inside an actor.
 	 */
-	public ATObject meta_invoke(ATMessage msg) throws NATException {
-		return meta_select(msg).asClosure().meta_apply(msg.getArguments());
+	public ATNil meta_send(ATObject sender, ATSymbol selector, ATTable arguments) throws NATException {
+		// we can just reuse the basic behaviour defined in NATNil
+		// maybe here some events need to be fired??
+		return super.meta_send(sender, selector, arguments);
+	}
+	
+	/**
+	 * Invocations on an object ( o.m( args ) ) are handled by looking up the requested
+	 * selector along the dynamic parent chain of o. The select operation should yield 
+	 * a closure (a method along with a proper context for evaluating its body). This 
+	 * closure is then applied with the passed arguments. 
+	 */
+	public ATObject meta_invoke(ATSymbol selector, ATTable arguments) throws NATException {
+		return meta_select(this, selector).asClosure().meta_apply(arguments);
+	}
+	
+	/**
+	 * Calls ( m( args ) ) inside the scope of an object are handled by looking up the 
+	 * requested selector along the lexical parent chain of the object. The lookup
+	 * operation should yield a closure (a method along with a proper context for 
+	 * evaluating its body). This closure is then applied with the passed arguments. 
+	 */
+	public ATObject meta_call(ATSymbol selector, ATTable arguments) throws NATException {
+		return meta_lookup(selector).asClosure().meta_apply(arguments);
 	}
 
 	/**
-	 * An ambienttalk language value can respond to a message if this message is found
-	 * in the interface it exports to the base-level.
+	 * An ambienttalk object can respond to a message if a corresponding method exists
+	 * along the dynamic parent chain.
 	 */
-	public ATBoolean meta_respondsTo(ATMessage msg) throws NATException {
+	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
 		try {
 			
-			meta_getMethod(msg.getSelector());
-			return NATBoolean.instance(true);
+			meta_getMethod(selector);
+			return NATBoolean.atValue(true);
 			
-		} catch(SelectorNotFound exception) {
-			if (msg.hasReceiver().isTrue()) {
-				
-				if(dynamicParent_ != null) {
-					return dynamicParent_.meta_respondsTo(msg);
-				} else {
-					return NATBoolean.instance(false);
-				}
-				
+		} catch(XSelectorNotFound exception) {
+			if(dynamicParent_ != null) {
+				return dynamicParent_.meta_respondsTo(selector);
 			} else {
-				return lexicalParent_.meta_respondsTo(msg);
+				return NATBoolean.atValue(false);
 			}
 		}
 	}
@@ -130,48 +157,54 @@ public class NATObject extends NATNil implements ATObject{
 	 * -- Slot accessing and mutating protocol --
 	 * ------------------------------------------ */
 	
-	public ATObject meta_select(ATMessage msg) throws NATException {
-		if(msg.hasReceiver().isTrue()) {
-			// Receiverfull selection 
-			//  -> only consider methods
-			//  -> traverse dynamic parent chain
-			try{
-				ATMethod method = meta_getMethod(msg.getSelector());
-				ATClosure result = new NATClosure(
-						/* code to be executed */
-						method, 
-						/* implementor - parent for lexical scoping */ 
-						this,
-						/* self pseudo-variable - late bound receiver of the message */
-						msg.getReceiver()
-						/* super pseudo-variable = implementor.getDynamicParent() */);
-				return result;
-			} catch(SelectorNotFound exception) {
-				if(dynamicParent_ != null) {
-					return dynamicParent_.meta_select(msg);
-				} else {
-					// If no dynamic parent is available rethrow the exception.
-					throw exception;
-				}
-			}
-		} else {
-			// Receiverless selection
-			// -> consider first variables, then methods
-			// -> traverse lexical parent chain
-			ATObject result;
-			try {
-				result = meta_getField(msg.getSelector());
-			} catch (SelectorNotFound exception) {
-				try {
-					ATMethod method = meta_getMethod(msg.getSelector());
-					result = new NATClosure(method, this);
-				} catch (SelectorNotFound exception2) {
-					result = lexicalParent_.meta_select(msg);
-				}
-				
-			}
+	/**
+	 * This method corresponds to code of the form ( o.m ). It searches for the 
+	 * requested selector among the methods of the object and its dynamic parents.
+	 */
+	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
+		try{
+			ATMethod method = meta_getMethod(selector);
+			ATClosure result = new NATClosure(
+					/* code to be executed */
+					method, 
+					/* implementor - parent for lexical scoping */ 
+					this,
+					/* self pseudo-variable - late bound receiver of the message */
+					receiver
+			/* super pseudo-variable = implementor.getDynamicParent() */);
 			return result;
+		} catch(XSelectorNotFound exception) {
+			if(dynamicParent_ != null) {
+				// we forward the message and do not put in a static loop to allow
+				// objects represented by other mirrors to correctly intercept all
+				// calls. 
+				return dynamicParent_.meta_select(receiver, selector);
+			} else {
+				// If no dynamic parent is available rethrow the exception.
+				throw exception;
+			}
 		}
+	} 
+	
+	/**
+	 * This method corresponds to code of the form ( x ) within the scope of this 
+	 * object. It searches for the requested selector among the methods and fields 
+	 * of the object and its dynamic parents.
+	 */
+	public ATObject meta_lookup(ATSymbol selector) throws NATException {
+		ATObject result;
+		try {
+			result = getField(selector);
+		} catch (XSelectorNotFound exception) {
+			try {
+				ATMethod method = meta_getMethod(selector);
+				result = new NATClosure(method, this);
+			} catch (XSelectorNotFound exception2) {
+				result = lexicalParent_.meta_lookup(selector);
+			}
+			
+		}
+		return result;
 	}
 
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
@@ -179,9 +212,8 @@ public class NATObject extends NATNil implements ATObject{
 		if(index != null) {
 			stateVector_.set(index.intValue(), value);
 		} else {
-			// TODO discuss which parent link to follow
-			// lexical parent thereby also disallowing direct assignment on dynamic parents
-			// alternative, instead of a symbol take a message which allows distinction rcv+/-
+			// The lexical parent chain is followed for assignments. This implies
+			// that assignments on dynamic parents are disallowed.
 			lexicalParent_.meta_assignField(name, value);
 		}
 		return NATNil.instance();
@@ -201,7 +233,7 @@ public class NATObject extends NATNil implements ATObject{
 			dynamicParent = dynamicParent_;
 		}
 		
-		NATObject clone = new NATObject(dynamicParent.asClosure(), lexicalParent_);
+		NATObject clone = new NATObject(dynamicParent, lexicalParent_);
 		
 		// Using class-based encapsulation to initialize the clone.
 		clone.parentPointerType_ = parentPointerType_;
@@ -212,16 +244,15 @@ public class NATObject extends NATNil implements ATObject{
 		// When copying the variable bindings (but not their values!!!) care must be
 		// taken to update the implicit self pointer in the object to point to the
 		// newly created clone.
-		Integer selfIndex = (Integer)variableMap_.get(NATSymbol._SELF_);
-		if(selfIndex == null) {
+		Integer selfIndex = (Integer)variableMap_.get(AGSymbol.self);
+		if(selfIndex != null) {
 			clone.stateVector_.set(selfIndex.intValue(), clone);
 		}
 		
-
 		return clone;
 	}
 
-	private ATObject extend(ATClosure code, boolean parentPointerType) {
+	private ATObject extend(ATClosure code, boolean parentPointerType) throws NATException {
 		NATObject extension = new NATObject(
 				/* dynamic parent */
 				this,
@@ -229,7 +260,7 @@ public class NATObject extends NATNil implements ATObject{
 				code.getContext().getLexicalEnvironment());
 		
 		// Add a self variable to every new extension
-		extension.variableMap_.put(NATSymbol._SELF_, new Integer(0));
+		extension.variableMap_.put(AGSymbol.self, new Integer(0));
 		extension.stateVector_.set(0, extension);
 		
 		// Adjust the parent pointer type
@@ -254,16 +285,75 @@ public class NATObject extends NATNil implements ATObject{
 	 * -- Structural Access Protocol  --
 	 * --------------------------------- */
 	
-	// TODO structural access protocol for objects.
+	public ATNil meta_addField(ATField field) throws NATException {
+		ATSymbol name = field.getName();
+		if(variableMap_.containsKey(name)) {
+			throw new XIllegalOperation("Trying to add an already existing field " + name);
+		} else {
+			int freePosition = variableMap_.size() + 1;
+			variableMap_.put(name, new Integer(freePosition));
+			stateVector_.add(freePosition, field.getValue());
+		}
+		return NATNil.instance();
+	}
+
+	public ATNil meta_addMethod(ATMethod method) throws NATException {
+		ATSymbol name = method.getName();
+		if(methodDictionary_.containsKey(name)) {
+			throw new XIllegalOperation("Trying to add an already existing method " + name);			
+		} else {
+			methodDictionary_.put(name, method);
+		}
+		return NATNil.instance();
+	}
+
+	/**
+	 * This variant returns the actual value of a field not a reification of the 
+	 * field itself.
+	 */
+	public ATObject getField(ATSymbol selector) throws NATException {
+		Integer index = (Integer)variableMap_.get(selector);
+		System.out.println( "looking for " + selector);
+		if(index != null) {
+			return NATObject.cast(stateVector_.get(index.intValue()));
+		} else {
+			throw new XSelectorNotFound(selector, this);
+		}
+	}
+	
+	public ATField meta_getField(ATSymbol selector) throws NATException {
+		Integer index = (Integer)variableMap_.get(selector);
+		if(index != null) {
+			return new NATField(selector, this);
+		} else {
+			throw new XSelectorNotFound(selector, this);
+		}
+	}
 
 	public ATMethod meta_getMethod(ATSymbol selector) throws NATException {
 		ATMethod result = (ATMethod)methodDictionary_.get(selector);
 		if(result == null) {
-			throw new SelectorNotFound(selector.toString());
+			throw new XSelectorNotFound(selector, this);
 		} else {
 			return result;
 		}
 	}
+	
+	public ATTable meta_listFields() throws NATException {
+		ATObject[] fields = new ATObject[stateVector_.size()];
+		int i = 0;
+		for (Iterator selector = variableMap_.keySet().iterator(); selector.hasNext();) {
+			ATSymbol fieldName = (ATSymbol) selector.next();
+			fields[i] = new NATField(fieldName, this);
+			i++;
+		}
+		return new NATTable(fields);
+	}
+
+	public ATTable meta_listMethods() throws NATException {
+		return new NATTable(methodDictionary_.values().toArray());
+	}
+
 	
 	/* ---------------------
 	 * -- Mirror Fields   --

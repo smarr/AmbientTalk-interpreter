@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATParsetree.java created on Jul 23, 2006 at 11:17:27 AM
+ * XReflectionFailure.java created on Jul 13, 2006 at 8:32:03 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,34 +25,31 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
-
-import edu.vub.at.exceptions.NATException;
+package edu.vub.at.exceptions;
 
 /**
  * @author smostinc
  *
- * ATAbstractGrammar contains all methods to be understood by any parsetree element
- * in the ambienttalk/2 programming language. As the parsetree is a first-class
- * entity (it can be manipulated in the language using the MOP) parsetree elements
- * are also ATObjects.
+ * An instance of the class XReflectionFailure is thrown when something goes wrong
+ * when dealing with mirror or mirage operations. By extension this also covers 
+ * failures when symbiotically accessing Java objects.
  */
-public interface ATAbstractGrammar extends ATObject {
+public class XReflectionFailure extends NATException {
 
-	/**
-	 * Evaluates a particular parsetree with respect to a particular context.
-	 * @param ctx - context (object) to lookup bindings in.
-	 * @throws NATException 
-	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException;
-	
-	/**
-	 * Quotes a parsetree, in other words allows the parsetree to return itself
-	 * instead of evaluating. This mode is triggered when a quotation parsetree
-	 * element was encountered and is switched off again when an unquotation 
-	 * parsetree element is found. The context is passed on behalf of these possible
-	 * future evaluations.
-	 * @param ctx - context passed on to be used in subsequent evaluations.
-	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx);
+	public XReflectionFailure() {
+		super();
+	}
+
+	public XReflectionFailure(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public XReflectionFailure(String message) {
+		super(message);
+	}
+
+	public XReflectionFailure(Throwable cause) {
+		super(cause);
+	}
+
 }

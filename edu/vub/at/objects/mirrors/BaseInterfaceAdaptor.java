@@ -27,12 +27,19 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.TypeException;
-import edu.vub.at.objects.ATArray;
+import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATSymbol;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.JavaMethod.Simple;
+import edu.vub.at.objects.natives.NATNumber;
 
 import java.lang.reflect.Method;
+import java.util.Vector;
 
 /**
  * @author smostinc
@@ -45,30 +52,83 @@ import java.lang.reflect.Method;
  */
 public class BaseInterfaceAdaptor {
 
+	private static class ObjectClassArray {
+		
+		private final Object[] values_;
+		private final Class[] types_;
+		
+		private ObjectClassArray(ATTable arguments) {
+
+			int numberOfArguments = arguments.getLength().asNativeNumber().javaValue;
+			
+			values_	= new Object[numberOfArguments];
+			types_	= new Class[numberOfArguments];
+			
+			for(int i = 0; i < numberOfArguments; i++) {
+				ATObject argument = arguments.at(NATNumber.atValue(i+1));
+				values_[i] 	= argument;
+				types_[i] 	= argument.getClass();
+			};
+
+		}
+	}
+	
+	private static Method[] getMethodsForSelector(Class baseInterface, String selector) {
+		Method[] allMethods = baseInterface.getMethods();
+		
+		Vector matchingMethods = new Vector(0);
+		
+		for (int i = 0; i < allMethods.length; i++) {
+			if (allMethods[i].getName() == selector) {
+				matchingMethods.addElement(allMethods[i]);
+			}
+		}
+		
+		return (Method[])matchingMethods.toArray();
+	}
+	
 	public static Object deifyInvocation (
 			Class baseInterface, ATObject receiver,
-			ATSymbol methodName, ATArray arguments) 
-			throws TypeException {
+			ATSymbol methodName, ATTable arguments) 
+			throws XTypeMismatch {
 
-		Object[] values	= new Object[arguments.size()];
-		Class[]  types	= new Class[arguments.size()];
-		
-		for(int i = 0; i < arguments.size(); i++) {
-			ATObject argument = arguments.at(i+1);
-			values[i] 	= argument;
-			types[i] 	= argument.getClass();
-		};
+		ObjectClassArray args = new ObjectClassArray(arguments);
 		
 		try {
-			Method deified = baseInterface.getMethod(methodName.toString(), types);
-			return deified.invoke(receiver, values);
+			Method deified = baseInterface.getMethod(methodName.toString(), args.types_);
+			return deified.invoke(receiver, args.values_);
 		} catch (Exception e) {
 			// Exceptions during method invocation imply that the requested method was
-			// not found in the interface. Hence a TypeException is thrown to signal 
+			// not found in the interface. Hence a XTypeMismatch is thrown to signal 
 			// that the object could not respond to the request.
-			throw new TypeException(
+			throw new XTypeMismatch(
 				"Could not invoke method with selector" + methodName.toString() + " on the given object.",
 				e, receiver);
+		}
+	}
+
+	public static boolean hasApplicableMethod (
+			Class baseInterface, 
+			ATObject receiver,
+			ATSymbol methodName) {
+
+		return (getMethodsForSelector(
+				baseInterface, methodName.toString()).length != 0);
+	}
+	
+	public static JavaMethod wrapMethodFor(
+			Class baseInterface, 
+			ATObject receiver,
+			ATSymbol methodName) throws NATException {
+		Method[] applicable = getMethodsForSelector(baseInterface, methodName.toString());
+		switch (applicable.length) {
+			case 0:
+				throw new XSelectorNotFound(methodName, receiver);
+			case 1:
+				return new JavaMethod.Simple(receiver, applicable[0]);
+			default:
+				// TODO return new JavaMethod.Dispatched(receiver, applicable);
+				throw new XIllegalOperation("Java Method Wrappers not yet implemented");
 		}
 	}
 }

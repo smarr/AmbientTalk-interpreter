@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATParsetree.java created on Jul 23, 2006 at 11:17:27 AM
+ * XTypeMismatch.java created on Jul 13, 2006 at 9:43:54 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,34 +25,43 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
+package edu.vub.at.exceptions;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.objects.ATObject;
 
 /**
  * @author smostinc
  *
- * ATAbstractGrammar contains all methods to be understood by any parsetree element
- * in the ambienttalk/2 programming language. As the parsetree is a first-class
- * entity (it can be manipulated in the language using the MOP) parsetree elements
- * are also ATObjects.
+ * XTypeMismatch instances are thrown when a value conversion failed.
  */
-public interface ATAbstractGrammar extends ATObject {
+public class XTypeMismatch extends NATException {
 
-	/**
-	 * Evaluates a particular parsetree with respect to a particular context.
-	 * @param ctx - context (object) to lookup bindings in.
-	 * @throws NATException 
-	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException;
+	private ATObject failedObject_;
+
+	public XTypeMismatch(ATObject failedObject) {
+		super();
+		failedObject_ = failedObject;
+	}
+
+	public XTypeMismatch(String message, Throwable cause, ATObject failedObject) {
+		super(message, cause);
+		failedObject_ = failedObject;
+	}
+
+	public XTypeMismatch(String message, ATObject failedObject) {
+		super(message);
+		failedObject_ = failedObject;
+	}
+
+	public XTypeMismatch(Throwable cause, ATObject failedObject) {
+		super(cause);
+		failedObject_ = failedObject;
+	}
 	
-	/**
-	 * Quotes a parsetree, in other words allows the parsetree to return itself
-	 * instead of evaluating. This mode is triggered when a quotation parsetree
-	 * element was encountered and is switched off again when an unquotation 
-	 * parsetree element is found. The context is passed on behalf of these possible
-	 * future evaluations.
-	 * @param ctx - context passed on to be used in subsequent evaluations.
-	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx);
+	public ATObject getFailedObject() {
+		return failedObject_;
+	}
+	
+	
+
 }

@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.TypeException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 
@@ -43,8 +43,8 @@ public interface ATConversions {
 	public boolean isSymbol();
 	public boolean isTable();
 	
-	public ATClosure asClosure() throws TypeException;
-	public ATSymbol asSymbol() throws TypeException;
-	public ATTable asTable() throws TypeException;
-	public ATStatement asStatement() throws TypeException;
+	public ATClosure asClosure() throws XTypeMismatch;
+	public ATSymbol asSymbol() throws XTypeMismatch;
+	public ATTable asTable() throws XTypeMismatch;
+	public ATStatement asStatement() throws XTypeMismatch;
 }

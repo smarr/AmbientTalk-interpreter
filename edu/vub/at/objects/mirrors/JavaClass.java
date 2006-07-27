@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATParsetree.java created on Jul 23, 2006 at 11:17:27 AM
+ * JavaClass.java created on Jul 27, 2006 at 1:59:58 AM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,34 +25,48 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
+package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.objects.ATNumber;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATTable;
 
 /**
  * @author smostinc
  *
- * ATAbstractGrammar contains all methods to be understood by any parsetree element
- * in the ambienttalk/2 programming language. As the parsetree is a first-class
- * entity (it can be manipulated in the language using the MOP) parsetree elements
- * are also ATObjects.
+ * JavaClass wraps a Java class under the guise of a table of JavaMethods.
  */
-public interface ATAbstractGrammar extends ATObject {
+public class JavaClass extends NATNil implements ATTable {
 
-	/**
-	 * Evaluates a particular parsetree with respect to a particular context.
-	 * @param ctx - context (object) to lookup bindings in.
-	 * @throws NATException 
-	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException;
+	private final Class c_;
 	
-	/**
-	 * Quotes a parsetree, in other words allows the parsetree to return itself
-	 * instead of evaluating. This mode is triggered when a quotation parsetree
-	 * element was encountered and is switched off again when an unquotation 
-	 * parsetree element is found. The context is passed on behalf of these possible
-	 * future evaluations.
-	 * @param ctx - context passed on to be used in subsequent evaluations.
+	public JavaClass(Class c) {
+		this.c_ = c;
+	}
+
+	public ATNumber getLength() {
+		return NATNumber.atValue(c_.getMethods().length);
+	}
+
+	public ATObject at(ATNumber index) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.vub.at.objects.ATTable#atPut(edu.vub.at.objects.ATNumber, edu.vub.at.objects.ATObject)
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx);
+	public ATObject atPut(ATNumber index, ATObject value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public NATTable asNativeTable() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

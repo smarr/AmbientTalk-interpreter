@@ -27,15 +27,15 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.SelectorNotFound;
+import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  * @author smostinc
  *
- * ATMessage embody different types of messages sent in ambienttalk. They range from
- * receiverless selections (m) to receiverful invocations (o.m() | o<-m()). These 
- * messages may be sent equally well as synchronous invocations (using .) and 
- * asynchronous message sends (using <-).
+ * An ATMessage instance will be created whenever an asynchronous message send 
+ * (o <- x | o <- m() ) is made in ambienttalk. These messages are created using 
+ * an abstract factory to allow the user to intervene in the process. 
  */
 public interface ATMessage extends ATObject {
 
@@ -47,21 +47,11 @@ public interface ATMessage extends ATObject {
 	public ATObject getSender();
 	
 	/**
-	 * Tests whether the message is receiverful, in other words whether the receiver
-	 * was explicitly designated. This is important to determine along which parent 
-	 * chain the selector is to be sought for.
-	 * @return true if the message has an explicit receiver.
-	 */
-	public ATBoolean hasReceiver();
-	
-	/**
-	 * Messages may optionally have an explicitly named receiver, which signals lookup
-	 * of the selector should follow the dynamic parent chain rather than the lexical
-	 * one.
+	 * Messages also have an explicitly named receiver, which may either be a local
+	 * object, or a representative of an object inside another actor.
 	 * @return the receiver of the message
-	 * @throws SelectorNotFound if the message did not have a receiver
 	 */
-	public ATObject getReceiver() throws SelectorNotFound;
+	public ATObject getReceiver();
 	
 	/**
 	 * Messages always have a selector, a symbol denoting the field or method that 
@@ -73,7 +63,7 @@ public interface ATMessage extends ATObject {
 	/**
 	 * Messages may optionally have arguments if they represent invocations.
 	 * @return the arguments passed to the invocation
-	 * @throws SelectorNotFound if the message is is a selection rather than an invocation 
+	 * @throws XSelectorNotFound if the message is is a selection rather than an invocation 
 	 */
-	public ATTable getArguments() throws SelectorNotFound ;
+	public ATTable getArguments() throws XSelectorNotFound ;
 }

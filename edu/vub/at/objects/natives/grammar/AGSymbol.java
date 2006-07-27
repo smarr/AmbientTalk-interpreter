@@ -32,6 +32,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATText;
 
 import java.util.HashMap;
 
@@ -45,6 +46,8 @@ import java.util.HashMap;
 public final class AGSymbol extends NATAbstractGrammar implements ATSymbol {
 
 	private static final HashMap stringPool = new HashMap();
+
+	public static final ATSymbol self = AGSymbol.alloc(NATText.atValue("self"));
 	
 	private final ATText txt_;
 	
