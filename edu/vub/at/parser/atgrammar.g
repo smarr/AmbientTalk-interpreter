@@ -68,7 +68,7 @@ definition!: nam:variable EQL val:expression { #definition = #([AGDEFFIELD,"defi
 parameterlist: canonicalparameterlist
              | keywordparameterlist;
 
-canonicalparameterlist!: var:variable LPR (pars:variablelist)? RPR { #canonicalparameterlist = #([AGAPL,"apply"], var, pars); }; 
+canonicalparameterlist!: var:variable LPR pars:variablelist RPR { #canonicalparameterlist = #([AGAPL,"apply"], var, pars); }; 
 
 // See the documentation at the keywordlist rule for more information. The difference between
 // keywordparameterlist and keywordlist lies in the ability to either parse a varlist or a commalist.
@@ -105,29 +105,37 @@ factor: invocation (POW^ invocation)*;
 // Terms are expression types delimited by exponential  operators so that they can
 // be composed of curried invocations only. To allow them to intervene the result 
 // of parsing the reference is passed to the curried invocation.
-invocation!: r:reference c:curried_invocation[#r] { #invocation = #c; };
+invocation!: o:operand c:curried_invocation[#o] { #invocation = #c; };
 
-// References are the most fundamental elements of the language, namely primitive 
+// Operands are the most fundamental elements of the language, namely primitive 
 // values (numbers and  strings), variables, blocks, inline tables and subexpressions
 // A reference can also be a quotation or a first-class message creation operation
-reference:! nbr:NBR { #reference = #([AGNBR,"number"],nbr); }
-         |! frc:FRC { #reference = #([AGFRC,"fraction"],frc); }
-         |! txt:TXT { #reference = #([AGTXT,"text"],txt); }
-         | quotation
-         | variable
+operand  :! nbr:NBR { #operand = #([AGNBR,"number"],nbr); }
+         |! frc:FRC { #operand = #([AGFRC,"fraction"],frc); }
+         |! txt:TXT { #operand = #([AGTXT,"text"],txt); }
+         | unary
+         | pseudovariable
+         | symbol
+         | BQU! quotation
+         | HSH! unquotation
          | DOT! message
          | LPR! subexpression
          | LBC! block
          | LBR! table;
 
-// A quotation is a quoted, unquoted or unquote-spliced piece of source code:
+unary! : (operator LPR) => var:operator { #unary = #var; }
+       | opr:operator arg:operand { #unary = #([AGAPL,"apply"], opr, #([AGTAB,"table"], arg)); };
+
+// A quotation is a quoted piece of source code:
 // `( statement )
+quotation!: LPR stmt:statement RPR { #quotation = #([AGQUO,"quote"],stmt); };
+
+// An unquotation is an unquoted or unquote-spliced piece of source code
 // #( expression )
 // #@( expression )
-// TODO: appears to introduce ambiguity for blocks
-quotation!: BQU LPR stmt:statement RPR { #quotation = #([AGQUO,"quote"],stmt); }
-         | HSH LPR uexp:expression RPR { #quotation = #([AGUNQ,"unquote"], uexp); }
-         | HSH CAT LPR usexp:expression RPR { #quotation = #([AGUQS,"unquote-splice"], usexp); };
+// TODO: appears to introduce ambiguity for blocks when using ,(...) and ,@(...)
+unquotation!: LPR uexp:expression RPR { #unquotation = #([AGUNQ,"unquote"], uexp); }
+            | CAT LPR usexp:expression RPR { #unquotation = #([AGUQS,"unquote-splice"], usexp); };
 
 // Curried invocations eagerly consume all subsequent ( [ . tokens. If such tokens are
 // available a single invocation is parsed passing on the received functor (which will
@@ -141,7 +149,7 @@ curried_invocation![AST functor]:
 // Invocation expressions are a single curried expression whether to apply, tabulate or
 // invoke its functor. 
 invoke_expression![AST functor]:
-	  LPR (args:commalist)? RPR  { #invoke_expression = #([AGAPL,"apply"], functor, args); }
+	  LPR args:commalist RPR  { #invoke_expression = #([AGAPL,"apply"], functor, args); }
 	| LBR idx:expression RBR { #invoke_expression = #([AGTBL,"table-get"], functor, idx); }
 	| (DOT variable LPR | DOT KEY) => DOT apl:application { #invoke_expression = #([AGSND,"send"], functor, apl); }
 	| DOT var:variable { #invoke_expression = #([AGSEL,"select"], functor, var);};
@@ -152,7 +160,7 @@ invoke_expression![AST functor]:
 application: canonical
            | keywordlist;
 
-canonical!: var:variable LPR (args:commalist)? RPR { #canonical = #([AGAPL,"apply"], var, args); }; 
+canonical!: var:variable LPR args:commalist RPR { #canonical = #([AGAPL,"apply"], var, args); }; 
 
 // Keyworded message sends are an alternation of keywords (names ending with a colon)
 // and ordinary expressions. They allow for elegant ways to write control structures
@@ -177,28 +185,40 @@ message!: apl:application { #message = #([AGMSG,"message"], apl); };
 subexpression!: e:expression RPR { #subexpression = #e; };
 
 // Inline syntax for nameless functions (lambdas or blocks)
-block!: pars:variablelist PIP body:semicolonlist RBC
+block!: pars:nonemptyvariablelist PIP body:semicolonlist RBC
 		 { #block = #([AGCLO, "closure"], pars, body); }
 	  | no_args_body:semicolonlist RBC
 		 { #block = #([AGCLO, "closure"], #([AGTAB,"table"], #([AGTAB]) ), no_args_body); };
 
 // Inline syntax for table expressions
-// TODO: test whether this definition works with the empty table
-table!: (slots:commalist)? RBR { #table = #slots; };
+table!: slots:commalist RBR { #table = #slots; };
 
 // Parses a list of expressions separated by commas. 
 // USAGE: canonical function application (arguments) and inline tables
 // @param generateImaginaryNode - generate an additional tree node?
 commalist: expression (COM! expression)* 
-	{ #commalist = #([AGTAB,"table"], #commalist); };
+	{ #commalist = #([AGTAB,"table"], #commalist); }
+	|! /* empty */ { #commalist = #([AGTAB,"table"], #([COM]));};
 
-// Parses a list of variables
-variablelist: variable (COM! variable)* { #variablelist = #([AGTAB, "table"], #variablelist); };
+// parses a list of variables that may act as formal parameters
+variablelist: nonemptyvariablelist
+            |! /* empty */ { #variablelist = #([AGTAB,"table"], #([COM])); };
 
-variable!: var:NAM { #variable = #([AGSYM,"symbol"], var); }
-         | opr:operator { #variable = #([AGSYM, "symbol"], opr); };
+nonemptyvariablelist: variable (COM! variable)* { #nonemptyvariablelist = #([AGTAB, "table"], #nonemptyvariablelist); };
 
-operator: CMP | ADD | MUL | POW;
+// user-definable names for variables
+variable: symbol
+        | operator;
+         
+symbol!: var:NAM { #symbol = #([AGSYM,"symbol"], var); };
+         
+pseudovariable!: "self" { #pseudovariable = #[AGSLF,"self"]; }
+               | "super" { #pseudovariable = #([AGSUP, "super"]); };
+
+operator!: cmp:CMP { #operator = #([AGSYM, "symbol"], cmp); }
+         | add:ADD { #operator = #([AGSYM, "symbol"], add); }
+         | mul:MUL { #operator = #([AGSYM, "symbol"], mul); }
+         | pow:POW { #operator = #([AGSYM, "symbol"], pow); };
 
 
 
@@ -214,31 +234,32 @@ options {
 // can easily produce the correct Java ATAbstractGrammar elements.
 // Each token definition aligns the token with its printed representation.
 // Statements
-protected AGBEGIN   : "begin";         // AGBegin(EXP[] exps)
+protected AGBEGIN   : "begin";         // AGBegin(TAB stmts)
 // Definitions
-protected AGDEFFIELD: "define-field";  // AGDefField(REF nam, EXP val)
-protected AGDEFMETH : "define-method"; // AGDefMethod(REF sel, TBL arg, BGN bdy)
-protected AGDEFTABLE: "define-table";  // AGDefTable(REF tbl, EXP siz, EXP ini)
+protected AGDEFFIELD: "define-field";  // AGDefField(SYM nam, EXP val)
+protected AGDEFMETH : "define-method"; // AGDefMethod(SYM sel, TAB arg, BGN bdy)
+protected AGDEFTABLE: "define-table";  // AGDefTable(SYM tbl, EXP siz, EXP ini)
 // Assignments
-protected AGASSFIELD: "field-set";     // AGAssignField (REF nam, EXP val)
+protected AGASSFIELD: "field-set";     // AGAssignField (SYM nam, EXP val)
 protected AGASSTABLE: "table-set";     // AGAssignTable (INV tbl, EXP idx, EXP val)
 // Expressions
-protected AGSND     : "send";          // AGMessageSend (EXP? rcv, REF sel, TBL arg)
-protected AGSUP     : "super-send";    // AGSuperSend (REF sel, TBL arg)
-protected AGAPL     : "apply";         // AGApplication (REF sel, TBL arg)
-protected AGSEL     : "select";        // AGSelection (EXP? rcv, REF sel)
-protected AGMSG     : "message";       // AGMessage (REF sel, TBL arg)
-protected AGTBL     : "table-get";     // AGTabulation (EXP? tbl, EXP idx)
+protected AGSND     : "send";          // AGMessageSend (EXP rcv, SYM sel, TAB arg)
+protected AGAPL     : "apply";         // AGApplication (SYM sel, TAB arg)
+protected AGSEL     : "select";        // AGSelection (EXP rcv, SYM sel)
+protected AGMSG     : "message";       // AGMessage (SYM sel, TAB arg)
+protected AGTBL     : "table-get";     // AGTabulation (EXP tbl, EXP idx)
 protected AGSYM     : "symbol";        // AGSymbol (TXT nam)
-protected AGQUO     : "quote";         // AGQuote (EXP exp)
+protected AGSLF     : "self";          // AGSelf
+protected AGSUP     : "super";         // AGSuper
+protected AGQUO     : "quote";         // AGQuote (STMT stmt)
 protected AGUNQ     : "unquote";       // AGUnquote (EXP exp)
 protected AGUQS     : "unquote-splice";// AGUnquoteSplice (EXP exp)
 // Literals
-protected AGNBR     : "number";        // NATNumber (<nbr>)
-protected AGFRC     : "fraction";      // NATFraction (<frc>)
-protected AGTXT     : "text";          // NATText (<txt>)
-protected AGTAB     : "table";         // NATTable (<tbl>)
-protected AGCLO     : "closure";       // NATClosure (TBL arg, BGN bdy)
+protected AGNBR     : "number";        // NATNumber (<int>)
+protected AGFRC     : "fraction";      // NATFraction (<double>)
+protected AGTXT     : "text";          // NATText (<String>)
+protected AGTAB     : "table";         // NATTable (<ATObject[]>)
+protected AGCLO     : "closure";       // NATClosure (TAB arg, BGN bdy)
 
 //add AGMeta/AGBase?
 
@@ -409,38 +430,18 @@ protected ESC
 { import edu.vub.at.objects.ATObject;
   import edu.vub.at.objects.natives.*;
   import edu.vub.at.objects.grammar.*;
-  import edu.vub.at.objects.natives.grammar.*; }
+  import edu.vub.at.objects.natives.grammar.*;
+  import java.util.LinkedList; }
 class ATTreeWalker extends TreeParser;
 { // begin TreeWalker preamble
 
-// this auxiliary function converts operator syntax such as <a+b> into a message send of the form <a.+(b)>
-public AGMessageSend operatorToSend(AST opr, ATExpression receiver, ATExpression operand) {
-	return new AGMessageSend(receiver,
-	                         AGSymbol.alloc(NATText.atValue(opr.getText())),
-	                         new NATTable(new ATObject[] { operand }));
-}
+  // this auxiliary function converts operator syntax such as <a+b> into a message send of the form <a.+(b)>
+  public AGMessageSend operatorToSend(AST opr, ATExpression receiver, ATExpression operand) {
+	  return new AGMessageSend(receiver,
+	                           AGSymbol.alloc(NATText.atValue(opr.getText())),
+  	                           new NATTable(new ATObject[] { operand }));
+  }
 
-// transforms a sibling AST into an object array
-// e.g. ((symbol a) (symbol b) (symbol c))
-//  => ATObject[] { (symbol a) (symbol b) (symbol c) }
-public ATObject[] transformAstToArray(AST list) {
-	AST next = list;
-	int size = 1;
-	// first, calculate the number of sibling nodes
-	while (next.getNextSibling() != null) {
-	  next = next.getNextSibling();
-	  size++;
-	}
-	// once size is known, create array and fill it
-	ATObject[] arr = new ATObject[size];
-	next = list;
-	for (int i=0; i < size; i++) {
-		// FIXME arr[i] = next;
-		next = next.getNextSibling();
-	}
-	return arr;
-}
-	
 } // end TreeWalker preamble
 
 program returns [NATAbstractGrammar ag] { ag = null; }
@@ -478,8 +479,7 @@ expression returns [ATExpression exp]
   	ATStatement qstmt;
   	ATSymbol sel;
   	NATTable arg; }
-          : #(AGSND rcv=expression sel=symbol arg=table) { exp = new AGMessageSend(rcv,sel,arg); }
-          | #(AGSUP sel=symbol arg=table) { exp = new AGSuperSend(sel,arg); }
+          : #(AGSND rcv=expression #(AGAPL sel=symbol arg=table)) { exp = new AGMessageSend(rcv,sel,arg); }
           | #(AGAPL sel=symbol arg=table) { exp = new AGApplication(sel, arg); }
           | #(AGSEL rcv=expression sel=symbol) { exp = new AGSelection(rcv, sel); }
           | #(AGMSG #(AGAPL sel=symbol arg=table)) { exp = new AGMessageCreation(sel, arg); }
@@ -514,18 +514,22 @@ literal returns[ATExpression lit]
           
 symbol returns [AGSymbol sym] { sym = null; }
           : #(AGSYM txt:NAM) { sym = AGSymbol.alloc(NATText.atValue(txt.getText())); }
+          | AGSLF { sym = AGSelf._INSTANCE_; }
+          | AGSUP { sym = AGSuper._INSTANCE_; }
           ;
 
-// TODO: find a way to extract an array from a (...)* or (...)+ construct
 table returns [NATTable tab]
-  { tab = null; ATExpression expr; }
-          : #(AGTAB (expr=expression)* ) { 
-          	System.out.println(#table.toStringList());
-          	tab = new NATTable(null); }
+  { tab = null;
+  	ATExpression expr;
+  	LinkedList list = new LinkedList(); }
+          : #(AGTAB (expr=expression { list.add(expr); })* )
+              { tab = new NATTable((ATObject[]) list.toArray(new ATObject[list.size()])); }
           ;
           
-begin returns [AGBegin bgn] { bgn = null; ATStatement stmt; }
-          : #(AGBEGIN (stmt=statement)+ ) {
-          	System.out.println(#begin.toStringList());
-          	bgn = new AGBegin(new NATTable(null)); }
+begin returns [AGBegin bgn]
+  { bgn = null;
+  	ATStatement stmt;
+  	LinkedList list = new LinkedList(); }
+          : #(AGBEGIN (stmt=statement { list.add(stmt); })+ )
+              { bgn = new AGBegin(new NATTable((ATObject[]) list.toArray(new ATObject[list.size()]))); }
           ;
