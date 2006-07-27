@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -53,7 +54,7 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	 * eval(#(BEGIN (statement ; statements)),ctx) = eval(statement,ctx) ; eval(statements,ctx)
 	 * eval(#(BEGIN (statement)), ctx) = eval(statement, ctx)
 	 */
-	public ATObject meta_eval(ATContext ctx) {
+	public ATObject meta_eval(ATContext ctx) throws NATException {
 		NATNumber siz = statements_.getLength().asNativeNumber();
 		int lastIdx = siz.javaValue - 1;
 		for (int i = 0; i < lastIdx; i++) {

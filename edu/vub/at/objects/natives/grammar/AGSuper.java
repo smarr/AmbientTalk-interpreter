@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGSuperSend.java created on 26-jul-2006 at 16:05:44
+ * AGSuper.java created on 27-jul-2006 at 13:01:14
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -30,43 +30,29 @@ package edu.vub.at.objects.natives.grammar;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATSuperSend;
-import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
  *
- * The native implementation of a super send AG element.
+ * The abstract grammar element implementing the special pseudovariable reference named 'super'
  */
-public final class AGSuperSend extends NATAbstractGrammar implements ATSuperSend {
+public final class AGSuper extends AGSymbol {
 
-	private final ATSymbol selector_;
-	private final ATTable arguments_;
+	private static final NATText SUPER_NAM = NATText.atValue("super");
 	
-	public AGSuperSend(ATSymbol sel, ATTable arg) {
-		selector_ = sel;
-		arguments_ = arg;
-	}
+	public static final AGSuper _INSTANCE_ = new AGSuper();
 	
-	public ATSymbol getSelector() { return selector_; }
-
-	public ATTable getArguments() { return arguments_; }
-
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
-	 */
+	private AGSuper() { super(SUPER_NAM); }
+	
 	public ATObject meta_eval(ATContext ctx) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
-	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
 }

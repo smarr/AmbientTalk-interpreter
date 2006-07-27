@@ -32,7 +32,6 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATText;
 
 import java.util.HashMap;
 
@@ -43,23 +42,21 @@ import java.util.HashMap;
  * Symbols should only be created via a call to AGSymbol.alloc
  * This ensures that symbols remain unique within one AmbientTalk VM.
  */
-public final class AGSymbol extends NATAbstractGrammar implements ATSymbol {
+public class AGSymbol extends NATAbstractGrammar implements ATSymbol {
 
-	private static final HashMap stringPool = new HashMap();
+	private static final HashMap _STRINGPOOL_ = new HashMap();
 
-	public static final ATSymbol self = AGSymbol.alloc(NATText.atValue("self"));
-	
 	private final ATText txt_;
 	
-	private AGSymbol(ATText txt) {
+	protected AGSymbol(ATText txt) {
 		txt_ = txt;
 	}
 	
 	public static final AGSymbol alloc(ATText txt) {
-		AGSymbol existing = (AGSymbol) stringPool.get(txt);
+		AGSymbol existing = (AGSymbol) _STRINGPOOL_.get(txt);
 		if (existing == null) {
 			existing = new AGSymbol(txt);
-			stringPool.put(txt, existing);
+			_STRINGPOOL_.put(txt, existing);
 		}
 		return existing;
 	}

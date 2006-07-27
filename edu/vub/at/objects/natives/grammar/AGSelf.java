@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATSuperSend.java created on 26-jul-2006 at 14:59:41
+ * AGSelf.java created on 27-jul-2006 at 12:57:41
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,18 +25,34 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.grammar;
+package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
  *
- * The public interface to a super send AG element.
+ * The abstract grammar element denoting the symbol 'self'
  */
-public interface ATSuperSend extends ATExpression {
+public final class AGSelf extends AGSymbol {
 
-	public ATSymbol getSelector();
-	public ATTable getArguments();
+	private static final NATText SELF_NAM = NATText.atValue("self");
+	
+	public static final AGSelf _INSTANCE_ = new AGSelf();
+	
+	private AGSelf() { super(SELF_NAM); }
+	
+	public ATObject meta_eval(ATContext ctx) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public ATAbstractGrammar meta_quote(ATContext ctx) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 }

@@ -34,7 +34,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.natives.grammar.AGSelf;
 
 /**
  * @author smostinc
@@ -68,10 +68,11 @@ public class NATClosure extends NATNil implements ATClosure {
 	 */
 	public NATClosure(ATMethod method, ATObject implementor) throws NATException {
 		this(method, new NATContext(
+				//TODO: modify this, no longer true!
 				/* scope = implementor.addFrame() */
 				makeCallFrame(implementor), 
 				/* self = ` lexically defined ` */
-				implementor.meta_lookup(AGSymbol.self), 
+				implementor.meta_lookup(AGSelf._INSTANCE_), 
 				/* super = implementor.getNext() */
 				implementor.getDynamicParent()));
 	}
@@ -102,15 +103,15 @@ public class NATClosure extends NATNil implements ATClosure {
 		ATObject lexEnv = context_.getLexicalEnvironment();
 
 		// save the current binding of self so that we can restore it.
-		ATObject save =	lexEnv.meta_lookup(AGSymbol.self);
+		ATObject save =	lexEnv.meta_lookup(AGSelf._INSTANCE_);
 		
 		// update the binding of self to correspond to the self in the context.
-		lexEnv.meta_assignField(AGSymbol.self, context_.getLateBoundReceiver());		
+		lexEnv.meta_assignField(AGSelf._INSTANCE_, context_.getLateBoundReceiver());		
 
 		ATObject result =  method_.getBody().meta_eval(context_);
 		
 		// restore the saved binding for the self variable.
-		lexEnv.meta_assignField(AGSymbol.self, save);
+		lexEnv.meta_assignField(AGSelf._INSTANCE_, save);
 		return result;
 	}
 

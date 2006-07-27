@@ -40,6 +40,7 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGSelf;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import junit.framework.TestCase;
@@ -79,9 +80,9 @@ public class NATObjectClosureTest extends TestCase {
 			// Is the current value of self consistent with our expectations
 			assertEquals(self_, ctx.getLateBoundReceiver());
 			// Is the expected value of self inserted in the lexical root of the scope
-			assertEquals(self_, scope_.meta_lookup(AGSymbol.self));	
+			assertEquals(self_, scope_.meta_lookup(AGSelf._INSTANCE_));	
 			// Has self not been overridden in the currently active scope
-			assertEquals(self_, ctx.getLexicalEnvironment().meta_lookup(AGSymbol.self));
+			assertEquals(self_, ctx.getLexicalEnvironment().meta_lookup(AGSelf._INSTANCE_));
 			
 			// SUPER-tests
 			// Is the current value of super consistent with our expectations
@@ -106,13 +107,13 @@ public class NATObjectClosureTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		lexicalRoot_ = new NATObject(NATNil.instance());
-		lexicalRoot_.addField(AGSymbol.self, lexicalRoot_);
+		lexicalRoot_.addField(AGSelf._INSTANCE_, lexicalRoot_);
 	}
 	
 	public void testMethodInvocation() {
 		try {
 			NATObject manualExtension = new NATObject(lexicalRoot_);
-			manualExtension.addField(AGSymbol.self, manualExtension);
+			manualExtension.addField(AGSelf._INSTANCE_, manualExtension);
 			ATSymbol methodName = AGSymbol.alloc(NATText.atValue("test"));
 			ATMethod scopeTestMethod = new NATMethod(
 					methodName, 

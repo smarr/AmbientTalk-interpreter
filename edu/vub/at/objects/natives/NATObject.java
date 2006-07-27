@@ -27,8 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
@@ -39,7 +39,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.natives.grammar.AGSelf;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -244,7 +244,7 @@ public class NATObject extends NATNil implements ATObject{
 		// When copying the variable bindings (but not their values!!!) care must be
 		// taken to update the implicit self pointer in the object to point to the
 		// newly created clone.
-		Integer selfIndex = (Integer)variableMap_.get(AGSymbol.self);
+		Integer selfIndex = (Integer)variableMap_.get(AGSelf._INSTANCE_);
 		if(selfIndex != null) {
 			clone.stateVector_.set(selfIndex.intValue(), clone);
 		}
@@ -260,7 +260,7 @@ public class NATObject extends NATNil implements ATObject{
 				code.getContext().getLexicalEnvironment());
 		
 		// Add a self variable to every new extension
-		extension.variableMap_.put(AGSymbol.self, new Integer(0));
+		extension.variableMap_.put(AGSelf._INSTANCE_, new Integer(0));
 		extension.stateVector_.set(0, extension);
 		
 		// Adjust the parent pointer type
