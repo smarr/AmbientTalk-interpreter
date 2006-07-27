@@ -1,5 +1,6 @@
 package edu.vub.at.parser.test;
 
+import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 import edu.vub.at.parser.ATLexer;
 import edu.vub.at.parser.ATParser;
 import edu.vub.at.parser.ATTreeWalker;
@@ -26,14 +27,15 @@ public class ATWalkerTest extends TestCase {
             System.out.println(t.toStringList());
             ATTreeWalker walker = new ATTreeWalker();
             // Traverse the tree created by the parser
-            walker.program(t);
+            NATAbstractGrammar ag = walker.program(t);
+            System.out.println("final = "+ag);
         } catch(Exception e) {
             fail("exception: "+e);
         }
 	}
 	
 	public void testSimple() {
-		testWalker("f(1, 2)");
+		testWalker("a ; b; c");
 	}
 
 }
