@@ -124,7 +124,7 @@ operand  :! nbr:NBR { #operand = #([AGNBR,"number"],nbr); }
          | LBR! table;
 
 unary! : (operator LPR) => var:operator { #unary = #var; }
-       | opr:operator arg:operand { #unary = #([AGAPL,"apply"], opr, #([AGTAB,"table"], arg)); };
+       | opr:operator arg:invocation { #unary = #([AGAPL,"apply"], opr, #([AGTAB,"table"], arg)); };
 
 // A quotation is a quoted piece of source code:
 // `( statement )
