@@ -30,6 +30,7 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -45,6 +46,8 @@ import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 public final class NATTable extends NATAbstractGrammar implements ATTable {
 
 	public final static NATTable EMPTY = new NATTable(new ATObject[] {});
+	
+	// AUXILIARY STATIC FUNCTIONS
 	
 	/**
 	 * Auxiliary function used to print the elements of the table using various separators.
@@ -62,14 +65,26 @@ public final class NATTable extends NATAbstractGrammar implements ATTable {
         return NATText.atValue(buff.toString());
 	}
 	
-	public final static NATText printAsStatements(ATTable tab) throws XTypeMismatch {
+	public static final NATText printAsStatements(ATTable tab) throws XTypeMismatch {
 		return printElements(tab.asNativeTable(), "", "; ", "");
 	}
 	
-	public final static NATText printAsList(ATTable tab) throws XTypeMismatch {
+	public static final NATText printAsList(ATTable tab) throws XTypeMismatch {
 		return printElements(tab.asNativeTable(), "(", ", ", ")");
 	}
 	
+	public static final NATTable mapEvalOverExpressions(NATTable tab, ATContext ctx) throws NATException {
+		if (tab == EMPTY)
+			return EMPTY;
+		
+		ATObject[] els = tab.elements_;
+		ATObject[] result = new ATObject[els.length];
+		for (int i = 0; i < els.length; i++) {
+			result[i] = els[i].asExpression().meta_eval(ctx);
+		}
+		
+		return new NATTable(result);
+	}
 	
 	public final ATObject[] elements_;
 	

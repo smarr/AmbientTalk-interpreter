@@ -53,7 +53,8 @@ public interface ATAbstractGrammar extends ATObject {
 	 * parsetree element is found. The context is passed on behalf of these possible
 	 * future evaluations.
 	 * @param ctx - context passed on to be used in subsequent evaluations.
+	 * @throws NATException upon conversion errors or upon illegal unquoted expressions
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx);
+	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException;
 	
 }

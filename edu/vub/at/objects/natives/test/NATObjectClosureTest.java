@@ -67,7 +67,7 @@ public class NATObjectClosureTest extends TestCase {
 		public ATObject meta_eval(ATContext ctx) throws NATException {
 			// SCOPE-test
 			// Is the current callframe lexically connected to the expected scope
-			ATObject lexEnv = ctx.getLexicalEnvironment();
+			ATObject lexEnv = ctx.getLexicalScope();
 			while (lexEnv != scope_) {
 				if(lexEnv == NATNil.instance()) {
 					fail();
@@ -78,11 +78,11 @@ public class NATObjectClosureTest extends TestCase {
 			
 			// SELF-tests
 			// Is the current value of self consistent with our expectations
-			assertEquals(self_, ctx.getLateBoundReceiver());
+			assertEquals(self_, ctx.getSelf());
 			// Is the expected value of self inserted in the lexical root of the scope
 			assertEquals(self_, scope_.meta_lookup(AGSelf._INSTANCE_));	
 			// Has self not been overridden in the currently active scope
-			assertEquals(self_, ctx.getLexicalEnvironment().meta_lookup(AGSelf._INSTANCE_));
+			assertEquals(self_, ctx.getLexicalScope().meta_lookup(AGSelf._INSTANCE_));
 			
 			// SUPER-tests
 			// Is the current value of super consistent with our expectations
@@ -90,7 +90,7 @@ public class NATObjectClosureTest extends TestCase {
 			// Is the expected value of super the dynamic parent of the call frame
 			assertEquals(super_, scope_.getDynamicParent());
 			// Has the current call-frame been constructed correctly
-			assertEquals(super_, ctx.getLexicalEnvironment().getDynamicParent());
+			assertEquals(super_, ctx.getLexicalScope().getDynamicParent());
 
 			return this;
 		}

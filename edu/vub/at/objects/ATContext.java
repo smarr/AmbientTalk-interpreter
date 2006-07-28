@@ -39,16 +39,16 @@ public interface ATContext extends ATObject {
 	/**
 	 * Structural access to the lexical environment of the current context.
 	 */
-	public ATObject getLexicalEnvironment();
+	public ATObject getLexicalScope();
 	
 	/**
 	 * Structural access to the receiver (self pseudovariable) in the current context.
 	 */
-	public ATObject getLateBoundReceiver();
+	public ATObject getSelf();
 	
 	/**
 	 * Structural access to the parent (super pseudovariable) in the current context.
 	 */
-	public ATObject getParentObject();
+	public ATObject getSuper();
 
 }

@@ -54,8 +54,16 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	}
 	
 	/**
-	 * eval(#(BEGIN (statement ; statements)),ctx) = eval(statement,ctx) ; eval(statements,ctx)
-	 * eval(#(BEGIN (statement)), ctx) = eval(statement, ctx)
+	 * AGBEGIN encapsulates a sequence of statements and evaluates each of these statements in turn.
+	 * The return value is the value of the last statement.
+	 * 
+	 * AGBEGIN([statement | statements]).eval(ctx) = statement.eval(ctx) ; BEGIN(statements).eval(ctx)
+	 * AGBEGIN([statement]).eval(ctx) = statement.eval(ctx)
+	 * 
+	 * Note that this implementation of begin is *not* tail-recursive.
+	 * Tail-recursion is made impossible because Java will not allow a return
+	 * to the caller until the last expression is also evaluated. Tail-recursion optimalisation
+	 * requires a minimal form of explicit continuations.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
 		NATNumber siz = statements_.getLength().asNativeNumber();
@@ -67,11 +75,15 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	}
 
 	/**
-	 * @see edu.vub.at.objects.natives.NATNil#meta_quote(edu.vub.at.objects.ATContext)
+	 * AGBEGIN(statements*).quote(ctx) = AGBEGIN((statements*).quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return super.meta_quote(ctx);
+	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+		int siz = statements_.getLength().asNativeNumber().javaValue;
+		ATObject[] stmts = new ATObject[siz];
+		for (int i = 0; i < siz; i++) {
+			stmts[i] = statements_.at(NATNumber.atValue(i)).asStatement().meta_quote(ctx);
+		}
+		return new AGBegin(new NATTable(stmts));
 	}
 	
 	public ATTable getStatements() { return statements_; }

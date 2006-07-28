@@ -27,9 +27,6 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.BaseException;
-
-
 /**
  * @author smostinc
  *
@@ -41,7 +38,7 @@ import edu.vub.at.objects.BaseException;
  * 
  * TODO ATExceptions are ATObjects!!!
  */
-public class NATException extends Exception implements BaseException {
+public class NATException extends Exception {
 
 	public NATException() {
 		super();

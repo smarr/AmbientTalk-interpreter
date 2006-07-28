@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGSuper.java created on 27-jul-2006 at 13:01:14
+ * XIllegalUnquote.java created on 28-jul-2006 at 16:48:23
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,35 +25,27 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.natives.grammar;
+package edu.vub.at.exceptions;
 
-import edu.vub.at.exceptions.NATException;
-import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.grammar.ATExpression;
 
 /**
  * @author tvc
  *
- * The abstract grammar element implementing the special pseudovariable reference named 'super'
+ * An XIllegalUnquote exception is raised when an unquotation is
+ * discovered in a non-quoted piece of source code.
  */
-public final class AGSuper extends AGSymbol {
+public final class XIllegalUnquote extends NATException {
 
-	private static final NATText SUPER_NAM = NATText.atValue("super");
+	private static final String _MESSAGE_ = "Unquoted expression in non-quoted expression";
 	
-	public static final AGSuper _INSTANCE_ = new AGSuper();
+	private ATExpression unquotation_;
 	
-	private AGSuper() { super(SUPER_NAM); }
-	
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+	public XIllegalUnquote(ATExpression unquotation) {
+		super(_MESSAGE_);
+		unquotation_ = unquotation;
 	}
 	
+	public ATExpression getUnquotation() { return unquotation_; }
+
 }

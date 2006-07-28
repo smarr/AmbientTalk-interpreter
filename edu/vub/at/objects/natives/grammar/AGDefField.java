@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
@@ -34,7 +35,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATDefField;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -59,19 +59,24 @@ public final class AGDefField extends NATAbstractGrammar implements ATDefField {
 	public ATExpression getValue() { return valueExp_; }
 	
 	/**
-	 * @see edu.vub.at.objects.natives.NATNil#meta_eval(edu.vub.at.objects.ATContext)
+	 * Defines a new field in the current scope. The return value is the value of the new field.
+	 * 
+	 * AGDEFFIELD(nam,val).eval(ctx) =
+	 *   ctx.scope.addField(nam, val.eval(ctx))
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		ATObject val = valueExp_.meta_eval(ctx);
+		ctx.getLexicalScope().meta_defineField(name_, val);
+		return val;
 	}
 
 	/**
-	 * @see edu.vub.at.objects.natives.NATNil#meta_quote(edu.vub.at.objects.ATContext)
+	 * Quoting a field definition results in a new quoted field definition.
+	 * 
+	 * AGDEFFIELD(nam,val).quote(ctx) = AGDEFFIELD(nam.quote(ctx), val.quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+		return new AGDefField(name_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

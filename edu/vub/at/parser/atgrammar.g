@@ -532,7 +532,7 @@ table returns [NATTable tab]
   	ATExpression expr;
   	LinkedList list = new LinkedList(); }
           : #(AGTAB (expr=expression { list.add(expr); })* )
-              { tab = new NATTable((ATObject[]) list.toArray(new ATObject[list.size()])); }
+              { tab = (list.isEmpty()) ? NATTable.EMPTY : new NATTable((ATObject[]) list.toArray(new ATObject[list.size()])); }
           ;
           
 begin returns [AGBegin bgn]

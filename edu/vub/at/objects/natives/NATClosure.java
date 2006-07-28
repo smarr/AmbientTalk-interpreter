@@ -100,13 +100,13 @@ public class NATClosure extends NATNil implements ATClosure {
 	}
 
 	public ATObject meta_apply(ATTable arguments) throws NATException {
-		ATObject lexEnv = context_.getLexicalEnvironment();
+		ATObject lexEnv = context_.getLexicalScope();
 
 		// save the current binding of self so that we can restore it.
 		ATObject save =	lexEnv.meta_lookup(AGSelf._INSTANCE_);
 		
 		// update the binding of self to correspond to the self in the context.
-		lexEnv.meta_assignField(AGSelf._INSTANCE_, context_.getLateBoundReceiver());		
+		lexEnv.meta_assignField(AGSelf._INSTANCE_, context_.getSelf());		
 
 		ATObject result =  method_.getBody().meta_eval(context_);
 		

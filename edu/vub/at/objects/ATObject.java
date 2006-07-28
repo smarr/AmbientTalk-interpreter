@@ -121,6 +121,17 @@ public interface ATObject extends ATConversions {
 	public ATObject meta_lookup(ATSymbol selector) throws NATException;
 	
 	/**
+	 * Defines a new field in an object.
+	 * Triggers the <tt>fieldAdded</tt> event on this object's beholders (mirror observers) if
+	 * the field is added successfully.
+	 * 
+	 * @param a field name (a symbol) and a value (an object)
+	 * @return nil
+	 * @throws ATException if the field name already exists
+	 */
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException;
+	
+	/**
 	 * Sets the value of the given field name to the value given.
 	 * Triggers the <tt>fieldAssigned</tt> event on this object's beholders (mirror observers).
 	 * 
@@ -185,7 +196,7 @@ public interface ATObject extends ATConversions {
 	 * @return nil
 	 * @throws ATException if the field name already exists
 	 * 
-	 * TODO: return value = nil? argument = a field mirror or a pair (symbol, value)?
+	 * TODO: return value = nil?
 	 */
 	public ATNil meta_addField(ATField field) throws NATException;
 	

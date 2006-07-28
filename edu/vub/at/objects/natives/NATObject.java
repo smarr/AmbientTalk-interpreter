@@ -208,6 +208,17 @@ public class NATObject extends NATNil implements ATObject{
 		return result;
 	}
 
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+		if(variableMap_.containsKey(name)) {
+			throw new XIllegalOperation("Trying to add an already existing field " + name);
+		} else {
+			int freePosition = variableMap_.size() + 1;
+			variableMap_.put(name, new Integer(freePosition));
+			stateVector_.add(freePosition, value);
+		}
+		return NATNil.instance();
+	}
+	
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
 		Integer index = (Integer)variableMap_.get(name);
 		if(index != null) {
@@ -258,7 +269,7 @@ public class NATObject extends NATNil implements ATObject{
 				/* dynamic parent */
 				this,
 				/* lexical parent */
-				code.getContext().getLexicalEnvironment());
+				code.getContext().getLexicalScope());
 		
 		// Add a self variable to every new extension
 		extension.variableMap_.put(AGSelf._INSTANCE_, new Integer(0));
@@ -287,15 +298,7 @@ public class NATObject extends NATNil implements ATObject{
 	 * --------------------------------- */
 	
 	public ATNil meta_addField(ATField field) throws NATException {
-		ATSymbol name = field.getName();
-		if(variableMap_.containsKey(name)) {
-			throw new XIllegalOperation("Trying to add an already existing field " + name);
-		} else {
-			int freePosition = variableMap_.size() + 1;
-			variableMap_.put(name, new Integer(freePosition));
-			stateVector_.add(freePosition, field.getValue());
-		}
-		return NATNil.instance();
+		return meta_defineField(field.getName(), field.getValue());
 	}
 
 	public ATNil meta_addMethod(ATMethod method) throws NATException {
@@ -309,7 +312,7 @@ public class NATObject extends NATNil implements ATObject{
 	}
 
 	/**
-	 * This variant returns the actual value of a field not a reification of the 
+	 * This variant returns the actual value of a field, not a reification of the 
 	 * field itself.
 	 */
 	public ATObject getField(ATSymbol selector) throws NATException {

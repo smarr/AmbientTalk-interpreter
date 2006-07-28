@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
@@ -41,6 +42,9 @@ import edu.vub.at.objects.natives.NATText;
  * @author tvc
  *
  * The native implementation of a field assignment AG element.
+ * Examples:
+ *  <tt>x := 5</tt>
+ *  <tt>+ := m()</tt>
  */
 public final class AGAssignField extends NATAbstractGrammar implements ATAssignField {
 
@@ -56,20 +60,25 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 
 	public ATExpression getValue() { return valueExp_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * To evaluate a field definition, evaluate the right hand side and ask
+	 * the current object to assign that value to the field corresponding to the left hand side.
+	 * 
+	 * AGASSFIELD(nam,val).eval(ctx) = ctx.scope.assignField(nam, val.eval(ctx))
+	 * 
+	 * @return the value of the right hand side.
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		ATObject val = valueExp_.meta_eval(ctx);
+		ctx.getLexicalScope().meta_assignField(fieldName_, val);
+		return val;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * AGASSFIELD(nam,val).quote(ctx) = AGASSFIELD(nam.quote(ctx), val.quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+		return new AGAssignField(fieldName_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

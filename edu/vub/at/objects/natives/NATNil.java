@@ -40,6 +40,8 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.BaseNil;
+import edu.vub.at.objects.grammar.ATDefinition;
+import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.BaseInterfaceAdaptor;
@@ -151,6 +153,10 @@ public class NATNil implements ATNil, BaseNil {
 				"Cannot look up a selector inside the scope of an object of type " + this.getClass().getName());
 	}
 
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+		throw new XIllegalOperation("Cannot add fields to an object of type " + this.getClass().getName());
+	}
+	
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
 		throw new XIllegalOperation("Cannot assign field " + name.toString() + " of an object of type " + this.getClass().getName());
 	}
@@ -223,7 +229,7 @@ public class NATNil implements ATNil, BaseNil {
 	/**
 	 * Quoting a native object returns itself, except for pure AG elements.
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) {
+	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
 		return this;
 	}
 
@@ -274,8 +280,18 @@ public class NATNil implements ATNil, BaseNil {
 		throw new XTypeMismatch("Expected a table, given: " + this.getClass().getName(), this);
 	}
 	
+	// Conversions for abstract grammar elements
+	
 	public ATStatement asStatement() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected a statement, given: " + this.getClass().getName(), this);		
+	}
+	
+	public ATDefinition asDefinition() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a definition, given: " + this.getClass().getName(), this);		
+	}
+	
+	public ATExpression asExpression() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected an expression, given: " + this.getClass().getName(), this);		
 	}
 
 	// Conversions for native values

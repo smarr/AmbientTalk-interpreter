@@ -69,7 +69,7 @@ public final class AGClosureLiteral extends NATAbstractGrammar implements ATClos
 	/* (non-Javadoc)
 	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) {
+	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
 		// TODO Auto-generated method stub
 		return null;
 	}

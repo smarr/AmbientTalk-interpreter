@@ -50,15 +50,15 @@ public class NATContext extends NATNil implements ATContext {
 		super_ = zuper;
 	}
 
-	public ATObject getLexicalEnvironment() {
+	public ATObject getLexicalScope() {
 		return scope_;
 	}
 
-	public ATObject getLateBoundReceiver() {
+	public ATObject getSelf() {
 		return self_;
 	}
 
-	public ATObject getParentObject() {
+	public ATObject getSuper() {
 		return super_;
 	}
 

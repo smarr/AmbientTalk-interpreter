@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
@@ -65,7 +66,7 @@ public final class AGTabulation extends NATAbstractGrammar implements ATTabulati
 	/* (non-Javadoc)
 	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) {
+	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
 		// TODO Auto-generated method stub
 		return null;
 	}
