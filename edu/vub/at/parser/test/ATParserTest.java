@@ -24,7 +24,7 @@ public class ATParserTest extends TestCase {
 
 			CommonAST parseTree = (CommonAST)parser.getAST();
 			System.out.println(parseTree.toStringList());
-			assertEquals((expectedOutput + "null").replace(" ",""), parseTree.toStringList().replace(" ",""));
+			assertEquals((expectedOutput + "null").replaceAll("\\s", ""), parseTree.toStringList().replaceAll("\\s", ""));
 		} catch(Exception e) {
 			fail("Exception: "+e); 
 		}
