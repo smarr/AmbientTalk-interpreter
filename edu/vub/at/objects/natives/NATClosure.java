@@ -130,6 +130,9 @@ public class NATClosure extends NATNil implements ATClosure {
 	public ATClosure asClosure() throws XTypeMismatch {
 		return this;
 	}
-
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<closure>");
+	}
 	
 }

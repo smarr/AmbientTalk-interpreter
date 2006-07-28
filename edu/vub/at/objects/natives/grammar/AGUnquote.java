@@ -27,11 +27,13 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATUnquote;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -64,4 +66,8 @@ public final class AGUnquote extends NATAbstractGrammar implements ATUnquote {
 		return null;
 	}
 
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("#("+ unqExp_.meta_print().javaValue + ")");
+	}
+	
 }

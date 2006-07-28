@@ -27,9 +27,11 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
@@ -62,6 +64,10 @@ public class JavaClass extends NATNil implements ATTable {
 	public ATObject atPut(ATNumber index, ATObject value) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public ATBoolean isEmpty() {
+		return NATBoolean.atValue(c_.getMethods().length == 0);
 	}
 
 	public NATTable asNativeTable() {

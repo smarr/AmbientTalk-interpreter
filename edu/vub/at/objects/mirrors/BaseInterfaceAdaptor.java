@@ -57,7 +57,7 @@ public class BaseInterfaceAdaptor {
 		private final Object[] values_;
 		private final Class[] types_;
 		
-		private ObjectClassArray(ATTable arguments) {
+		private ObjectClassArray(ATTable arguments) throws NATException {
 
 			int numberOfArguments = arguments.getLength().asNativeNumber().javaValue;
 			
@@ -90,7 +90,7 @@ public class BaseInterfaceAdaptor {
 	public static Object deifyInvocation (
 			Class baseInterface, ATObject receiver,
 			ATSymbol methodName, ATTable arguments) 
-			throws XTypeMismatch {
+			throws NATException {
 
 		ObjectClassArray args = new ObjectClassArray(arguments);
 		

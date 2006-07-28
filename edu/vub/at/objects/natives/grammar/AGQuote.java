@@ -27,11 +27,14 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATQuote;
 import edu.vub.at.objects.grammar.ATStatement;
+import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -62,6 +65,10 @@ public final class AGQuote extends NATAbstractGrammar implements ATQuote {
 	public ATAbstractGrammar meta_quote(ATContext ctx) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("`("+ stmt_.meta_print().javaValue + ")");
 	}
 
 }

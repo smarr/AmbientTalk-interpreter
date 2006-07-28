@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 
@@ -38,8 +39,8 @@ import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
  */
 public final class NATNumber extends NATAbstractGrammar implements ATNumber {
 	
-	public final NATNumber ZERO = new NATNumber(0);
-	public final NATNumber ONE = new NATNumber(1);
+	public static final NATNumber ZERO = new NATNumber(0);
+	public static final NATNumber ONE = new NATNumber(1);
 	
 	public final int javaValue;
 	
@@ -62,5 +63,9 @@ public final class NATNumber extends NATAbstractGrammar implements ATNumber {
 	}
 	
 	public NATNumber asNativeNumber() { return this; }
+	
+	public NATText meta_print() throws XTypeMismatch {
+        return NATText.atValue(String.valueOf(javaValue));
+	}
 
 }

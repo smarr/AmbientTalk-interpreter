@@ -27,9 +27,13 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 
 /**
@@ -41,6 +45,31 @@ import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 public final class NATTable extends NATAbstractGrammar implements ATTable {
 
 	public final static NATTable EMPTY = new NATTable(new ATObject[] {});
+	
+	/**
+	 * Auxiliary function used to print the elements of the table using various separators.
+	 */
+	public final static NATText printElements(NATTable tab,String start, String sep, String stop) throws XTypeMismatch {
+		ATObject[] els = tab.elements_;
+		if (els.length == 0)
+			return NATText.atValue(String.valueOf(start+stop));
+		
+	    StringBuffer buff = new StringBuffer(start);
+		for (int i = 0; i < els.length - 1; i++) {
+			buff.append(els[i].meta_print().asNativeText().javaValue + sep);
+		}
+		buff.append(els[els.length-1].meta_print().asNativeText().javaValue + stop);
+        return NATText.atValue(buff.toString());
+	}
+	
+	public final static NATText printAsStatements(ATTable tab) throws XTypeMismatch {
+		return printElements(tab.asNativeTable(), "", "; ", "");
+	}
+	
+	public final static NATText printAsList(ATTable tab) throws XTypeMismatch {
+		return printElements(tab.asNativeTable(), "(", ", ", ")");
+	}
+	
 	
 	public final ATObject[] elements_;
 	
@@ -60,16 +89,24 @@ public final class NATTable extends NATAbstractGrammar implements ATTable {
 	public ATNumber getLength() { return NATNumber.atValue(elements_.length); }
 
 	// TODO: index out of bounds checks
-	public ATObject at(ATNumber index) {
+	public ATObject at(ATNumber index) throws NATException {
 		return elements_[index.asNativeNumber().javaValue];
 	}
 
 	// TODO: index out of bounds checks
-	public ATObject atPut(ATNumber index, ATObject value) {
+	public ATObject atPut(ATNumber index, ATObject value) throws NATException {
 		elements_[index.asNativeNumber().javaValue] = value;
 		return value;
 	}
 	
+	public ATBoolean isEmpty() {
+		return NATBoolean.atValue(elements_.length == 0);
+	}
+	
 	public NATTable asNativeTable() { return this; }
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATTable.printElements(this, "[", ", ","]");
+	}
 
 }

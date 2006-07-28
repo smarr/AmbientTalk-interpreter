@@ -38,6 +38,4 @@ import edu.vub.at.objects.natives.NATNumber;
  */
 public interface ATNumber extends ATExpression {
 
-	public NATNumber asNativeNumber();
-	
 }

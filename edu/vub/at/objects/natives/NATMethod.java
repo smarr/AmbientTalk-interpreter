@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATTable;
@@ -61,6 +62,10 @@ public class NATMethod extends NATNil implements ATMethod {
 
 	public ATAbstractGrammar getBody() {
 		return body_;
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<method:"+name_.meta_print()+">");
 	}
 
 }

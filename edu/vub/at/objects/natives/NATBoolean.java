@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 
 /**
@@ -55,6 +56,8 @@ public class NATBoolean {
 		public boolean isFalse() {	return false;	}
 
 		public boolean isTrue() {		return true;		}
+		
+		public NATText meta_print() throws XTypeMismatch { return NATText.atValue("<true>"); }
 	}
 
 	private static class NATFalse extends NATNil implements ATBoolean {
@@ -63,6 +66,8 @@ public class NATBoolean {
 		public boolean isFalse() {	return true;		}
 
 		public boolean isTrue() {		return false;	}
+		
+		public NATText meta_print() throws XTypeMismatch { return NATText.atValue("<false>"); }
 	}
 
 }

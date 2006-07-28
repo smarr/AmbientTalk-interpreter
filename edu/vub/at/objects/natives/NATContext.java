@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 
@@ -73,6 +74,8 @@ public class NATContext extends NATNil implements ATContext {
 		return new NATContext(scope_, self, zuper);		
 	}
 	
-	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<context>");
+	}
 	
 }

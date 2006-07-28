@@ -27,7 +27,9 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -43,5 +45,9 @@ public abstract class NATAbstractGrammar extends NATNil {
 	
 	// subclasses of NATAbstractGrammar will override meta_eval and meta_quote as appropriate,
 	// except for the literal grammar elements which can inherit the self-evaluating behaviour of NATNil.
+	
+	public NATText meta_print() throws XTypeMismatch {
+        throw new RuntimeException("all subclasses of NATAbstractGrammar should override the default behaviour of NATNil");
+	}
 	
 }

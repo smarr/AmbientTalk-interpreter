@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -68,6 +69,10 @@ public class NATField extends NATNil implements ATField {
 		ATObject result = getValue();
 		receiver_.meta_assignField(name_, newValue);
 		return result;
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<field>");
 	}
 
 }

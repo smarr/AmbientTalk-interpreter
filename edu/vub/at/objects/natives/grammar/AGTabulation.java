@@ -27,11 +27,13 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATTabulation;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -66,6 +68,11 @@ public final class AGTabulation extends NATAbstractGrammar implements ATTabulati
 	public ATAbstractGrammar meta_quote(ATContext ctx) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue(tblExp_.meta_print().javaValue + "[" +
+				              idxExp_.meta_print().javaValue + "]");
 	}
 
 }

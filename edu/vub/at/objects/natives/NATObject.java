@@ -30,6 +30,7 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -366,6 +367,13 @@ public class NATObject extends NATNil implements ATObject{
 	public ATObject getLexicalParent(){
 		return lexicalParent_;
 	}
-
+	
+	/* -----------------
+	 * --  Printing   --
+	 * ----------------- */
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<object@"+this.hashCode()+">");
+	}
 
 }

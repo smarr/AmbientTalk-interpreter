@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATFraction;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 
@@ -38,7 +39,7 @@ import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
  */
 public final class NATFraction extends NATAbstractGrammar implements ATFraction {
 
-	public final NATFraction INFTY = new NATFraction(Double.POSITIVE_INFINITY);
+	public static final NATFraction INFTY = new NATFraction(Double.POSITIVE_INFINITY);
 	
 	public final double javaValue;
 	
@@ -57,5 +58,9 @@ public final class NATFraction extends NATAbstractGrammar implements ATFraction 
 	public boolean equals(Object other) {
 		return (other instanceof NATFraction) &&
 			   (javaValue == ((NATFraction) other).javaValue);
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+        return NATText.atValue(String.valueOf(javaValue));
 	}
 }

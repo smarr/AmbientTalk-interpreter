@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
@@ -80,6 +81,10 @@ public class NATMessage extends NATNil implements ATMessage {
 		} else {
 			return arguments_;
 		}
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<message>");
 	}
 
 }

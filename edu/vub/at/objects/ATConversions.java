@@ -30,6 +30,10 @@ package edu.vub.at.objects;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATFraction;
+import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author smostinc
@@ -43,8 +47,13 @@ public interface ATConversions {
 	public boolean isSymbol();
 	public boolean isTable();
 	
-	public ATClosure asClosure() throws XTypeMismatch;
-	public ATSymbol asSymbol() throws XTypeMismatch;
-	public ATTable asTable() throws XTypeMismatch;
+	public ATClosure   asClosure() throws XTypeMismatch;
+	public ATSymbol    asSymbol() throws XTypeMismatch;
+	public ATTable     asTable() throws XTypeMismatch;
 	public ATStatement asStatement() throws XTypeMismatch;
+	
+	public NATNumber   asNativeNumber() throws XTypeMismatch;
+	public NATFraction asNativeFraction() throws XTypeMismatch;
+	public NATText     asNativeText() throws XTypeMismatch;
+	public NATTable    asNativeTable() throws XTypeMismatch;
 }

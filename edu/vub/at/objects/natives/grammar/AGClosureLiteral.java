@@ -27,12 +27,17 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATClosureLiteral;
+import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -67,6 +72,14 @@ public final class AGClosureLiteral extends NATAbstractGrammar implements ATClos
 	public ATAbstractGrammar meta_quote(ATContext ctx) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		if (arguments_.isEmpty().isTrue()) {
+		  return NATText.atValue("{ "+body_.meta_print().javaValue + " }");
+		} else
+		  return NATText.atValue(NATTable.printElements(arguments_.asNativeTable(), "{", ", ", " | ").javaValue +
+		                       body_.meta_print().javaValue+"}");
 	}
 
 }

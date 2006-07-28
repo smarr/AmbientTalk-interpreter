@@ -28,7 +28,9 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -259,5 +261,16 @@ public interface ATObject extends ATConversions {
 	 * chain to be accessed as a field of the object's mirror.
 	 */
 	public ATObject getLexicalParent();
+	
+	/* ---------------------
+	 * --     Printing    --
+	 * --------------------- */
+	
+	/**
+	 * Prints out the object in a human-readable way.
+	 * @return a native textual representation of the object.
+	 * @throws XTypeMismatch if an element does not represent itself using a native text value
+	 */
+	public NATText meta_print() throws XTypeMismatch;
 	
 }

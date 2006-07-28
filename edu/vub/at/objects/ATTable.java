@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.natives.NATTable;
 
@@ -39,8 +40,9 @@ import edu.vub.at.objects.natives.NATTable;
 public interface ATTable extends ATExpression {
 
 	public ATNumber getLength();
-	public ATObject at(ATNumber index);
-	public ATObject atPut(ATNumber index, ATObject value);
+	public ATObject at(ATNumber index) throws NATException;
+	public ATObject atPut(ATNumber index, ATObject value) throws NATException;
+	public ATBoolean isEmpty();
 	
 	public NATTable asNativeTable();
 }

@@ -27,8 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
@@ -204,6 +204,10 @@ public class NATNil implements ATNil, BaseNil {
 		return new JavaClass(this.getBaseInterface());
 	}
 
+	public NATText meta_print() throws XTypeMismatch {
+        return NATText.atValue("nil");
+	}
+	
 	/* ---------------------------------
 	 * -- Abstract Grammar Protocol   --
 	 * --------------------------------- */
@@ -273,5 +277,33 @@ public class NATNil implements ATNil, BaseNil {
 	public ATStatement asStatement() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected a statement, given: " + this.getClass().getName(), this);		
 	}
+
+	// Conversions for native values
+	
+	public NATNumber asNativeNumber() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a native number, given: " + this.getClass().getName(), this);		
+	}
+	
+	public NATFraction asNativeFraction() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a native fraction, given: " + this.getClass().getName(), this);		
+	}
+	
+	public NATText asNativeText() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a native text, given: " + this.getClass().getName(), this);		
+	}
+	
+	public NATTable asNativeTable() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a native table, given: " + this.getClass().getName(), this);		
+	}
+	
+	
+	public String toString() {
+		try {
+			return this.getClass().getName() + ": " + this.meta_print().javaValue;
+		} catch (XTypeMismatch e) {
+			e.printStackTrace();
+			return this.getClass().getName() + ": " + e.getMessage();
+		}
+	}	
 
 }

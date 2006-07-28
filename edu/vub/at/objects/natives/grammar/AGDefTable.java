@@ -27,12 +27,15 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATDefTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -71,6 +74,13 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 	public ATAbstractGrammar meta_quote(ATContext ctx) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("def " +
+				tblName_.meta_print().javaValue + "[" +
+				sizExp_.meta_print().javaValue + "] { " +
+				initExp_.meta_print().javaValue + "}");
 	}
 	
 }

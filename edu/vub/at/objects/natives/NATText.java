@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 
@@ -55,6 +56,12 @@ public final class NATText extends NATAbstractGrammar implements ATText {
 		public boolean equals(Object other) {
 			return (other instanceof NATText) &&
 				   (javaValue == ((NATText) other).javaValue);
+		}
+		
+		public NATText asNativeText() throws XTypeMismatch { return this; }
+		
+		public NATText meta_print() throws XTypeMismatch {
+	        return this;
 		}
 
 }
