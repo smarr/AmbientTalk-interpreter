@@ -28,13 +28,11 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.grammar.AGSelf;
 
 /**
  * @author smostinc
@@ -45,34 +43,22 @@ public class NATClosure extends NATNil implements ATClosure {
 
 	private ATMethod 	method_;
 	private ATContext	context_;
-	
-	/**
-	 * Creates a callframe object extending the implementor. 
-	 * TODO Verify the dynamic parent sharing for super
-	 */
-	private static ATObject makeCallFrame(ATObject implementor) {
-		return new NATObject(
-					/* callframes reuse the dynamic parent of their object to 
-					 * be able to easily gain access to their super object.   */
-					implementor.getDynamicParent(),
-					/* The implementor provides the lexical environment */
-					implementor);
-	}
-	
+		
 	/**
 	 * This constructor creates a closure with an unbound dynamic receiver. This
 	 * constructor is called when a closure is created to wrap a literal block and
 	 * when a method is called using a receiverless message.  
 	 * @param method the method being wrapped into a closure.
 	 * @param implementor the object in which the definition is nested.
+	 * 
+	 * @deprecated only to be called in the lookup of NATObject 
 	 */
 	public NATClosure(ATMethod method, ATObject implementor) throws NATException {
 		this(method, new NATContext(
-				//TODO: modify this, no longer true!
 				/* scope = implementor.addFrame() */
-				makeCallFrame(implementor), 
+				new NATCallframe(implementor), 
 				/* self = ` lexically defined ` */
-				implementor.meta_lookup(AGSelf._INSTANCE_), 
+				implementor, 
 				/* super = implementor.getNext() */
 				implementor.getDynamicParent()));
 	}
@@ -87,7 +73,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	public NATClosure(ATMethod method, ATObject implementor, ATObject receiver) {
 		this(method, new NATContext(
 				/* scope = implementor.addFrame() */
-				makeCallFrame(implementor), 
+				new NATCallframe(implementor), 
 				/* self = ` start of lookup ` */
 				receiver, 
 				/* super = implementor.getNext() */
@@ -100,19 +86,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	}
 
 	public ATObject meta_apply(ATTable arguments) throws NATException {
-		ATObject lexEnv = context_.getLexicalScope();
-
-		// save the current binding of self so that we can restore it.
-		ATObject save =	lexEnv.meta_lookup(AGSelf._INSTANCE_);
-		
-		// update the binding of self to correspond to the self in the context.
-		lexEnv.meta_assignField(AGSelf._INSTANCE_, context_.getSelf());		
-
-		ATObject result =  method_.getBody().meta_eval(context_);
-		
-		// restore the saved binding for the self variable.
-		lexEnv.meta_assignField(AGSelf._INSTANCE_, save);
-		return result;
+		return method_.getBody().meta_eval(context_);
 	}
 
 	public ATContext getContext() {
@@ -127,12 +101,9 @@ public class NATClosure extends NATNil implements ATClosure {
 		return true;
 	}
 
-	public ATClosure asClosure() throws XTypeMismatch {
+	public ATClosure asClosure() {
 		return this;
 	}
-	
-	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<closure>");
-	}
+
 	
 }

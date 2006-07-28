@@ -30,20 +30,16 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.grammar.AGSelf;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
@@ -52,7 +48,7 @@ import java.util.Vector;
  *
  * Native implementation of a default ambienttalk object. 
  */
-public class NATObject extends NATNil implements ATObject{
+public class NATObject extends NATCallframe implements ATObject{
 
 	private static final boolean _IS_A_ 		= true;
 	private static final boolean _SHARES_A_ 	= false;
@@ -62,7 +58,6 @@ public class NATObject extends NATNil implements ATObject{
 	private Map		methodDictionary_  		= new HashMap();
 	private boolean 	parentPointerType_ 		= _IS_A_;
 	final ATObject dynamicParent_;
-	final ATObject lexicalParent_;
 	
 	
 	/**
@@ -80,8 +75,8 @@ public class NATObject extends NATNil implements ATObject{
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
 	 */
 	public NATObject(ATObject dynamicParent, ATObject lexicalParent) {
+		super(lexicalParent);
 		dynamicParent_ = dynamicParent;
-		lexicalParent_ = lexicalParent;
 	}
 	
 	/**
@@ -110,7 +105,7 @@ public class NATObject extends NATNil implements ATObject{
 	 */
 	public ATNil meta_send(ATObject sender, ATSymbol selector, ATTable arguments) throws NATException {
 		// we can just reuse the basic behaviour defined in NATNil
-		// maybe here some events need to be fired??
+		// TODO maybe here some events need to be fired??
 		return super.meta_send(sender, selector, arguments);
 	}
 	
@@ -120,20 +115,10 @@ public class NATObject extends NATNil implements ATObject{
 	 * a closure (a method along with a proper context for evaluating its body). This 
 	 * closure is then applied with the passed arguments. 
 	 */
-	public ATObject meta_invoke(ATSymbol selector, ATTable arguments) throws NATException {
+	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
 		return meta_select(this, selector).asClosure().meta_apply(arguments);
 	}
 	
-	/**
-	 * Calls ( m( args ) ) inside the scope of an object are handled by looking up the 
-	 * requested selector along the lexical parent chain of the object. The lookup
-	 * operation should yield a closure (a method along with a proper context for 
-	 * evaluating its body). This closure is then applied with the passed arguments. 
-	 */
-	public ATObject meta_call(ATSymbol selector, ATTable arguments) throws NATException {
-		return meta_lookup(selector).asClosure().meta_apply(arguments);
-	}
-
 	/**
 	 * An ambienttalk object can respond to a message if a corresponding method exists
 	 * along the dynamic parent chain.
@@ -191,6 +176,8 @@ public class NATObject extends NATNil implements ATObject{
 	 * This method corresponds to code of the form ( x ) within the scope of this 
 	 * object. It searches for the requested selector among the methods and fields 
 	 * of the object and its dynamic parents.
+	 * 
+	 * Overridden from NATCallframe to take methods into account as well.
 	 */
 	public ATObject meta_lookup(ATSymbol selector) throws NATException {
 		ATObject result;
@@ -206,29 +193,6 @@ public class NATObject extends NATNil implements ATObject{
 			
 		}
 		return result;
-	}
-
-	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
-		if(variableMap_.containsKey(name)) {
-			throw new XIllegalOperation("Trying to add an already existing field " + name);
-		} else {
-			int freePosition = variableMap_.size() + 1;
-			variableMap_.put(name, new Integer(freePosition));
-			stateVector_.add(freePosition, value);
-		}
-		return NATNil.instance();
-	}
-	
-	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
-		Integer index = (Integer)variableMap_.get(name);
-		if(index != null) {
-			stateVector_.set(index.intValue(), value);
-		} else {
-			// The lexical parent chain is followed for assignments. This implies
-			// that assignments on dynamic parents are disallowed.
-			lexicalParent_.meta_assignField(name, value);
-		}
-		return NATNil.instance();
 	}
 
 	/* ------------------------------------
@@ -252,14 +216,6 @@ public class NATObject extends NATNil implements ATObject{
 		clone.methodDictionary_ = methodDictionary_;
 		clone.stateVector_ = (Vector)stateVector_.clone();
 		clone.variableMap_ = variableMap_;
-
-		// When copying the variable bindings (but not their values!!!) care must be
-		// taken to update the implicit self pointer in the object to point to the
-		// newly created clone.
-		Integer selfIndex = (Integer)variableMap_.get(AGSelf._INSTANCE_);
-		if(selfIndex != null) {
-			clone.stateVector_.set(selfIndex.intValue(), clone);
-		}
 		
 		return clone;
 	}
@@ -270,10 +226,6 @@ public class NATObject extends NATNil implements ATObject{
 				this,
 				/* lexical parent */
 				code.getContext().getLexicalScope());
-		
-		// Add a self variable to every new extension
-		extension.variableMap_.put(AGSelf._INSTANCE_, new Integer(0));
-		extension.stateVector_.set(0, extension);
 		
 		// Adjust the parent pointer type
 		extension.parentPointerType_ = parentPointerType;
@@ -296,10 +248,6 @@ public class NATObject extends NATNil implements ATObject{
 	/* ---------------------------------
 	 * -- Structural Access Protocol  --
 	 * --------------------------------- */
-	
-	public ATNil meta_addField(ATField field) throws NATException {
-		return meta_defineField(field.getName(), field.getValue());
-	}
 
 	public ATNil meta_addMethod(ATMethod method) throws NATException {
 		ATSymbol name = method.getName();
@@ -311,29 +259,6 @@ public class NATObject extends NATNil implements ATObject{
 		return NATNil.instance();
 	}
 
-	/**
-	 * This variant returns the actual value of a field, not a reification of the 
-	 * field itself.
-	 */
-	public ATObject getField(ATSymbol selector) throws NATException {
-		Integer index = (Integer)variableMap_.get(selector);
-		System.out.println( "looking for " + selector);
-		if(index != null) {
-			return NATObject.cast(stateVector_.get(index.intValue()));
-		} else {
-			throw new XSelectorNotFound(selector, this);
-		}
-	}
-	
-	public ATField meta_getField(ATSymbol selector) throws NATException {
-		Integer index = (Integer)variableMap_.get(selector);
-		if(index != null) {
-			return new NATField(selector, this);
-		} else {
-			throw new XSelectorNotFound(selector, this);
-		}
-	}
-
 	public ATMethod meta_getMethod(ATSymbol selector) throws NATException {
 		ATMethod result = (ATMethod)methodDictionary_.get(selector);
 		if(result == null) {
@@ -341,17 +266,6 @@ public class NATObject extends NATNil implements ATObject{
 		} else {
 			return result;
 		}
-	}
-	
-	public ATTable meta_listFields() throws NATException {
-		ATObject[] fields = new ATObject[stateVector_.size()];
-		int i = 0;
-		for (Iterator selector = variableMap_.keySet().iterator(); selector.hasNext();) {
-			ATSymbol fieldName = (ATSymbol) selector.next();
-			fields[i] = new NATField(fieldName, this);
-			i++;
-		}
-		return new NATTable(fields);
 	}
 
 	public ATTable meta_listMethods() throws NATException {
@@ -366,17 +280,4 @@ public class NATObject extends NATNil implements ATObject{
 	public ATObject getDynamicParent() {
 		return dynamicParent_;
 	};
-	
-	public ATObject getLexicalParent(){
-		return lexicalParent_;
-	}
-	
-	/* -----------------
-	 * --  Printing   --
-	 * ----------------- */
-	
-	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<object@"+this.hashCode()+">");
-	}
-
 }

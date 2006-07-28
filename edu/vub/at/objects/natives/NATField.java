@@ -44,11 +44,11 @@ import edu.vub.at.objects.grammar.ATSymbol;
 public class NATField extends NATNil implements ATField {
 
 	private final ATSymbol name_;
-	private NATObject receiver_;
+	private NATCallframe frame_;
 	
-	public NATField(ATSymbol name, NATObject receiver) {
+	public NATField(ATSymbol name, NATCallframe frame) {
 		name_ = name;
-		receiver_ = receiver;
+		frame_ = frame;
 	}
 
 	public ATSymbol getName() {
@@ -57,7 +57,7 @@ public class NATField extends NATNil implements ATField {
 
 	public ATObject getValue() {
 		try {
-			return receiver_.getField(name_);
+			return frame_.getField(name_);
 		} catch (NATException e) {
 			// TODO XIllegalOperation should be an unchecked exception (maybe two variants)
 			// Since the field was selected from the receiver, it should always be found
@@ -67,7 +67,7 @@ public class NATField extends NATNil implements ATField {
 
 	public ATObject setValue(ATObject newValue) throws NATException {
 		ATObject result = getValue();
-		receiver_.meta_assignField(name_, newValue);
+		frame_.meta_assignField(name_, newValue);
 		return result;
 	}
 	

@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.natives.NATSuperObject;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -47,13 +48,11 @@ public final class AGSuper extends AGSymbol {
 	private AGSuper() { super(SUPER_NAM); }
 	
 	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+		return new NATSuperObject(ctx.getSelf(), ctx.getSuper());
 	}
 
 	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 	
 }

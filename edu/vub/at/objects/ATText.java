@@ -27,7 +27,9 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -37,4 +39,6 @@ import edu.vub.at.objects.grammar.ATExpression;
  */
 public interface ATText extends ATExpression {
 
+	public NATText asNativeText() throws XTypeMismatch;
+	
 }

@@ -75,7 +75,7 @@ class MirageInvocationHandler implements InvocationHandler {
 		// TODO check the meta insert, guess it should be - meta_ instead of +
 		ATSymbol selector = AGSymbol.alloc(NATText.atValue("meta_" + method.getName()));
 		ATTable arguments = new NATTable(args);
-		return mirrorRepresentation_.meta_invoke(selector, arguments);
+		return mirrorRepresentation_.meta_invoke(mirrorRepresentation_, selector, arguments);
 	}
 
 	

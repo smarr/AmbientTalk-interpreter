@@ -28,19 +28,18 @@
 package edu.vub.at.objects.natives.test;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATSuperObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSelf;
+import edu.vub.at.objects.natives.grammar.AGSuper;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import junit.framework.TestCase;
@@ -79,25 +78,40 @@ public class NATObjectClosureTest extends TestCase {
 			// SELF-tests
 			// Is the current value of self consistent with our expectations
 			assertEquals(self_, ctx.getSelf());
-			// Is the expected value of self inserted in the lexical root of the scope
-			assertEquals(self_, scope_.meta_lookup(AGSelf._INSTANCE_));	
-			// Has self not been overridden in the currently active scope
-			assertEquals(self_, ctx.getLexicalScope().meta_lookup(AGSelf._INSTANCE_));
+			// Is the expected value of self accessible through the pseudovariable
+			assertEquals(self_, AGSelf._INSTANCE_.meta_eval(ctx));	
 			
 			// SUPER-tests
 			// Is the current value of super consistent with our expectations
-			assertEquals(super_, ctx.getDynamicParent());
-			// Is the expected value of super the dynamic parent of the call frame
-			assertEquals(super_, scope_.getDynamicParent());
-			// Has the current call-frame been constructed correctly
-			assertEquals(super_, ctx.getLexicalScope().getDynamicParent());
+			assertEquals(super_, ctx.getSuper());
+			// Is the expected value of super accessible through the pseudovariable
+			assertEquals(super_, ((NATSuperObject)AGSuper._INSTANCE_.meta_eval(ctx)).getLookupFrame());
 
 			return this;
 		}
 
 		
 	
-	}	
+	}
+	
+	private abstract class AGEqualityTest extends NATNil {
+		
+		public abstract Object getExpectedResult(ATContext ctx);
+		
+		public abstract Object getActualValue(ATContext ctx);
+		
+		public boolean equal(Object expected, Object actual) {
+			return actual == null ? 
+						expected == null:
+						expected.equals(actual);
+		}
+		public ATObject meta_eval(ATContext ctx) throws NATException {
+			if(! equal(getExpectedResult(ctx), getActualValue(ctx)))
+				fail();
+			
+			return this;
+		}
+	}
 
 	private NATObject  lexicalRoot_;
 	
@@ -107,25 +121,63 @@ public class NATObjectClosureTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		lexicalRoot_ = new NATObject(NATNil.instance());
-		lexicalRoot_.addField(AGSelf._INSTANCE_, lexicalRoot_);
 	}
 	
 	public void testMethodInvocation() {
 		try {
-			NATObject manualExtension = new NATObject(lexicalRoot_);
-			manualExtension.addField(AGSelf._INSTANCE_, manualExtension);
-			ATSymbol methodName = AGSymbol.alloc(NATText.atValue("test"));
+			NATObject object = new NATObject(lexicalRoot_);
+
+			ATSymbol scopeTest = AGSymbol.alloc(NATText.atValue("scopeTest"));
 			ATMethod scopeTestMethod = new NATMethod(
-					methodName, 
+					scopeTest, 
 					NATTable.EMPTY, 
-					new AGScopeTest(manualExtension, manualExtension,NATNil.instance()));
-			manualExtension.meta_addMethod(scopeTestMethod);
-			manualExtension.meta_invoke(methodName, NATTable.EMPTY);
+					new AGScopeTest(object, object,NATNil.instance()));
+			object.meta_addMethod(scopeTestMethod);
+			
+			object.meta_invoke(object, scopeTest, NATTable.EMPTY);
 		} catch (NATException e) {
 			e.printStackTrace();
 			fail();
 		}
 	}
 	
+	public void testDelegatedMethodInvocation() {
+		try {
+			NATObject parent = new NATObject(lexicalRoot_);
+			
+			NATObject child = new NATObject(parent, lexicalRoot_);
+			
+			ATSymbol lateBoundSelf = AGSymbol.alloc(NATText.atValue("lateBoundSelf"));
+			ATMethod lateBoundSelfTestMethod = new NATMethod(
+					lateBoundSelf, 
+					NATTable.EMPTY, 
+					new AGScopeTest(parent, child, NATNil.instance()));
+			
+			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
+			ATMethod superSemanticsTestMethod = new NATMethod(
+					superSemantics, 
+					NATTable.EMPTY,
+//					new AGEqualityTest() {
+//						public Object getExpectedResult(ATContext ctx) {
+//							return ctx.getLexicalEnvironment().getDynamicParent();
+//						}
+//						
+//						public Object getActualValue(ATContext ctx) {
+//							return ctx.getParentObject();
+//						}
+//					}
+					new AGScopeTest(child, child, parent)
+					);
+			
+			parent.meta_addMethod(lateBoundSelfTestMethod);
+			child.meta_addMethod(superSemanticsTestMethod);
+			
+			child.meta_invoke(child, lateBoundSelf, NATTable.EMPTY);
+			child.meta_invoke(child, superSemantics, NATTable.EMPTY);
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
 
 }

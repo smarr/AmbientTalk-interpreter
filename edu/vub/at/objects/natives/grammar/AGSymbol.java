@@ -84,6 +84,7 @@ public class AGSymbol extends NATAbstractGrammar implements ATSymbol {
 	
 	public boolean equals(Object other) {
 		// pointer equality is valid for symbols as they are pooled
+		System.out.println("equality test");
 		return this == other;
 	}
 	

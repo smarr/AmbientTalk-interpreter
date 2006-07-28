@@ -57,7 +57,6 @@ public final class NATText extends NATAbstractGrammar implements ATText {
 			return (other instanceof NATText) &&
 				   (javaValue == ((NATText) other).javaValue);
 		}
-		
 		public NATText asNativeText() throws XTypeMismatch { return this; }
 		
 		public NATText meta_print() throws XTypeMismatch {
