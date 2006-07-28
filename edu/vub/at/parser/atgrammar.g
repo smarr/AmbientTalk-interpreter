@@ -27,7 +27,7 @@ AST keywords2canonical(AST keywordparameterlist) {
 	AST arguments = currentKey.getFirstChild(); // a pointer to the very first argument to which subsequent arguments are attached as siblings
 	AST lastArgument = arguments;
 	AST composedSelectorToken = new antlr.CommonAST();
-	composedSelectorToken.setType(KEY);
+	composedSelectorToken.setType(NAM);
 	java.lang.StringBuffer composedSelector = new java.lang.StringBuffer(currentKey.getText());
 	while (currentKey.getNextSibling() != null) {
 	  currentKey = currentKey.getNextSibling();
@@ -188,7 +188,7 @@ subexpression!: e:expression RPR { #subexpression = #e; };
 block!: pars:nonemptyvariablelist PIP body:semicolonlist RBC
 		 { #block = #([AGCLO, "closure"], pars, body); }
 	  | no_args_body:semicolonlist RBC
-		 { #block = #([AGCLO, "closure"], #([AGTAB,"table"], #([AGTAB]) ), no_args_body); };
+		 { #block = #([AGCLO, "closure"], #([AGTAB,"table"], #([COM]) ), no_args_body); };
 
 // Inline syntax for table expressions
 table!: slots:commalist RBR { #table = #slots; };
@@ -215,10 +215,10 @@ symbol!: var:NAM { #symbol = #([AGSYM,"symbol"], var); };
 pseudovariable!: "self" { #pseudovariable = #[AGSLF,"self"]; }
                | "super" { #pseudovariable = #([AGSUP, "super"]); };
 
-operator!: cmp:CMP { #operator = #([AGSYM, "symbol"], cmp); }
-         | add:ADD { #operator = #([AGSYM, "symbol"], add); }
-         | mul:MUL { #operator = #([AGSYM, "symbol"], mul); }
-         | pow:POW { #operator = #([AGSYM, "symbol"], pow); };
+operator!: cmp:CMP { #operator = #([AGCMP, "symbol"], cmp); }
+         | add:ADD { #operator = #([AGADD, "symbol"], add); }
+         | mul:MUL { #operator = #([AGMUL, "symbol"], mul); }
+         | pow:POW { #operator = #([AGPOW, "symbol"], pow); };
 
 
 
@@ -227,6 +227,8 @@ class ATLexer extends Lexer;
 options {
   k = 3;
 }
+
+// Protected Scanner Tokens
 
 // OUTPUT TOKENS
 // These tokens are never produced by the scanner itself as they are protected. 
@@ -241,7 +243,7 @@ protected AGDEFMETH : "define-method"; // AGDefMethod(SYM sel, TAB arg, BGN bdy)
 protected AGDEFTABLE: "define-table";  // AGDefTable(SYM tbl, EXP siz, EXP ini)
 // Assignments
 protected AGASSFIELD: "field-set";     // AGAssignField (SYM nam, EXP val)
-protected AGASSTABLE: "table-set";     // AGAssignTable (INV tbl, EXP idx, EXP val)
+protected AGASSTABLE: "table-set";     // AGAssignTable (EXP tbl, EXP idx, EXP val)
 // Expressions
 protected AGSND     : "send";          // AGMessageSend (EXP rcv, SYM sel, TAB arg)
 protected AGAPL     : "apply";         // AGApplication (SYM sel, TAB arg)
@@ -261,9 +263,12 @@ protected AGTXT     : "text";          // NATText (<String>)
 protected AGTAB     : "table";         // NATTable (<ATObject[]>)
 protected AGCLO     : "closure";       // NATClosure (TAB arg, BGN bdy)
 
-//add AGMeta/AGBase?
+// auxiliary tokens for operators
+protected AGCMP     : "symbol";
+protected AGADD     : "symbol";
+protected AGMUL     : "symbol";
+protected AGPOW     : "symbol";
 
-// Protected Scanner Tokens
 protected DIGIT: '0'..'9'
     ;
     
@@ -318,7 +323,7 @@ MUL: MULCHAR (OPRCHAR)*
 	;
 
 POW: POWCHAR (OPRCHAR)*
-	;
+    ;
 
 protected NAM: LETTER (DIGIT | LETTER)*
 	;
@@ -462,7 +467,7 @@ definition returns [ATDefinition def]
   	ATBegin bdy; }
           : #(AGDEFFIELD nam=symbol val=expression) { def = new AGDefField(nam, val); }
           | #(AGDEFMETH #(AGAPL nam=symbol pars=table) bdy=begin) { def = new AGDefMethod(nam, pars, bdy); }
-          | #(AGDEFTABLE #(AGTBL nam=symbol idx=expression) val=expression) { def = new AGDefTable(nam,idx,val); }
+          | #(AGDEFTABLE nam=symbol idx=expression val=expression) { def = new AGDefTable(nam,idx,val); }
           ;
 
 assignment returns [ATAssignment ass]
@@ -505,7 +510,7 @@ literal returns[ATExpression lit]
   { lit = null;
   	NATTable par;
   	ATBegin body; }
-          : #(AGNBR nbr:INT) { lit = NATNumber.atValue(Integer.parseInt(nbr.getText())); }
+          : #(AGNBR nbr:NBR) { lit = NATNumber.atValue(Integer.parseInt(nbr.getText())); }
           | #(AGFRC frc:FRC) { lit = NATFraction.atValue(Double.parseDouble(frc.getText())); }
           | #(AGTXT txt:TXT) { lit = NATText.atValue(txt.getText()); }
           | lit=table
@@ -514,6 +519,10 @@ literal returns[ATExpression lit]
           
 symbol returns [AGSymbol sym] { sym = null; }
           : #(AGSYM txt:NAM) { sym = AGSymbol.alloc(NATText.atValue(txt.getText())); }
+          | #(AGCMP cmp:CMP) { sym = AGSymbol.alloc(NATText.atValue(cmp.getText())); }
+          | #(AGADD add:ADD) { sym = AGSymbol.alloc(NATText.atValue(add.getText())); }
+          | #(AGMUL mul:MUL) { sym = AGSymbol.alloc(NATText.atValue(mul.getText())); }
+          | #(AGPOW pow:POW) { sym = AGSymbol.alloc(NATText.atValue(pow.getText())); }
           | AGSLF { sym = AGSelf._INSTANCE_; }
           | AGSUP { sym = AGSuper._INSTANCE_; }
           ;
