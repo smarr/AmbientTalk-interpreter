@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGMessageCreation.java created on 26-jul-2006 at 16:18:10
+ * AGMethodInvocation.java created on 26-jul-2006 at 16:18:10
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -33,7 +33,7 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATMessageCreation;
+import edu.vub.at.objects.grammar.ATMethodInvocation;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -43,12 +43,12 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of a first-class message creation AG element.
  */
-public final class AGMessageCreation extends NATAbstractGrammar implements ATMessageCreation {
+public final class AGMethodInvocation extends NATAbstractGrammar implements ATMethodInvocation {
 
 	private final ATSymbol selector_;
 	private final ATTable arguments_;
 	
-	public AGMessageCreation(ATSymbol sel, ATTable args) {
+	public AGMethodInvocation(ATSymbol sel, ATTable args) {
 		selector_ = sel;
 		arguments_ = args;
 	}
@@ -73,6 +73,14 @@ public final class AGMessageCreation extends NATAbstractGrammar implements ATMes
 		return null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see edu.vub.at.objects.grammar.ATMessage#meta_sendTo(edu.vub.at.objects.ATObject)
+	 */
+	public ATObject meta_sendTo(ATObject receiver) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	public NATText meta_print() throws XTypeMismatch {
 		return NATText.atValue("." + selector_.meta_print().javaValue +
 				               NATTable.printAsList(arguments_).javaValue);

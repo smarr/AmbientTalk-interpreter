@@ -50,12 +50,15 @@ public class ATWalkerTest extends TestCase {
 	
 	public void testExpressionGrammar() {
 		testWalker("o.m(a,b)");
+		testWalker("o<-m(a,b)");
 		testWalker("o.foo: a bar: b", "o.foo:bar:(a,b)");
+		testWalker("o<-foo: a bar: b", "o<-foo:bar:(a,b)");
 		testWalker("super.m(a)");
 		testWalker("m(a,b)");
 		testWalker("f()");
 		testWalker("o.m");
 		testWalker(".m(a,b)");
+		testWalker("<-m(a,b)");
 		testWalker("t[a]");
 		testWalker("f()[a+b]", "f()[a.+(b)]");
 		testWalker("a");

@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATMessageCreation.java created on 26-jul-2006 at 15:08:00
+ * ATMessage.java created on 26-jul-2006 at 15:08:00
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,16 +27,27 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 
 /**
  * @author tvc
  *
- * The public interface to a first-class message creation AG element.
+ * The public interface to a first-class message AG element.
+ * An ATMessage may either be an ATAsyncMessage or an ATMethodInvocation.
  */
-public interface ATMessageCreation extends ATExpression {
+public interface ATMessage extends ATExpression {
 	
 	public ATSymbol getSelector();
 	public ATTable getArguments();
+	
+	/**
+	 * Sends this message to a particular receiver object. The way in which the message
+	 * send will be performed (synchronous or asynchronous) depends on the kind of message.
+	 * 
+	 * @param receiver the object receiving the message.
+	 * @return the value of the method invocation or message send.
+	 */
+	public ATObject meta_sendTo(ATObject receiver);
 
 }

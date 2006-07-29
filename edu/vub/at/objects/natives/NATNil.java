@@ -88,7 +88,7 @@ public class NATNil implements ATNil, BaseNil {
 	public ATNil meta_send(ATObject sender, ATSymbol selector, ATTable arguments) throws NATException {
 // TODO Implement the ATActor interface     
 //		ATActor actor = NATActor.currentActor();
-//		ATMessage message = actor.createMessage(sender, this, selector, arguments);
+//		ATAsyncMessage message = actor.createMessage(sender, this, selector, arguments);
 //		actor.send(message);
 		return NATNil.instance();
 	}

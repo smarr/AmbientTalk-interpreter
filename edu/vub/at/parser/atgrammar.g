@@ -88,7 +88,6 @@ tableassignment!: tbl:invocation EQL ass:expression { #tableassignment = #([AGAS
 // sends have lowest priority and are therefore the highest applicable rule.
 expression: keywordlist
           | rcv:comparand (opr:CMP^ arg:comparand)*;
-// { #expression = #([AGSND,"send"], rcv, opr, arg); };
 
 // Comparands are expression types delimited by comparators so that they can 
 // be composed of additive expressions or any higher ranking operations.
@@ -119,6 +118,7 @@ operand  :! nbr:NBR { #operand = #([AGNBR,"number"],nbr); }
          | BQU! quotation
          | HSH! unquotation
          | DOT! message
+         | ARW! asyncmessage
          | LPR! subexpression
          | LBC! block
          | LBR! table;
@@ -143,7 +143,7 @@ unquotation!: LPR uexp:expression RPR { #unquotation = #([AGUNQ,"unquote"], uexp
 // to be curried even further. When no appropriate tokens are left, the passed functor 
 // is returned.
 curried_invocation![AST functor]:
-      (LPR|LBR|DOT) => i:invoke_expression[functor] c:curried_invocation[#i] { #curried_invocation = #c; }
+      (LPR|LBR|DOT|ARW) => i:invoke_expression[functor] c:curried_invocation[#i] { #curried_invocation = #c; }
 	| {#curried_invocation = #functor; };
 
 // Invocation expressions are a single curried expression whether to apply, tabulate or
@@ -151,8 +151,9 @@ curried_invocation![AST functor]:
 invoke_expression![AST functor]:
 	  LPR args:commalist RPR  { #invoke_expression = #([AGAPL,"apply"], functor, args); }
 	| LBR idx:expression RBR { #invoke_expression = #([AGTBL,"table-get"], functor, idx); }
-	| (DOT variable LPR | DOT KEY) => DOT apl:application { #invoke_expression = #([AGSND,"send"], functor, apl); }
-	| DOT var:variable { #invoke_expression = #([AGSEL,"select"], functor, var);};
+	| (DOT variable LPR | DOT KEY) => DOT apl:application { #invoke_expression = #([AGSND,"send"], functor, #([AGMSG,"message"], apl)); }
+	| DOT var:variable { #invoke_expression = #([AGSEL,"select"], functor, var);}
+	| (ARW variable LPR | ARW KEY) => ARW snd:application { #invoke_expression = #([AGSND,"send"], functor, #([AGAMS,"async-message"], snd)); };
 
 // Function application can be done using two distinct mechanisms, either using a 
 // canonical format ( foobar( a1, a2 ) ) or using keywordlists (foo: a1 bar: a2).
@@ -180,6 +181,9 @@ singlekeyword: KEY^ expression;
 
 // First-class message creation syntax: .m() or .key:val
 message!: apl:application { #message = #([AGMSG,"message"], apl); };
+
+// First-class aynchronous message creation syntax: <-m() or <-key:val
+asyncmessage!: apl:application { #asyncmessage = #([AGAMS,"async-message"], apl); };
 
 // This rule unwraps an expression of its delimiter parentheses.
 subexpression!: e:expression RPR { #subexpression = #e; };
@@ -245,10 +249,11 @@ protected AGDEFTABLE: "define-table";  // AGDefTable(SYM tbl, EXP siz, EXP ini)
 protected AGASSFIELD: "field-set";     // AGAssignField (SYM nam, EXP val)
 protected AGASSTABLE: "table-set";     // AGAssignTable (EXP tbl, EXP idx, EXP val)
 // Expressions
-protected AGSND     : "send";          // AGMessageSend (EXP rcv, SYM sel, TAB arg)
+protected AGSND     : "send";          // AGMessageSend (EXP rcv, MSG msg)
 protected AGAPL     : "apply";         // AGApplication (SYM sel, TAB arg)
 protected AGSEL     : "select";        // AGSelection (EXP rcv, SYM sel)
-protected AGMSG     : "message";       // AGMessage (SYM sel, TAB arg)
+protected AGMSG     : "message";       // AGMethodInvocation (SYM sel, TAB arg)
+protected AGAMS     : "async-message"; // AGAsyncMessage (SYM sel, TAB arg)
 protected AGTBL     : "table-get";     // AGTabulation (EXP tbl, EXP idx)
 protected AGSYM     : "symbol";        // AGSymbol (TXT nam)
 protected AGSLF     : "self";          // AGSelf
@@ -358,6 +363,7 @@ SMC: ';';
 
 EQL: ":=";
 DOT: '.';
+ARW: "<-";
 PIP: '|';
 
 BQU: '`';
@@ -443,8 +449,8 @@ class ATTreeWalker extends TreeParser;
   // this auxiliary function converts operator syntax such as <a+b> into a message send of the form <a.+(b)>
   public AGMessageSend operatorToSend(AST opr, ATExpression receiver, ATExpression operand) {
 	  return new AGMessageSend(receiver,
-	                           AGSymbol.alloc(NATText.atValue(opr.getText())),
-  	                           new NATTable(new ATObject[] { operand }));
+	                           new AGMethodInvocation(AGSymbol.alloc(NATText.atValue(opr.getText())),
+  	                                                  new NATTable(new ATObject[] { operand })));
   }
 
 } // end TreeWalker preamble
@@ -483,19 +489,27 @@ expression returns [ATExpression exp]
   	ATExpression rcv, idx, qexp;
   	ATStatement qstmt;
   	ATSymbol sel;
+  	ATMessage msg;
   	NATTable arg; }
-          : #(AGSND rcv=expression #(AGAPL sel=symbol arg=table)) { exp = new AGMessageSend(rcv,sel,arg); }
+          : #(AGSND rcv=expression msg=message) { exp = new AGMessageSend(rcv,msg); }
           | #(AGAPL sel=symbol arg=table) { exp = new AGApplication(sel, arg); }
           | #(AGSEL rcv=expression sel=symbol) { exp = new AGSelection(rcv, sel); }
-          | #(AGMSG #(AGAPL sel=symbol arg=table)) { exp = new AGMessageCreation(sel, arg); }
           | #(AGTBL rcv=expression idx=expression) { exp = new AGTabulation(rcv, idx); }
           | #(AGQUO qstmt=statement) { exp = new AGQuote(qstmt); }
           | #(AGUNQ qexp=expression) { exp = new AGUnquote(qexp); }
           | #(AGUQS qexp=expression) { exp = new AGUnquoteSplice(qexp); }
+          | exp=message
           | exp=symbol
           | exp=binop
           | exp=literal
           ;
+
+message returns [ATMessage msg]
+  { msg = null;
+  	ATSymbol sel; NATTable arg; }
+  	      : #(AGMSG #(AGAPL sel=symbol arg=table)) { msg = new AGMethodInvocation(sel,arg); }
+  	      | #(AGAMS #(AGAPL sel=symbol arg=table)) { msg = new AGAsyncMessage(sel,arg); }
+  	      ;
           
 binop returns [ATMessageSend snd]
   { snd = null;

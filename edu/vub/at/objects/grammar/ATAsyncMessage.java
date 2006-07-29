@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATMessage.java created on Jul 24, 2006 at 7:30:17 PM
+ * ATAsyncMessage.java created on Jul 24, 2006 at 7:30:17 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,19 +25,19 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
+package edu.vub.at.objects.grammar;
 
-import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 
 /**
  * @author smostinc
  *
- * An ATMessage instance will be created whenever an asynchronous message send 
- * (o <- x | o <- m() ) is made in ambienttalk. These messages are created using 
- * an abstract factory to allow the user to intervene in the process. 
+ * An ATAsyncMessage instance is created whenever an asynchronous message send 
+ * <tt>o <- m()</tt> is performed, or when a first-class async msg is created using
+ * code such as <tt><- m()</tt>.
  */
-public interface ATMessage extends ATObject {
+public interface ATAsyncMessage extends ATMessage {
 
 	/**
 	 * Each message has a sender, namely the object on whose behalf the message was
@@ -63,7 +63,6 @@ public interface ATMessage extends ATObject {
 	/**
 	 * Messages may optionally have arguments if they represent invocations.
 	 * @return the arguments passed to the invocation
-	 * @throws XSelectorNotFound if the message is is a selection rather than an invocation 
 	 */
-	public ATTable getArguments() throws XSelectorNotFound ;
+	public ATTable getArguments();
 }

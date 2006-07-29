@@ -32,11 +32,9 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.grammar.ATMessage;
 import edu.vub.at.objects.grammar.ATMessageSend;
-import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -47,20 +45,16 @@ import edu.vub.at.objects.natives.NATText;
 public final class AGMessageSend extends NATAbstractGrammar implements ATMessageSend {
 
 	private final ATExpression rcvExp_;
-	private final ATSymbol selector_;
-	private final ATTable arguments_;
+	private final ATMessage message_;
 	
-	public AGMessageSend(ATExpression rcv, ATSymbol sel, ATTable arg) {
+	public AGMessageSend(ATExpression rcv, ATMessage msg) {
 		rcvExp_ = rcv;
-		selector_ = sel;
-		arguments_ = arg;
+		message_ = msg;
 	}
 	
 	public ATExpression getReceiver() { return rcvExp_; }
 
-	public ATSymbol getSelector() { return selector_; }
-
-	public ATTable getArguments() { return arguments_; }
+	public ATMessage getMessage() { return message_; }
 
 	/* (non-Javadoc)
 	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
@@ -79,9 +73,8 @@ public final class AGMessageSend extends NATAbstractGrammar implements ATMessage
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue(rcvExp_.meta_print().javaValue + "." +
-				               selector_.meta_print().javaValue +
-				               NATTable.printAsList(arguments_).javaValue);
+		return NATText.atValue(rcvExp_.meta_print().javaValue +
+				               message_.meta_print().javaValue);
 	}
 
 }

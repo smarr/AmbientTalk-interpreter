@@ -57,17 +57,23 @@ public class ATParserTest extends TestCase {
 	 */
 	public void testExpressionGrammar() {
 		testParse("o.m(a,b)",
-				 "(begin (send (symbol o) (apply (symbol m) (table (symbol a) (symbol b)))))");
+				 "(begin (send (symbol o) (message (apply (symbol m) (table (symbol a) (symbol b))))))");
+		testParse("o<-m(a,b)",
+		          "(begin (send (symbol o) (async-message (apply (symbol m) (table (symbol a) (symbol b))))))");
 		testParse("o.foo: a bar: b",
-				 "(begin (send (symbol o) (apply (symbol foo:bar:) (table (symbol a) (symbol b)))))");
+				 "(begin (send (symbol o) (message (apply (symbol foo:bar:) (table (symbol a) (symbol b))))))");
+		testParse("o<-foo: a bar: b",
+		          "(begin (send (symbol o) (async-message (apply (symbol foo:bar:) (table (symbol a) (symbol b))))))");
 		testParse("super.m(a)",
-				 "(begin (send super (apply (symbol m) (table (symbol a)))))");
+				 "(begin (send super (message (apply (symbol m) (table (symbol a))))))");
 		testParse("m(a,b)",
 				 "(begin (apply (symbol m) (table (symbol a) (symbol b))))");
 		testParse("o.m",
 		          "(begin (select (symbol o) (symbol m)))");
 		testParse(".m(a,b)",
 				 "(begin (message (apply (symbol m) (table (symbol a) (symbol b)))))");
+		testParse("<-m(a,b)",
+		          "(begin (async-message (apply (symbol m) (table (symbol a) (symbol b)))))");
 		testParse("t[a]",
 		          "(begin (table-get (symbol t) (symbol a)))");
 		testParse("f()[a+b]",
@@ -94,7 +100,7 @@ public class ATParserTest extends TestCase {
 	    testParse("+(1,2)",
 	    		     "(begin (apply (symbol +) (table (number 1) (number 2))))");
 	    testParse("a.+(2)",
-	              "(begin (send (symbol a) (apply (symbol +) (table (number 2)))))");
+	              "(begin (send (symbol a) (message (apply (symbol +) (table (number 2))))))");
 	    
         // the following expression is very tricky!
 	    // == +(.m(1)) , i.e. + applied to a first-class message, and NOT a message send
@@ -137,10 +143,10 @@ public class ATParserTest extends TestCase {
 	public void testMessageSending() {
 	    testParse(
 	    		"object.no().demeter().law",
-	    		" ( begin ( select ( send ( send (symbol object) ( apply (symbol no) (table)) ) ( apply (symbol demeter) (table) ) ) (symbol law) ) )");
+	    		" ( begin ( select ( send ( send (symbol object) (message ( apply (symbol no) (table))) ) (message ( apply (symbol demeter) (table) )) ) (symbol law) ) )");
 	    testParse(
 	    		"object.keyworded: message send: test",
-	    		" ( begin ( send (symbol object) ( apply ( symbol keyworded:send:) (table (symbol message) (symbol test) ) ) ) )");
+	    		" ( begin ( send (symbol object) (message ( apply ( symbol keyworded:send:) (table (symbol message) (symbol test) ) ) ) ) )");
 	}
 	
 	/**
