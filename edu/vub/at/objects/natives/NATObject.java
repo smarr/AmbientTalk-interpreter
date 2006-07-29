@@ -66,7 +66,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
 	 */
 	public NATObject(ATObject lexicalParent) {
-		this(NATNil.instance(), lexicalParent);
+		this(NATNil._INSTANCE_, lexicalParent);
 	}	
 	
 	/**
@@ -256,7 +256,7 @@ public class NATObject extends NATCallframe implements ATObject{
 		} else {
 			methodDictionary_.put(name, method);
 		}
-		return NATNil.instance();
+		return NATNil._INSTANCE_;
 	}
 
 	public ATMethod meta_getMethod(ATSymbol selector) throws NATException {

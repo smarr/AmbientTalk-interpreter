@@ -68,7 +68,7 @@ public class NATObjectClosureTest extends TestCase {
 			// Is the current callframe lexically connected to the expected scope
 			ATObject lexEnv = ctx.getLexicalScope();
 			while (lexEnv != scope_) {
-				if(lexEnv == NATNil.instance()) {
+				if(lexEnv == NATNil._INSTANCE_) {
 					fail();
 					break;
 				}
@@ -120,7 +120,7 @@ public class NATObjectClosureTest extends TestCase {
 	}
 
 	protected void setUp() throws Exception {
-		lexicalRoot_ = new NATObject(NATNil.instance());
+		lexicalRoot_ = new NATObject(NATNil._INSTANCE_);
 	}
 	
 	public void testMethodInvocation() {
@@ -131,7 +131,7 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod scopeTestMethod = new NATMethod(
 					scopeTest, 
 					NATTable.EMPTY, 
-					new AGScopeTest(object, object,NATNil.instance()));
+					new AGScopeTest(object, object,NATNil._INSTANCE_));
 			object.meta_addMethod(scopeTestMethod);
 			
 			object.meta_invoke(object, scopeTest, NATTable.EMPTY);
@@ -151,7 +151,7 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod lateBoundSelfTestMethod = new NATMethod(
 					lateBoundSelf, 
 					NATTable.EMPTY, 
-					new AGScopeTest(parent, child, NATNil.instance()));
+					new AGScopeTest(parent, child, NATNil._INSTANCE_));
 			
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
 			ATMethod superSemanticsTestMethod = new NATMethod(

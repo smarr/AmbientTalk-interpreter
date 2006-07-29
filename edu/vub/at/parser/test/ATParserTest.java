@@ -1,12 +1,17 @@
 package edu.vub.at.parser.test;
 
+import edu.vub.at.exceptions.XParseError;
+import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 import edu.vub.at.parser.ATLexer;
 import edu.vub.at.parser.ATParser;
+import edu.vub.at.parser.ATTreeWalker;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import antlr.CommonAST;
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
 import junit.framework.TestCase;
 
 public class ATParserTest extends TestCase {
@@ -15,7 +20,24 @@ public class ATParserTest extends TestCase {
 		junit.swingui.TestRunner.run(ATParserTest.class);
 	}
 
-	private void testParse(String parserInput, String expectedOutput) {
+	public static NATAbstractGrammar parseProgram(String parserInput) throws XParseError {
+			try {
+				InputStream input = new ByteArrayInputStream(parserInput.getBytes());
+				ATLexer lexer = new ATLexer(input);
+				ATParser parser = new ATParser(lexer);
+				parser.program();
+
+				CommonAST parseTree = (CommonAST)parser.getAST();
+				ATTreeWalker walker = new ATTreeWalker();
+				return walker.program(parseTree);
+			} catch (RecognitionException e) {
+				throw new XParseError(e.getMessage(), e);
+			} catch (TokenStreamException e) {
+				throw new XParseError(e.getMessage(), e);
+			}
+	}
+	
+	private static void testParse(String parserInput, String expectedOutput) {
 		try {
 			InputStream input = new ByteArrayInputStream(parserInput.getBytes());
 			ATLexer lexer = new ATLexer(input);
@@ -40,9 +62,9 @@ public class ATParserTest extends TestCase {
 		testParse("def x := 5",
 				 "(begin (define-field (symbol x) (number 5)))");
 		testParse("def f(a,b) { 5 }",
-				 "(begin (define-method (apply (symbol f) (table (symbol a) (symbol b))) (begin (number 5))))");
+				 "(begin (define-function (apply (symbol f) (table (symbol a) (symbol b))) (begin (number 5))))");
 		testParse("def foo: x bar: y { 5 }",
-				 "(begin (define-method (apply (symbol foo:bar:) (table (symbol x) (symbol y))) (begin (number 5))))");
+				 "(begin (define-function (apply (symbol foo:bar:) (table (symbol x) (symbol y))) (begin (number 5))))");
 		testParse("def t[5] { a }",
 				 "(begin (define-table (symbol t) (number 5) (symbol a)))");
 		testParse("x := 7",
@@ -193,9 +215,9 @@ public class ATParserTest extends TestCase {
 				"(begin" +
 				  "(define-field (symbol point)" +
 				                "(apply (symbol object:) (table (closure (table (symbolx) (symboly))" +
-				                                               "(begin (define-method (apply (symbol getX) (table)) (begin (symbol x)))" +
-				                                                      "(define-method (apply (symbol getY) (table)) (begin (symbol y)))" +
-				                                                      "(define-method (apply (symbol withX:Y:) (table (symbol anX) (symbol aY)))" +
+				                                               "(begin (define-function (apply (symbol getX) (table)) (begin (symbol x)))" +
+				                                                      "(define-function (apply (symbol getY) (table)) (begin (symbol y)))" +
+				                                                      "(define-function (apply (symbol withX:Y:) (table (symbol anX) (symbol aY)))" +
 				                                                                      "(begin (field-set (symbol x) (symbol anX))" +
 				                                                                             "(field-set (symbol y) (symbol anY))))))))))");
 	}

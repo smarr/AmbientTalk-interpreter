@@ -40,6 +40,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.BaseNil;
+import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATStatement;
@@ -58,11 +59,7 @@ public class NATNil implements ATNil, BaseNil {
 	
 	protected NATNil() {};
 	
-	public static NATNil instance() {
-		if(_nil == null) 
-			_nil = new NATNil();
-		return _nil;
-	}
+	public final static NATNil _INSTANCE_ = new NATNil();
 		
 	/* ------------------------------
 	 * -- Message Sending Protocol --
@@ -90,7 +87,7 @@ public class NATNil implements ATNil, BaseNil {
 //		ATActor actor = NATActor.currentActor();
 //		ATAsyncMessage message = actor.createMessage(sender, this, selector, arguments);
 //		actor.send(message);
-		return NATNil.instance();
+		return NATNil._INSTANCE_;
 	}
 	
 	/**
@@ -209,18 +206,13 @@ public class NATNil implements ATNil, BaseNil {
 	public ATTable meta_listMethods() throws NATException {
 		return new JavaClass(this.getBaseInterface());
 	}
-
-	public NATText meta_print() throws XTypeMismatch {
-        return NATText.atValue("nil");
-	}
 	
 	/* ---------------------------------
 	 * -- Abstract Grammar Protocol   --
 	 * --------------------------------- */
 	
 	/**
-	 * All NATObjects are self-evaluating.
-	 * @throws NATException 
+	 * All NATObjects which are not Abstract Grammar elements are self-evaluating.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
 		return this;
@@ -232,6 +224,10 @@ public class NATNil implements ATNil, BaseNil {
 	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
 		return this;
 	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+        return NATText.atValue("nil");
+	}
 
 	/* ------------------------------
 	 * -- ATObject Mirror Fields   --
@@ -241,14 +237,14 @@ public class NATNil implements ATNil, BaseNil {
 	 * Only true extending objects have a dynamic pointer, others return nil
 	 */
 	public ATObject getDynamicParent() {
-		return NATNil.instance();
+		return NATNil._INSTANCE_;
 	};
 	
 	/**
 	 * By default numbers, tables and so on do not have lexical parents,
 	 */
 	public ATObject getLexicalParent() {
-		return NATNil.instance();
+		return NATNil._INSTANCE_;
 	}
 
 	
@@ -265,6 +261,10 @@ public class NATNil implements ATNil, BaseNil {
 	}
 
 	public boolean isTable() {
+		return false;
+	}
+	
+	public boolean isCallFrame() {
 		return false;
 	}
 	
@@ -292,6 +292,10 @@ public class NATNil implements ATNil, BaseNil {
 	
 	public ATExpression asExpression() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected an expression, given: " + this.getClass().getName(), this);		
+	}
+	
+	public ATBegin asBegin() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a begin statement, given: " + this.getClass().getName(), this);		
 	}
 
 	// Conversions for native values

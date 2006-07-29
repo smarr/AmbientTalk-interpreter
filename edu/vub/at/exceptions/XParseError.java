@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * NATAbstractGrammar.java created on 26-jul-2006 at 11:57:00
+ * XParseError.java created on 29-jul-2006 at 14:36:07
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,29 +25,29 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.natives.grammar;
-
-import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATText;
+package edu.vub.at.exceptions;
 
 /**
  * @author tvc
  *
- * NATAbstractGrammar is the common superclass of all native ambienttalk objects
- * that represent abstract grammar parse tree elements. That is, any object that
- * can be returned as part of the AST produced by the native parser.
+ * XParseError is thrown when illegal input is parsed by the AmbientTalk parser.
  */
-public abstract class NATAbstractGrammar extends NATNil {
+public final class XParseError extends NATException {
 
-	// This is an empty superclass used only for proper documentation and
-	// to identify which native objects can be output by the parser.
-	
-	// subclasses of NATAbstractGrammar will override meta_eval and meta_quote as appropriate,
-	// except for the literal grammar elements which can inherit the self-evaluating behaviour of NATNil.
-	
-	public NATText meta_print() throws XTypeMismatch {
-        throw new RuntimeException("all subclasses of NATAbstractGrammar should override the default behaviour of NATNil");
-	} 
-	
+	public XParseError() {
+		super();
+	}
+
+	public XParseError(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public XParseError(String message) {
+		super(message);
+	}
+
+	public XParseError(Throwable cause) {
+		super(cause);
+	}
+
 }

@@ -275,9 +275,27 @@ public interface ATObject extends ATConversions {
 	 */
 	public ATObject getLexicalParent();
 	
-	/* ---------------------
-	 * --     Printing    --
-	 * --------------------- */
+	/* ------------------------------------------
+	 * -- Abstract Grammar evaluation protocol --
+	 * ------------------------------------------ */
+	
+	/**
+	 * Evaluates a particular parsetree with respect to a particular context.
+	 * @param ctx - context (object) to lookup bindings in.
+	 * @throws NATException 
+	 */
+	public ATObject meta_eval(ATContext ctx) throws NATException;
+	
+	/**
+	 * Quotes a parsetree, in other words allows the parsetree to return itself
+	 * instead of evaluating. This mode is triggered when a quotation parsetree
+	 * element was encountered and is switched off again when an unquotation 
+	 * parsetree element is found. The context is passed on behalf of these possible
+	 * future evaluations.
+	 * @param ctx - context passed on to be used in subsequent evaluations.
+	 * @throws NATException upon conversion errors or upon illegal unquoted expressions
+	 */
+	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException;
 	
 	/**
 	 * Prints out the object in a human-readable way.

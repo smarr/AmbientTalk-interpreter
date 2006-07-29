@@ -142,9 +142,9 @@ public class NATCallframe extends NATNil implements ATObject {
 		} else {
 			int freePosition = variableMap_.size() + 1;
 			variableMap_.put(name, new Integer(freePosition));
-			stateVector_.add(freePosition, value);
+			stateVector_.add(value);
 		}
-		return NATNil.instance();
+		return NATNil._INSTANCE_;
 	}
 	
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
@@ -156,7 +156,7 @@ public class NATCallframe extends NATNil implements ATObject {
 			// that assignments on dynamic parents are disallowed.
 			lexicalParent_.meta_assignField(name, value);
 		}
-		return NATNil.instance();
+		return NATNil._INSTANCE_;
 	}
 
 	/* ------------------------------------
@@ -243,11 +243,19 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * --------------------- */
 	
 	public ATObject getDynamicParent() {
-		return NATNil.instance();
+		return NATNil._INSTANCE_;
 	};
 	
 	public ATObject getLexicalParent(){
 		return lexicalParent_;
 	}
 
+	/* --------------------------
+	 * -- Conversion Protocol  --
+	 * -------------------------- */
+	
+	public boolean isCallFrame() {
+		return true;
+	}
+	
 }

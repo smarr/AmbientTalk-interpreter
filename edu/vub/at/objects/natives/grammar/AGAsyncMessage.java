@@ -63,8 +63,8 @@ public class AGAsyncMessage extends NATNil implements ATAsyncMessage {
 	}
 	
 	public AGAsyncMessage(ATSymbol selector, ATTable arguments) {
-		sender_ = NATNil.instance();
-		receiver_ = NATNil.instance();
+		sender_ = NATNil._INSTANCE_;
+		receiver_ = NATNil._INSTANCE_;
 		selector_ = selector;
 		arguments_ = arguments;
 	}

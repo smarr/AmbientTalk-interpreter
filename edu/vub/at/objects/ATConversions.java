@@ -28,6 +28,7 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATStatement;
@@ -48,6 +49,7 @@ public interface ATConversions {
 	public boolean isClosure();
 	public boolean isSymbol();
 	public boolean isTable();
+	public boolean isCallFrame();
 	
 	public ATClosure   asClosure() throws XTypeMismatch;
 	public ATSymbol    asSymbol() throws XTypeMismatch;
@@ -56,6 +58,7 @@ public interface ATConversions {
 	public ATStatement  asStatement() throws XTypeMismatch;
 	public ATDefinition asDefinition() throws XTypeMismatch;
 	public ATExpression asExpression() throws XTypeMismatch;
+	public ATBegin      asBegin() throws XTypeMismatch;
 	
 	public NATNumber   asNativeNumber() throws XTypeMismatch;
 	public NATFraction asNativeFraction() throws XTypeMismatch;

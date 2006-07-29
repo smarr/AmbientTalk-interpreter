@@ -60,7 +60,7 @@ statement: ("def"! definition)
 // def <apl> { <body> } defines an immutable function.
 // def <name>[size-exp] { <init-expression> } defines and initializes a new table of a given size
 definition!: nam:variable EQL val:expression { #definition = #([AGDEFFIELD,"define-field"], nam, val); }
-           | inv:parameterlist LBC bdy:semicolonlist RBC { #definition = #([AGDEFMETH,"define-method"], inv, bdy); }
+           | inv:parameterlist LBC bdy:semicolonlist RBC { #definition = #([AGDEFFUN,"define-function"], inv, bdy); }
            | tbl:variable LBR siz:expression RBR LBC init:expression RBC { #definition = #([AGDEFTABLE,"define-table"], tbl, siz, init); };
 
 // Parameter lists can be either canonical lists of the form <fun(a,b,c)>
@@ -243,7 +243,7 @@ options {
 protected AGBEGIN   : "begin";         // AGBegin(TAB stmts)
 // Definitions
 protected AGDEFFIELD: "define-field";  // AGDefField(SYM nam, EXP val)
-protected AGDEFMETH : "define-method"; // AGDefMethod(SYM sel, TAB arg, BGN bdy)
+protected AGDEFFUN  : "define-function";// AGDefFunction(SYM sel, TAB arg, BGN bdy)
 protected AGDEFTABLE: "define-table";  // AGDefTable(SYM tbl, EXP siz, EXP ini)
 // Assignments
 protected AGASSFIELD: "field-set";     // AGAssignField (SYM nam, EXP val)
@@ -472,7 +472,7 @@ definition returns [ATDefinition def]
   	ATExpression idx, val;
   	ATBegin bdy; }
           : #(AGDEFFIELD nam=symbol val=expression) { def = new AGDefField(nam, val); }
-          | #(AGDEFMETH #(AGAPL nam=symbol pars=table) bdy=begin) { def = new AGDefMethod(nam, pars, bdy); }
+          | #(AGDEFFUN #(AGAPL nam=symbol pars=table) bdy=begin) { def = new AGDefFunction(nam, pars, bdy); }
           | #(AGDEFTABLE nam=symbol idx=expression val=expression) { def = new AGDefTable(nam,idx,val); }
           ;
 

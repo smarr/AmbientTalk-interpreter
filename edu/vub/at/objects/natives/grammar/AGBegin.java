@@ -69,9 +69,9 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 		NATNumber siz = statements_.getLength().asNativeNumber();
 		int lastIdx = siz.javaValue - 1;
 		for (int i = 0; i < lastIdx; i++) {
-			statements_.at(NATNumber.atValue(i)).asStatement().meta_eval(ctx);
+			statements_.at(NATNumber.atValue(i)).meta_eval(ctx);
 		}
-		return statements_.at(NATNumber.atValue(lastIdx)).asStatement().meta_eval(ctx);
+		return statements_.at(NATNumber.atValue(lastIdx)).meta_eval(ctx);
 	}
 
 	/**
@@ -81,7 +81,7 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 		int siz = statements_.getLength().asNativeNumber().javaValue;
 		ATObject[] stmts = new ATObject[siz];
 		for (int i = 0; i < siz; i++) {
-			stmts[i] = statements_.at(NATNumber.atValue(i)).asStatement().meta_quote(ctx);
+			stmts[i] = statements_.at(NATNumber.atValue(i)).meta_quote(ctx);
 		}
 		return new AGBegin(new NATTable(stmts));
 	}
@@ -90,6 +90,10 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	
 	public NATText meta_print() throws XTypeMismatch {
 		return NATTable.printAsStatements(statements_);
+	}
+	
+	public ATBegin asBegin() throws XTypeMismatch {
+		return this;
 	}
 
 }

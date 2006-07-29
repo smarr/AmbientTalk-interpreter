@@ -35,6 +35,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
@@ -61,7 +62,7 @@ public abstract class JavaMethod extends NATNil implements ATClosure, ATMethod {
 	}
 
 	public ATContext getContext() {
-		return new NATContext(receiver_, receiver_, NATNil.instance());
+		return new NATContext(receiver_, receiver_, NATNil._INSTANCE_);
 	}
 
 	public boolean isClosure() {
@@ -106,7 +107,6 @@ public abstract class JavaMethod extends NATNil implements ATClosure, ATMethod {
 			// TODO Auto-generated method stub
 			return null;
 		}
-		
 		
 	}
 }
