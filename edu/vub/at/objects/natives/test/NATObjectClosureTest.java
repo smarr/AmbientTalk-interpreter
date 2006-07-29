@@ -31,13 +31,18 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATClosure;
+import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATSuperObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGBegin;
+import edu.vub.at.objects.natives.grammar.AGDefMethod;
 import edu.vub.at.objects.natives.grammar.AGSelf;
 import edu.vub.at.objects.natives.grammar.AGSuper;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -51,11 +56,11 @@ import junit.framework.TestCase;
  */
 public class NATObjectClosureTest extends TestCase {
 
-	private class AGScopeTest extends NATNil {
+	private class AGScopeTest extends NATNil implements ATStatement {
 		
-		private final ATObject scope_;
-		private final ATObject self_;
-		private final ATObject super_;
+		private ATObject scope_;
+		private ATObject self_;
+		private ATObject super_;
 		
 		public AGScopeTest(ATObject scope, ATObject self, ATObject zuper) {
 			scope_ = scope;
@@ -89,12 +94,16 @@ public class NATObjectClosureTest extends TestCase {
 
 			return this;
 		}
+		
+		public ATStatement asStatement() {
+			return this;
+		}
 
 		
 	
 	}
 	
-	private abstract class AGEqualityTest extends NATNil {
+	private abstract class AGEqualityTest extends NATNil implements ATStatement {
 		
 		public abstract Object getExpectedResult(ATContext ctx);
 		
@@ -105,12 +114,19 @@ public class NATObjectClosureTest extends TestCase {
 						expected == null:
 						expected.equals(actual);
 		}
+		
 		public ATObject meta_eval(ATContext ctx) throws NATException {
 			if(! equal(getExpectedResult(ctx), getActualValue(ctx)))
 				fail();
 			
 			return this;
 		}
+		
+		public ATStatement asStatement() {
+			return this;
+		}
+
+
 	}
 
 	private NATObject  lexicalRoot_;
@@ -119,10 +135,22 @@ public class NATObjectClosureTest extends TestCase {
 		junit.swingui.TestRunner.run(NATObjectClosureTest.class);
 	}
 
+	/**
+	 * Initializes the lexical root object with a series of auxiliary definitions.
+	 */
 	protected void setUp() throws Exception {
 		lexicalRoot_ = new NATObject(NATNil._INSTANCE_);
 	}
 	
+	/**
+	 * Tests the validity of the various scope pointers in a context object when 
+	 * applying a method defined in and invoked upon an orphan object. 
+	 * 
+	 * @covers meta_invoke & meta_select for method lookup
+	 * @covers closure creation in meta_select
+	 * @covers context initialisation at closure creation
+	 * @covers closure application
+	 */
 	public void testMethodInvocation() {
 		try {
 			NATObject object = new NATObject(lexicalRoot_);
@@ -141,6 +169,14 @@ public class NATObjectClosureTest extends TestCase {
 		}
 	}
 	
+	/**
+	 * Tests the validity of the various scope pointers in a context object when 
+	 * applying a method in a simple hierarchy of objects. 
+	 * 
+	 * @covers meta_invoke & meta_select for method lookup with dynamic chains
+	 * @covers proper self semantics at closure creation 
+	 * @covers super semantics during method application
+	 */
 	public void testDelegatedMethodInvocation() {
 		try {
 			NATObject parent = new NATObject(lexicalRoot_);
@@ -166,8 +202,7 @@ public class NATObjectClosureTest extends TestCase {
 //							return ctx.getParentObject();
 //						}
 //					}
-					new AGScopeTest(child, child, parent)
-					);
+					new AGScopeTest(child, child, parent));
 			
 			parent.meta_addMethod(lateBoundSelfTestMethod);
 			child.meta_addMethod(superSemanticsTestMethod);
@@ -179,5 +214,48 @@ public class NATObjectClosureTest extends TestCase {
 			fail();
 		}
 	}
+	
+	/**
+	 * Makes a simple extension of an orphan object using a closure.
+	 * @covers meta_extend for object extension.
+	 * @covers method definition using AGDefMethod
+	 */
+	public void testExtend() {
+		try {
+			NATObject parent = new NATObject(lexicalRoot_);
+			
+			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
 
+			AGScopeTest test = new AGScopeTest(null, null, parent);
+			
+			NATObject child = (NATObject)parent.meta_extend(
+					new NATClosure(
+							new NATMethod(AGSymbol.alloc(NATText.atValue("lambda")), NATTable.EMPTY,
+								new AGDefMethod(superSemantics, NATTable.EMPTY, 
+									new AGBegin(
+										new NATTable(
+											new ATObject[] { test } )))),
+							lexicalRoot_));
+			
+			test.scope_ = child;
+			test.self_ = child;
+			
+			ATSymbol lateBoundSelf = AGSymbol.alloc(NATText.atValue("lateBoundSelf"));
+			ATMethod lateBoundSelfTestMethod = new NATMethod(
+					lateBoundSelf, 
+					NATTable.EMPTY, 
+					new AGScopeTest(parent, child, NATNil._INSTANCE_));
+			
+			parent.meta_addMethod(lateBoundSelfTestMethod);
+			
+			child.meta_invoke(child, lateBoundSelf, NATTable.EMPTY);
+			child.meta_invoke(child, superSemantics, NATTable.EMPTY);
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail();
+		}
+		
+	}
+
+	
 }
