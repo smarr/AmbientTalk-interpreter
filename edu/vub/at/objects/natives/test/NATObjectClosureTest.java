@@ -34,7 +34,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosure;
-import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
@@ -42,7 +41,7 @@ import edu.vub.at.objects.natives.NATSuperObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
-import edu.vub.at.objects.natives.grammar.AGDefMethod;
+import edu.vub.at.objects.natives.grammar.AGDefFunction;
 import edu.vub.at.objects.natives.grammar.AGSelf;
 import edu.vub.at.objects.natives.grammar.AGSuper;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -231,7 +230,7 @@ public class NATObjectClosureTest extends TestCase {
 			NATObject child = (NATObject)parent.meta_extend(
 					new NATClosure(
 							new NATMethod(AGSymbol.alloc(NATText.atValue("lambda")), NATTable.EMPTY,
-								new AGDefMethod(superSemantics, NATTable.EMPTY, 
+								new AGDefFunction(superSemantics, NATTable.EMPTY, 
 									new AGBegin(
 										new NATTable(
 											new ATObject[] { test } )))),
