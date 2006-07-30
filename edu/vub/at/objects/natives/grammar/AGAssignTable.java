@@ -28,13 +28,16 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignTable;
 import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -60,20 +63,37 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 
 	public ATExpression getValue() { return valExp_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * To evaluate a table assignment, evaluate its table expression to a valid ATTable.
+	 * Next, evaluate its index expression into a valid number.
+	 * Finally, evaluate its value expression and assign the result to the proper index slot of the table.
+	 * 
+	 * AGASSTABLE(tbl,idx,val).eval(ctx) =
+	 *  tbl.eval(ctx).atPut(idx.eval(ctx), val.eval(ctx))
+	 * 
+	 * @return NIL (table assignment is not an expression)
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		ATTable tab = tblExp_.meta_eval(ctx).asTable();
+		ATNumber idx = null;
+		try {
+			idx = idxExp_.meta_eval(ctx).asNumber();
+		} catch (XTypeMismatch e) {
+			throw new XIllegalIndex(e.getMessage());
+		}
+		tab.atPut(idx, valExp_.meta_eval(ctx));
+		return NATNil._INSTANCE_;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting a table assignment results in a new quoted table assignment.
+	 * 
+	 * AGASSTABLE(tbl,idx,val).quote(ctx) = AGASSTABLE(tbl.quote(ctx),idx.quote(ctx),val.quote(ctx))
 	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+		return new AGAssignTable(tblExp_.meta_quote(ctx).asExpression(),
+				                 idxExp_.meta_quote(ctx).asExpression(),
+				                 valExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

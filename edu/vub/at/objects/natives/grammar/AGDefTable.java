@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
@@ -35,6 +36,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATDefTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -61,20 +63,45 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 
 	public ATExpression getInitialization() { return initExp_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.natives.NATNil#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * Defining a table requires evaluating its index expression to a size s,
+	 * then allocating a new table of size s and finally initializing it
+	 * by evaluating its initialization expression s times. The return value is NIL.
+	 * 
+	 * AGDEFTABLE(nam,siz,ini).eval(ctx) =
+	 *   s = siz.eval(ctx)
+	 *   t[s] = nil
+	 *   for i = 0 to s do
+	 *     t[i] = ini.eval(ctx)
+	 *   ctx.scope.addField(nam, AGTABLE(t))
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		int siz = 0;
+		try {
+			siz = sizExp_.meta_eval(ctx).asNativeNumber().javaValue;
+		} catch (XTypeMismatch e) {
+			throw new XIllegalIndex(e.getMessage());
+		}
+		
+		ATObject[] tab = new ATObject[siz];
+		for (int i = 0; i < tab.length; i++) {
+			tab[i] = initExp_.meta_eval(ctx);
+		}
+		
+		ctx.getLexicalScope().meta_defineField(tblName_, new NATTable(tab));
+		
+		return NATNil._INSTANCE_;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.natives.NATNil#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting a table definition results in a new quoted table definition.
+	 * 
+	 * AGDEFTABLE(nam,siz,ini).quote(ctx) = AGDEFTABLE(nam.quote(ctx), siz.quote(ctx), ini.quote(ctx))
 	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+		return new AGDefTable(tblName_.meta_quote(ctx).asSymbol(),
+				              sizExp_.meta_quote(ctx).asExpression(),
+				              initExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

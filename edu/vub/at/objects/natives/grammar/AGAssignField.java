@@ -35,7 +35,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATAssignField;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -66,12 +66,11 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 	 * 
 	 * AGASSFIELD(nam,val).eval(ctx) = ctx.scope.assignField(nam, val.eval(ctx))
 	 * 
-	 * @return the value of the right hand side.
+	 * @return NIL
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		ATObject val = valueExp_.meta_eval(ctx);
-		ctx.getLexicalScope().meta_assignField(fieldName_, val);
-		return val;
+		ctx.getLexicalScope().meta_assignField(fieldName_, valueExp_.meta_eval(ctx));
+		return NATNil._INSTANCE_;
 	}
 
 	/**

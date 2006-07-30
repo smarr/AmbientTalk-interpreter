@@ -54,6 +54,7 @@ public interface ATConversions {
 	public ATClosure   asClosure() throws XTypeMismatch;
 	public ATSymbol    asSymbol() throws XTypeMismatch;
 	public ATTable     asTable() throws XTypeMismatch;
+	public ATNumber    asNumber() throws XTypeMismatch;
 	
 	public ATStatement  asStatement() throws XTypeMismatch;
 	public ATDefinition asDefinition() throws XTypeMismatch;

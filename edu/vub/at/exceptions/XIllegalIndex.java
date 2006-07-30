@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATException.java created on Jul 13, 2006 at 8:24:20 PM
+ * XIllegalIndex.java created on 30-jul-2006 at 10:27:28
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -28,41 +28,17 @@
 package edu.vub.at.exceptions;
 
 /**
- * @author smostinc
+ * @author tvc
  *
- * ATException is the superclass of all exceptions thrown by the AmbientTalk interpreter. 
- * 
- * TODO talk to Tom about maintaining a parallel stack inside the interpreter (vat)
- * and attaching this information to certain 'runtime' exceptions (e.g. those not raised
- * while parsing).
- * 
- * TODO tvcutsem Should NATException not implement the interface ATException, such
- * that all of our code can be typed by 'throws ATException' clauses instead of
- * 'throws NATException' clauses. The latter will cause problems with reflection.
- * 
- * TODO tvcutsem Shouldn't we parameterize NATExceptions with an ATContext and possibly
- * also an ATAbstractGrammar for evaluation errors. This allows the user to inspect
- * both which expression was evaluated at exception-raising-time and allows him to inspect
- * the context at exception-raising-time.
- * 
- * TODO ATExceptions are ATObjects!!!
+ * An XIllegalIndex exception is thrown by the evaluator whenever an invalid
+ * value is used as the index into a table (e.g. when defining, assigning or referencing it).
  */
-public class NATException extends Exception {
+public final class XIllegalIndex extends NATException {
 
-	public NATException() {
-		super();
+	private static final String _MESSAGE_ = "Illegal index: ";
+
+	public XIllegalIndex(String msg) {
+		super(_MESSAGE_ + msg);
 	}
 
-	public NATException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public NATException(String message) {
-		super(message);
-	}
-
-	public NATException(Throwable cause) {
-		super(cause);
-	} 
-		
 }
