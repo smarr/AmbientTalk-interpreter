@@ -318,7 +318,7 @@ NBR_OR_FRC: ( NBR EXPONENT ) => FRC  { $setType(FRC); }
           |   NBR                    { $setType(NBR); }
     ;
 
-CMP: CMPCHAR (OPRCHAR)*
+protected CMP: CMPCHAR (OPRCHAR)*
 	;
 
 ADD: ADDCHAR (OPRCHAR)*
@@ -363,12 +363,16 @@ SMC: ';';
 
 EQL: ":=";
 DOT: '.';
-ARW: "<-";
+protected ARW: "<-";
 PIP: '|';
 
 BQU: '`';
 HSH: '#';
 CAT: '@';
+
+CMP_OR_ARW: ( "<-" ) => ARW  { $setType(ARW); }
+          |   CMP            { $setType(CMP); }
+          ;
 
 
 TXT : '"' (ESC|~('"'|'\\'|'\n'|'\r'))* '"'
