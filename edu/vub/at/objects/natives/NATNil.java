@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
@@ -37,6 +38,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
+import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.BaseNil;
@@ -146,8 +148,7 @@ public class NATNil implements ATNil, BaseNil {
 	 * Therefore we raise an illegal operation exception.
 	 */
 	public ATObject meta_lookup(ATSymbol selector) throws NATException {
-		throw new XIllegalOperation(
-				"Cannot look up a selector inside the scope of an object of type " + this.getClass().getName());
+		throw new XSelectorNotFound(selector, this); // FIXME: cannot pass 'this' here, should be dynamic receiver
 	}
 
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
@@ -278,6 +279,10 @@ public class NATNil implements ATNil, BaseNil {
 
 	public ATTable asTable() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected a table, given: " + this.getClass().getName(), this);
+	}
+	
+	public ATNumber asNumber() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a number, given: " + this.getClass().getName(), this);
 	}
 	
 	// Conversions for abstract grammar elements

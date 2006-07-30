@@ -180,7 +180,7 @@ public class NATObjectClosureTest extends TestCase {
 		try {
 			NATObject parent = new NATObject(lexicalRoot_);
 			
-			NATObject child = new NATObject(parent, lexicalRoot_);
+			NATObject child = new NATObject(parent, lexicalRoot_, NATObject._IS_A_);
 			
 			ATSymbol lateBoundSelf = AGSymbol.alloc(NATText.atValue("lateBoundSelf"));
 			ATMethod lateBoundSelfTestMethod = new NATMethod(

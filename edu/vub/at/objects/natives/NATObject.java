@@ -40,7 +40,6 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -50,15 +49,15 @@ import java.util.Vector;
  */
 public class NATObject extends NATCallframe implements ATObject{
 
-	private static final boolean _IS_A_ 		= true;
-	private static final boolean _SHARES_A_ 	= false;
+	public static final boolean _IS_A_ 		= true;
+	public static final boolean _SHARES_A_ 	= false;
 	
-	private Map 		variableMap_ 			= new HashMap();
-	private Vector	stateVector_ 			= new Vector();
-	private Map		methodDictionary_  		= new HashMap();
-	private boolean 	parentPointerType_ 		= _IS_A_;
-	final ATObject dynamicParent_;
+	//private Map 	variableMap_ 			= new HashMap();
+	//private Vector	stateVector_ 			= new Vector();
+	private final HashMap methodDictionary_;
+	private final boolean parentPointerType_;
 	
+	final ATObject   dynamicParent_;
 	
 	/**
 	 * Constructs a new ambienttalk object parametrised by a lexical scope. The 
@@ -66,17 +65,35 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
 	 */
 	public NATObject(ATObject lexicalParent) {
-		this(NATNil._INSTANCE_, lexicalParent);
+		this(NATNil._INSTANCE_, lexicalParent, _SHARES_A_);
 	}	
 	
 	/**
 	 * Constructs a new ambienttalk object based on a set of parent pointers. 
 	 * @param dynamicParent - the parent object of the newly created object
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
+	 * @param parentType - how this object extends its dynamic parent (is-a or shares-a)
 	 */
-	public NATObject(ATObject dynamicParent, ATObject lexicalParent) {
+	public NATObject(ATObject dynamicParent, ATObject lexicalParent, boolean parentType) {
 		super(lexicalParent);
+		methodDictionary_ = new HashMap();
 		dynamicParent_ = dynamicParent;
+		parentPointerType_ = parentType;
+	}
+	
+	/**
+	 * Constructs a new ambienttalk object as a clone of an existing object.
+	 */
+	private NATObject(HashMap map,
+			         Vector state,
+			         HashMap methodDict,
+			         ATObject dynamicParent,
+			         ATObject lexicalParent,
+			         boolean parentType) {
+		super(map, state, lexicalParent);
+		methodDictionary_ = methodDict;
+		dynamicParent_ = dynamicParent;
+		parentPointerType_ = parentType;
 	}
 	
 	/**
@@ -190,7 +207,6 @@ public class NATObject extends NATCallframe implements ATObject{
 			} catch (XSelectorNotFound exception2) {
 				result = lexicalParent_.meta_lookup(selector);
 			}
-			
 		}
 		return result;
 	}
@@ -209,14 +225,13 @@ public class NATObject extends NATCallframe implements ATObject{
 			dynamicParent = dynamicParent_;
 		}
 		
-		NATObject clone = new NATObject(dynamicParent, lexicalParent_);
-		
-		// Using class-based encapsulation to initialize the clone.
-		clone.parentPointerType_ = parentPointerType_;
-		clone.methodDictionary_ = methodDictionary_;
-		clone.stateVector_ = (Vector)stateVector_.clone();
-		clone.variableMap_ = variableMap_;
-		
+		NATObject clone = new NATObject(variableMap_,
+				                       (Vector) stateVector_.clone(),
+				                       methodDictionary_,
+				                       dynamicParent,
+				                       lexicalParent_,
+				                       parentPointerType_);
+
 		return clone;
 	}
 
@@ -225,10 +240,9 @@ public class NATObject extends NATCallframe implements ATObject{
 				/* dynamic parent */
 				this,
 				/* lexical parent */
-				code.getContext().getLexicalScope());
-		
-		// Adjust the parent pointer type
-		extension.parentPointerType_ = parentPointerType;
+				code.getContext().getLexicalScope(),
+				/* parent porinter type */
+				parentPointerType);
 		
 		ATAbstractGrammar body = code.getMethod().getBody();
 		body.meta_eval(new NATContext(extension, extension, this));

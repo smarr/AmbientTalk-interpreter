@@ -58,11 +58,22 @@ import java.util.Vector;
  */
 public class NATCallframe extends NATNil implements ATObject {
 	
-	private Map 		variableMap_ 			= new HashMap();
-	private Vector	stateVector_ 			= new Vector();
-	final ATObject 	lexicalParent_;
+	protected final HashMap 	variableMap_;
+	protected final Vector	stateVector_;
+	protected final ATObject 	lexicalParent_;
 	
 	public NATCallframe(ATObject lexicalParent) {
+		variableMap_   = new HashMap();
+		stateVector_   = new Vector();
+		lexicalParent_ = lexicalParent;
+	}
+	
+	/**
+	 * Used internally for cloning a callframe/object.
+	 */
+	protected NATCallframe(HashMap varMap, Vector stateVector, ATObject lexicalParent) {
+		variableMap_ = varMap;
+		stateVector_ = stateVector;
 		lexicalParent_ = lexicalParent;
 	}
 
@@ -138,7 +149,7 @@ public class NATCallframe extends NATNil implements ATObject {
 
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
 		if(variableMap_.containsKey(name)) {
-			throw new XIllegalOperation("Trying to add an already existing field " + name);
+			throw new XIllegalOperation("Definition of duplicate field " + name);
 		} else {
 			int freePosition = variableMap_.size() + 1;
 			variableMap_.put(name, new Integer(freePosition));
