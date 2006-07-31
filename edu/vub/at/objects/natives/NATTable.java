@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.exceptions.XIndexOutOfBounds;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
@@ -142,14 +143,12 @@ public final class NATTable extends AGExpression implements ATTable {
 	
 	public ATNumber getLength() { return NATNumber.atValue(elements_.length); }
 
-	// TODO: index out of bounds checks
 	public ATObject at(ATNumber index) throws NATException {
-		return elements_[index.asNativeNumber().javaValue - 1];
+		return elements_[extractIndex(index)];
 	}
 
-	// TODO: index out of bounds checks
 	public ATObject atPut(ATNumber index, ATObject value) throws NATException {
-		elements_[index.asNativeNumber().javaValue - 1] = value;
+		elements_[extractIndex(index)] = value;
 		return value;
 	}
 	
@@ -186,6 +185,14 @@ public final class NATTable extends AGExpression implements ATTable {
 	
 	public NATText meta_print() throws XTypeMismatch {
 		return NATTable.printElements(this, "[", ", ","]");
+	}
+	
+	protected int extractIndex(ATNumber atIndex) throws NATException {
+		int javaIndex = atIndex.asNativeNumber().javaValue - 1;
+		if ((javaIndex < 0) || (javaIndex >= elements_.length))
+			throw new XIndexOutOfBounds(javaIndex + 1, elements_.length);
+		else
+			return javaIndex;
 	}
 
 }
