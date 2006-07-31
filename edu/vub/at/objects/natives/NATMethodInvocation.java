@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATMessageSend.java created on 26-jul-2006 at 14:58:25
+ * NATMethodInvocation.java created on 31-jul-2006 at 12:40:42
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,19 +25,33 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.grammar;
+package edu.vub.at.objects.natives;
+
+import edu.vub.at.exceptions.NATException;
+import edu.vub.at.objects.ATMethodInvocation;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  * @author tvc
  *
- * The public interface to a synchronous or asynchronous message send AG element.
- * 
- * Message sends of the form <o.m()> are transformed into <MESSAGE-SEND o <METHOD-INVOCATION m []>>
- * Message sends of the form <o<-m()> are transformed into <MESSAGE-SEND o <ASYNC-MESSAGE m []>>
+ * TODO document the class NATMethodInvocation
  */
-public interface ATMessageSend extends ATExpression {
+public final class NATMethodInvocation extends NATMessage implements ATMethodInvocation {
 
-	public ATExpression getReceiver();
-	public ATMessageCreation getMessage();
-	
+	public NATMethodInvocation(ATSymbol sel, ATTable arg) {
+		super(sel, arg);
+	}
+
+	/**
+	 * To evaluate a method invocation, invoke the method corresponding to the encapsulated
+	 * selector to the given receiver with the encapsulated arguments.
+	 * 
+	 * @return the return value of the invoked method.
+	 */
+	public ATObject meta_sendTo(ATObject receiver) throws NATException {
+		return receiver.meta_invoke(receiver, selector_, arguments_);
+	}
+
 }

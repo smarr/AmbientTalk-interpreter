@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGMethodInvocation.java created on 26-jul-2006 at 16:18:10
+ * AGMethodInvocationCreation.java created on 26-jul-2006 at 16:18:10
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -33,8 +33,10 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATMethodInvocation;
+import edu.vub.at.objects.grammar.ATMessageCreation;
+import edu.vub.at.objects.grammar.ATMethodInvocationCreation;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -43,12 +45,12 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of a first-class message creation AG element.
  */
-public final class AGMethodInvocation extends NATAbstractGrammar implements ATMethodInvocation {
+public final class AGMethodInvocationCreation extends NATAbstractGrammar implements ATMethodInvocationCreation {
 
 	private final ATSymbol selector_;
 	private final ATTable arguments_;
 	
-	public AGMethodInvocation(ATSymbol sel, ATTable args) {
+	public AGMethodInvocationCreation(ATSymbol sel, ATTable args) {
 		selector_ = sel;
 		arguments_ = args;
 	}
@@ -57,28 +59,29 @@ public final class AGMethodInvocation extends NATAbstractGrammar implements ATMe
 
 	public ATTable getArguments() { return arguments_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * To evaluate a first-class synchronous message creation AG element, transform the selector
+	 * and evaluated arguments into a first-class MethodInvocation.
+	 * It is important to note that the arguments are all eagerly evaluated.
+	 * 
+	 * AGMSG(sel,arg).eval(ctx) = NATMSG(sel, map eval(ctx) over arg )
+	 * 
+	 * @return a first-class method invocation
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		return new NATMethodInvocation(selector_, NATTable.evaluateArguments(arguments_.asNativeTable(), ctx));
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting a message creation element returns a new quoted message creation element.
 	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+		return new AGMethodInvocationCreation(selector_.meta_quote(ctx).asSymbol(),
+				                              arguments_.meta_quote(ctx).asTable());
 	}
 	
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.grammar.ATMessage#meta_sendTo(edu.vub.at.objects.ATObject)
-	 */
-	public ATObject meta_sendTo(ATObject receiver) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATMessageCreation asMessageCreation() throws XTypeMismatch {
+		return this;
 	}
 
 	public NATText meta_print() throws XTypeMismatch {

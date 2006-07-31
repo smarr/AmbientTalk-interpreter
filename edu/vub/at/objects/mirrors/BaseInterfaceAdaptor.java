@@ -76,15 +76,17 @@ public class BaseInterfaceAdaptor {
 	private static Method[] getMethodsForSelector(Class baseInterface, String selector) {
 		Method[] allMethods = baseInterface.getMethods();
 		
-		Vector matchingMethods = new Vector(0);
+		Vector matchingMethods = new Vector();
+		int numMatchingMethods = 0;
 		
 		for (int i = 0; i < allMethods.length; i++) {
-			if (allMethods[i].getName() == selector) {
+			if (allMethods[i].getName().equals(selector)) {
 				matchingMethods.addElement(allMethods[i]);
+				numMatchingMethods++;
 			}
 		}
 		
-		return (Method[])matchingMethods.toArray();
+		return (Method[])matchingMethods.toArray(new Method[numMatchingMethods]);
 	}
 	
 	public static Object deifyInvocation (

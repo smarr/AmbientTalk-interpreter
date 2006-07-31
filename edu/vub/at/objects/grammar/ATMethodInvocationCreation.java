@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATMethodInvocation.java created on 29-jul-2006 at 11:41:40
+ * ATMethodInvocationCreation.java created on 29-jul-2006 at 11:41:40
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -36,7 +36,7 @@ import edu.vub.at.objects.ATTable;
  * Example:
  *   <tt>.m()</tt>
  */
-public interface ATMethodInvocation extends ATMessage {
+public interface ATMethodInvocationCreation extends ATMessageCreation {
 	
 	public ATSymbol getSelector();
 	public ATTable getArguments();

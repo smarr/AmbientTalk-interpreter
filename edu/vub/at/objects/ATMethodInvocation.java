@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATMessageSend.java created on 26-jul-2006 at 14:58:25
+ * ATMethodInvocation.java created on 31-jul-2006 at 12:19:39
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,19 +25,15 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.grammar;
+package edu.vub.at.objects;
 
 /**
  * @author tvc
  *
- * The public interface to a synchronous or asynchronous message send AG element.
- * 
- * Message sends of the form <o.m()> are transformed into <MESSAGE-SEND o <METHOD-INVOCATION m []>>
- * Message sends of the form <o<-m()> are transformed into <MESSAGE-SEND o <ASYNC-MESSAGE m []>>
+ * Instances of the class ATMethodInvocation represent first-class method invocations.
+ * A method invocation encapsulates a selector and a table of arguments and responds to the meta_sendTo method
+ * by invoking the method with its encapsulated selector on the given receiver object.
  */
-public interface ATMessageSend extends ATExpression {
+public interface ATMethodInvocation extends ATMessage {
 
-	public ATExpression getReceiver();
-	public ATMessageCreation getMessage();
-	
 }

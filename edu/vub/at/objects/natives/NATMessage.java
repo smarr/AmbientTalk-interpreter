@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATMessageSend.java created on 26-jul-2006 at 14:58:25
+ * NATMessage.java created on 31-jul-2006 at 12:31:31
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,19 +25,38 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.grammar;
+package edu.vub.at.objects.natives;
+
+import edu.vub.at.objects.ATMessage;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  * @author tvc
  *
- * The public interface to a synchronous or asynchronous message send AG element.
- * 
- * Message sends of the form <o.m()> are transformed into <MESSAGE-SEND o <METHOD-INVOCATION m []>>
- * Message sends of the form <o<-m()> are transformed into <MESSAGE-SEND o <ASYNC-MESSAGE m []>>
+ * Instances of the class NATMessage represent first-class messages.
+ * A NATMessage is an abstract class, as it can be either a synchronous method invocation or an asynchronous message send.
  */
-public interface ATMessageSend extends ATExpression {
+public abstract class NATMessage extends NATNil implements ATMessage {
 
-	public ATExpression getReceiver();
-	public ATMessageCreation getMessage();
+	protected final ATSymbol selector_;
+	protected final ATTable  arguments_;
 	
+	public NATMessage(ATSymbol sel, ATTable arg) {
+		selector_ = sel;
+		arguments_ = arg;
+	}
+
+	public ATSymbol getSelector() {
+		return selector_;
+	}
+
+	public ATTable getArguments() {
+		return arguments_;
+	}
+	
+	public ATMessage asMessage() {
+		return this;
+	}
+
 }

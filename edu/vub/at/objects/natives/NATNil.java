@@ -36,6 +36,7 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
@@ -45,6 +46,7 @@ import edu.vub.at.objects.BaseNil;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.BaseInterfaceAdaptor;
@@ -56,8 +58,6 @@ import edu.vub.at.objects.mirrors.JavaClass;
  * NATNil implements default semantics for all test and conversion methods.
  */
 public class NATNil implements ATNil, BaseNil {
-
-	private static NATNil _nil = null;
 	
 	protected NATNil() {};
 	
@@ -79,17 +79,11 @@ public class NATNil implements ATNil, BaseNil {
 	
 	/**
 	 * Asynchronous messages sent to an object ( o<-m( args )) are handled by the 
-	 * actor in which the object is contained. The actor first creates a first-
-	 * class message object and will subsequently send it. This method is a hook 
-	 * allowing intercepting such message sends at the granularity of an object, 
-	 * rather than for all objects inside an actor.
+	 * actor in which the object is contained.
 	 */
-	public ATNil meta_send(ATObject sender, ATSymbol selector, ATTable arguments) throws NATException {
-// TODO Implement the ATActor interface     
-//		ATActor actor = NATActor.currentActor();
-//		ATAsyncMessage message = actor.createMessage(sender, this, selector, arguments);
-//		actor.send(message);
-		return NATNil._INSTANCE_;
+	public ATNil meta_send(ATMessage message) throws NATException {
+         // TODO: nil <- m() => also do invoke-like deification?
+		throw new RuntimeException("Not yet implemented: async message sends to native values");
 	}
 	
 	/**
@@ -285,6 +279,10 @@ public class NATNil implements ATNil, BaseNil {
 		throw new XTypeMismatch("Expected a number, given: " + this.getClass().getName(), this);
 	}
 	
+	public ATMessage asMessage() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a first-class message, given: " + this.getClass().getName(), this);		
+	}
+	
 	// Conversions for abstract grammar elements
 	
 	public ATStatement asStatement() throws XTypeMismatch {
@@ -301,6 +299,10 @@ public class NATNil implements ATNil, BaseNil {
 	
 	public ATBegin asBegin() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected a begin statement, given: " + this.getClass().getName(), this);		
+	}
+	
+	public ATMessageCreation asMessageCreation() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a first-class message creation, given: " + this.getClass().getName(), this);		
 	}
 
 	// Conversions for native values

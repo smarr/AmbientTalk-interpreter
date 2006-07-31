@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATMessageSend.java created on 26-jul-2006 at 14:58:25
+ * ATAsyncMessage.java created on 31-jul-2006 at 12:16:22
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,19 +25,29 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.grammar;
+package edu.vub.at.objects;
 
 /**
  * @author tvc
  *
- * The public interface to a synchronous or asynchronous message send AG element.
- * 
- * Message sends of the form <o.m()> are transformed into <MESSAGE-SEND o <METHOD-INVOCATION m []>>
- * Message sends of the form <o<-m()> are transformed into <MESSAGE-SEND o <ASYNC-MESSAGE m []>>
+ * Instances of the class ATAsyncMessage represent first-class asynchronous message sends.
+ * They encapsulate a sender object, a receiver object, a selector symbol and a table of arguments.
+ * Additionally, a message -- being a first-class object, may be extended with extra fields and behaviour (attachments).
  */
-public interface ATMessageSend extends ATExpression {
+public interface ATAsyncMessage extends ATMessage {
 
-	public ATExpression getReceiver();
-	public ATMessageCreation getMessage();
+	/**
+	 * Each message has a sender, namely the object on whose behalf the message was
+	 * sent. In other words the sender of a message corresponds to the self at the 
+	 * site where the message was sent.
+	 */
+	public ATObject getSender();
+	
+	/**
+	 * Messages also have an explicitly named receiver, which may either be a local
+	 * object, or a representative of an object inside another actor.
+	 * @return the receiver of the message
+	 */
+	public ATObject getReceiver();
 	
 }

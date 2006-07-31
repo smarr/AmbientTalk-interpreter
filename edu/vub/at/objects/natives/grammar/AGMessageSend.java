@@ -33,7 +33,7 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.grammar.ATMessage;
+import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATMessageSend;
 import edu.vub.at.objects.natives.NATText;
 
@@ -45,31 +45,38 @@ import edu.vub.at.objects.natives.NATText;
 public final class AGMessageSend extends NATAbstractGrammar implements ATMessageSend {
 
 	private final ATExpression rcvExp_;
-	private final ATMessage message_;
+	private final ATMessageCreation message_;
 	
-	public AGMessageSend(ATExpression rcv, ATMessage msg) {
+	public AGMessageSend(ATExpression rcv, ATMessageCreation msg) {
 		rcvExp_ = rcv;
 		message_ = msg;
 	}
 	
 	public ATExpression getReceiver() { return rcvExp_; }
 
-	public ATMessage getMessage() { return message_; }
+	public ATMessageCreation getMessage() { return message_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * To evaluate a message send, evaluate the receiver expression into an object.
+	 * Next, evaluate the message expression into a first-class message (asynchronous message or method invocation).
+	 * The evaluation of the message send is delegated to the first-class message itself.
+	 * 
+	 * AGMSGSEND(rcv,msg).eval(ctx) = msg.eval(ctx).meta_sendTo(rcv.eval(ctx))
+	 * 
+	 * @return the value of the invoked method or NIL in the case of an asynchronous message send.
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		return message_.meta_eval(ctx).asMessage().meta_sendTo(rcvExp_.meta_eval(ctx));
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting a message send returns a new quoted message send.
+	 * 
+	 * AGMSGSEND(rcv,msg).quote(ctx) = AGMSGSEND(rcv.quote(ctx), msg.quote(ctx))
 	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+		return new AGMessageSend(rcvExp_.meta_quote(ctx).asExpression(),
+				                message_.meta_quote(ctx).asMessageCreation());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

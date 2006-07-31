@@ -33,6 +33,7 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
@@ -115,15 +116,17 @@ public class NATObject extends NATCallframe implements ATObject{
 
 	/**
 	 * Asynchronous messages sent to an object ( o<-m( args )) are handled by the 
-	 * actor in which the object is contained. The actor first creates a first-
-	 * class message object and will subsequently send it. This method is a hook 
-	 * allowing intercepting such message sends at the granularity of an object, 
-	 * rather than for all objects inside an actor.
+	 * actor in which the object is contained. This method is a hook 
+	 * allowing intercepting of asynchronous message sends at the granularity of an object, 
+	 * rather than at the level of an actor.
 	 */
-	public ATNil meta_send(ATObject sender, ATSymbol selector, ATTable arguments) throws NATException {
-		// we can just reuse the basic behaviour defined in NATNil
-		// TODO maybe here some events need to be fired??
-		return super.meta_send(sender, selector, arguments);
+	public ATNil meta_send(ATMessage message) throws NATException {
+		// assert(this == getReceiver());
+//		 TODO Implement the ATActor interface     
+//				ATActor actor = NATActor.currentActor();
+//				ATAsyncMessageCreation message = actor.createMessage(msg.sender, this, msg.selector, msg.arguments);
+//				actor.send(message);
+		throw new RuntimeException("Not yet implemented: async message sending");
 	}
 	
 	/**
@@ -203,7 +206,7 @@ public class NATObject extends NATCallframe implements ATObject{
 		} catch (XSelectorNotFound exception) {
 			try {
 				ATMethod method = meta_getMethod(selector);
-				result = new NATClosure(method, this);
+				result = new NATClosure(method, this, this);
 			} catch (XSelectorNotFound exception2) {
 				result = lexicalParent_.meta_lookup(selector);
 			}
@@ -221,18 +224,17 @@ public class NATObject extends NATCallframe implements ATObject{
 			// IS-A Relation : clone the dynamic parent.
 			dynamicParent = dynamicParent_.meta_clone();
 		} else {
-			// SHARES_A Relation : share the parent.
+			// SHARES_A Relation : share the dynamic parent.
 			dynamicParent = dynamicParent_;
 		}
 		
-		NATObject clone = new NATObject(variableMap_,
-				                       (Vector) stateVector_.clone(),
-				                       methodDictionary_,
-				                       dynamicParent,
-				                       lexicalParent_,
-				                       parentPointerType_);
+		return new NATObject(variableMap_,
+				            (Vector) stateVector_.clone(),
+				            methodDictionary_,
+				            dynamicParent,
+				            lexicalParent_,
+				            parentPointerType_);
 
-		return clone;
 	}
 
 	private ATObject extend(ATClosure code, boolean parentPointerType) throws NATException {

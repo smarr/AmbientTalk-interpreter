@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATAsyncMessage.java created on Jul 24, 2006 at 7:30:17 PM
+ * ATAsyncMessageCreation.java created on Jul 24, 2006 at 7:30:17 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,31 +27,19 @@
  */
 package edu.vub.at.objects.grammar;
 
-import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 
 /**
  * @author smostinc
  *
- * An ATAsyncMessage instance is created whenever an asynchronous message send 
+ * An ATAsyncMessageCreation instance is created whenever an asynchronous message send 
  * <tt>o <- m()</tt> is performed, or when a first-class async msg is created using
  * code such as <tt><- m()</tt>.
+ * 
+ * This interface does not describe the interface to the actual first-class message (that is the ATAsyncMessage interface).
+ * It only describes the interface to the AG component representing such a message.
  */
-public interface ATAsyncMessage extends ATMessage {
-
-	/**
-	 * Each message has a sender, namely the object on whose behalf the message was
-	 * sent. In other words the sender of a message corresponds to the self at the 
-	 * site where the message was sent.
-	 */
-	public ATObject getSender();
-	
-	/**
-	 * Messages also have an explicitly named receiver, which may either be a local
-	 * object, or a representative of an object inside another actor.
-	 * @return the receiver of the message
-	 */
-	public ATObject getReceiver();
+public interface ATAsyncMessageCreation extends ATMessageCreation {
 	
 	/**
 	 * Messages always have a selector, a symbol denoting the field or method that 

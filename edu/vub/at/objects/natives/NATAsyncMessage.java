@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGAsyncMessage.java created on Jul 24, 2006 at 7:45:37 PM
+ * NATAsyncMessage.java created on 31-jul-2006 at 12:34:20
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,29 +25,26 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.natives.grammar;
+package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.NATException;
+import edu.vub.at.objects.ATAsyncMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATAsyncMessage;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author smostinc
+ * @author tvc
  *
- * AGAsyncMessage implements the ATAsyncMessage interface natively. It is a container for the
- * message's sender, selector, and optionally a receiver and table of arguments.
+ * Instances of the class NATAsyncMessage represent first-class asynchronous messages.
+ * 
+ * TODO: this class should not subclass NATNil but rather a NATExtensibleNative or something.
+ * It is a primitive object which, for all other purposes, should be extensible like a regular object with extra fields and methods.
  */
-public class AGAsyncMessage extends NATNil implements ATAsyncMessage {
+public final class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 
-	private ATObject sender_ 		= null;
-	private ATObject receiver_	= null;
-	private ATSymbol selector_	= null;
-	private ATTable  arguments_	= null;
+	private final ATObject sender_;
+	private ATObject receiver_ = NATNil._INSTANCE_;
 	
 	// TODO SM: Maybe we could include some abstract factory pattern to allow people to
 	//      intercept message creation and supply their own objects instead ;-)
@@ -55,18 +52,14 @@ public class AGAsyncMessage extends NATNil implements ATAsyncMessage {
 	//      the package edu.vub.at.actors.hooks along with a ATSendStrategy. The goal
 	//      is to have a vat point to one of each in this package. APPROVE?
 	
-	public AGAsyncMessage(ATObject sender, ATObject receiver, ATSymbol selector, ATTable arguments) {
-		sender_ = sender;
-		receiver_ = receiver;
-		selector_ = selector;
-		arguments_ = arguments;
-	}
-	
-	public AGAsyncMessage(ATSymbol selector, ATTable arguments) {
-		sender_ = NATNil._INSTANCE_;
-		receiver_ = NATNil._INSTANCE_;
-		selector_ = selector;
-		arguments_ = arguments;
+	/**
+	 * @param sdr the sender of the asynchronous message
+	 * @param sel the selector of the asynchronous message
+	 * @param arg the arguments of the asynchronous message
+	 */
+	public NATAsyncMessage(ATObject sdr, ATSymbol sel, ATTable arg) {
+		super(sel, arg);
+		sender_ = sdr;
 	}
 
 	public ATObject getSender() {
@@ -77,26 +70,16 @@ public class AGAsyncMessage extends NATNil implements ATAsyncMessage {
 		return receiver_;
 	}
 
-	public ATSymbol getSelector() {
-		return selector_;
-	}
-
-	public ATTable getArguments() {
-		return arguments_;
-	}
-	
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.grammar.ATMessage#meta_sendTo(edu.vub.at.objects.ATObject)
+	/**
+	 * To evaluate an asynchronous message send, an asynchronous invoke is performed
+	 * on the receiver object, passing along this object representing the message itself.
+	 * 
+	 * @return NIL, by default.
 	 */
-	public ATObject meta_sendTo(ATObject receiver) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<-" +
-				               selector_.meta_print().javaValue +
-				               NATTable.printAsList(arguments_).javaValue);
+	public ATObject meta_sendTo(ATObject receiver) throws NATException {
+		// fill in the receiver first
+		this.receiver_ = receiver;
+		return receiver.meta_send(this);
 	}
 
 }

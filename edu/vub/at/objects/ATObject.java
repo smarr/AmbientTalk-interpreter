@@ -48,18 +48,14 @@ public interface ATObject extends ATConversions {
 	 * ------------------------------ */
 	
 	/**
-	 * Sends a newly created message (by default using the actor's ATMessageFactory) 
-	 * asynchronously to itself. The message may be scheduled in the actor's outbox
-	 * if the current ATObject is a remote reference.
-	 * @param sender, the object on whose behalf the message was sent.
-	 * @param selector, the name of the message being sent.
-	 * @param arguments, eagerly evaluated table of arguments.
+	 * Sends a newly created message asynchronously to this object.
+	 * The message may be scheduled in the current actor's outbox if the current ATObject is a remote reference.
+	 * @param msg, the asynchronous message (by default created using the actor's ATMessageFactory)
 	 * 
 	 * Triggers the following events on this object's beholders (mirror observers):
-	 *  - <tt>createdMessage</tt> when a message object was created.
 	 *  - <tt>sentMessage</tt> when the message was sent by the actor.
 	 */
-	public ATNil meta_send(ATObject sender, ATSymbol selector, ATTable arguments) throws NATException;
+	public ATNil meta_send(ATMessage message) throws NATException;
 	
 	/**
 	 * Invoke a method corresponding to the selector (and located along the dynamic 

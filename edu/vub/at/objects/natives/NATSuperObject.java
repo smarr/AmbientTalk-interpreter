@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
@@ -58,8 +59,8 @@ public class NATSuperObject extends NATNil implements ATObject {
 	 * -- Message Sending Protocol --
 	 * ------------------------------ */
 
-	public ATNil meta_send(ATObject sender, ATSymbol selector, ATTable arguments) throws NATException {
-		return lookupFrame_.meta_send(sender, selector, arguments);
+	public ATNil meta_send(ATMessage msg) throws NATException {
+		return lookupFrame_.meta_send(msg);
 	}
 
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
