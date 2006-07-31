@@ -92,6 +92,11 @@ public class AGSymbol extends NATAbstractGrammar implements ATSymbol {
 		return txt_.asNativeText();
 	}
 	
+	public ATSymbol asSymbol() {
+		return this;
+	}
+	
+	
 	// comparison and identity operations
 	
 	public boolean equals(Object other) {

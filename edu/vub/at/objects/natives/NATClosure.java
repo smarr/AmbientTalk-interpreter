@@ -66,8 +66,12 @@ public class NATClosure extends NATNil implements ATClosure {
 		context_	= context;
 	}
 
+	/**
+	 * To apply a closure, apply its underlying method with the context of the closure,
+	 * rather than the runtime context of the invoker.
+	 */
 	public ATObject meta_apply(ATTable arguments) throws NATException {
-		return method_.getBody().meta_eval(context_);
+		return method_.meta_apply(arguments, context_);
 	}
 
 	public ATContext getContext() {

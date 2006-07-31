@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
@@ -39,13 +40,24 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * a) get hold of an ATMethod at the base-level (since lookup implies wrapping)
  * b) directly apply an ATMethod (as application requires context parameters)
  */
-public interface ATMethod extends ATObject {
+public interface ATMethod extends ATNil {
 
+	/**
+	 * Applies the method to the given arguments in the given context.
+	 * The context is usually supplied by a closure and is necessary in order to
+	 * pair a method with its current receiver (its 'self')
+	 * 
+	 * @param arguments the actual arguments, already eagerly evaluated
+	 * @param ctx the context in which to evaluate the method body
+	 * @return the value of evaluating the method body in the given context
+	 */
+	public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException;
+	
 	/**
 	 * Structural access to the name of the method. Note that all methods (defined
 	 * using def name( ...args... ) { ... } of def foo: arg bar: arg { ... }) retain
 	 * the name with which they were first bound. Literal blocks which may be created
-	 * outside of a definition are implicitly named lambda.
+	 * outside of a definition are implicitly named 'lambda'.
 	 */
 	public ATSymbol getName();
 	

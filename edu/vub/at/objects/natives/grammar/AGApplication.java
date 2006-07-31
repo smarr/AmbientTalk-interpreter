@@ -57,17 +57,26 @@ public final class AGApplication extends NATAbstractGrammar implements ATApplica
 
 	public ATTable getArguments() { return arguments_; }
 
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * To evaluate a function application, evaluate the arguments to the function application eagerly
+	 * and ask the current lexical context to call the function bound to the application's selector symbol.
+	 * 
+	 * AGAPL(sel,arg).eval(ctx) = ctx.scope.meta_call(sel, map eval(ctx) over arg)
+	 * 
+	 * @return the return value of the applied function.
+	 */
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		return ctx.getLexicalScope().meta_call(selector_, NATTable.evaluateArguments(arguments_.asNativeTable(), ctx));
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting an application results in a new quoted application.
+	 * 
+	 * AGAPL(sel,arg).quote(ctx) = AGAPL(sel.quote(ctx), arg.quote(ctx))
 	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+		return new AGApplication(selector_.meta_quote(ctx).asSymbol(),
+				                arguments_.meta_quote(ctx).asTable());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

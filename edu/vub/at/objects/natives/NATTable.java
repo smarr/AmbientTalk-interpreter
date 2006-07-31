@@ -28,12 +28,14 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 
 /**
@@ -95,6 +97,31 @@ public final class NATTable extends NATAbstractGrammar implements ATTable {
 		
 		return new NATTable(result);
 	}
+	
+	/**
+	 * Auxiliary function to bind formal parameters to actual arguments within a certain scope.
+	 * TODO: currently does not work for user-defined ATTables and for varargs
+	 * 
+	 * @param funnam the name of the function for which to bind these elements, for debugging purposes only
+	 * @param scope the frame in which to store the bindings
+	 * @param parameters the formal parameter references
+	 * @param arguments the actual arguments, already evaluated
+	 * @throws XArityMismatch when the formals don't match the actuals
+	 */
+	public static final void bindArguments(ATSymbol funnam, ATObject scope, ATTable parameters, ATTable arguments) throws NATException {
+		ATObject[] pars = parameters.asNativeTable().elements_;
+		ATObject[] args = arguments.asNativeTable().elements_;
+		
+		if (pars.length != args.length)
+			throw new XArityMismatch(funnam.getText().asNativeText().javaValue, pars.length, args.length);
+		
+		for (int i = 0; i < pars.length; i++) {
+			scope.meta_defineField(pars[i].asSymbol(), args[i]);
+		}
+	}
+	
+	
+	// instance variables
 	
 	public final ATObject[] elements_;
 	

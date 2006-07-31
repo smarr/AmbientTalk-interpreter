@@ -29,6 +29,7 @@ package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.NATException;
 
+
 /**
  * @author smostinc
  *
@@ -36,17 +37,11 @@ import edu.vub.at.exceptions.NATException;
  * 
  * Since ATMethods are always wrapped either at creation time (blocks) or during 
  * lookup (methods), ATClosures are by definition the only way methods and blocks 
- * can be encountered at the ambienttalk base level. Since closures encapsulate a
- * context, they can be readily be applied. 
+ * can be encountered at the ambienttalk base level. Closures should respond to the
+ * meta_apply method, which should trigger the invocation of their encapsulating method in the
+ * enclosed closure context.
  */
 public interface ATClosure extends ATNil {
-
-	/**
-	 * Applies a closure to the given arguments
-	 * @param arguments- the arguments have been evaluated prior to the application.
-	 * @return the value returned by the closure application.
-	 */
-	public ATObject meta_apply(ATTable arguments) throws NATException;
 	
 	/**
 	 * Structural access to the encapsulated method. 
@@ -57,4 +52,11 @@ public interface ATClosure extends ATNil {
 	 * Structural access to the scope of the closure.
 	 */
 	public ATContext getContext();
+	
+	/**
+	 * Applies the closure to the given arguments.
+	 * @param arguments the already evaluated arguments
+	 * @return the value of evaluating the method body in the context of the closure
+	 */
+	public ATObject meta_apply(ATTable arguments) throws NATException;
 }

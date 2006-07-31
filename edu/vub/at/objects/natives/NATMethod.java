@@ -27,9 +27,12 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
@@ -42,13 +45,13 @@ import edu.vub.at.objects.grammar.ATSymbol;
 public class NATMethod extends NATNil implements ATMethod {
 
 	private final ATSymbol 			name_;
-	private final ATTable 			arguments_;
+	private final ATTable 			parameters_;
 	private final ATAbstractGrammar	body_;
 	
 	
-	public NATMethod(ATSymbol name, ATTable arguments, ATAbstractGrammar body) {
+	public NATMethod(ATSymbol name, ATTable parameters, ATAbstractGrammar body) {
 		name_ 		= name;
-		arguments_ 	= arguments;
+		parameters_ 	= parameters;
 		body_ 		= body;
 	}
 
@@ -57,11 +60,29 @@ public class NATMethod extends NATNil implements ATMethod {
 	}
 
 	public ATTable getArguments() {
-		return arguments_;
+		return parameters_;
 	}
 
 	public ATAbstractGrammar getBody() {
 		return body_;
+	}
+	
+	/**
+	 * To apply a function, first bind its parameters to the evaluated arguments within a new call frame.
+	 * This call frame is lexically nested within the current lexical scope.
+	 * 
+	 * The implementation-level invariant to be maintained is that the caller of this method should be
+	 * NATClosure.meta_apply. This method should *not* be invoked without passing through NATClosure.meta_apply first.
+	 * If it is, the result will be a dynamically scoped function application.
+	 * 
+	 * @param arguments the evaluated actual arguments
+	 * @param ctx the context in which to evaluate the method body
+	 * @return the value of evaluating the function body
+	 */
+	public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException {
+		NATCallframe scope = new NATCallframe(ctx.getLexicalScope());
+		NATTable.bindArguments(name_, scope, parameters_, arguments);
+		return body_.meta_eval(ctx.withLexicalEnvironment(scope));
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

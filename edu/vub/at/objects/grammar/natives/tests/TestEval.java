@@ -192,4 +192,17 @@ public class TestEval extends TestCase {
 		assertEquals(ctx_.getSelf(), ((ATAsyncMessage) asyncMsg).getSender());
 	}
 	
+	public void testApplication() throws NATException {
+		// def identity(x) { x }
+		ATSymbol identityS = AGSymbol.alloc(NATText.atValue("identity"));
+		ATTable pars = new NATTable(new ATObject[] { atX_ });
+		NATMethod identity = new NATMethod(identityS, pars, new AGBegin(new NATTable(new ATObject[] { atX_ })));
+		ctx_.getLexicalScope().meta_addMethod(identity);
+		
+		// def x := 3
+		ctx_.getLexicalScope().meta_defineField(atX_, atThree_);
+		
+		evalAndCompareTo("identity(1)", NATNumber.ONE);
+	}
+	
 }

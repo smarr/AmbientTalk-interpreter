@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects;
 
+
 /**
  * @author smostinc
  *
@@ -50,5 +51,15 @@ public interface ATContext extends ATObject {
 	 * Structural access to the parent (super pseudovariable) in the current context.
 	 */
 	public ATObject getSuper();
+	
+	/*
+	 * Factory methods for creating new context objects as a delta w.r.t. the receiver context object.
+	 */
+	
+	public ATContext withLexicalEnvironment(ATObject scope);
+	
+	public ATContext withParentObject(ATObject zuper);
+	
+	public ATContext withDynamicReceiver(ATObject self, ATObject zuper);
 
 }

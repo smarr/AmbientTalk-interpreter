@@ -35,7 +35,6 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
@@ -82,6 +81,10 @@ public abstract class JavaMethod extends NATNil implements ATClosure, ATMethod {
 			m_ = m;
 		}
 
+		public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException {
+			return meta_apply(arguments);
+		}
+		
 		public ATObject meta_apply(ATTable arguments) throws NATException {
 			try {
 				return NATObject.cast(
