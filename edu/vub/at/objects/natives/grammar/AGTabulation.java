@@ -28,10 +28,13 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATTabulation;
 import edu.vub.at.objects.natives.NATText;
@@ -55,20 +58,33 @@ public final class AGTabulation extends NATAbstractGrammar implements ATTabulati
 
 	public ATExpression getIndex() { return idxExp_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * To evaluate a tabulation, evaluate the tabulation expression to a table,
+	 * evaluate the index expression into a valid index, and then access the table at the given index slot.
+	 * 
+	 * AGTBL(tbl,idx).eval(ctx) = tbl.eval(ctx).at(idx.eval(ctx))
+	 * 
+	 * @return the value of the indexed table slot.
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		ATTable tab = tblExp_.meta_eval(ctx).asTable();
+		ATNumber idx = null;
+		try {
+			idx = idxExp_.meta_eval(ctx).asNumber();
+		} catch (XTypeMismatch e) {
+			throw new XIllegalIndex(e.getMessage());
+		}
+		return tab.at(idx);
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting a tabulation results in a new quoted tabulation
+	 * 
+	 * AGTBL(tbl,idx).quote(ctx) = AGTBL(tbl.quote(ctx),idx.quote(ctx))
 	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+		return new AGTabulation(tblExp_.meta_quote(ctx).asExpression(),
+				               idxExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

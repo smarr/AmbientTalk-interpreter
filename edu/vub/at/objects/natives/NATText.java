@@ -52,15 +52,22 @@ public final class NATText extends NATAbstractGrammar implements ATText {
 		private NATText(String javaString) {
 			javaValue = javaString;
 		}
-		
-		public boolean equals(Object other) {
-			return (other instanceof NATText) &&
-				   (javaValue == ((NATText) other).javaValue);
-		}
+
 		public NATText asNativeText() throws XTypeMismatch { return this; }
 		
 		public NATText meta_print() throws XTypeMismatch {
 	        return this;
+		}
+		
+		// comparison and identity operations
+		
+		public boolean equals(Object other) {
+			return (other instanceof NATText) &&
+			       ((NATText) other).javaValue.equals(this.javaValue);
+		}
+		
+		public int hashCode() {
+			return javaValue.hashCode();
 		}
 
 }

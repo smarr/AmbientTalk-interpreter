@@ -151,7 +151,7 @@ public class NATCallframe extends NATNil implements ATObject {
 		if(variableMap_.containsKey(name)) {
 			throw new XIllegalOperation("Definition of duplicate field " + name);
 		} else {
-			int freePosition = variableMap_.size() + 1;
+			int freePosition = variableMap_.size();
 			variableMap_.put(name, new Integer(freePosition));
 			stateVector_.add(value);
 		}

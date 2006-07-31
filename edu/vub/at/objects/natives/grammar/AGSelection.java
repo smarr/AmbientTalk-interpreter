@@ -56,20 +56,27 @@ public final class AGSelection extends NATAbstractGrammar implements ATSelection
 
 	public ATSymbol getSelector() { return selector_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * To evaluate a selection, evaluate the receiver expression to an object and select
+	 * the slot with the given name from that object.
+	 * 
+	 * AGSEL(rcv,sel).eval(ctx) = rcv.eval(ctx).meta_select(sel)
+	 * 
+	 * @return the value of the selected slot.
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		ATObject receiver = rcvExp_.meta_eval(ctx);
+		return receiver.meta_select(receiver, selector_);
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting a selection results in a new quoted selection.
+	 * 
+	 * AGSEL(rcv,sel).quote(ctx) = AGSEL(rcv.quote(ctx), sel.quote(ctx))
 	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+		return new AGSelection(rcvExp_.meta_eval(ctx).asExpression(),
+				              selector_.meta_eval(ctx).asSymbol());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

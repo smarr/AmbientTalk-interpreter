@@ -47,10 +47,20 @@ public final class AGSuper extends AGSymbol {
 	
 	private AGSuper() { super(SUPER_NAM); }
 	
+	/**
+	 * To evaluate a super reference, wrap the current super from the current evaluation context.
+	 * Wrapping is necessary in order to ensure that messages sent to this object are delegated:
+	 * they are looked up in super, but the self remains unmodified.
+	 * 
+	 * AGSuper().eval(ctx) = AGSUPOBJ(ctx.self, ctx.super)
+	 */
 	public ATObject meta_eval(ATContext ctx) {
 		return new NATSuperObject(ctx.getSelf(), ctx.getSuper());
 	}
-
+	
+	/**
+	 * Quoting a super reference results in the same super reference.
+	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
 		return this;
 	}

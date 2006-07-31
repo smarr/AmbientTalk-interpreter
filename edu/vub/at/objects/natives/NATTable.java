@@ -34,7 +34,6 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 
 /**
@@ -76,14 +75,22 @@ public final class NATTable extends NATAbstractGrammar implements ATTable {
 		return printElements(tab.asNativeTable(), "(", ", ", ")");
 	}
 	
-	public static final NATTable mapEvalOverExpressions(NATTable tab, ATContext ctx) throws NATException {
+	/**
+	 * This function is called whenever arguments to a function, message, method need to be evaluated.
+	 * TODO take variable arguments into account (i.e. table splicing)
+	 */
+	public static final NATTable evaluateArguments(NATTable args, ATContext ctx) throws NATException {
+		return mapEvalOverExpressions(args, ctx);
+	}
+	
+	private static final NATTable mapEvalOverExpressions(NATTable tab, ATContext ctx) throws NATException {
 		if (tab == EMPTY)
 			return EMPTY;
 		
 		ATObject[] els = tab.elements_;
 		ATObject[] result = new ATObject[els.length];
 		for (int i = 0; i < els.length; i++) {
-			result[i] = els[i].asExpression().meta_eval(ctx);
+			result[i] = els[i].meta_eval(ctx);
 		}
 		
 		return new NATTable(result);
@@ -120,6 +127,8 @@ public final class NATTable extends NATAbstractGrammar implements ATTable {
 	public ATBoolean isEmpty() {
 		return NATBoolean.atValue(elements_.length == 0);
 	}
+	
+	public ATTable asTable() { return this; }
 	
 	public NATTable asNativeTable() { return this; }
 	

@@ -35,7 +35,8 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATClosureLiteral;
-import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATClosure;
+import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -58,12 +59,16 @@ public final class AGClosureLiteral extends NATAbstractGrammar implements ATClos
 
 	public ATBegin getBody() { return body_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * To evaluate a closure literal, construct a closure pairing the literal's arguments and body with the
+	 * current evaluation context.
+	 * 
+	 * AGCLOLIT(arg,bdy).eval(ctx) = AGCLO(AGMTH("lambda",arg,bdy), ctx)
+	 * 
+	 * @return a native closure closing over the current evaluation context.
 	 */
 	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+		return new NATClosure(new NATMethod(AGSymbol._LAMBDA_, arguments_, body_), ctx);
 	}
 
 	/* (non-Javadoc)

@@ -45,10 +45,18 @@ public final class AGSelf extends AGSymbol {
 	
 	private AGSelf() { super(SELF_NAM); }
 	
+	/**
+	 * To evaluate a self reference, simply select the current self from the current evaluation context.
+	 * 
+	 * AGSelf().eval(ctx) = ctx.self
+	 */
 	public ATObject meta_eval(ATContext ctx) {
 		return ctx.getSelf();
 	}
 
+	/**
+	 * Quoting a self reference results in the same self reference.
+	 */
 	public ATAbstractGrammar meta_quote(ATContext ctx) {
 		return this;
 	}

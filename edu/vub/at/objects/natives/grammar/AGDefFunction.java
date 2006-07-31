@@ -91,9 +91,10 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
 		if (ctx.getLexicalScope().isCallFrame()) {
-			ctx.getLexicalScope().meta_defineField(selectorExp_, new NATClosure(
-					new NATMethod(selectorExp_, argumentExps_, bodyStmts_),
-					selectorExp_));
+			ctx.getLexicalScope().meta_defineField(
+					selectorExp_,
+					new NATClosure(new NATMethod(selectorExp_, argumentExps_, bodyStmts_),
+							      ctx));
 		} else {
 			ctx.getLexicalScope().meta_addMethod(new NATMethod(selectorExp_, argumentExps_, bodyStmts_));
 		}

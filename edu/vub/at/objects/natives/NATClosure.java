@@ -43,25 +43,6 @@ public class NATClosure extends NATNil implements ATClosure {
 
 	private ATMethod 	method_;
 	private ATContext	context_;
-		
-	/**
-	 * This constructor creates a closure with an unbound dynamic receiver. This
-	 * constructor is called when a closure is created to wrap a literal block and
-	 * when a method is called using a receiverless message.  
-	 * @param method the method being wrapped into a closure.
-	 * @param implementor the object in which the definition is nested.
-	 * 
-	 * @deprecated only to be called in the lookup of NATObject 
-	 */
-	public NATClosure(ATMethod method, ATObject implementor) throws NATException {
-		this(method, new NATContext(
-				/* scope = implementor.addFrame() */
-				new NATCallframe(implementor), 
-				/* self = ` lexically defined ` */
-				implementor, 
-				/* super = implementor.getNext() */
-				implementor.getDynamicParent()));
-	}
 
 	/**
 	 * This constructor creates a closure with a bound dynamic receiver, and it is
@@ -72,15 +53,15 @@ public class NATClosure extends NATNil implements ATClosure {
 	 */
 	public NATClosure(ATMethod method, ATObject implementor, ATObject receiver) {
 		this(method, new NATContext(
-				/* scope = implementor.addFrame() */
-				new NATCallframe(implementor), 
+				/* scope = implementor (to be extended with a callframe upon closure application) */
+				implementor, 
 				/* self = ` start of lookup ` */
 				receiver, 
 				/* super = implementor.getNext() */
 				implementor.getDynamicParent()));
 	}
 	
-	private NATClosure(ATMethod method, ATContext context) {
+	public NATClosure(ATMethod method, ATContext context) {
 		method_	= method;
 		context_	= context;
 	}

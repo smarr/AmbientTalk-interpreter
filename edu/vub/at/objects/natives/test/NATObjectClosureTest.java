@@ -234,6 +234,7 @@ public class NATObjectClosureTest extends TestCase {
 									new AGBegin(
 										new NATTable(
 											new ATObject[] { test } )))),
+							lexicalRoot_,
 							lexicalRoot_));
 			
 			test.scope_ = child;
