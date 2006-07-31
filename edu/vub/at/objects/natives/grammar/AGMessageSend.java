@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -42,7 +41,7 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of a synchronous message send AG element.
  */
-public final class AGMessageSend extends NATAbstractGrammar implements ATMessageSend {
+public final class AGMessageSend extends AGExpression implements ATMessageSend {
 
 	private final ATExpression rcvExp_;
 	private final ATMessageCreation message_;
@@ -74,7 +73,7 @@ public final class AGMessageSend extends NATAbstractGrammar implements ATMessage
 	 * 
 	 * AGMSGSEND(rcv,msg).quote(ctx) = AGMSGSEND(rcv.quote(ctx), msg.quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return new AGMessageSend(rcvExp_.meta_quote(ctx).asExpression(),
 				                message_.meta_quote(ctx).asMessageCreation());
 	}

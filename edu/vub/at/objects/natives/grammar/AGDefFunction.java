@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -106,7 +105,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 * 
 	 * AGDEFFUN(nam,par,bdy).quote(ctx) = AGDEFFUN(nam.quote(ctx), par.quote(ctx), bdy.quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return new AGDefFunction(selectorExp_.meta_quote(ctx).asSymbol(),
 				              argumentExps_.meta_quote(ctx).asTable(),
 				              bodyStmts_.meta_quote(ctx).asBegin());
@@ -116,7 +115,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 		return NATText.atValue("def " +
 				selectorExp_.meta_print().javaValue +
 				NATTable.printAsList(argumentExps_).javaValue +
-				"{ " + bodyStmts_.meta_print().javaValue + " }");
+				" { " + bodyStmts_.meta_print().javaValue + " }");
 	}
 
 }

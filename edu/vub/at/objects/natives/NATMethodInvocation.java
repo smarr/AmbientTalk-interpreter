@@ -36,7 +36,9 @@ import edu.vub.at.objects.grammar.ATSymbol;
 /**
  * @author tvc
  *
- * TODO document the class NATMethodInvocation
+ * Instances of the class NATMethodInvocation represent first-class method invocations.
+ * They encapsulate a selector and arguments and may be turned into an actual invocation by invoking meta_sendTo.
+ * This method provides the invocation with a receiver to apply itself to.
  */
 public final class NATMethodInvocation extends NATMessage implements ATMethodInvocation {
 

@@ -291,7 +291,7 @@ public interface ATObject extends ATConversions {
 	 * @param ctx - context passed on to be used in subsequent evaluations.
 	 * @throws NATException upon conversion errors or upon illegal unquoted expressions
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException;
+	public ATObject meta_quote(ATContext ctx) throws NATException;
 	
 	/**
 	 * Prints out the object in a human-readable way.

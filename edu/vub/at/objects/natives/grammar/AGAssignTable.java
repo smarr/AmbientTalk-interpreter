@@ -30,7 +30,6 @@ package edu.vub.at.objects.natives.grammar;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -90,7 +89,7 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 	 * 
 	 * AGASSTABLE(tbl,idx,val).quote(ctx) = AGASSTABLE(tbl.quote(ctx),idx.quote(ctx),val.quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return new AGAssignTable(tblExp_.meta_quote(ctx).asExpression(),
 				                 idxExp_.meta_quote(ctx).asExpression(),
 				                 valExp_.meta_quote(ctx).asExpression());

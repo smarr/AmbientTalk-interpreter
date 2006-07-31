@@ -30,7 +30,6 @@ package edu.vub.at.objects.natives.grammar;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATDefTable;
@@ -98,7 +97,7 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 	 * 
 	 * AGDEFTABLE(nam,siz,ini).quote(ctx) = AGDEFTABLE(nam.quote(ctx), siz.quote(ctx), ini.quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return new AGDefTable(tblName_.meta_quote(ctx).asSymbol(),
 				              sizExp_.meta_quote(ctx).asExpression(),
 				              initExp_.meta_quote(ctx).asExpression());

@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * NATText.java created on 26-jul-2006 at 16:45:43
+ * XIllegalQuote.java created on 31-jul-2006 at 15:10:27
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,49 +25,22 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.natives;
+package edu.vub.at.exceptions;
 
-import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.natives.grammar.AGExpression;
+import edu.vub.at.objects.grammar.ATExpression;
 
 /**
  * @author tvc
  *
- * The native implementation of an AmbientTalk text string.
- * A text string is implemented by a Java String.
+ * An XIllegalQuote exception is raised whenever an unquote-splice unquotation is discovered in an AG node where
+ * the resulting table cannot be spliced.
  */
-public final class NATText extends AGExpression implements ATText {
-		
-		public final String javaValue;
-		
-		/**
-		 * This method currently serves as a hook for text creation.
-		 * Currently text objects are not reused, but this might change in the future.
-		 */
-		public static final NATText atValue(String javaString) {
-			return new NATText(javaString);
-		}
-		
-		private NATText(String javaString) {
-			javaValue = javaString;
-		}
+public final class XIllegalQuote extends NATException {
 
-		public NATText asNativeText() throws XTypeMismatch { return this; }
-		
-		public NATText meta_print() throws XTypeMismatch {
-	        return this;
-		}
-		
-		// comparison and identity operations
-		
-		public boolean equals(Object other) {
-			return (other instanceof NATText) &&
-			       ((NATText) other).javaValue.equals(this.javaValue);
-		}
-		
-		public int hashCode() {
-			return javaValue.hashCode();
-		}
+	private static final String _MESSAGE_ = "Illegal position for unquote-splice: ";
 
+	public XIllegalQuote(String uqsExp) {
+		super(_MESSAGE_ + uqsExp);
+	}
+	
 }

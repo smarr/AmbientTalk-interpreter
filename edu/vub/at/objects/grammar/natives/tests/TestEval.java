@@ -3,6 +3,7 @@ package edu.vub.at.objects.grammar.natives.tests;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATAsyncMessage;
 import edu.vub.at.objects.ATClosure;
@@ -12,6 +13,7 @@ import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATNil;
@@ -70,7 +72,18 @@ public class TestEval extends TestCase {
 	public void evalAndCompareTo(String input, ATObject output) {
 		ATObject result = evalAndReturn(input);
 		if (result != null) {
-			assertEquals(result, output);
+			assertEquals(output, result);
+		}
+	}
+	
+	public void evalAndCompareTo(String input, String output) {
+		try {
+			ATObject result = evalAndReturn(input);
+			if (result != null) {
+				assertEquals(output, result.meta_print().javaValue);
+			}
+		} catch (XTypeMismatch e) {
+			fail(e.getMessage());
 		}
 	}
 
@@ -192,17 +205,53 @@ public class TestEval extends TestCase {
 		assertEquals(ctx_.getSelf(), ((ATAsyncMessage) asyncMsg).getSender());
 	}
 	
-	public void testApplication() throws NATException {
+	public void testMethodApplication() throws NATException {
+         // def x := 3
+		ctx_.getLexicalScope().meta_defineField(atX_, atThree_);
+		
 		// def identity(x) { x }
 		ATSymbol identityS = AGSymbol.alloc(NATText.atValue("identity"));
 		ATTable pars = new NATTable(new ATObject[] { atX_ });
 		NATMethod identity = new NATMethod(identityS, pars, new AGBegin(new NATTable(new ATObject[] { atX_ })));
 		ctx_.getLexicalScope().meta_addMethod(identity);
 		
-		// def x := 3
+		evalAndCompareTo("identity(1)", NATNumber.ONE);
+	}
+	
+	public void testClosureApplication() throws NATException {
+        // def x := 3
 		ctx_.getLexicalScope().meta_defineField(atX_, atThree_);
 		
+		// def identity := { x | x }
+		ATSymbol identityS = AGSymbol.alloc(NATText.atValue("identity"));
+		ATTable pars = new NATTable(new ATObject[] { atX_ });
+		NATClosure identity = new NATClosure(new NATMethod(identityS, pars, new AGBegin(new NATTable(new ATObject[] { atX_ }))), ctx_);
+		ctx_.getLexicalScope().meta_defineField(identityS, identity);
+		
 		evalAndCompareTo("identity(1)", NATNumber.ONE);
+	}
+	
+	public void testMethodInvocation() throws NATException {
+         // def x := object: { def x := 3; def m(y) { y; x } }
+		NATObject x = new NATObject(ctx_.getLexicalScope());
+		NATMethod m = new NATMethod(atM_, new NATTable(new ATObject[] { atY_ }),
+				                         new AGBegin(new NATTable(new ATObject[] { atY_, atX_ })));
+		x.meta_defineField(atX_, atThree_);
+		x.meta_addMethod(m);
+		ctx_.getLexicalScope().meta_defineField(atX_, x);
+		
+		evalAndCompareTo("x.m(1)", atThree_);
+	}
+	
+	public void testQuotation() throws NATException {
+		evalAndCompareTo("`(3)", atThree_);
+		evalAndCompareTo("`(x)", atX_);
+		evalAndCompareTo("`(def x := 3)", "def x := 3");
+		evalAndCompareTo("`(def x := `(3))", "def x := `(3)");
+		evalAndCompareTo("`(def x := #(3))", "def x := 3");
+		evalAndCompareTo("`(def foo(a) { #([1,2,3]) })", "def foo(a) { [1, 2, 3] }");
+		// TODO: cannot parse `(def foo(#(a)) { ... }) because parser expects formal parameter name only
+		evalAndCompareTo("`(def foo(a,b,c) { #@([1,2,3]) })", "def foo(a, b, c) { 1; 2; 3 }");
 	}
 	
 }

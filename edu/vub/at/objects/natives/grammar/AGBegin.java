@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -77,13 +76,8 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	/**
 	 * AGBEGIN(statements*).quote(ctx) = AGBEGIN((statements*).quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		int siz = statements_.getLength().asNativeNumber().javaValue;
-		ATObject[] stmts = new ATObject[siz];
-		for (int i = 0; i < siz; i++) {
-			stmts[i] = statements_.at(NATNumber.atValue(i)).meta_quote(ctx);
-		}
-		return new AGBegin(new NATTable(stmts));
+	public ATObject meta_quote(ATContext ctx) throws NATException {
+		return new AGBegin(statements_.meta_quote(ctx).asTable());
 	}
 	
 	public ATTable getStatements() { return statements_; }

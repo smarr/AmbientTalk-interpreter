@@ -28,8 +28,8 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalUnquote;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -41,7 +41,7 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of an unquotation AG element.
  */
-public final class AGUnquote extends NATAbstractGrammar implements ATUnquote {
+public final class AGUnquote extends AGExpression implements ATUnquote {
 
 	private final ATExpression unqExp_;
 	
@@ -51,20 +51,22 @@ public final class AGUnquote extends NATAbstractGrammar implements ATUnquote {
 	
 	public ATExpression getExpression() { return unqExp_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * An unquotation cannot be evaluated, but rather gives rise to an XIllegalUnquote exception.
+	 * This is because an unquotation should always be nested within a quotation.
+	 * 
+	 * AGUNQ(exp).eval(ctx) = ERROR
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		throw new XIllegalUnquote(unqExp_);
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting an unquotation means evaluating its contained expression, and returning
+	 * its value as the result of the quote.
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_quote(ATContext ctx) throws NATException {
+		return unqExp_.meta_eval(ctx);
 	}
 
 	public NATText meta_print() throws XTypeMismatch {

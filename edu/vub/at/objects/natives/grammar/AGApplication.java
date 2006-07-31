@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -43,7 +42,7 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of an application AG element.
  */
-public final class AGApplication extends NATAbstractGrammar implements ATApplication {
+public final class AGApplication extends AGExpression implements ATApplication {
 
 	private final ATSymbol selector_;
 	private final ATTable arguments_;
@@ -74,7 +73,7 @@ public final class AGApplication extends NATAbstractGrammar implements ATApplica
 	 * 
 	 * AGAPL(sel,arg).quote(ctx) = AGAPL(sel.quote(ctx), arg.quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return new AGApplication(selector_.meta_quote(ctx).asSymbol(),
 				                arguments_.meta_quote(ctx).asTable());
 	}

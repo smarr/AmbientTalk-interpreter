@@ -29,8 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATNumber;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
+import edu.vub.at.objects.natives.grammar.AGExpression;
 
 /**
  * @author tvc
@@ -38,7 +37,7 @@ import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
  * The native implementation of an AmbientTalk number.
  * A number is implemented by a Java int.
  */
-public final class NATNumber extends NATAbstractGrammar implements ATNumber {
+public final class NATNumber extends AGExpression implements ATNumber {
 	
 	public static final NATNumber ZERO = new NATNumber(0);
 	public static final NATNumber ONE = new NATNumber(1);

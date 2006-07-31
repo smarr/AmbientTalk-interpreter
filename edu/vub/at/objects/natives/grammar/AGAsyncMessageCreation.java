@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -37,7 +36,6 @@ import edu.vub.at.objects.grammar.ATAsyncMessageCreation;
 import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATAsyncMessage;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -47,7 +45,7 @@ import edu.vub.at.objects.natives.NATText;
  * AGAsyncMessageCreation implements the ATAsyncMessageCreation interface natively. It is a container for the
  * message's sender, selector, and optionally a receiver and table of arguments.
  */
-public class AGAsyncMessageCreation extends NATNil implements ATAsyncMessageCreation {
+public class AGAsyncMessageCreation extends AGExpression implements ATAsyncMessageCreation {
 
 	private ATSymbol selector_	= null;
 	private ATTable  arguments_	= null;
@@ -83,7 +81,7 @@ public class AGAsyncMessageCreation extends NATNil implements ATAsyncMessageCrea
 	/**
 	 * Quoting a message creation element returns a new quoted message creation element.
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return new AGAsyncMessageCreation(selector_.meta_quote(ctx).asSymbol(),
 				                          arguments_.meta_quote(ctx).asTable());
 	}

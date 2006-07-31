@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -45,7 +44,7 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of a first-class message creation AG element.
  */
-public final class AGMethodInvocationCreation extends NATAbstractGrammar implements ATMethodInvocationCreation {
+public final class AGMethodInvocationCreation extends AGExpression implements ATMethodInvocationCreation {
 
 	private final ATSymbol selector_;
 	private final ATTable arguments_;
@@ -75,7 +74,7 @@ public final class AGMethodInvocationCreation extends NATAbstractGrammar impleme
 	/**
 	 * Quoting a message creation element returns a new quoted message creation element.
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return new AGMethodInvocationCreation(selector_.meta_quote(ctx).asSymbol(),
 				                              arguments_.meta_quote(ctx).asTable());
 	}

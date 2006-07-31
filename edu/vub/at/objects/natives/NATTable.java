@@ -36,7 +36,9 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
+import edu.vub.at.objects.natives.grammar.AGExpression;
+
+import java.util.LinkedList;
 
 /**
  * @author tvc
@@ -47,7 +49,7 @@ import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
  * An important distinction between AT tables and Java arrays is that
  * ATTable objects are indexed from [1..size] rather than [0..size[
  */
-public final class NATTable extends NATAbstractGrammar implements ATTable {
+public final class NATTable extends AGExpression implements ATTable {
 
 	public final static NATTable EMPTY = new NATTable(new ATObject[] {});
 	
@@ -158,6 +160,29 @@ public final class NATTable extends NATAbstractGrammar implements ATTable {
 	public ATTable asTable() { return this; }
 	
 	public NATTable asNativeTable() { return this; }
+	
+	/**
+	 * To quote a table, quote all elements of the table.
+	 * Special care needs to be taken in order to properly deal with unquote-spliced elements.
+	 * When one of the direct elements of the table is an unquote-splice element, the resulting
+	 * unquotation must result in a table whose elements are directly added to this table's elements.
+	 */
+	public ATObject meta_quote(ATContext ctx) throws NATException {
+		LinkedList result = new LinkedList();
+		int siz = elements_.length;
+		for (int i = 0; i < elements_.length; i++) {
+			if (elements_[i].isUnquoteSplice()) {
+				ATObject[] tbl = elements_[i].asUnquoteSplice().getExpression().meta_eval(ctx).asNativeTable().elements_;
+				for (int j = 0; j < tbl.length; j++) {
+					result.add(tbl[j]);
+				}
+				siz += (tbl.length - 1); // -1 because we replace one element by a table of elements
+			} else {
+				result.add(elements_[i].meta_quote(ctx));
+			}
+		}
+		return new NATTable(result.toArray(new ATObject[siz]));
+	}
 	
 	public NATText meta_print() throws XTypeMismatch {
 		return NATTable.printElements(this, "[", ", ","]");

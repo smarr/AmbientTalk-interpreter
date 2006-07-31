@@ -34,6 +34,7 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
@@ -51,6 +52,7 @@ public interface ATConversions {
 	public boolean isSymbol();
 	public boolean isTable();
 	public boolean isCallFrame();
+	public boolean isUnquoteSplice();
 	
 	public ATClosure   asClosure() throws XTypeMismatch;
 	public ATSymbol    asSymbol() throws XTypeMismatch;
@@ -65,6 +67,7 @@ public interface ATConversions {
 	public ATExpression asExpression() throws XTypeMismatch;
 	public ATBegin      asBegin() throws XTypeMismatch;
 	public ATMessageCreation asMessageCreation() throws XTypeMismatch;
+	public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch;
 	
 	// Native Value Elements
 	

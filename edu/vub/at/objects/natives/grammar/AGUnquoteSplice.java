@@ -28,8 +28,9 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalQuote;
+import edu.vub.at.exceptions.XIllegalUnquote;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -41,7 +42,7 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of an unquote-splice AG element.
  */
-public class AGUnquoteSplice extends NATAbstractGrammar implements ATUnquoteSplice {
+public class AGUnquoteSplice extends AGExpression implements ATUnquoteSplice {
 
 	private final ATExpression uqsExp_;
 	
@@ -51,24 +52,38 @@ public class AGUnquoteSplice extends NATAbstractGrammar implements ATUnquoteSpli
 	
 	public ATExpression getExpression() { return uqsExp_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * An unquotation cannot be evaluated, but rather gives rise to an XIllegalUnquote exception.
+	 * This is because an unquotation should always be nested within a quotation.
+	 * 
+	 * AGUQS(exp).eval(ctx) = ERROR
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		throw new XIllegalUnquote(uqsExp_);
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting a spliced unquotation means evaluating its contained expression, and returning
+	 * its value as the result of the quote. A spliced unquotation can normally only
+	 * be invoked where a table or begin is expected. The resulting table is replaced by the result of
+	 * evaluating the unquote-splice's encapsulated expression.
+	 * 
+	 * It is the table's responsibility to query an AGUnquoteSplice element for its expression and deal with the inlining appropriately.
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_quote(ATContext ctx) throws NATException {
+		throw new XIllegalQuote(uqsExp_.meta_print().javaValue);
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
 		return NATText.atValue("#@("+ uqsExp_.meta_print().javaValue + ")");
+	}
+	
+	public boolean isUnquoteSplice() {
+		return true;
+	}
+	
+	public ATUnquoteSplice asUnquoteSplice() {
+		return this;
 	}
 
 }

@@ -30,7 +30,6 @@ package edu.vub.at.objects.natives.grammar;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -44,7 +43,7 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of a tabulaton AG element.
  */
-public final class AGTabulation extends NATAbstractGrammar implements ATTabulation {
+public final class AGTabulation extends AGExpression implements ATTabulation {
 
 	private final ATExpression tblExp_;
 	private final ATExpression idxExp_;
@@ -82,7 +81,7 @@ public final class AGTabulation extends NATAbstractGrammar implements ATTabulati
 	 * 
 	 * AGTBL(tbl,idx).quote(ctx) = AGTBL(tbl.quote(ctx),idx.quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return new AGTabulation(tblExp_.meta_quote(ctx).asExpression(),
 				               idxExp_.meta_quote(ctx).asExpression());
 	}

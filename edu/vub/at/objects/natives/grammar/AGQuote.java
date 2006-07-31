@@ -29,12 +29,10 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATQuote;
 import edu.vub.at.objects.grammar.ATStatement;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -42,7 +40,7 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of a quotation AG element.
  */
-public final class AGQuote extends NATAbstractGrammar implements ATQuote {
+public final class AGQuote extends AGExpression implements ATQuote {
 
 	private final ATStatement stmt_;
 	
@@ -52,20 +50,23 @@ public final class AGQuote extends NATAbstractGrammar implements ATQuote {
 	
 	public ATStatement getStatement() { return stmt_; }
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_eval(edu.vub.at.objects.ATContext)
+	/**
+	 * To evaluate a quotation, start quoting its contained statement.
+	 * This recursive quoting is necessary in order to properly unquote nested unquotations.
+	 * 
+	 * AGQUO(stmt).eval(ctx) = stmt.quote(ctx)
+	 * 
+	 * @return the quoted statement
 	 */
-	public ATObject meta_eval(ATContext ctx) {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		return stmt_.meta_quote(ctx);
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting a quotation results in a bare quotation, where quotations and unquotations are left unexpanded.
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+	public ATObject meta_quote(ATContext ctx) throws NATException {
+		return this;
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

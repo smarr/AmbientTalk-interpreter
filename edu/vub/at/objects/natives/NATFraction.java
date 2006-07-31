@@ -29,7 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATFraction;
-import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
+import edu.vub.at.objects.natives.grammar.AGExpression;
 
 /**
  * @author tvc
@@ -37,7 +37,7 @@ import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
  * The native implementation of an AmbientTalk fraction.
  * A fraction is implemented by a Java double.
  */
-public final class NATFraction extends NATAbstractGrammar implements ATFraction {
+public final class NATFraction extends AGExpression implements ATFraction {
 
 	public static final NATFraction INFTY = new NATFraction(Double.POSITIVE_INFINITY);
 	

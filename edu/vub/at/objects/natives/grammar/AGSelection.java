@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -42,7 +41,7 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of a selection AG element.
  */
-public final class AGSelection extends NATAbstractGrammar implements ATSelection {
+public final class AGSelection extends AGExpression implements ATSelection {
 
 	private final ATExpression rcvExp_;
 	private final ATSymbol selector_;
@@ -74,7 +73,7 @@ public final class AGSelection extends NATAbstractGrammar implements ATSelection
 	 * 
 	 * AGSEL(rcv,sel).quote(ctx) = AGSEL(rcv.quote(ctx), sel.quote(ctx))
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return new AGSelection(rcvExp_.meta_eval(ctx).asExpression(),
 				              selector_.meta_eval(ctx).asSymbol());
 	}

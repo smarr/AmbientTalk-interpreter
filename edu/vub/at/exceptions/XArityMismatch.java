@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * NATText.java created on 26-jul-2006 at 16:45:43
+ * XArityMismatch.java created on 31-jul-2006 at 13:54:15
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,49 +25,27 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.natives;
-
-import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.natives.grammar.AGExpression;
+package edu.vub.at.exceptions;
 
 /**
  * @author tvc
  *
- * The native implementation of an AmbientTalk text string.
- * A text string is implemented by a Java String.
+ * XArityMismatch is thrown during function application when actual arguments are bound to formal parameters
+ * and there are either too many or too few actual arguments supplied.
  */
-public final class NATText extends AGExpression implements ATText {
-		
-		public final String javaValue;
-		
-		/**
-		 * This method currently serves as a hook for text creation.
-		 * Currently text objects are not reused, but this might change in the future.
-		 */
-		public static final NATText atValue(String javaString) {
-			return new NATText(javaString);
-		}
-		
-		private NATText(String javaString) {
-			javaValue = javaString;
-		}
+public final class XArityMismatch extends NATException {
 
-		public NATText asNativeText() throws XTypeMismatch { return this; }
-		
-		public NATText meta_print() throws XTypeMismatch {
-	        return this;
-		}
-		
-		// comparison and identity operations
-		
-		public boolean equals(Object other) {
-			return (other instanceof NATText) &&
-			       ((NATText) other).javaValue.equals(this.javaValue);
-		}
-		
-		public int hashCode() {
-			return javaValue.hashCode();
-		}
+    private static final String _TOO_MANY_ = "Too many arguments supplied for function ";
+    private static final String _TOO_FEW_ = "Too few arguments supplied for function ";
+    
+	/**
+	 * @param funnam the name of the function to be invoked (for debugging purposes only)
+	 * @param numParameters the number of parameters supplied
+	 * @param numArguments the number of arguments supplied
+	 */
+	public XArityMismatch(String funnam, int numParameters, int numArguments) {
+		super( ((numParameters < numArguments) ? _TOO_MANY_ : _TOO_FEW_)
+				 + funnam + "; expected " + numParameters + ", given " + numArguments);
+	}
 
 }

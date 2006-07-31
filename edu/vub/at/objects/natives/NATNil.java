@@ -31,7 +31,6 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -49,6 +48,7 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.BaseInterfaceAdaptor;
 import edu.vub.at.objects.mirrors.JavaClass;
 
@@ -216,7 +216,7 @@ public class NATNil implements ATNil, BaseNil {
 	/**
 	 * Quoting a native object returns itself, except for pure AG elements.
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return this;
 	}
 	
@@ -262,6 +262,10 @@ public class NATNil implements ATNil, BaseNil {
 	public boolean isCallFrame() {
 		return false;
 	}
+
+	public boolean isUnquoteSplice() {
+		return false;
+	}
 	
 	public ATClosure asClosure() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected a closure, given: " + this.getClass().getName(), this);
@@ -305,6 +309,10 @@ public class NATNil implements ATNil, BaseNil {
 		throw new XTypeMismatch("Expected a first-class message creation, given: " + this.getClass().getName(), this);		
 	}
 
+	public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected an unquote-splice abstract grammar, given: " + this.getClass().getName(), this);		
+	}
+	
 	// Conversions for native values
 	
 	public NATNumber asNativeNumber() throws XTypeMismatch {

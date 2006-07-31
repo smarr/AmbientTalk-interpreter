@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
@@ -45,7 +44,7 @@ import java.util.HashMap;
  * Symbols should only be created via a call to AGSymbol.alloc
  * This ensures that symbols remain unique within one AmbientTalk VM.
  */
-public class AGSymbol extends NATAbstractGrammar implements ATSymbol {
+public class AGSymbol extends AGExpression implements ATSymbol {
 
 	private static final HashMap _STRINGPOOL_ = new HashMap();
 
@@ -84,7 +83,7 @@ public class AGSymbol extends NATAbstractGrammar implements ATSymbol {
 	 * 
 	 * sym.quote(ctx) = sym
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		return this;
 	}
 	

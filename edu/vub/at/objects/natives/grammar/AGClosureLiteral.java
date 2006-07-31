@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -45,7 +44,7 @@ import edu.vub.at.objects.natives.NATText;
  *
  * The native implementation of a literal closure AG element.
  */
-public final class AGClosureLiteral extends NATAbstractGrammar implements ATClosureLiteral {
+public final class AGClosureLiteral extends AGExpression implements ATClosureLiteral {
 
 	private final ATTable arguments_;
 	private final ATBegin body_;
@@ -74,7 +73,7 @@ public final class AGClosureLiteral extends NATAbstractGrammar implements ATClos
 	/* (non-Javadoc)
 	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
 	 */
-	public ATAbstractGrammar meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws NATException {
 		// TODO Auto-generated method stub
 		return null;
 	}
