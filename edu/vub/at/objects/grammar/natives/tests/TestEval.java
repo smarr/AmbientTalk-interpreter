@@ -159,7 +159,7 @@ public class TestEval extends TestCase {
 	}
 	
 	public void testClosureLiteral() throws NATException {
-	  ATClosure clo = evalAndReturn("{ x, y | 3 }").asClosure();
+	  ATClosure clo = evalAndReturn("{| x, y | 3 }").asClosure();
 	  ATSymbol nam = clo.getMethod().getName();
 	  ATTable arg = clo.getMethod().getArguments();
 	  ATAbstractGrammar bdy = clo.getMethod().getBody();
@@ -222,7 +222,7 @@ public class TestEval extends TestCase {
         // def x := 3
 		ctx_.getLexicalScope().meta_defineField(atX_, atThree_);
 		
-		// def identity := { x | x }
+		// def identity := { | x | x }
 		ATSymbol identityS = AGSymbol.alloc(NATText.atValue("identity"));
 		ATTable pars = new NATTable(new ATObject[] { atX_ });
 		NATClosure identity = new NATClosure(new NATMethod(identityS, pars, new AGBegin(new NATTable(new ATObject[] { atX_ }))), ctx_);
@@ -250,8 +250,7 @@ public class TestEval extends TestCase {
 		evalAndCompareTo("`(def x := `(3))", "def x := `(3)");
 		evalAndCompareTo("`(def x := #(3))", "def x := 3");
 		evalAndCompareTo("`(def foo(a) { #([1,2,3]) })", "def foo(a) { [1, 2, 3] }");
-		// TODO: cannot parse `(def foo(#(a)) { ... }) because parser expects formal parameter name only
-		evalAndCompareTo("`(def foo(a,b,c) { #@([1,2,3]) })", "def foo(a, b, c) { 1; 2; 3 }");
+		evalAndCompareTo("`(def foo(#@([a,b,c])) { #@([1,2,3]) })", "def foo(a, b, c) { 1; 2; 3 }");
 	}
 	
 }

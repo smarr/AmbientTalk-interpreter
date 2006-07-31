@@ -83,7 +83,7 @@ public class ATWalkerTest extends TestCase {
 		testWalker("\"hello  \\tworld\"");
 		testWalker("[a,b,c]");
 		testWalker("[]");
-		testWalker("{ x, y | x.+(y) }");
+		testWalker("{ | x, y | x.+(y) }");
 		testWalker("{ a := 2; b }");
 	}
 

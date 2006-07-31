@@ -150,7 +150,7 @@ public class ATParserTest extends TestCase {
 				 "(begin (table (symbol a) (symbol b) (symbol c)))");
 		testParse("[]",
 				 "(begin (table))");
-		testParse("{ x, y | x + y }",
+		testParse("{ | x, y | x + y }",
 				 "(begin (closure (table (symbol x) (symbol y)) (begin (+ (symbol x) (symbol y)))))");
 		testParse("{ a := 2; b }",
 				 "(begin (closure (table) (begin (field-set (symbol a) (number 2)) (symbol b))))");
@@ -180,7 +180,7 @@ public class ATParserTest extends TestCase {
 	 */
 	public void testCurrying() {
 	    testParse(
-	    		"[ { display: \"test\" }, { x, y | x < y } ][2](a ,b)",
+	    		"[ { display: \"test\" }, { | x, y | x < y } ][2](a ,b)",
 	    		" ( begin ( apply ( table-get ( table ( closure (table ) ( begin ( apply (symbol display:) (table (text \"test\" ) ) ) ) ) ( closure ( table (symbol x) (symbol y) ) ( begin ( < (symbol x) (symbol y) ) ) ) ) (number 2) ) ( table (symbol a) (symbol b) ) ) )");		
 	}
 	
@@ -204,7 +204,7 @@ public class ATParserTest extends TestCase {
 	 */
 	public void testPointDefinition() {
 		testParse(
-				"def point := object: { x, y | \n" +
+				"def point := object: { | x, y | \n" +
 				"  def getX() { x }; \n" +
 				"  def getY() { y }; \n" +
 				"  def withX: anX Y: aY { \n" +

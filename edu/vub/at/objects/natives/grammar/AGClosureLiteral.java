@@ -70,19 +70,21 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 		return new NATClosure(new NATMethod(AGSymbol._LAMBDA_, arguments_, body_), ctx);
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.vub.at.objects.ATAbstractGrammar#meta_quote(edu.vub.at.objects.ATContext)
+	/**
+	 * Quoting a closure literal results in a new quoted closure literal.
+	 * 
+	 * AGCLOLIT(arg,bdy).quote(ctx) = AGCLOLIT(arg.quote(ctx), bdy.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws NATException {
-		// TODO Auto-generated method stub
-		return null;
+		return new AGClosureLiteral(arguments_.meta_quote(ctx).asTable(),
+				                   body_.meta_quote(ctx).asBegin());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
 		if (arguments_.isEmpty().isTrue()) {
 		  return NATText.atValue("{ "+body_.meta_print().javaValue + " }");
 		} else
-		  return NATText.atValue(NATTable.printElements(arguments_.asNativeTable(), "{", ", ", " | ").javaValue +
+		  return NATText.atValue(NATTable.printElements(arguments_.asNativeTable(), "{ |", ", ", " | ").javaValue +
 		                       body_.meta_print().javaValue+"}");
 	}
 

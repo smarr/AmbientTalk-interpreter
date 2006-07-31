@@ -76,7 +76,7 @@ keywordparameterlist: (keywordparam)+ {
 	#keywordparameterlist = keywords2canonical(#keywordparameterlist);
 };
 
-keywordparam: KEY^ variable;
+keywordparam: KEY^ variable_or_unquote;
 
 // Assignment of a variable is similar to its definition albeit without the word def.
 // TODO tabulation assignment requires the parser to look ahead arbitrarily far for a ':=' -> inefficient 
@@ -189,7 +189,7 @@ asyncmessage!: apl:application { #asyncmessage = #([AGAMS,"async-message"], apl)
 subexpression!: e:expression RPR { #subexpression = #e; };
 
 // Inline syntax for nameless functions (lambdas or blocks)
-block!: pars:nonemptyvariablelist PIP body:semicolonlist RBC
+block!: PIP pars:variablelist PIP body:semicolonlist RBC
 		 { #block = #([AGCLO, "closure"], pars, body); }
 	  | no_args_body:semicolonlist RBC
 		 { #block = #([AGCLO, "closure"], #([AGTAB,"table"], #([COM]) ), no_args_body); };
@@ -205,10 +205,10 @@ commalist: expression (COM! expression)*
 	|! /* empty */ { #commalist = #([AGTAB,"table"], #([COM]));};
 
 // parses a list of variables that may act as formal parameters
-variablelist: nonemptyvariablelist
+variablelist: variable_or_unquote (COM! variable_or_unquote)* { #variablelist = #([AGTAB, "table"], #variablelist); }
             |! /* empty */ { #variablelist = #([AGTAB,"table"], #([COM])); };
 
-nonemptyvariablelist: variable (COM! variable)* { #nonemptyvariablelist = #([AGTAB, "table"], #nonemptyvariablelist); };
+variable_or_unquote: variable | HSH! unquotation;
 
 // user-definable names for variables
 variable: symbol
@@ -453,8 +453,8 @@ class ATTreeWalker extends TreeParser;
   // this auxiliary function converts operator syntax such as <a+b> into a message send of the form <a.+(b)>
   public AGMessageSend operatorToSend(AST opr, ATExpression receiver, ATExpression operand) {
 	  return new AGMessageSend(receiver,
-	                           new AGMethodInvocation(AGSymbol.alloc(NATText.atValue(opr.getText())),
-  	                                                  new NATTable(new ATObject[] { operand })));
+	                           new AGMethodInvocationCreation(AGSymbol.alloc(NATText.atValue(opr.getText())),
+  	                                                          new NATTable(new ATObject[] { operand })));
   }
 
 } // end TreeWalker preamble
@@ -493,7 +493,7 @@ expression returns [ATExpression exp]
   	ATExpression rcv, idx, qexp;
   	ATStatement qstmt;
   	ATSymbol sel;
-  	ATMessage msg;
+  	ATMessageCreation msg;
   	NATTable arg; }
           : #(AGSND rcv=expression msg=message) { exp = new AGMessageSend(rcv,msg); }
           | #(AGAPL sel=symbol arg=table) { exp = new AGApplication(sel, arg); }
@@ -508,11 +508,11 @@ expression returns [ATExpression exp]
           | exp=literal
           ;
 
-message returns [ATMessage msg]
+message returns [ATMessageCreation msg]
   { msg = null;
   	ATSymbol sel; NATTable arg; }
-  	      : #(AGMSG #(AGAPL sel=symbol arg=table)) { msg = new AGMethodInvocation(sel,arg); }
-  	      | #(AGAMS #(AGAPL sel=symbol arg=table)) { msg = new AGAsyncMessage(sel,arg); }
+  	      : #(AGMSG #(AGAPL sel=symbol arg=table)) { msg = new AGMethodInvocationCreation(sel,arg); }
+  	      | #(AGAMS #(AGAPL sel=symbol arg=table)) { msg = new AGAsyncMessageCreation(sel,arg); }
   	      ;
           
 binop returns [ATMessageSend snd]
