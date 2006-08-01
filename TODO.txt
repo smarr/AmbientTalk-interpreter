@@ -1,0 +1,27 @@
+=== TODO ===
+
+- Natives
+* Refactor Base interfaces into base_ methods.
+
+- Reflection
+* Review and fix mirrors and mirages (add/remove "base" and "meta" prefix)
+
+- Core language evaluator
+* variable parameters and arguments
+* remove as much .asNative...() casts from the code
+
+- Documentation
+* Package structure
+* Class and interface hierarchy: NAT, AT, AG, X => structure and purpose
+* base_ and meta_ method prefix conventions and restrictions
+(e.g. all methods of an AT interface must take AT parameters and return an AT result)
+* ATObject interface and its NATObject implementation
+* asXXX and isXXX protocol / deny direct downcasts + NATObject.cast
+* asNativeXXX and javaValues
+* NATNil's meta_invoke method
+* Mirrors and Mirages: lots of drawings!
+* Message sending: o.m() vs o<-m() and interaction with first-class messages
+* Exceptions: raise method / deny direct throwing of exceptions
+* Evaluator: meta_eval and meta_quote/unquote
+* Tests: test structure
+* MTH hierarchy?
