@@ -50,15 +50,50 @@ import java.util.Vector;
  */
 public class NATObject extends NATCallframe implements ATObject{
 
+	// Auxiliary static methods
+	
+	/**
+	 * Allows converting an ordinary Object into an ATObject, wrapping it if necessary.
+	 */ 
+	public static ATObject cast(Object o) {
+		// Our own "dynamic dispatch"
+		if(o instanceof ATObject) {
+			return (ATObject)o;
+		} else {
+			// TODO Wrapping
+			throw new RuntimeException("Ordinary java objects are not wrapped yet.");			
+		}
+	}
+	
+	
 	public static final boolean _IS_A_ 		= true;
 	public static final boolean _SHARES_A_ 	= false;
 	
-	//private Map 	variableMap_ 			= new HashMap();
-	//private Vector	stateVector_ 			= new Vector();
+	// inherited from NATCallframe:
+	// private Map 	    variableMap_ 			= new HashMap();
+	// private Vector	stateVector_ 			= new Vector();
+	
+	/**
+	 * The method dictionary of this object. It maps method selectors to ATMethod objects.
+	 */
 	private final HashMap methodDictionary_;
+	
+	/**
+	 * The type of parent pointer of this object. We distinguish two cases:
+	 *  - an is-a link, which results in a recursive cloning of the parent when this object is cloned.
+	 *  - a shares-a link, which ensures that clones of this object share the same parent.
+	 */
 	private final boolean parentPointerType_;
 	
-	final ATObject   dynamicParent_;
+	/**
+	 * The dynamic parent of this object (i.e. the delegation link).
+	 * Note that the parent of an object is immutable.
+	 */
+	protected final ATObject dynamicParent_;
+	
+	/* ------------------
+	 * -- Constructors --
+	 * ------------------ */
 	
 	/**
 	 * Constructs a new ambienttalk object parametrised by a lexical scope. The 
@@ -93,21 +128,8 @@ public class NATObject extends NATCallframe implements ATObject{
 			         boolean parentType) {
 		super(map, state, lexicalParent);
 		methodDictionary_ = methodDict;
-		dynamicParent_ = dynamicParent;
 		parentPointerType_ = parentType;
-	}
-	
-	/**
-	 * Allows converting an ordinary Object into an ATObject, wrapping it if necessary.
-	 */ 
-	public static ATObject cast(Object o) {
-		// Our own "dynamic dispatch"
-		if(o instanceof ATObject) {
-			return (ATObject)o;
-		} else {
-			// TODO Wrapping
-			throw new RuntimeException("Ordinary java objects are not wrapped yet.");			
-		}
+		dynamicParent_ = dynamicParent;
 	}
 	
 	/* ------------------------------
@@ -121,7 +143,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * rather than at the level of an actor.
 	 */
 	public ATNil meta_send(ATMessage message) throws NATException {
-		// assert(this == getReceiver());
+		// assert(this == message.getReceiver());
 //		 TODO Implement the ATActor interface     
 //				ATActor actor = NATActor.currentActor();
 //				ATAsyncMessageCreation message = actor.createMessage(msg.sender, this, msg.selector, msg.arguments);
@@ -132,7 +154,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	/**
 	 * Invocations on an object ( o.m( args ) ) are handled by looking up the requested
 	 * selector along the dynamic parent chain of o. The select operation should yield 
-	 * a closure (a method along with a proper context for evaluating its body). This 
+	 * a closure (a method paired with a proper context for evaluating its body). This 
 	 * closure is then applied with the passed arguments. 
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
@@ -140,21 +162,17 @@ public class NATObject extends NATCallframe implements ATObject{
 	}
 	
 	/**
-	 * An ambienttalk object can respond to a message if a corresponding method exists
+	 * An ambienttalk object can respond to a message if a corresponding method or field exists
 	 * along the dynamic parent chain.
 	 */
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
 		try {
-			
-			meta_getMethod(selector);
-			return NATBoolean.atValue(true);
+			meta_select(this, selector); // TODO: when events will be spawned for selection, make sure this does not trigger events...
+			// if the select operation succeeds, then this object responds to the given selector
+			return NATBoolean._TRUE_;
 			
 		} catch(XSelectorNotFound exception) {
-			if(dynamicParent_ != null) {
-				return dynamicParent_.meta_respondsTo(selector);
-			} else {
-				return NATBoolean.atValue(false);
-			}
+			return NATBoolean._FALSE_;
 		}
 	}
 
@@ -164,11 +182,17 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * ------------------------------------------ */
 	
 	/**
-	 * This method corresponds to code of the form ( o.m ). It searches for the 
-	 * requested selector among the methods of the object and its dynamic parents.
+	 * meta_select is used to evaluate code snippets like <tt>o.m</tt>
+	 * 
+	 * To select a field or method (a selector) from an object,
+	 * the receiver object's fields and method dictionary are searched.
+	 * If no match is found, the search is delegated to the dynamic parent.
+	 * 
+	 * If no match is found throughout the entire delegation chain, an XSelectorNotFound exception
+	 * will be raised.
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
-		try{
+		try {
 			ATMethod method = meta_getMethod(selector);
 			ATClosure result = new NATClosure(
 					/* code to be executed */

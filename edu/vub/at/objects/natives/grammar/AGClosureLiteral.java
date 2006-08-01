@@ -81,7 +81,8 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		if (arguments_.isEmpty().isTrue()) {
+		// TODO: use ATBoolean.ifTrueifFalse instead of using a native boolean
+		if (arguments_.isEmpty().asNativeBoolean().javaValue) {
 		  return NATText.atValue("{ "+body_.meta_print().javaValue + " }");
 		} else
 		  return NATText.atValue(NATTable.printElements(arguments_.asNativeTable(), "{ |", ", ", " | ").javaValue +

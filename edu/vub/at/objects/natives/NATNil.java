@@ -330,7 +330,10 @@ public class NATNil implements ATNil, BaseNil {
 	public NATTable asNativeTable() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected a native table, given: " + this.getClass().getName(), this);		
 	}
-	
+
+	public NATBoolean asNativeBoolean() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a native boolean, given: " + this.getClass().getName(), this);		
+	}
 	
 	public String toString() {
 		try {

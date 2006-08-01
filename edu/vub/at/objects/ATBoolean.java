@@ -27,14 +27,18 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.NATException;
+
 /**
  * @author smostinc
- *
- * TODO document the class ATBoolean
+ * @author tvcutsem
+ * 
+ * The ATBoolean interface is the public interface to a boolean object.
  */
 public interface ATBoolean extends ATObject {
 
-	boolean isTrue();
+	ATObject ifTrue_(ATClosure cons) throws NATException;
+	ATObject ifFalse_(ATClosure alt) throws NATException;
+	ATObject ifTrue_ifFalse_(ATClosure cons, ATClosure alt) throws NATException;
 	
-	boolean isFalse();
 }

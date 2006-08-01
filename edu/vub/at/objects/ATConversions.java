@@ -35,6 +35,7 @@ import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
@@ -75,4 +76,5 @@ public interface ATConversions {
 	public NATFraction asNativeFraction() throws XTypeMismatch;
 	public NATText     asNativeText() throws XTypeMismatch;
 	public NATTable    asNativeTable() throws XTypeMismatch;
+	public NATBoolean  asNativeBoolean() throws XTypeMismatch;
 }

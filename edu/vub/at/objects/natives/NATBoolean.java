@@ -27,8 +27,11 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATObject;
 
 /**
  * @author smostinc
@@ -37,37 +40,73 @@ import edu.vub.at.objects.ATBoolean;
  * implementations of true and false can be accessed using the class's atValue
  * method.
  */
-public class NATBoolean {
-
+public class NATBoolean extends NATNil {
+	
 	/**
 	 * Returns the corresponding ATBoolean given a java truth value
 	 */
 	public static ATBoolean atValue(boolean b) {
 		if(b) {
-			return NATTrue.instance_;
+			return NATTrue._INSTANCE_;
 		} else {
-			return NATFalse.instance_;
+			return NATFalse._INSTANCE_;
 		}
 	}
 	
-	private static class NATTrue extends NATNil implements ATBoolean {
-		private static NATTrue instance_ = new NATTrue();
+	public final boolean javaValue;
+	
+	public NATBoolean(boolean b) {
+		javaValue = b;
+	}
+	
+	public NATBoolean asNativeBoolean() {
+		return this;
+	}
+	
+	private static class NATTrue extends NATBoolean implements ATBoolean {
 		
-		public boolean isFalse() {	return false;	}
+		public static NATTrue _INSTANCE_ = new NATTrue();
+		
+		public NATTrue() { super(true); }
+		
+		public ATObject ifTrue_(ATClosure clo) throws NATException {
+			return clo.meta_apply(NATTable.EMPTY);
+		}
 
-		public boolean isTrue() {		return true;		}
+		public ATObject ifFalse_(ATClosure clo) throws NATException {
+			return NATNil._INSTANCE_;
+		}
+		
+		public ATObject ifTrue_ifFalse_(ATClosure cons, ATClosure alt) throws NATException {
+			return cons.meta_apply(NATTable.EMPTY);
+		}
 		
 		public NATText meta_print() throws XTypeMismatch { return NATText.atValue("<true>"); }
+		
 	}
 
-	private static class NATFalse extends NATNil implements ATBoolean {
-		private static NATFalse instance_= new NATFalse();
+	private static class NATFalse extends NATBoolean implements ATBoolean {
 		
-		public boolean isFalse() {	return true;		}
+		public static NATFalse _INSTANCE_ = new NATFalse();
+		
+		public NATFalse() { super(false); }
+		
+		public ATObject ifTrue_(ATClosure clo) throws NATException {
+			return NATNil._INSTANCE_;
+		}
 
-		public boolean isTrue() {		return false;	}
+		public ATObject ifFalse_(ATClosure clo) throws NATException {
+			return clo.meta_apply(NATTable.EMPTY);
+		}
+		
+		public ATObject ifTrue_ifFalse_(ATClosure cons, ATClosure alt) throws NATException {
+			return alt.meta_apply(NATTable.EMPTY);
+		}
 		
 		public NATText meta_print() throws XTypeMismatch { return NATText.atValue("<false>"); }
 	}
+	
+	public static final NATTrue _TRUE_ = NATTrue._INSTANCE_;
+	public static final NATFalse _FALSE_ = NATFalse._INSTANCE_;
 
 }
