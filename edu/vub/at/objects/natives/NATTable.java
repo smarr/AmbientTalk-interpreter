@@ -82,15 +82,31 @@ public final class NATTable extends AGExpression implements ATTable {
 	
 	/**
 	 * This function is called whenever arguments to a function, message, method need to be evaluated.
-	 * TODO take variable arguments into account (i.e. table splicing)
+	 * TODO: currently does not work for user-defined tables
 	 */
 	public static final NATTable evaluateArguments(NATTable args, ATContext ctx) throws NATException {
-		return mapEvalOverExpressions(args, ctx);
+		if (args == EMPTY) return EMPTY;
+		
+		ATObject[] els = args.elements_;
+		
+		LinkedList result = new LinkedList();
+		int siz = els.length;
+		for (int i = 0; i < els.length; i++) {
+			if (els[i].isSplice()) {
+				ATObject[] tbl = els[i].asSplice().getExpression().meta_eval(ctx).asNativeTable().elements_;
+				for (int j = 0; j < tbl.length; j++) {
+					result.add(tbl[j]);
+				}
+				siz += (tbl.length - 1); // -1 because we replace one element by a table of elements
+			} else {
+				result.add(els[i].meta_eval(ctx));
+			}
+		}
+		return new NATTable(result.toArray(new ATObject[siz]));
 	}
 	
-	private static final NATTable mapEvalOverExpressions(NATTable tab, ATContext ctx) throws NATException {
-		if (tab == EMPTY)
-			return EMPTY;
+	/*private static final NATTable mapEvalOverExpressions(NATTable tab, ATContext ctx) throws NATException {
+		if (tab == EMPTY) return EMPTY;
 		
 		ATObject[] els = tab.elements_;
 		ATObject[] result = new ATObject[els.length];
@@ -99,15 +115,15 @@ public final class NATTable extends AGExpression implements ATTable {
 		}
 		
 		return new NATTable(result);
-	}
+	}*/
 	
 	/**
 	 * Auxiliary function to bind formal parameters to actual arguments within a certain scope.
-	 * TODO: currently does not work for user-defined ATTables and for varargs
+	 * TODO: currently does not work for user-defined ATTables
 	 * 
 	 * @param funnam the name of the function for which to bind these elements, for debugging purposes only
 	 * @param scope the frame in which to store the bindings
-	 * @param parameters the formal parameter references
+	 * @param parameters the formal parameter references (of which the last element may be a 'rest' arg to collect left-over arguments)
 	 * @param arguments the actual arguments, already evaluated
 	 * @throws XArityMismatch when the formals don't match the actuals
 	 */
@@ -115,11 +131,36 @@ public final class NATTable extends AGExpression implements ATTable {
 		ATObject[] pars = parameters.asNativeTable().elements_;
 		ATObject[] args = arguments.asNativeTable().elements_;
 		
-		if (pars.length != args.length)
-			throw new XArityMismatch(funnam.getText().asNativeText().javaValue, pars.length, args.length);
+		// check to see whether the last argument is a spliced parameters, which
+		// indicates a variable parameter list
+		if (pars[pars.length - 1].isSplice()) {
+			int numMandatoryPars = (pars.length - 1);
+			// if so, check whether at least all mandatory parameters are matched
+			if (args.length < numMandatoryPars)
+				throw new XArityMismatch(funnam.getText().asNativeText().javaValue, numMandatoryPars, args.length);
+			
+			// bind all parameters except for the last one
+			for (int i = 0; i < numMandatoryPars; i++) {
+				scope.meta_defineField(pars[i].asSymbol(), args[i]);
+			}
+			
+			// bind the last parameter to the remaining arguments
+			int numRemainingArgs = args.length - numMandatoryPars;
+			ATObject[] restArgs = new ATObject[numRemainingArgs];
+			for (int i = 0; i < numRemainingArgs; i++) {
+				restArgs[i] = args[i + numMandatoryPars];
+			}
+			ATSymbol restArgsName = pars[numMandatoryPars].asSplice().getExpression().asSymbol();
+			scope.meta_defineField(restArgsName, new NATTable(restArgs));
+			
+		} else {
+			// regular parameter list: arguments and parameters have to match exactly
+			if (pars.length != args.length)
+				throw new XArityMismatch(funnam.getText().asNativeText().javaValue, pars.length, args.length);	
 		
-		for (int i = 0; i < pars.length; i++) {
-			scope.meta_defineField(pars[i].asSymbol(), args[i]);
+			for (int i = 0; i < pars.length; i++) {
+				scope.meta_defineField(pars[i].asSymbol(), args[i]);
+			}
 		}
 	}
 	
@@ -129,6 +170,7 @@ public final class NATTable extends AGExpression implements ATTable {
 	public final ATObject[] elements_;
 	
 	public NATTable(ATObject[] elements) {
+		// assert elements.length > 0
 		elements_ = elements;
 	}
 	
@@ -161,12 +203,41 @@ public final class NATTable extends AGExpression implements ATTable {
 	public NATTable asNativeTable() { return this; }
 	
 	/**
+	 * To evaluate a table, evaluate all of its constituent expressions, taking
+	 * special care to take into account spliced expressions.
+	 * 
+	 * NATTAB(exps).eval(ctx) = NATTAB(map eval(ctx) over exps)
+	 * 
+	 * @return a table of evaluated arguments
+	 */
+	public ATObject meta_eval(ATContext ctx) throws NATException {
+		if (this == EMPTY) return EMPTY;
+		
+		LinkedList result = new LinkedList();
+		int siz = elements_.length;
+		for (int i = 0; i < elements_.length; i++) {
+			if (elements_[i].isSplice()) {
+				ATObject[] tbl = elements_[i].asSplice().getExpression().meta_eval(ctx).asNativeTable().elements_;
+				for (int j = 0; j < tbl.length; j++) {
+					result.add(tbl[j]);
+				}
+				siz += (tbl.length - 1); // -1 because we replace one element by a table of elements
+			} else {
+				result.add(elements_[i].meta_eval(ctx));
+			}
+		}
+		return new NATTable(result.toArray(new ATObject[siz]));
+	}
+	
+	/**
 	 * To quote a table, quote all elements of the table.
 	 * Special care needs to be taken in order to properly deal with unquote-spliced elements.
 	 * When one of the direct elements of the table is an unquote-splice element, the resulting
 	 * unquotation must result in a table whose elements are directly added to this table's elements.
 	 */
 	public ATObject meta_quote(ATContext ctx) throws NATException {
+		if (this == EMPTY) return EMPTY;
+		
 		LinkedList result = new LinkedList();
 		int siz = elements_.length;
 		for (int i = 0; i < elements_.length; i++) {

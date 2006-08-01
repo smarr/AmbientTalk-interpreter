@@ -60,15 +60,15 @@ statement: ("def"! definition)
 // def <apl> { <body> } defines an immutable function.
 // def <name>[size-exp] { <init-expression> } defines and initializes a new table of a given size
 definition!: nam:variable EQL val:expression { #definition = #([AGDEFFIELD,"define-field"], nam, val); }
-           | inv:parameterlist LBC bdy:semicolonlist RBC { #definition = #([AGDEFFUN,"define-function"], inv, bdy); }
+           | inv:signature LBC bdy:semicolonlist RBC { #definition = #([AGDEFFUN,"define-function"], inv, bdy); }
            | tbl:variable LBR siz:expression RBR LBC init:expression RBC { #definition = #([AGDEFTABLE,"define-table"], tbl, siz, init); };
 
-// Parameter lists can be either canonical lists of the form <fun(a,b,c)>
-// or keyworded lists of the form <foo: a bar: b>
-parameterlist: canonicalparameterlist
-             | keywordparameterlist;
+// A function signature can either be a canonical parameter list of the form <fun(a,b,c)>
+// or a keyworded list of the form <foo: a bar: b>
+signature: canonicalparameterlist
+         | keywordparameterlist;
 
-canonicalparameterlist!: var:variable LPR pars:variablelist RPR { #canonicalparameterlist = #([AGAPL,"apply"], var, pars); }; 
+canonicalparameterlist!: var:variable LPR pars:parameterlist RPR { #canonicalparameterlist = #([AGAPL,"apply"], var, pars); }; 
 
 // See the documentation at the keywordlist rule for more information. The difference between
 // keywordparameterlist and keywordlist lies in the ability to either parse a varlist or a commalist.
@@ -76,7 +76,7 @@ keywordparameterlist: (keywordparam)+ {
 	#keywordparameterlist = keywords2canonical(#keywordparameterlist);
 };
 
-keywordparam: KEY^ variable_or_unquote;
+keywordparam: KEY^ parameter;
 
 // Assignment of a variable is similar to its definition albeit without the word def.
 // TODO tabulation assignment requires the parser to look ahead arbitrarily far for a ':=' -> inefficient 
@@ -176,8 +176,8 @@ keywordlist: singlekeyword
 				warnWhenFollowAmbig = false;
 			 } : singlekeyword)* { #keywordlist = keywords2canonical(#keywordlist); };
 
-// This rule groups a keyword and the adjoined expression into a single tree element.
-singlekeyword: KEY^ expression;
+// This rule groups a keyword and the adjoined argument expression into a single tree element.
+singlekeyword: KEY^ argument;
 
 // First-class message creation syntax: .m() or .key:val
 message!: apl:application { #message = #([AGMSG,"message"], apl); };
@@ -189,7 +189,7 @@ asyncmessage!: apl:application { #asyncmessage = #([AGAMS,"async-message"], apl)
 subexpression!: e:expression RPR { #subexpression = #e; };
 
 // Inline syntax for nameless functions (lambdas or blocks)
-block!: PIP pars:variablelist PIP body:semicolonlist RBC
+block!: PIP pars:parameterlist PIP body:semicolonlist RBC
 		 { #block = #([AGCLO, "closure"], pars, body); }
 	  | no_args_body:semicolonlist RBC
 		 { #block = #([AGCLO, "closure"], #([AGTAB,"table"], #([COM]) ), no_args_body); };
@@ -199,16 +199,22 @@ table!: slots:commalist RBR { #table = #slots; };
 
 // Parses a list of expressions separated by commas. 
 // USAGE: canonical function application (arguments) and inline tables
-// @param generateImaginaryNode - generate an additional tree node?
-commalist: expression (COM! expression)* 
+commalist: argument (COM! argument)* 
 	{ #commalist = #([AGTAB,"table"], #commalist); }
 	|! /* empty */ { #commalist = #([AGTAB,"table"], #([COM]));};
 
-// parses a list of variables that may act as formal parameters
-variablelist: variable_or_unquote (COM! variable_or_unquote)* { #variablelist = #([AGTAB, "table"], #variablelist); }
-            |! /* empty */ { #variablelist = #([AGTAB,"table"], #([COM])); };
+argument:! CAT exp:expression { #argument = #([AGSPL,"splice"], exp); }
+        | expression;
 
-variable_or_unquote: variable | HSH! unquotation;
+// parses a list of variables that may act as formal parameters
+parameterlist: parameter (COM! parameter)* { #parameterlist = #([AGTAB, "table"], #parameterlist); }
+            |! /* empty */ { #parameterlist = #([AGTAB,"table"], #([COM])); };
+
+parameter: variable_or_quotation
+         |! CAT v:variable_or_quotation { #parameter = #([AGSPL,"splice"], v); };
+
+variable_or_quotation: variable
+                     | HSH! unquotation;
 
 // user-definable names for variables
 variable: symbol
@@ -261,6 +267,7 @@ protected AGSUP     : "super";         // AGSuper
 protected AGQUO     : "quote";         // AGQuote (STMT stmt)
 protected AGUNQ     : "unquote";       // AGUnquote (EXP exp)
 protected AGUQS     : "unquote-splice";// AGUnquoteSplice (EXP exp)
+protected AGSPL     : "splice";        // AGSplice(EXP exp)
 // Literals
 protected AGNBR     : "number";        // NATNumber (<int>)
 protected AGFRC     : "fraction";      // NATFraction (<double>)
@@ -502,6 +509,7 @@ expression returns [ATExpression exp]
           | #(AGQUO qstmt=statement) { exp = new AGQuote(qstmt); }
           | #(AGUNQ qexp=expression) { exp = new AGUnquote(qexp); }
           | #(AGUQS qexp=expression) { exp = new AGUnquoteSplice(qexp); }
+          | #(AGSPL qexp=expression) { exp = new AGSplice(qexp); }
           | exp=message
           | exp=symbol
           | exp=binop

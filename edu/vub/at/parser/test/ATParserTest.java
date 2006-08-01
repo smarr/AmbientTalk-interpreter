@@ -82,6 +82,8 @@ public class ATParserTest extends TestCase {
 				 "(begin (send (symbol o) (message (apply (symbol m) (table (symbol a) (symbol b))))))");
 		testParse("o<-m(a,b)",
 		          "(begin (send (symbol o) (async-message (apply (symbol m) (table (symbol a) (symbol b))))))");
+		testParse("foo: a bar: b",
+		          "(begin (apply (symbol foo:bar:) (table (symbol a) (symbol b))))");
 		testParse("o.foo: a bar: b",
 				 "(begin (send (symbol o) (message (apply (symbol foo:bar:) (table (symbol a) (symbol b))))))");
 		testParse("o<-foo: a bar: b",
@@ -154,6 +156,23 @@ public class ATParserTest extends TestCase {
 				 "(begin (closure (table (symbol x) (symbol y)) (begin (+ (symbol x) (symbol y)))))");
 		testParse("{ a := 2; b }",
 				 "(begin (closure (table) (begin (field-set (symbol a) (number 2)) (symbol b))))");
+	}
+	
+	/**
+	 * Tests syntax for variable arguments and splicing
+	 * @covers variable arguments, parameters and spliced tables
+	 */
+	public void testSplice() {
+		testParse("def f(x,@y) { 1 }",
+				 "(begin (define-function (apply (symbol f) (table (symbol x) (splice (symbol y)))) (begin (number 1))))");
+		testParse("def foo: x bar: @y { 1 }",
+		          "(begin (define-function (apply (symbol foo:bar:) (table (symbol x) (splice (symbol y)))) (begin (number 1))))");		
+		testParse("f(1,@[2,3])",
+                  "(begin (apply (symbol f) (table (number 1) (splice (table (number 2) (number 3))))))");
+		testParse("foo: 1 bar: @[2,3]",
+                   "(begin (apply (symbol foo:bar:) (table (number 1) (splice (table (number 2) (number 3))))))");
+		testParse("[x, @[y,z], u, @v]",
+                   "(begin (table (symbol x) (splice (table (symbol y) (symbol z))) (symbol u) (splice (symbol v))))");
 	}
 
 	/**

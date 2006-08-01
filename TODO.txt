@@ -25,3 +25,5 @@
 * Evaluator: meta_eval and meta_quote/unquote
 * Tests: test structure
 * MTH hierarchy?
+* Lexical root: what does it contain?
+* Native values: operations and numeric protocol

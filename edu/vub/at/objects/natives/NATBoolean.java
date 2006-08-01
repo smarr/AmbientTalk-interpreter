@@ -48,7 +48,11 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 	 * dynamic test, else the static fields _TRUE_ and _FALSE_ should be used instead.
 	 */
 	public static ATBoolean atValue(boolean b) {
-		return b?_TRUE_:_FALSE_;
+		if (b) {
+			return _TRUE_;
+		} else {
+			return _FALSE_;
+		}
 	}
 	
 	public final boolean javaValue;

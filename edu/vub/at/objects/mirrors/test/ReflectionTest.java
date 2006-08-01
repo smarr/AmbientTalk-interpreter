@@ -29,21 +29,15 @@ package edu.vub.at.objects.mirrors.test;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATBoolean;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATMethod;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.BaseBoolean;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 import edu.vub.at.objects.natives.test.NATObjectClosureTest;
@@ -53,9 +47,8 @@ import edu.vub.at.parser.ATTreeWalker;
 
 import java.io.ByteArrayInputStream;
 
-import antlr.CommonAST;
-
 import junit.framework.TestCase;
+import antlr.CommonAST;
 
 /**
  * @author smostinc

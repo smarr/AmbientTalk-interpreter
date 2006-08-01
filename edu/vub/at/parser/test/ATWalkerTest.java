@@ -86,5 +86,13 @@ public class ATWalkerTest extends TestCase {
 		testWalker("{ | x, y | x.+(y) }");
 		testWalker("{ a := 2; b }");
 	}
+	
+	public void testSplice() {
+		testWalker("def f(x,@y) { 1 }");
+		testWalker("def foo: x bar: @y { 1 }", "def foo:bar:(x, @y) { 1 }");
+		testWalker("f(1,@[2,3])");
+		testWalker("foo: 1 bar: @[2,3]", "foo:bar:(1, @[2,3])");
+		testWalker("[x, @[y,z], u, @v]");
+	}
 
 }

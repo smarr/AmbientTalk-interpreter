@@ -1,4 +1,4 @@
-package edu.vub.at.objects.grammar.natives.tests;
+package edu.vub.at.objects.natives.grammar.test;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XParseError;
@@ -23,6 +23,7 @@ import edu.vub.at.objects.natives.NATSuperObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
+import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.test.ATParserTest;
 
@@ -40,7 +41,9 @@ public class TestEval extends TestCase {
 	private final NATNumber atThree_ = NATNumber.atValue(3);
 	private final AGSymbol atX_ = AGSymbol.alloc(NATText.atValue("x"));
 	private final AGSymbol atY_ = AGSymbol.alloc(NATText.atValue("y"));
+	private final AGSymbol atZ_ = AGSymbol.alloc(NATText.atValue("z"));
 	private final AGSymbol atM_ = AGSymbol.alloc(NATText.atValue("m"));
+	private final AGSymbol atFooBar_ = AGSymbol.alloc(NATText.atValue("foo:bar:"));
 	
 	private ATContext ctx_;
 	
@@ -250,7 +253,47 @@ public class TestEval extends TestCase {
 		evalAndCompareTo("`(def x := `(3))", "def x := `(3)");
 		evalAndCompareTo("`(def x := #(3))", "def x := 3");
 		evalAndCompareTo("`(def foo(a) { #([1,2,3]) })", "def foo(a) { [1, 2, 3] }");
-		evalAndCompareTo("`(def foo(#@([a,b,c])) { #@([1,2,3]) })", "def foo(a, b, c) { 1; 2; 3 }");
+		evalAndCompareTo("`(def foo(#@(`([a,b,c]))) { #@([1,2,3]) })", "def foo(a, b, c) { 1; 2; 3 }");
+		evalAndCompareTo("`(def foo: x bar: #@(`([y,z])) { 1 })", "def foo:bar:(x, y, z) { 1 }");
+	}
+	
+	public void testArgumentSplicing() throws NATException {
+		evalAndCompareTo("[1, @[2,[3]], [4], @[5], @[], 6]", "[1, 2, [3], [4], 5, 6]");
+		
+		// def m(x,y,z) { z }
+		NATMethod m = new NATMethod(atM_, new NATTable(new ATObject[] { atX_, atY_, atZ_ }),
+                                           new AGBegin(new NATTable(new ATObject[] { atZ_ })));
+        ctx_.getSelf().meta_addMethod(m);
+		
+		evalAndCompareTo("m(1,@[2,3])", "3");
+		evalAndCompareTo("self.m(1,@[2,3])", "3");
+	}
+	
+	public void testVariableArguments() throws NATException {
+		// def m(x,y,@z) { [x, y, z] }
+		NATMethod m = new NATMethod(atM_, new NATTable(new ATObject[] { atX_, atY_, new AGSplice(atZ_) }),
+                                           new AGBegin(new NATTable(new ATObject[] {
+                                        		   new NATTable(new ATObject[] { atX_, atY_, atZ_ })
+                                           })));
+        ctx_.getSelf().meta_addMethod(m);
+		
+		evalAndCompareTo("m(1,2,3,4,5)", "[1, 2, [3, 4, 5]]");
+		evalAndCompareTo("m(1,2,3)", "[1, 2, [3]]");
+		evalAndCompareTo("m(1,2)", "[1, 2, []]");
+		evalAndCompareTo("m(1,2,@[3,4,5])", "[1, 2, [3, 4, 5]]");
+		evalAndCompareTo("m(@[1,2,3])", "[1, 2, [3]]");
+	}
+	
+	public void testVariableKeywordArguments() throws NATException {
+		// def foo:bar:(x,@y) { y }
+		NATMethod fooBar = new NATMethod(atFooBar_, new NATTable(new ATObject[] { atX_, new AGSplice(atY_) }),
+                                                new AGBegin(new NATTable(new ATObject[] { atY_ })));
+        ctx_.getSelf().meta_addMethod(fooBar);
+		
+		evalAndCompareTo("foo: 1 bar: 2", "[2]");
+		evalAndCompareTo("foo: 1 bar: @[2,3]", "[2, 3]");
+		evalAndCompareTo("foo: 1 bar: @[2]", "[2]");
+		evalAndCompareTo("foo: 1 bar: @[]", "[]");
 	}
 	
 }

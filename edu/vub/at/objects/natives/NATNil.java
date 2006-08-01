@@ -46,6 +46,7 @@ import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageCreation;
+import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
@@ -270,6 +271,10 @@ public class NATNil implements ATNil, BaseNil {
 	public boolean isUnquoteSplice() {
 		return false;
 	}
+
+	public boolean isSplice() {
+		return false;
+	}
 	
 	public ATClosure asClosure() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected a closure, given: " + this.getClass().getName(), this);
@@ -315,6 +320,10 @@ public class NATNil implements ATNil, BaseNil {
 
 	public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected an unquote-splice abstract grammar, given: " + this.getClass().getName(), this);		
+	}
+
+	public ATSplice asSplice() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a splice abstract grammar, given: " + this.getClass().getName(), this);		
 	}
 	
 	// Conversions for native values
