@@ -53,9 +53,9 @@ public class MTHObject_ extends NATPrimitiveMethod {
 
 	public static final ATMethod _INSTANCE_ = 
 		new NATMethod(
-				AGSymbol.alloc(NATText.atValue("object:")),
+				AGSymbol.alloc("object:"),
 				new NATTable(new ATObject[] { 
-						AGSymbol.alloc(NATText.atValue("definition")) }),
+						AGSymbol.alloc("definition") }),
 				new MTHObject_());
 	
 	private MTHObject_() { };

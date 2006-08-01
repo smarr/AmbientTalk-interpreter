@@ -60,8 +60,23 @@ import java.util.Vector;
  */
 public class BaseInterfaceAdaptor {
 
-	public static String transformSelector(String addPrefix, String removePrefix, String selector) {
+	public static String transformSelector(
+			String addPrefix, String removePrefix, String selector) {
 		return addPrefix + selector.replaceFirst(removePrefix,"").replace(':', '_');
+	}
+	
+	public static String transformField(
+			String addPrefix, String removePrefix, 
+			String selector, boolean toUpper) {
+		char[] charArray = selector.replaceFirst(removePrefix,"").toCharArray();
+		if(toUpper) {
+			charArray[0] = Character.toUpperCase(charArray[0]);
+		} else {
+			charArray[0] = Character.toLowerCase(charArray[0]);			
+		}
+		
+		selector = new String(charArray);
+		return addPrefix + selector;
 	}
 	
 	private static class ObjectClassArray {
@@ -71,13 +86,13 @@ public class BaseInterfaceAdaptor {
 		
 		private ObjectClassArray(ATTable arguments) throws NATException {
 
-			int numberOfArguments = arguments.getLength().asNativeNumber().javaValue;
+			int numberOfArguments = arguments.base_getLength().asNativeNumber().javaValue;
 			
 			values_	= new Object[numberOfArguments];
 			types_	= new Class[numberOfArguments];
 			
 			for(int i = 0; i < numberOfArguments; i++) {
-				ATObject argument = arguments.at(NATNumber.atValue(i+1));
+				ATObject argument = arguments.base_at(NATNumber.atValue(i+1));
 				values_[i] 	= argument;
 				types_[i] 	= argument.getClass();
 			};
@@ -120,7 +135,7 @@ public class BaseInterfaceAdaptor {
 			// Exceptions during method invocation imply that the requested method was
 			// not found in the interface. Hence a XTypeMismatch is thrown to signal 
 			// that the object could not respond to the request.
-			e.printStackTrace();
+			// e.printStackTrace();
 			throw new XTypeMismatch(
 				"Could not invoke method with selector " + methodName.toString() + " on the given object.",
 				e, receiver);
@@ -130,20 +145,20 @@ public class BaseInterfaceAdaptor {
 	public static boolean hasApplicableMethod (
 			Class baseInterface, 
 			ATObject receiver,
-			ATSymbol methodName) {
+			String selector) {
 
 		return (getMethodsForSelector(
-				baseInterface, methodName.toString()).length != 0);
+				baseInterface, selector).length != 0);
 	}
 	
 	public static JavaMethod wrapMethodFor(
 			Class baseInterface, 
 			ATObject receiver,
-			ATSymbol methodName) throws NATException {
-		Method[] applicable = getMethodsForSelector(baseInterface, methodName.toString());
+			String methodName) throws NATException {
+		Method[] applicable = getMethodsForSelector(baseInterface, methodName);
 		switch (applicable.length) {
 			case 0:
-				throw new XSelectorNotFound(methodName, receiver);
+				throw new XSelectorNotFound(AGSymbol.alloc(methodName), receiver);
 			case 1:
 				return new JavaMethod.Simple(receiver, applicable[0]);
 			default:

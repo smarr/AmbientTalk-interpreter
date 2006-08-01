@@ -118,8 +118,8 @@ public class TestEval extends TestCase {
         evalAndCompareTo("def x[3] { 3 }", NATNil._INSTANCE_);
         try {
         	  ATObject tab = ctx_.getLexicalScope().meta_lookup(atX_);
-        	  assertEquals(atThree_, tab.asTable().getLength());
-        	  assertEquals(atThree_, tab.asTable().at(NATNumber.ONE));
+        	  assertEquals(atThree_, tab.asTable().base_getLength());
+        	  assertEquals(atThree_, tab.asTable().base_at(NATNumber.ONE));
         } catch(XSelectorNotFound e) {
         	  fail("broken definition:"+e.getMessage());
         }
@@ -141,7 +141,7 @@ public class TestEval extends TestCase {
 		ctx_.getLexicalScope().meta_defineField(atX_, table);
 		
         evalAndCompareTo("x[1] := 3", NATNil._INSTANCE_);
-        assertEquals(atThree_, table.at(NATNumber.ONE));
+        assertEquals(atThree_, table.base_at(NATNumber.ONE));
 	}
 	
 	// expressions
@@ -168,9 +168,9 @@ public class TestEval extends TestCase {
 	  ATAbstractGrammar bdy = clo.getMethod().getBody();
 	  ATContext ctx = clo.getContext();
 	  assertEquals(AGSymbol.alloc(NATText.atValue("lambda")), nam);
-	  assertEquals(atX_, arg.at(NATNumber.ONE));
-	  assertEquals(atY_, arg.at(NATNumber.atValue(2)));
-	  assertEquals(atThree_, bdy.asBegin().getStatements().at(NATNumber.ONE));
+	  assertEquals(atX_, arg.base_at(NATNumber.ONE));
+	  assertEquals(atY_, arg.base_at(NATNumber.atValue(2)));
+	  assertEquals(atThree_, bdy.asBegin().getStatements().base_at(NATNumber.ONE));
 	  assertEquals(ctx_, ctx);
 	}
 	
@@ -199,11 +199,11 @@ public class TestEval extends TestCase {
 		ATMessage asyncMsg = evalAndReturn("<-m(3)").asMessage();
 
 		assertEquals(atM_, methInv.getSelector());
-		assertEquals(atThree_, methInv.getArguments().at(NATNumber.ONE));
+		assertEquals(atThree_, methInv.getArguments().base_at(NATNumber.ONE));
 		assertTrue(methInv instanceof ATMethodInvocation);
 		
 		assertEquals(atM_, asyncMsg.getSelector());
-		assertEquals(atThree_, asyncMsg.getArguments().at(NATNumber.ONE));
+		assertEquals(atThree_, asyncMsg.getArguments().base_at(NATNumber.ONE));
 		assertTrue(asyncMsg instanceof ATAsyncMessage);
 		assertEquals(ctx_.getSelf(), ((ATAsyncMessage) asyncMsg).getSender());
 	}

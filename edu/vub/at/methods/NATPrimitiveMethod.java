@@ -44,7 +44,7 @@ public class NATPrimitiveMethod extends NATNil {
 
 	protected ATObject getParameterValue(String name, ATContext ctx) throws NATException {
 		return ctx.getLexicalScope().meta_lookup(
-				AGSymbol.alloc(NATText.atValue(name)));
+				AGSymbol.alloc(name));
 
 	}
 }

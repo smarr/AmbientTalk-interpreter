@@ -65,12 +65,12 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	 * requires a minimal form of explicit continuations.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		NATNumber siz = statements_.getLength().asNativeNumber();
+		NATNumber siz = statements_.base_getLength().asNativeNumber();
 		int lastIdx = siz.javaValue;
 		for (int i = 1; i < lastIdx; i++) {
-			statements_.at(NATNumber.atValue(i)).meta_eval(ctx);
+			statements_.base_at(NATNumber.atValue(i)).meta_eval(ctx);
 		}
-		return statements_.at(NATNumber.atValue(lastIdx)).meta_eval(ctx);
+		return statements_.base_at(NATNumber.atValue(lastIdx)).meta_eval(ctx);
 	}
 
 	/**

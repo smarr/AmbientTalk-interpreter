@@ -49,11 +49,11 @@ public class JavaClass extends NATNil implements ATTable {
 		this.c_ = c;
 	}
 
-	public ATNumber getLength() {
+	public ATNumber base_getLength() {
 		return NATNumber.atValue(c_.getMethods().length);
 	}
 
-	public ATObject at(ATNumber index) {
+	public ATObject base_at(ATNumber index) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -61,12 +61,12 @@ public class JavaClass extends NATNil implements ATTable {
 	/* (non-Javadoc)
 	 * @see edu.vub.at.objects.ATTable#atPut(edu.vub.at.objects.ATNumber, edu.vub.at.objects.ATObject)
 	 */
-	public ATObject atPut(ATNumber index, ATObject value) {
+	public ATObject base_atPut(ATNumber index, ATObject value) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
-	public ATBoolean isEmpty() {
+	public ATBoolean base_isEmpty() {
 		return NATBoolean.atValue(c_.getMethods().length == 0);
 	}
 

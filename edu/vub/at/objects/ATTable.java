@@ -39,10 +39,10 @@ import edu.vub.at.objects.natives.NATTable;
  */
 public interface ATTable extends ATExpression {
 
-	public ATNumber getLength();
-	public ATObject at(ATNumber index) throws NATException;
-	public ATObject atPut(ATNumber index, ATObject value) throws NATException;
-	public ATBoolean isEmpty();
+	public ATNumber base_getLength();
+	public ATObject base_at(ATNumber index) throws NATException;
+	public ATObject base_atPut(ATNumber index, ATObject value) throws NATException;
+	public ATBoolean base_isEmpty();
 	
 	public NATTable asNativeTable();
 }

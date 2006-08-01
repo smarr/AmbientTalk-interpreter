@@ -51,7 +51,7 @@ import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.BaseInterfaceAdaptor;
-import edu.vub.at.objects.mirrors.JavaClass;
+import edu.vub.at.objects.mirrors.NATPrimitiveField;
 
 /**
  * @author smostinc
@@ -67,16 +67,6 @@ public class NATNil implements ATNil, BaseNil {
 	/* ------------------------------
 	 * -- Message Sending Protocol --
 	 * ------------------------------ */
-
-	/**
-	 * Specifies an interface of methods which may be accessed directly from the 
-	 * ambienttalk base-level. For "primitive" ambienttalk language values such as
-	 * booleans, numbers, text, blocks, etc. this interface specifies the messages
-	 * these values are capable of handling.
-	 */
-	protected Class getBaseInterface() {
-		return BaseNil.class;
-	}
 	
 	/**
 	 * Asynchronous messages sent to an object ( o<-m( args )) are handled by the 
@@ -120,9 +110,13 @@ public class NATNil implements ATNil, BaseNil {
 	 * An ambienttalk language value can respond to a message if this message is found
 	 * in the interface it exports to the base-level.
 	 */
-	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
+	public ATBoolean meta_respondsTo(ATSymbol methodName) throws NATException {
+		String selector = methodName.getText().asNativeText().javaValue;
+		
+		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
+
 		return NATBoolean.atValue(BaseInterfaceAdaptor.hasApplicableMethod(
-				this.getBaseInterface(),
+				this.getClass(),
 				this,
 				selector));
 	}
@@ -137,8 +131,27 @@ public class NATNil implements ATNil, BaseNil {
 	 * offers the method in its provided interface. The result is a JavaMethod wrapper
 	 * which encapsulates the reflective Method object as well as the receiver.
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
-		return meta_getMethod(selector);
+	public ATObject meta_select(ATObject receiver, ATSymbol name) throws NATException {
+		String selector = name.getText().asNativeText().javaValue;
+		
+		try {
+			selector = BaseInterfaceAdaptor.transformField("base_get", "", selector, true);
+				
+			ATObject result = NATObject.cast(
+					BaseInterfaceAdaptor.deifyInvocation(
+						this.getClass(),
+						this,
+						selector,
+						NATTable.EMPTY));
+			
+			return result;
+		} catch (XTypeMismatch e) {
+			return meta_getMethod(name);
+		}
+
+		
+		
+		// return NATNil._INSTANCE_;
 	}
 
 	/**
@@ -188,23 +201,29 @@ public class NATNil implements ATNil, BaseNil {
 		throw new XIllegalOperation("Cannot add methods to an object of type " + this.getClass().getName());
 	}
 
-	public ATField meta_getField(ATSymbol selector) throws NATException {
-		throw new XIllegalOperation("Object of type " + this.getClass().getName() + " has no accessible fields");
+	public ATField meta_getField(ATSymbol fieldName) throws NATException {
+		return NATPrimitiveField.createPrimitiveField(this, fieldName);
 	}
 
-	public ATMethod meta_getMethod(ATSymbol selector) throws NATException {
+	public ATMethod meta_getMethod(ATSymbol methodName) throws NATException {
+		String selector = methodName.getText().asNativeText().javaValue;
+
+		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
+
 		return BaseInterfaceAdaptor.wrapMethodFor(
-				this.getBaseInterface(),
+				this.getClass(),
 				this,
 				selector);
 	}
 
 	public ATTable meta_listFields() throws NATException {
+		// TODO do we show all base_get methods here?
 		return NATTable.EMPTY;
 	}
 
 	public ATTable meta_listMethods() throws NATException {
-		return new JavaClass(this.getBaseInterface());
+		// TODO filter out all base_get and show all base_?
+		return NATTable.EMPTY;
 	}
 	
 	/* ---------------------------------

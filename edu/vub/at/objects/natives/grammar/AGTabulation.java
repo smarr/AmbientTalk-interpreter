@@ -73,7 +73,7 @@ public final class AGTabulation extends AGExpression implements ATTabulation {
 		} catch (XTypeMismatch e) {
 			throw new XIllegalIndex(e.getMessage());
 		}
-		return tab.at(idx);
+		return tab.base_at(idx);
 	}
 
 	/**

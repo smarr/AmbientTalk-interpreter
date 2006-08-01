@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors.test;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -80,9 +81,11 @@ public class ReflectionTest extends TestCase {
 		}		
 	};
 	
-	private final ATBoolean True = NATBoolean._TRUE_;
-	private final ATBoolean False = NATBoolean._FALSE_;
-		
+	private final ATBoolean True		= NATBoolean._TRUE_;
+	private final ATBoolean False		= NATBoolean._FALSE_;
+	
+	private ATTable closures 			= new NATTable(
+			new ATObject[] { fail, fail, success });
 	
 	private void evaluateInput(String input, ATContext ctx) {
         try {
@@ -189,5 +192,68 @@ public class ReflectionTest extends TestCase {
 			e.printStackTrace();
 			fail();
 		}
+	}
+
+	/**
+	 * Tests the accessing of fields on a natively implemented table. This test 
+	 * calls the methods from java and thus will fail only when the corresponding
+	 * implementation is corrupted.
+	 */
+	public void testJavaBaseFieldAccess() {
+		try {
+			ATObject element = closures.base_at(closures.base_getLength());
+			element.asClosure().meta_apply(NATTable.EMPTY);
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail();
+		}
+		
+	}
+
+	/**
+	 * Tests the accessing of fields on a natively implemented table. If this test
+	 * succeeds and the next test fails, the fault is due to the implementation of
+	 * the AG-objects for tabulation and or application.
+	 */
+	public void testSimulatedBaseFieldAccess() {
+		try {
+			ATObject accessor = closures.meta_select(closures, AGSymbol.alloc("at"));
+			ATObject element = accessor.asClosure().meta_apply(new NATTable(new ATObject[] {
+							closures.meta_select(closures, AGSymbol.alloc("length"))}));
+			element.asClosure().meta_apply(NATTable.EMPTY);
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	/**
+	 * Tests the accessing of fields on a natively implemented table. This test
+	 * uses ambienttalk code for the evaluation, so 
+	 *
+	 */
+	public void testBaseFieldAccess() {
+		try {
+			ATObject lexicalRoot = new NATObject(NATNil._INSTANCE_);
+			lexicalRoot.meta_defineField(AGSymbol.alloc("closures"), closures);
+
+			evaluateInput(
+					"def accessor := closures.at;" +
+					"def expanded := accessor(closures.length);" +
+					"def coated := closures[closures.length];" +
+					"expanded();" +
+					"coated()",
+					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+
+			evaluateInput(
+					"closures.at(closures.length)();" +
+					"closures[closures.length]()",
+					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail();
+		}
+		
 	}
 }

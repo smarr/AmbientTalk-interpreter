@@ -54,10 +54,10 @@ public class MTHExtend_with_ extends NATPrimitiveMethod {
 
 	public static final ATMethod _INSTANCE_ = 
 		new NATMethod(
-				AGSymbol.alloc(NATText.atValue("extend:with:")),
+				AGSymbol.alloc("extend:with:"),
 				new NATTable(new ATObject[] { 
-						AGSymbol.alloc(NATText.atValue("object")),
-						AGSymbol.alloc(NATText.atValue("definition"))}),
+						AGSymbol.alloc("object"),
+						AGSymbol.alloc("definition")}),
 				new MTHExtend_with_());
 	
 	private MTHExtend_with_() { };

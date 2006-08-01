@@ -80,7 +80,7 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 		} catch (XTypeMismatch e) {
 			throw new XIllegalIndex(e.getMessage());
 		}
-		tab.atPut(idx, valExp_.meta_eval(ctx));
+		tab.base_atPut(idx, valExp_.meta_eval(ctx));
 		return NATNil._INSTANCE_;
 	}
 

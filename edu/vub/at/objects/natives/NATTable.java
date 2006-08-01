@@ -183,18 +183,18 @@ public final class NATTable extends AGExpression implements ATTable {
 		}
 	}
 	
-	public ATNumber getLength() { return NATNumber.atValue(elements_.length); }
+	public ATNumber base_getLength() { return NATNumber.atValue(elements_.length); }
 
-	public ATObject at(ATNumber index) throws NATException {
+	public ATObject base_at(ATNumber index) throws NATException {
 		return elements_[extractIndex(index)];
 	}
 
-	public ATObject atPut(ATNumber index, ATObject value) throws NATException {
+	public ATObject base_atPut(ATNumber index, ATObject value) throws NATException {
 		elements_[extractIndex(index)] = value;
 		return value;
 	}
 	
-	public ATBoolean isEmpty() {
+	public ATBoolean base_isEmpty() {
 		return NATBoolean.atValue(elements_.length == 0);
 	}
 	
