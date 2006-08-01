@@ -37,8 +37,10 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.JavaMethod.Simple;
 import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.lang.reflect.Method;
+import java.security.spec.InvalidParameterSpecException;
 import java.util.Vector;
 
 /**
@@ -49,9 +51,19 @@ import java.util.Vector;
  * by mirrors (which allow viewing a java-level object as an ambienttalk mirror) and
  * it allows sending messages to ambienttalk objects whose implementation is provided
  * by their java representation objects.
+ * 
+ * This class also encapsulates static methods for manually implementing dynamic 
+ * dispatch over Java types. This is needed since whenever an invocation is made on
+ * an ambienttalk object we cannot foresee the expected java types. We can use this 
+ * technique to our advantage by using overloading on typically double dispatch 
+ * methods such as plus.
  */
 public class BaseInterfaceAdaptor {
 
+	public static String transformSelector(String addPrefix, String removePrefix, String selector) {
+		return addPrefix + selector.replaceFirst(removePrefix,"").replace(':', '_');
+	}
+	
 	private static class ObjectClassArray {
 		
 		private final Object[] values_;
@@ -88,23 +100,29 @@ public class BaseInterfaceAdaptor {
 		
 		return (Method[])matchingMethods.toArray(new Method[numMatchingMethods]);
 	}
-	
+		
 	public static Object deifyInvocation (
 			Class baseInterface, ATObject receiver,
-			ATSymbol methodName, ATTable arguments) 
+			String methodName, ATTable arguments) 
 			throws NATException {
-
-		ObjectClassArray args = new ObjectClassArray(arguments);
 		
 		try {
-			Method deified = baseInterface.getMethod(methodName.toString(), args.types_);
-			return deified.invoke(receiver, args.values_);
+			Method[] applicable = getMethodsForSelector(baseInterface, methodName);
+			switch(applicable.length) {
+				case 0:
+					throw new XSelectorNotFound(AGSymbol.alloc(methodName), receiver);
+				case 1:
+					return applicable[0].invoke(receiver, arguments.asNativeTable().elements_);
+				default:
+					throw new XIllegalOperation("Dynamic dispatching on overloaded methods not yet implemented");
+			}
 		} catch (Exception e) {
 			// Exceptions during method invocation imply that the requested method was
 			// not found in the interface. Hence a XTypeMismatch is thrown to signal 
 			// that the object could not respond to the request.
+			e.printStackTrace();
 			throw new XTypeMismatch(
-				"Could not invoke method with selector" + methodName.toString() + " on the given object.",
+				"Could not invoke method with selector " + methodName.toString() + " on the given object.",
 				e, receiver);
 		}
 	}

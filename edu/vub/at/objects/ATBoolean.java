@@ -37,8 +37,8 @@ import edu.vub.at.exceptions.NATException;
  */
 public interface ATBoolean extends ATObject {
 
-	ATObject ifTrue_(ATClosure cons) throws NATException;
-	ATObject ifFalse_(ATClosure alt) throws NATException;
-	ATObject ifTrue_ifFalse_(ATClosure cons, ATClosure alt) throws NATException;
+	ATObject base_ifTrue_(ATClosure cons) throws NATException;
+	ATObject base_ifFalse_(ATClosure alt) throws NATException;
+	ATObject base_ifTrue_ifFalse_(ATClosure cons, ATClosure alt) throws NATException;
 	
 }

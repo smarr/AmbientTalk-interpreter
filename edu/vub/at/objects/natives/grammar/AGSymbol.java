@@ -56,6 +56,10 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		txt_ = txt;
 	}
 	
+	public static final AGSymbol alloc(String javaRepresentation) {
+		return alloc(NATText.atValue(javaRepresentation));
+	}
+	
 	public static final AGSymbol alloc(ATText txt) {
 		AGSymbol existing = (AGSymbol) _STRINGPOOL_.get(txt);
 		if (existing == null) {

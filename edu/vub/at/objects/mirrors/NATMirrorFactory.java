@@ -36,6 +36,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import com.sun.org.apache.xml.internal.serializer.TransformStateSetter;
+
 
 /**
  * @author smostinc
@@ -79,10 +81,13 @@ class MirrorInvocationHandler implements InvocationHandler {
 			ATSymbol methodName = ((ATObject)args[0]).asSymbol();
 			ATTable arguments = ((ATObject)args[1]).asTable();
 			
+			selector = methodName.getText().asNativeText().javaValue;
+			selector = BaseInterfaceAdaptor.transformSelector("meta_","",selector);
+			
 			return BaseInterfaceAdaptor.deifyInvocation(
 					objectRepresentation_.getClass(), 
 					objectRepresentation_,
-					methodName,
+					selector,
 					arguments);
 			} else {
 				// TODO We can send the method to a NATMirror (or this?) to defer implementation.

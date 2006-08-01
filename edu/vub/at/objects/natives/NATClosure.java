@@ -45,6 +45,14 @@ public class NATClosure extends NATNil implements ATClosure {
 	private ATContext	context_;
 
 	/**
+	 * This no-args constructor is to be used only to be able to create anonymous 
+	 * closure subclasses which override the semantics of meta_apply.
+	 */
+	public NATClosure() {
+		this(null, null);
+	}
+	
+	/**
 	 * This constructor creates a closure with a bound dynamic receiver, and it is
 	 * called after the succesful lookup of a receiverful message.
 	 * @param method the method being wrapped into a closure.

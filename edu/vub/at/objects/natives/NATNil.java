@@ -92,10 +92,14 @@ public class NATNil implements ATNil, BaseNil {
 	 * they export to the base-level. Therefore the BaseInterfaceAdaptor will try to 
 	 * invoke the requested message, based on the passed selector and arguments.
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
+	public ATObject meta_invoke(ATObject receiver, ATSymbol methodName, ATTable arguments) throws NATException {
+		String selector = methodName.getText().asNativeText().javaValue;
+		
+		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
+		
 		return NATObject.cast(
 				BaseInterfaceAdaptor.deifyInvocation(
-					this.getBaseInterface(),
+					this.getClass(),
 					this,
 					selector,
 					arguments));
