@@ -503,7 +503,7 @@ expression returns [ATExpression exp]
   	ATMessageCreation msg;
   	NATTable arg; }
           : #(AGSND rcv=expression msg=message) { exp = new AGMessageSend(rcv,msg); }
-          | #(AGAPL sel=symbol arg=table) { exp = new AGApplication(sel, arg); }
+          | #(AGAPL rcv=expression arg=table) { exp = new AGApplication(rcv, arg); }
           | #(AGSEL rcv=expression sel=symbol) { exp = new AGSelection(rcv, sel); }
           | #(AGTBL rcv=expression idx=expression) { exp = new AGTabulation(rcv, idx); }
           | #(AGQUO qstmt=statement) { exp = new AGQuote(qstmt); }

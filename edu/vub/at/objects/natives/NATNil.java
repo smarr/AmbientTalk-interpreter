@@ -95,16 +95,6 @@ public class NATNil implements ATNil, BaseNil {
 					selector,
 					arguments));
 	}
-	
-	/**
-	 * A call can only be issued at the base level by writing ( m() ) inside the scope
-	 * of a particular object. For ordinary base values, this is downright impossible.
-	 * Therefore we raise an illegal operation exception.
-	 */
-	public ATObject meta_call(ATSymbol selector, ATTable arguments) throws NATException {
-		throw new XIllegalOperation(
-				"Cannot call a function inside the scope of an object of type " + this.getClass().getName());
-	}
 
 	/**
 	 * An ambienttalk language value can respond to a message if this message is found

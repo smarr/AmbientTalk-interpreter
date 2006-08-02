@@ -94,5 +94,10 @@ public class ATWalkerTest extends TestCase {
 		testWalker("foo: 1 bar: @[2,3]", "foo:bar:(1, @[2,3])");
 		testWalker("[x, @[y,z], u, @v]");
 	}
+	
+	public void testCurriedInvocations() {
+	    testWalker("closures.at(closures.length)()");
+	    testWalker("closures[closures.length]()");
+	}
 
 }

@@ -73,19 +73,6 @@ public interface ATObject extends ATConversions {
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException;
 	
 	/**
-	 * Invoke a function corresponding to the selector (and located along the lexical 
-	 * parent chain) with the given arguments
-	 * @param selector the name of the method to be invoked
-	 * @param arguments the table of arguments passed to the method
-	 * @return return value of the method
-	 * 
-	 * Triggers the following events on this object's beholders (mirror observers):
-	 *  - <tt>functionFound</tt> when a function has been found but not yet applied
-	 *  - <tt>functionApplied</tt> when the received function has been applied
-	 */	
-	public ATObject meta_call(ATSymbol selector, ATTable arguments) throws NATException;
-	
-	/**
 	 * Query an object for a given field or method which is visible to the outside world.
 	 * In other words only methods in the dynamic parent chain are considered.
 	 * @param selector the name of the method

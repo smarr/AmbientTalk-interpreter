@@ -93,16 +93,6 @@ public class NATCallframe extends NATNil implements ATObject {
 	}
 	
 	/**
-	 * Calls ( m( args ) ) inside the scope of an object are handled by looking up the 
-	 * requested selector along the lexical parent chain of the object. The lookup
-	 * operation should yield a closure (a method along with a proper context for 
-	 * evaluating its body). This closure is then applied with the passed arguments. 
-	 */
-	public ATObject meta_call(ATSymbol selector, ATTable arguments) throws NATException {
-		return meta_lookup(selector).asClosure().meta_apply(arguments);
-	}
-
-	/**
 	 * respondsTo is a mechanism to ask any object o whether it would respond to the
 	 * method o.selector( args ). Since callframes cannot be reified in the language
 	 * using base-level mechanisms (they can be visible as lexical parents to the 

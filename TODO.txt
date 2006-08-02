@@ -7,8 +7,22 @@
 * Review and fix mirrors and mirages (add/remove "base" and "meta" prefix)
 
 - Core language evaluator
-* variable parameters and arguments
+* instead of using HashMap for a var map, use custom class to avoid boxing/unboxing of integers
 * remove as much .asNative...() casts from the code
+
+* find a suitable semantics for object 'instantiation'.
+problem: 'init' is not a 'normal' method, if it would be, and you would invoke obj.clone.init, you might
+invoke the 'init' method of a 'shares-a' parent object that did not get cloned!
+two solutions:
+1) remove 'shares-a' parents from the language ; you can still do parent sharing by invoking o.extend { ... } twice on the same object o
+the idea is that all delegation links will then be is-a, so you don't have the 'init' problem anymore: you can search up to the root for 'init'.
+2) make 'object initialization' a dedicated meta-level operation (i.e. meta_init). meta_init(args) is almost the same as meta_invoke("init", args),
+except that the lookup for init does not traverse shares-a links...
+The one 'problem' remaining is that init can always be invoked on a 'live' (already initialized) object... unless meta_invoke is modified as
+to give an error when invoking 'init' (i.e. 'init' should only be invoked via meta_init and never via meta_invoke("init"), then you can
+make sure it's called only once.
+Perhaps a cleaner meta-level interface is having meta_clone and meta_new => clone makes a clone without initializing it, new also does initialization.
+The reason being that explicitly providing meta_init allows base-level code to re-initialize a live object at the meta-level.
 
 - Documentation
 * Package structure
@@ -24,6 +38,5 @@
 * Exceptions: raise method / deny direct throwing of exceptions
 * Evaluator: meta_eval and meta_quote/unquote
 * Tests: test structure
-* MTH hierarchy?
-* Lexical root: what does it contain?
+* Lexical root: what does it contain? how is it implemented?
 * Native values: operations and numeric protocol

@@ -29,11 +29,12 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATApplication;
-import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -44,28 +45,29 @@ import edu.vub.at.objects.natives.NATText;
  */
 public final class AGApplication extends AGExpression implements ATApplication {
 
-	private final ATSymbol selector_;
+	private final ATExpression funExp_;
 	private final ATTable arguments_;
 	
-	public AGApplication(ATSymbol sel, ATTable arg) {
-		selector_ = sel;
+	public AGApplication(ATExpression fun, ATTable arg) {
+		funExp_ = fun;
 		arguments_ = arg;
 	}
 	
-	public ATSymbol getSelector() { return selector_; }
+	public ATExpression getFunction() { return funExp_; }
 
 	public ATTable getArguments() { return arguments_; }
 
 	/**
-	 * To evaluate a function application, evaluate the arguments to the function application eagerly
-	 * and ask the current lexical context to call the function bound to the application's selector symbol.
+	 * To evaluate a function application, evaluate the receiver expression to a function, then evaluate the arguments
+	 * to the function application eagerly and apply the function.
 	 * 
-	 * AGAPL(sel,arg).eval(ctx) = ctx.scope.meta_call(sel, map eval(ctx) over arg)
+	 * AGAPL(fun,arg).eval(ctx) = fun.eval(ctx).apply(map eval(ctx) over arg)
 	 * 
 	 * @return the return value of the applied function.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		return ctx.getLexicalScope().meta_call(selector_, NATTable.evaluateArguments(arguments_.asNativeTable(), ctx));
+		ATClosure clo = funExp_.meta_eval(ctx).asClosure();
+		return clo.meta_apply(NATTable.evaluateArguments(arguments_.asNativeTable(), ctx));
 	}
 
 	/**
@@ -74,12 +76,12 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	 * AGAPL(sel,arg).quote(ctx) = AGAPL(sel.quote(ctx), arg.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws NATException {
-		return new AGApplication(selector_.meta_quote(ctx).asSymbol(),
+		return new AGApplication(funExp_.meta_quote(ctx).asExpression(),
 				                arguments_.meta_quote(ctx).asTable());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue(selector_.meta_print().javaValue + NATTable.printAsList(arguments_).javaValue);
+		return NATText.atValue(funExp_.meta_print().javaValue + NATTable.printAsList(arguments_).javaValue);
 	}
 
 }

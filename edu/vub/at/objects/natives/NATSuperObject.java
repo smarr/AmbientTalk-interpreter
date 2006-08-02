@@ -67,10 +67,6 @@ public class NATSuperObject extends NATNil implements ATObject {
 		return lookupFrame_.meta_invoke(receiver_, selector, arguments);
 	}
 
-	public ATObject meta_call(ATSymbol selector, ATTable arguments) throws NATException {
-		return lookupFrame_.meta_call(selector, arguments);
-	}
-
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
 		return lookupFrame_.meta_respondsTo(selector);
 	}

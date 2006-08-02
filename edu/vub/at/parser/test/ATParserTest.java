@@ -201,6 +201,11 @@ public class ATParserTest extends TestCase {
 	    testParse(
 	    		"[ { display: \"test\" }, { | x, y | x < y } ][2](a ,b)",
 	    		" ( begin ( apply ( table-get ( table ( closure (table ) ( begin ( apply (symbol display:) (table (text \"test\" ) ) ) ) ) ( closure ( table (symbol x) (symbol y) ) ( begin ( < (symbol x) (symbol y) ) ) ) ) (number 2) ) ( table (symbol a) (symbol b) ) ) )");		
+	
+	    testParse("closures.at(closures.length)()",
+	    		     "(begin (apply (send (symbol closures) (message (apply (symbol at) (table (select (symbol closures) (symbol length)))))) (table)))");
+		testParse("closures[closures.length]()",
+				 "(begin (apply (table-get (symbol closures) (select (symbol closures) (symbol length))) (table)))");
 	}
 	
 	/**
