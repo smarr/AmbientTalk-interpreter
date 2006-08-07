@@ -46,7 +46,14 @@ import java.util.Vector;
 /**
  * @author smostinc
  *
- * Native implementation of a default ambienttalk object. 
+ * Native implementation of a default ambienttalk object.
+ * 
+ * Although a native AmbientTalk object is implemented as a subtype of callframes,
+ * the reality is that call frames are a special kind of object.
+ * 
+ * This is a pure form of implementation subclassing: we subclass NATCallframe only
+ * for reusing the field definition/assignment protocol and for inheriting the
+ * variable map, the state vector and the lexical parent.
  */
 public class NATObject extends NATCallframe implements ATObject{
 
@@ -120,7 +127,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	/**
 	 * Constructs a new ambienttalk object as a clone of an existing object.
 	 */
-	private NATObject(HashMap map,
+	private NATObject(FieldMap map,
 			         Vector state,
 			         HashMap methodDict,
 			         ATObject dynamicParent,

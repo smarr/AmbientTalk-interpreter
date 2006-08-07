@@ -40,8 +40,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -57,12 +55,12 @@ import java.util.Vector;
  */
 public class NATCallframe extends NATNil implements ATObject {
 	
-	protected final HashMap 	variableMap_;
+	protected final FieldMap 	variableMap_;
 	protected final Vector	stateVector_;
 	protected final ATObject 	lexicalParent_;
 	
 	public NATCallframe(ATObject lexicalParent) {
-		variableMap_   = new HashMap();
+		variableMap_   = new FieldMap();
 		stateVector_   = new Vector();
 		lexicalParent_ = lexicalParent;
 	}
@@ -70,7 +68,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	/**
 	 * Used internally for cloning a callframe/object.
 	 */
-	protected NATCallframe(HashMap varMap, Vector stateVector, ATObject lexicalParent) {
+	protected NATCallframe(FieldMap varMap, Vector stateVector, ATObject lexicalParent) {
 		variableMap_ = varMap;
 		stateVector_ = stateVector;
 		lexicalParent_ = lexicalParent;
@@ -137,20 +135,21 @@ public class NATCallframe extends NATNil implements ATObject {
 	}
 
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
-		if(variableMap_.containsKey(name)) {
+		boolean fieldAdded = variableMap_.put(name);
+		if (!fieldAdded) {
+			// field already exists...
 			throw new XIllegalOperation("Definition of duplicate field " + name);
 		} else {
-			int freePosition = variableMap_.size();
-			variableMap_.put(name, new Integer(freePosition));
+			// field now defined, add it to the state vector
 			stateVector_.add(value);
 		}
 		return NATNil._INSTANCE_;
 	}
 	
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
-		Integer index = (Integer)variableMap_.get(name);
-		if(index != null) {
-			stateVector_.set(index.intValue(), value);
+		int index = variableMap_.get(name);
+		if(index != -1) {
+			stateVector_.set(index, value);
 		} else {
 			// The lexical parent chain is followed for assignments. This implies
 			// that assignments on dynamic parents are disallowed.
@@ -197,17 +196,17 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * field itself.
 	 */
 	public ATObject getField(ATSymbol selector) throws NATException {
-		Integer index = (Integer)variableMap_.get(selector);
-		if(index != null) {
-			return NATObject.cast(stateVector_.get(index.intValue()));
+		int index = variableMap_.get(selector);
+		if(index != -1) {
+			return (ATObject) (stateVector_.get(index));
 		} else {
 			throw new XSelectorNotFound(selector, this);
 		}
 	}
 	
 	public ATField meta_getField(ATSymbol selector) throws NATException {
-		Integer index = (Integer)variableMap_.get(selector);
-		if(index != null) {
+		int index = variableMap_.get(selector);
+		if(index != -1) {
 			return new NATField(selector, this);
 		} else {
 			throw new XSelectorNotFound(selector, this);
@@ -225,11 +224,9 @@ public class NATCallframe extends NATNil implements ATObject {
 
 	public ATTable meta_listFields() throws NATException {
 		ATObject[] fields = new ATObject[stateVector_.size()];
-		int i = 0;
-		for (Iterator selector = variableMap_.keySet().iterator(); selector.hasNext();) {
-			ATSymbol fieldName = (ATSymbol) selector.next();
-			fields[i] = new NATField(fieldName, this);
-			i++;
+		ATSymbol[] fieldNames = variableMap_.listFields();
+		for (int i = 0; i < fieldNames.length; i++) {
+			fields[i] = new NATField(fieldNames[i], this);
 		}
 		return new NATTable(fields);
 	}
@@ -246,7 +243,7 @@ public class NATCallframe extends NATNil implements ATObject {
 		return NATNil._INSTANCE_;
 	};
 	
-	public ATObject getLexicalParent(){
+	public ATObject getLexicalParent() {
 		return lexicalParent_;
 	}
 

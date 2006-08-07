@@ -24,6 +24,13 @@ make sure it's called only once.
 Perhaps a cleaner meta-level interface is having meta_clone and meta_new => clone makes a clone without initializing it, new also does initialization.
 The reason being that explicitly providing meta_init allows base-level code to re-initialize a live object at the meta-level.
 
+* removing meta_invoke from the ATObject interface?
+a meta_invoke could be simulated by doing a meta_select + meta_apply.
+similar to meta_call = meta_lookup + meta_apply
+=> would simplify ATObject
+=> repercussions on code? e.g. on reflective invocations in Java: table.at() would then have to be transformed to meta_select("at") (which returns an ATClosure wrapper around a Java method) + meta_apply which triggers the Java method.
+would be less efficient
+
 - Documentation
 * Package structure
 * Class and interface hierarchy: NAT, AT, AG, X => structure and purpose
