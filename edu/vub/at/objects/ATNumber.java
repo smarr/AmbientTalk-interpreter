@@ -28,7 +28,6 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.natives.NATNumber;
 
 /**
  * @author tvc

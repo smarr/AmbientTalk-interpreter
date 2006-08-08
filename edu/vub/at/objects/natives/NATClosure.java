@@ -82,6 +82,14 @@ public class NATClosure extends NATNil implements ATClosure {
 		return method_.meta_apply(arguments, context_);
 	}
 
+	public ATObject base_whileTrue_(ATClosure condition) throws NATException {
+		ATObject result = NATNil._INSTANCE_;
+		while (condition.meta_apply(NATTable.EMPTY).asNativeBoolean().javaValue) {
+			result = this.meta_apply(NATTable.EMPTY);
+		}
+		return result;
+	}
+	
 	public ATContext getContext() {
 		return context_;
 	}

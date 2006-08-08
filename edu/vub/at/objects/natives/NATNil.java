@@ -41,7 +41,6 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.BaseNil;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -58,7 +57,7 @@ import edu.vub.at.objects.mirrors.NATPrimitiveField;
  *
  * NATNil implements default semantics for all test and conversion methods.
  */
-public class NATNil implements ATNil, BaseNil {
+public class NATNil implements ATNil {
 	
 	protected NATNil() {};
 	

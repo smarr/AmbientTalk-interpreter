@@ -29,7 +29,6 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -91,15 +90,16 @@ class MirageInvocationHandler implements InvocationHandler {
  * with a custom mirror object. In this case the implementation does not host a direct 
  * representation of the object, but rather allows the mirror on the ambienttalk-level
  * to handle how the object should respond. To this end, the object is embodied through
- * a mirage, an object which is but a reflection of the mirror at the ambienttalk-level.
+ * a mirage, an object which is but a shadow of the mirror at the ambienttalk-level.
  * 
  * Mirages, as defined by the MirageInvocationHandler will simply reify every call they
  * receive and pass it on to their principal (the java representation of the mirror). 
  */
 public class NATMirageFactory {
 
+	// TODO: mirrorRepresentation.getClass() returns the NATxxx class instance, require mapping from NATxxx to ATxxx
 	public static ATObject createMirage(ATObject mirrorRepresentation) {
-		return NATMirageFactory.createMirageForInterface(mirrorRepresentation, ATObject.class);
+		return NATMirageFactory.createMirageForInterface(mirrorRepresentation, mirrorRepresentation.getClass());
 	}
 
 	public static ATObject createMirageForInterface(

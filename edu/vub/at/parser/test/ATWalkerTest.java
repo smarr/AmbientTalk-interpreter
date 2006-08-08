@@ -1,9 +1,9 @@
 package edu.vub.at.parser.test;
 
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
-import edu.vub.at.parser.ATLexer;
-import edu.vub.at.parser.ATParser;
-import edu.vub.at.parser.ATTreeWalker;
+import edu.vub.at.parser.NATLexer;
+import edu.vub.at.parser.NATParser;
+import edu.vub.at.parser.NATTreeWalker;
 
 import java.io.ByteArrayInputStream;
 
@@ -22,14 +22,14 @@ public class ATWalkerTest extends TestCase {
 	
 	private void testWalker(String input, String output) {
         try {
-            ATLexer lexer = new ATLexer(new ByteArrayInputStream(input.getBytes()));
-            ATParser parser = new ATParser(lexer);
+            NATLexer lexer = new NATLexer(new ByteArrayInputStream(input.getBytes()));
+            NATParser parser = new NATParser(lexer);
             // Parse the input expression
             parser.program();
             CommonAST t = (CommonAST)parser.getAST();
             // Print the resulting tree out in LISP notation
             System.out.println(t.toStringList());
-            ATTreeWalker walker = new ATTreeWalker();
+            NATTreeWalker walker = new NATTreeWalker();
             // Traverse the tree created by the parser
             NATAbstractGrammar ag = walker.program(t);
             assertEquals(output.replaceAll("\\s",""), ag.meta_print().javaValue.replaceAll("\\s",""));

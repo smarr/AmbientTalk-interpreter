@@ -40,7 +40,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * a) get hold of an ATMethod at the base-level (since lookup implies wrapping)
  * b) directly apply an ATMethod (as application requires context parameters)
  */
-public interface ATMethod extends ATNil {
+public interface ATMethod extends ATObject {
 
 	/**
 	 * Applies the method to the given arguments in the given context.

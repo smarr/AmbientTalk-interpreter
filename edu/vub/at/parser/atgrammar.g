@@ -1,6 +1,6 @@
 header { package edu.vub.at.parser; }
 
-class ATParser extends Parser;
+class NATParser extends Parser;
 
 options {
   k = 2;
@@ -232,7 +232,7 @@ operator!: cmp:CMP { #operator = #([AGCMP, "symbol"], cmp); }
 
 
 
-class ATLexer extends Lexer;
+class NATLexer extends Lexer;
 
 options {
   k = 3;
@@ -454,7 +454,7 @@ protected ESC
   import edu.vub.at.objects.grammar.*;
   import edu.vub.at.objects.natives.grammar.*;
   import java.util.LinkedList; }
-class ATTreeWalker extends TreeParser;
+class NATTreeWalker extends TreeParser;
 { // begin TreeWalker preamble
 
   // this auxiliary function converts operator syntax such as <a+b> into a message send of the form <a.+(b)>

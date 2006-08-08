@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
@@ -38,7 +39,7 @@ import edu.vub.at.objects.natives.NATText;
  * that represent abstract grammar parse tree elements. That is, any object that
  * can be returned as part of the AST produced by the native parser.
  */
-public abstract class NATAbstractGrammar extends NATNil {
+public abstract class NATAbstractGrammar extends NATNil implements ATAbstractGrammar {
 
 	// This is an empty superclass used only for proper documentation and
 	// to identify which native objects can be output by the parser.

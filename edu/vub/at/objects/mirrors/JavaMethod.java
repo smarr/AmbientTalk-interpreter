@@ -110,6 +110,14 @@ public abstract class JavaMethod extends NATNil implements ATClosure, ATMethod {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
+		/* (non-Javadoc)
+		 * @see edu.vub.at.objects.ATClosure#base_whileTrue_(edu.vub.at.objects.ATClosure)
+		 */
+		public ATObject base_whileTrue_(ATClosure condition) throws NATException {
+			// TODO Auto-generated method stub
+			return null;
+		}
 		
 	}
 }

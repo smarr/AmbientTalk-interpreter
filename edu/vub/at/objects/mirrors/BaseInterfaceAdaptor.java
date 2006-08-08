@@ -57,6 +57,8 @@ import java.util.Vector;
  * an ambienttalk object we cannot foresee the expected java types. We can use this 
  * technique to our advantage by using overloading on typically double dispatch 
  * methods such as plus.
+ * 
+ * @deprecated BaseInterfaces are replaced by base_ calls
  */
 public class BaseInterfaceAdaptor {
 

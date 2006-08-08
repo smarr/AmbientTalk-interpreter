@@ -41,9 +41,9 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 import edu.vub.at.objects.natives.test.NATObjectClosureTest;
-import edu.vub.at.parser.ATLexer;
-import edu.vub.at.parser.ATParser;
-import edu.vub.at.parser.ATTreeWalker;
+import edu.vub.at.parser.NATLexer;
+import edu.vub.at.parser.NATParser;
+import edu.vub.at.parser.NATTreeWalker;
 
 import java.io.ByteArrayInputStream;
 
@@ -88,14 +88,14 @@ public class ReflectionTest extends TestCase {
 	
 	private void evaluateInput(String input, ATContext ctx) {
         try {
-            ATLexer lexer = new ATLexer(new ByteArrayInputStream(input.getBytes()));
-            ATParser parser = new ATParser(lexer);
+            NATLexer lexer = new NATLexer(new ByteArrayInputStream(input.getBytes()));
+            NATParser parser = new NATParser(lexer);
             // Parse the input expression
             parser.program();
             CommonAST t = (CommonAST)parser.getAST();
 
             // Traverse the tree created by the parser
-            ATTreeWalker walker = new ATTreeWalker();
+            NATTreeWalker walker = new NATTreeWalker();
             NATAbstractGrammar ag = walker.program(t);
 
             // Evaluate the corresponding tree of ATAbstractGrammar objects

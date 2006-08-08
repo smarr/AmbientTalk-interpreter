@@ -7,8 +7,7 @@
 * Review and fix mirrors and mirages (add/remove "base" and "meta" prefix)
 
 - Core language evaluator
-* instead of using HashMap for a var map, use custom class to avoid boxing/unboxing of integers
-* remove as much .asNative...() casts from the code
+* remove as much .asNative...() casts from the code as possible. Each such cast precludes use of custom AT objects.
 
 * find a suitable semantics for object 'instantiation'.
 problem: 'init' is not a 'normal' method, if it would be, and you would invoke obj.clone.init, you might
@@ -31,19 +30,13 @@ similar to meta_call = meta_lookup + meta_apply
 => repercussions on code? e.g. on reflective invocations in Java: table.at() would then have to be transformed to meta_select("at") (which returns an ATClosure wrapper around a Java method) + meta_apply which triggers the Java method.
 would be less efficient
 
-- Documentation
-* Package structure
-* Class and interface hierarchy: NAT, AT, AG, X => structure and purpose
-* base_ and meta_ method prefix conventions and restrictions
-(e.g. all methods of an AT interface must take AT parameters and return an AT result)
-* ATObject interface and its NATObject implementation
-* asXXX and isXXX protocol / deny direct downcasts + NATObject.cast
-* asNativeXXX and javaValues
-* NATNil's meta_invoke method
-* Mirrors and Mirages: lots of drawings!
-* Message sending: o.m() vs o<-m() and interaction with first-class messages
-* Exceptions: raise method / deny direct throwing of exceptions
-* Evaluator: meta_eval and meta_quote/unquote
-* Tests: test structure
-* Lexical root: what does it contain? how is it implemented?
-* Native values: operations and numeric protocol
+* meta_clone => ensure that the clone follows a 'lazy copy' policy with respect to
+the variable map and the method dictionary, which are shared among clones but presumed to be immutable.
+Indeed, they are immutable once an object is fully created at the base-level, but they can be changed
+at the meta-level.
+
+* meta_defineField versus meta_addField => perhaps defineField is not accessible from the
+meta-level and should be renamed to defineField. Similarly, meta_assignField should come in two
+variants: meta_assignField(ATField f, ATObject val) and assignField(ATSymbol sel, ATObject val).
+The problem then becomes: ATObject interface only supports the meta_... variants, meaning that
+the evaluation code will require an .isNativeObject() -> .asNativeObject().defineField(...) check.

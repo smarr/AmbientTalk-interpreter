@@ -41,7 +41,7 @@ import edu.vub.at.exceptions.NATException;
  * meta_apply method, which should trigger the invocation of their encapsulating method in the
  * enclosed closure context.
  */
-public interface ATClosure extends ATNil {
+public interface ATClosure extends ATObject {
 	
 	/**
 	 * Structural access to the encapsulated method. 
@@ -59,4 +59,12 @@ public interface ATClosure extends ATNil {
 	 * @return the value of evaluating the method body in the context of the closure
 	 */
 	public ATObject meta_apply(ATTable arguments) throws NATException;
+	
+	/**
+	 * Allows AmbientTalk programmers to write
+	 * { body }.whileTrue: { boolean }
+	 * which will execute body as long as the boolean condition evaluates to true.
+	 */
+	public ATObject base_whileTrue_(ATClosure condition) throws NATException;
+	
 }

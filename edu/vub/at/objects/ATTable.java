@@ -44,5 +44,16 @@ public interface ATTable extends ATExpression {
 	public ATObject base_atPut(ATNumber index, ATObject value) throws NATException;
 	public ATBoolean base_isEmpty();
 	
+	/**
+	 * Apply a closure to each element of the table.
+	 * [ tab ].each: { |v| ... }
+	 */
+	public ATObject base_each_(ATClosure clo) throws NATException;
+	
+	/**
+	 * Map a closure over each element of the table, resulting in a new table.
+	 */
+	public ATObject base_collect_(ATClosure clo) throws NATException;
+	
 	public NATTable asNativeTable();
 }

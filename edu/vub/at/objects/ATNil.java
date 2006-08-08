@@ -31,11 +31,8 @@ package edu.vub.at.objects;
  * @author tvc
  *
  * the native object representing 'nil' implements this interface.
- * The type ATNil is a subtype of ATAbstractGrammar which is itself a subtype of ATObject.
- * This meanse that:
- *  a) the value 'nil' can be incorporated in a parse tree
- *  b) the value 'nil' is an object
+ * The type ATNil is a subtype of ATObject.
  */
-public interface ATNil extends ATObject, ATAbstractGrammar {
+public interface ATNil extends ATObject {
 
 }

@@ -2,9 +2,9 @@ package edu.vub.at.parser.test;
 
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
-import edu.vub.at.parser.ATLexer;
-import edu.vub.at.parser.ATParser;
-import edu.vub.at.parser.ATTreeWalker;
+import edu.vub.at.parser.NATLexer;
+import edu.vub.at.parser.NATParser;
+import edu.vub.at.parser.NATTreeWalker;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -23,12 +23,12 @@ public class ATParserTest extends TestCase {
 	public static NATAbstractGrammar parseProgram(String parserInput) throws XParseError {
 			try {
 				InputStream input = new ByteArrayInputStream(parserInput.getBytes());
-				ATLexer lexer = new ATLexer(input);
-				ATParser parser = new ATParser(lexer);
+				NATLexer lexer = new NATLexer(input);
+				NATParser parser = new NATParser(lexer);
 				parser.program();
 
 				CommonAST parseTree = (CommonAST)parser.getAST();
-				ATTreeWalker walker = new ATTreeWalker();
+				NATTreeWalker walker = new NATTreeWalker();
 				return walker.program(parseTree);
 			} catch (RecognitionException e) {
 				throw new XParseError(e.getMessage(), e);
@@ -40,8 +40,8 @@ public class ATParserTest extends TestCase {
 	private static void testParse(String parserInput, String expectedOutput) {
 		try {
 			InputStream input = new ByteArrayInputStream(parserInput.getBytes());
-			ATLexer lexer = new ATLexer(input);
-			ATParser parser = new ATParser(lexer);
+			NATLexer lexer = new NATLexer(input);
+			NATParser parser = new NATParser(lexer);
 			parser.program();
 
 			CommonAST parseTree = (CommonAST)parser.getAST();

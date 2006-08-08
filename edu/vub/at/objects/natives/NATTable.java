@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIndexOutOfBounds;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -104,18 +105,6 @@ public final class NATTable extends AGExpression implements ATTable {
 		}
 		return new NATTable(result.toArray(new ATObject[siz]));
 	}
-	
-	/*private static final NATTable mapEvalOverExpressions(NATTable tab, ATContext ctx) throws NATException {
-		if (tab == EMPTY) return EMPTY;
-		
-		ATObject[] els = tab.elements_;
-		ATObject[] result = new ATObject[els.length];
-		for (int i = 0; i < els.length; i++) {
-			result[i] = els[i].meta_eval(ctx);
-		}
-		
-		return new NATTable(result);
-	}*/
 	
 	/**
 	 * Auxiliary function to bind formal parameters to actual arguments within a certain scope.
@@ -197,6 +186,28 @@ public final class NATTable extends AGExpression implements ATTable {
 	public ATBoolean base_isEmpty() {
 		return NATBoolean.atValue(elements_.length == 0);
 	}
+	
+	public ATObject base_each_(ATClosure clo) throws NATException {
+		ATObject result = NATNil._INSTANCE_;
+		for (int i = 0; i < elements_.length; i++) {
+			result = clo.meta_apply(new NATTable(new ATObject[] { elements_[i] }));
+		}
+		return result;
+	}
+	
+	public ATObject base_collect_(ATClosure clo) throws NATException {
+		if (this == EMPTY) return EMPTY;
+		
+		ATObject[] result = new ATObject[elements_.length];
+		for (int i = 0; i < elements_.length; i++) {
+			result[i] = clo.meta_apply(new NATTable(new ATObject[] { elements_[i] }));
+		}
+		return new NATTable(result);
+	}
+	
+	/*private static final NATTable mapEvalOverExpressions(NATTable tab, ATContext ctx) throws NATException {
+
+}*/
 	
 	public ATTable asTable() { return this; }
 	
