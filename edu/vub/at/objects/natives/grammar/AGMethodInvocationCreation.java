@@ -28,35 +28,23 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATMessageCreation;
-import edu.vub.at.objects.grammar.ATMethodInvocationCreation;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
  *
  * The native implementation of a first-class message creation AG element.
  */
-public final class AGMethodInvocationCreation extends AGExpression implements ATMethodInvocationCreation {
-
-	private final ATSymbol selector_;
-	private final ATTable arguments_;
+public final class AGMethodInvocationCreation extends AGMessageCreation {
 	
 	public AGMethodInvocationCreation(ATSymbol sel, ATTable args) {
-		selector_ = sel;
-		arguments_ = args;
+		super(sel, args);
 	}
-	
-	public ATSymbol getSelector() { return selector_; }
-
-	public ATTable getArguments() { return arguments_; }
 
 	/**
 	 * To evaluate a first-class synchronous message creation AG element, transform the selector
@@ -68,24 +56,14 @@ public final class AGMethodInvocationCreation extends AGExpression implements AT
 	 * @return a first-class method invocation
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		return new NATMethodInvocation(selector_, NATTable.evaluateArguments(arguments_.asNativeTable(), ctx));
+		return new NATMethodInvocation(this.getSelector(),
+				                      NATTable.evaluateArguments(this.getArguments().asNativeTable(), ctx));
 	}
 
-	/**
-	 * Quoting a message creation element returns a new quoted message creation element.
-	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
-		return new AGMethodInvocationCreation(selector_.meta_quote(ctx).asSymbol(),
-				                              arguments_.meta_quote(ctx).asTable());
+	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {
+		return new AGMethodInvocationCreation(quotedSel, quotedArgs);
 	}
 	
-	public ATMessageCreation asMessageCreation() throws XTypeMismatch {
-		return this;
-	}
-
-	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("." + selector_.meta_print().javaValue +
-				               NATTable.printAsList(arguments_).javaValue);
-	}
+	protected String getMessageToken() { return "."; }
 
 }

@@ -28,16 +28,12 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATAsyncMessageCreation;
-import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATAsyncMessage;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author smostinc
@@ -45,24 +41,11 @@ import edu.vub.at.objects.natives.NATText;
  * AGAsyncMessageCreation implements the ATAsyncMessageCreation interface natively. It is a container for the
  * message's sender, selector, and optionally a receiver and table of arguments.
  */
-public class AGAsyncMessageCreation extends AGExpression implements ATAsyncMessageCreation {
+public class AGAsyncMessageCreation extends AGMessageCreation {
 
-	private ATSymbol selector_	= null;
-	private ATTable  arguments_	= null;
-	
 	public AGAsyncMessageCreation(ATSymbol selector, ATTable arguments) {
-		selector_ = selector;
-		arguments_ = arguments;
+		super(selector, arguments);
 	}
-
-	public ATSymbol getSelector() {
-		return selector_;
-	}
-
-	public ATTable getArguments() {
-		return arguments_;
-	}
-	
 	
 	/**
 	 * To evaluate an async message creation element, simply return a new native asynchronous message.
@@ -75,25 +58,14 @@ public class AGAsyncMessageCreation extends AGExpression implements ATAsyncMessa
 	 * @return a first-class asynchronous message
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		return new NATAsyncMessage(ctx.getSelf(), selector_, NATTable.evaluateArguments(arguments_.asNativeTable(), ctx));
-	}
-
-	/**
-	 * Quoting a message creation element returns a new quoted message creation element.
-	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
-		return new AGAsyncMessageCreation(selector_.meta_quote(ctx).asSymbol(),
-				                          arguments_.meta_quote(ctx).asTable());
-	}
-
-	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<-" +
-				               selector_.meta_print().javaValue +
-				               NATTable.printAsList(arguments_).javaValue);
+		return new NATAsyncMessage(ctx.getSelf(), this.getSelector(),
+				                   NATTable.evaluateArguments(this.getArguments().asNativeTable(), ctx));
 	}
 	
-	public ATMessageCreation asMessageCreation() throws XTypeMismatch {
-		return this;
+	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {
+		return new AGAsyncMessageCreation(quotedSel, quotedArgs);
 	}
+
+	protected String getMessageToken() { return "<-"; }
 
 }
