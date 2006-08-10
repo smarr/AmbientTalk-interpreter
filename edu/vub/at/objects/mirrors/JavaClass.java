@@ -30,6 +30,7 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -79,7 +80,7 @@ public class JavaClass extends NATNil implements ATTable {
 	/* (non-Javadoc)
 	 * @see edu.vub.at.objects.ATTable#base_each_(edu.vub.at.objects.ATClosure)
 	 */
-	public ATObject base_each_(ATClosure clo) throws NATException {
+	public ATNil base_each_(ATClosure clo) throws NATException {
 		// TODO Auto-generated method stub
 		return null;
 	}

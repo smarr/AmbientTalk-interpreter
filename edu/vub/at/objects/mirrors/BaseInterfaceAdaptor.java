@@ -27,21 +27,20 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.mirrors.JavaMethod.Simple;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.lang.reflect.Method;
-import java.security.spec.InvalidParameterSpecException;
+import java.util.HashMap;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author smostinc
@@ -65,6 +64,48 @@ public class BaseInterfaceAdaptor {
 	public static String transformSelector(
 			String addPrefix, String removePrefix, String selector) {
 		return addPrefix + selector.replaceFirst(removePrefix,"").replace(':', '_');
+	}
+	
+	
+	private static final Pattern oprName2opr = Pattern.compile("_opr(.*)_");
+	
+    //	 TODO: write a unit test!
+	public static String java2atSelector(String javaSelector) {
+		// strip away base_ or meta_ prefix
+		javaSelector = javaSelector.replaceFirst("\\A(base_|meta_)", "");
+		
+		// _operatorname_ -> operator symbol
+		Matcher m = oprName2opr.matcher(javaSelector);
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+			m.appendReplacement(sb, oprCode2Symbol(m.group(1)));
+		}
+		m.appendTail(sb);
+		// _ -> :
+		return javaSelector.replaceAll("_", ":");
+	}
+	
+	// TODO: replace by a hashcode index into a jumptable
+	private static final String oprCode2Symbol(String code) {
+		if (code2symbol.containsKey(code))
+			return (String) code2symbol.get(code);
+		else
+			return "_opr" + code + "_"; // no match, return original input
+	}
+	
+	private static final HashMap code2symbol = new HashMap();
+	static {
+		code2symbol.put("_plus_", "+");
+		code2symbol.put("_minus_", "-");
+		code2symbol.put("_times_", "*");
+		code2symbol.put("_divides_", "/");
+		code2symbol.put("_mod_", "\\");
+		code2symbol.put("_band_", "&");
+		code2symbol.put("_expt_", "^");
+		code2symbol.put("_bnot_", "!");
+		code2symbol.put("_gt_", ">");
+		code2symbol.put("_lt_", "<");
+		code2symbol.put("_eql_", "=");
 	}
 	
 	public static String transformField(
@@ -153,7 +194,7 @@ public class BaseInterfaceAdaptor {
 				baseInterface, selector).length != 0);
 	}
 	
-	public static JavaMethod wrapMethodFor(
+	public static JavaClosure wrapMethodFor(
 			Class baseInterface, 
 			ATObject receiver,
 			String methodName) throws NATException {
@@ -162,7 +203,7 @@ public class BaseInterfaceAdaptor {
 			case 0:
 				throw new XSelectorNotFound(AGSymbol.alloc(methodName), receiver);
 			case 1:
-				return new JavaMethod.Simple(receiver, applicable[0]);
+				return new JavaClosure(receiver, new JavaMethod(applicable[0]));
 			default:
 				// TODO return new JavaMethod.Dispatched(receiver, applicable);
 				throw new XIllegalOperation("Java Method Wrappers not yet implemented");

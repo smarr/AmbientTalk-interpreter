@@ -53,6 +53,7 @@ public interface ATConversions {
 	public boolean isClosure();
 	public boolean isSymbol();
 	public boolean isTable();
+	public boolean isBoolean();
 	public boolean isCallFrame();
 	public boolean isUnquoteSplice();
 	public boolean isSplice();
@@ -60,6 +61,7 @@ public interface ATConversions {
 	public ATClosure   asClosure() throws XTypeMismatch;
 	public ATSymbol    asSymbol() throws XTypeMismatch;
 	public ATTable     asTable() throws XTypeMismatch;
+	public ATBoolean   asBoolean() throws XTypeMismatch;
 	public ATNumber    asNumber() throws XTypeMismatch;
 	public ATMessage   asMessage() throws XTypeMismatch;
 	
@@ -74,6 +76,8 @@ public interface ATConversions {
 	public ATSplice asSplice() throws XTypeMismatch;
 	
 	// Native Value Elements
+	
+	public boolean isNativeBoolean() throws XTypeMismatch;
 	
 	public NATNumber   asNativeNumber() throws XTypeMismatch;
 	public NATFraction asNativeFraction() throws XTypeMismatch;

@@ -32,6 +32,7 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.mirrors.JavaClosure;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATContext;
@@ -64,17 +65,14 @@ public class ReflectionTest extends TestCase {
 	 * -- Auxiliary definitions --
 	 * --------------------------- */	
 	
-	// TOM : This is a first example of the inline closures you were talking about
-	// It did require the use of a constructor with null parameters as otherwise
-	// you would need to pass an actual ATMethod and ATContext
-	private final NATClosure fail = new NATClosure()  {
+	private final NATClosure fail = new JavaClosure(null)  {
 		public ATObject meta_apply(ATTable arguments) throws NATException {
 			fail();
 			return NATNil._INSTANCE_;
 		}
 	};
 	
-	private final NATClosure success = new NATClosure() {
+	private final NATClosure success = new JavaClosure(null) {
 		public ATObject meta_apply(ATTable arguments) throws NATException {
 			return NATNil._INSTANCE_;
 		}		

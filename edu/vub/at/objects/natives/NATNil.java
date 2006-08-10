@@ -202,7 +202,7 @@ public class NATNil implements ATNil {
 		return BaseInterfaceAdaptor.wrapMethodFor(
 				this.getClass(),
 				this,
-				selector);
+				selector).getMethod();
 	}
 
 	public ATTable meta_listFields() throws NATException {
@@ -268,6 +268,10 @@ public class NATNil implements ATNil {
 		return false;
 	}
 
+	public boolean isBoolean() {
+		return false;
+	}
+	
 	public boolean isTable() {
 		return false;
 	}
@@ -284,6 +288,10 @@ public class NATNil implements ATNil {
 		return false;
 	}
 	
+	public boolean isNativeBoolean() {
+		return false;
+	}
+	
 	public ATClosure asClosure() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected a closure, given: " + this.getClass().getName(), this);
 	}
@@ -294,6 +302,10 @@ public class NATNil implements ATNil {
 
 	public ATTable asTable() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected a table, given: " + this.getClass().getName(), this);
+	}
+
+	public ATBoolean asBoolean() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a boolean, given: " + this.getClass().getName(), this);
 	}
 	
 	public ATNumber asNumber() throws XTypeMismatch {

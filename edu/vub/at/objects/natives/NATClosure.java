@@ -28,29 +28,30 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.mirrors.JavaClosure;
 
 /**
  * @author smostinc
  *
- * TODO document the class NATClosure
+ * A NATClosure instance represents a first-class AmbientTalk closure.
+ * A closure is modelled as a pair (method, context), where the method
+ * contains the pure function (function name, arguments and body).
+ *
+ * The single most important operation to be performed on a closure is applying it.
+ * This will give rise to the application of its underlying method within the context
+ * wrapped by the closure.
  */
 public class NATClosure extends NATNil implements ATClosure {
 
-	private ATMethod 	method_;
-	private ATContext	context_;
-
-	/**
-	 * This no-args constructor is to be used only to be able to create anonymous 
-	 * closure subclasses which override the semantics of meta_apply.
-	 */
-	public NATClosure() {
-		this(null, null);
-	}
+	// these instance variables are inherited and used by a JavaClosure as well.
+	protected ATMethod 	method_;
+	protected ATContext	context_;
 	
 	/**
 	 * This constructor creates a closure with a bound dynamic receiver, and it is
@@ -82,12 +83,50 @@ public class NATClosure extends NATNil implements ATClosure {
 		return method_.meta_apply(arguments, context_);
 	}
 
-	public ATObject base_whileTrue_(ATClosure condition) throws NATException {
-		ATObject result = NATNil._INSTANCE_;
-		while (condition.meta_apply(NATTable.EMPTY).asNativeBoolean().javaValue) {
-			result = this.meta_apply(NATTable.EMPTY);
+	/**
+	 * receiver is a zero-argument block closure returning a boolean
+	 * @param body a zero-argument block closure
+	 * 
+	 * def whileTrue: body {
+	 *   self.apply().ifTrue: {
+	 *     body();
+	 *     self.whileTrue: body
+	 *   }
+	 * }
+	 */
+	public ATObject base_whileTrue_(final ATClosure body) throws NATException {
+		/* ATObject result = NATNil._INSTANCE_;
+		while (this.meta_apply(NATTable.EMPTY).asNativeBoolean().javaValue) {
+			result = body.meta_apply(NATTable.EMPTY);
 		}
-		return result;
+		return result; */
+		
+		ATBoolean cond;
+		while (true) {
+			// cond = self.apply()
+			cond = this.meta_apply(NATTable.EMPTY).asBoolean();
+			if(cond.isNativeBoolean()) {
+				// cond is a native boolean, perform the conditional ifTrue: test natively
+				if (cond.asNativeBoolean().javaValue) {
+					// execute body and continue while loop
+					body.meta_apply(NATTable.EMPTY);
+					continue;
+				} else {
+					// return nil
+					return NATNil._INSTANCE_;
+				}
+			} else {
+				// cond is a user-defined boolean, do a recursive send
+				return cond.base_ifTrue_(new JavaClosure(this) {
+					public ATObject meta_apply(ATTable args) throws NATException {
+						// if user-defined bool is true, execute body and recurse
+						body.meta_apply(NATTable.EMPTY);
+						return base_whileTrue_(body);
+					}
+				});
+			}
+		}
+		
 	}
 	
 	public ATContext getContext() {

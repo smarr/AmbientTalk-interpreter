@@ -44,8 +44,8 @@ import edu.vub.at.objects.natives.NATTable;
  */
 public class NATPrimitiveField extends NATNil implements ATField {
 
-	private JavaMethod getter_;
-	private JavaMethod setter_;
+	private JavaClosure getter_;
+	private JavaClosure setter_;
 	private ATSymbol name_;
 	
 	public static NATPrimitiveField createPrimitiveField(
@@ -55,8 +55,8 @@ public class NATPrimitiveField extends NATNil implements ATField {
 		String getterSel = BaseInterfaceAdaptor.transformField("base_get", "", selector, true);
 		String setterSel = BaseInterfaceAdaptor.transformField("base_set", "", selector, true);
 		
-		JavaMethod getter = BaseInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, getterSel);
-		JavaMethod setter = null;
+		JavaClosure getter = BaseInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, getterSel);
+		JavaClosure setter = null;
 		try {
 			setter = BaseInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, setterSel);
 		} catch (NATException e) {
@@ -67,7 +67,7 @@ public class NATPrimitiveField extends NATNil implements ATField {
 	}
 	
 	
-	private NATPrimitiveField(ATSymbol name, JavaMethod getter, JavaMethod setter) {
+	private NATPrimitiveField(ATSymbol name, JavaClosure getter, JavaClosure setter) {
 		name_ = name;
 		getter_ = getter;
 		setter_ = setter;

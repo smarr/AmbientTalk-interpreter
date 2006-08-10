@@ -71,7 +71,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @return the result of invoking booleanCondition.ifTrue: { consequent }
 	 * @throws NATException if raised inside the consequent closure.
 	 */
-	public ATObject meta_if_then_(ATBoolean cond, ATClosure consequent) throws NATException {
+	public ATObject base_if_then_(ATBoolean cond, ATClosure consequent) throws NATException {
 		return cond.base_ifTrue_(consequent);
 	}
 	
@@ -87,7 +87,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @return the result of invoking booleanCondition.ifTrue: { consequent }
 	 * @throws NATException if raised inside the consequent or alternative closure.
 	 */
-	public ATObject meta_if_then_else_(ATBoolean cond, ATClosure consequent, ATClosure alternative) throws NATException {
+	public ATObject base_if_then_else_(ATBoolean cond, ATClosure consequent, ATClosure alternative) throws NATException {
 		return cond.base_ifTrue_ifFalse_(consequent, alternative);
 	}
 	
@@ -102,7 +102,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @return the result of invoking { body }.whileTrue: { condition }
 	 * @throws NATException if raised inside the condition or body closures.
 	 */
-	public ATObject meta_while_do_(ATClosure condition, ATClosure body) throws NATException {
+	public ATObject base_while_do_(ATClosure condition, ATClosure body) throws NATException {
 		return body.base_whileTrue_(condition);
 	}
 	
@@ -117,7 +117,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @return the result of invoking [ table ].each: { |v| body }
 	 * @throws NATException if raised inside the iterator block.
 	 */
-	public ATObject meta_foreach_in_(ATClosure body, ATTable tab) throws NATException {
+	public ATObject base_foreach_in_(ATClosure body, ATTable tab) throws NATException {
 		return tab.base_each_(body);
 	}
 	
@@ -136,7 +136,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @return an object whose dynamic parent is an is-a link to the parent parameter
 	 * @throws NATException if raised inside the code closure.
 	 */
-	public ATObject meta_extend_with_(ATObject parent, ATClosure code) throws NATException {
+	public ATObject base_extend_with_(ATObject parent, ATClosure code) throws NATException {
 		return parent.meta_extend(code);
 	}
 	
@@ -152,7 +152,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @return a new object whose dynamic parent is NIL, whose lexical parent is the closure's lexical scope, initialized by the closure's code
 	 * @throws NATException if raised inside the code closure.
 	 */
-	public ATObject meta_object_(ATClosure code) throws NATException {
+	public ATObject base_object_(ATClosure code) throws NATException {
 		NATObject newObject = new NATObject(code.getContext().getLexicalScope());
 		code.getMethod().getBody().meta_eval(new NATContext(newObject, newObject, NATNil._INSTANCE_));
 		return newObject;
@@ -169,7 +169,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @return an object whose dynamic parent is a shares-a link to the parent parameter
 	 * @throws NATException if raised inside the code closure.
 	 */
-	public ATObject meta_share_with_(ATObject parent, ATClosure code) throws NATException {
+	public ATObject base_share_with_(ATObject parent, ATClosure code) throws NATException {
 		return parent.meta_extend(code);
 	}
 

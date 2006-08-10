@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATTable.java created on 26-jul-2006 at 15:19:44
+ * XIllegalApplication.java created on 10-aug-2006 at 10:15:12
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,38 +25,28 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
-
-import edu.vub.at.exceptions.NATException;
-import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.natives.NATTable;
+package edu.vub.at.exceptions;
 
 /**
  * @author tvc
  *
- * The public interface to a native AmtientTalk table (an array).
- * Extends the ATExpression interface as a Table may also be output by the parser as a literal.
+ * TODO document the class XIllegalApplication
  */
-public interface ATTable extends ATExpression {
+public final class XIllegalApplication extends NATException {
 
-	public ATNumber base_getLength();
-	public ATObject base_at(ATNumber index) throws NATException;
-	public ATObject base_atPut(ATNumber index, ATObject value) throws NATException;
-	public ATBoolean base_isEmpty();
+	private final Class nativeImplementor_;
 	
 	/**
-	 * Apply a closure to each element of the table.
-	 * [ tab ].each: { |v| ... }
-	 * 
-	 * @return nil, always
+	 * @param message a description of the illegal application
+	 * @param nativeImplementor the class of the anonymous native lambda that was erroneously invoked
 	 */
-	public ATNil base_each_(ATClosure clo) throws NATException;
+	public XIllegalApplication(String message, Class nativeImplementor) {
+		super(message + "(implementor: " + nativeImplementor.getName() + ")");
+		nativeImplementor_ = nativeImplementor;
+	}
 	
-	/**
-	 * Map a closure over each element of the table, resulting in a new table.
-	 * result := [ tab ].map: { |v| ... }
-	 */
-	public ATObject base_collect_(ATClosure clo) throws NATException;
-	
-	public NATTable asNativeTable();
+	public Class getImplementorClass() {
+		return nativeImplementor_;
+	}
+
 }

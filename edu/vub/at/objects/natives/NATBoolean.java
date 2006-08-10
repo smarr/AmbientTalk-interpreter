@@ -61,6 +61,18 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		javaValue = b;
 	}
 	
+	public boolean isBoolean() {
+		return true;
+	}
+	
+	public boolean isNativeBoolean() {
+		return true;
+	}
+
+	public ATBoolean asBoolean() {
+		return this;
+	}
+	
 	public NATBoolean asNativeBoolean() {
 		return this;
 	}

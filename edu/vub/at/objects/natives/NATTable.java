@@ -34,6 +34,7 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -187,12 +188,11 @@ public final class NATTable extends AGExpression implements ATTable {
 		return NATBoolean.atValue(elements_.length == 0);
 	}
 	
-	public ATObject base_each_(ATClosure clo) throws NATException {
-		ATObject result = NATNil._INSTANCE_;
+	public ATNil base_each_(ATClosure clo) throws NATException {
 		for (int i = 0; i < elements_.length; i++) {
-			result = clo.meta_apply(new NATTable(new ATObject[] { elements_[i] }));
+			clo.meta_apply(new NATTable(new ATObject[] { elements_[i] }));
 		}
-		return result;
+		return NATNil._INSTANCE_;
 	}
 	
 	public ATObject base_collect_(ATClosure clo) throws NATException {

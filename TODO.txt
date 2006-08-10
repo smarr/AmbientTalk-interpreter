@@ -1,5 +1,8 @@
 === TODO ===
 
+* implement JAVAMethod/Closure and rewrite NATTable using base_each_, rewrite JavaMethod
+* ensure meta_print is overridden in each NAT class.
+
 - Natives
 * Refactor Base interfaces into base_ methods.
 
