@@ -55,7 +55,7 @@ public interface ATObject extends ATConversions {
 	 * Triggers the following events on this object's beholders (mirror observers):
 	 *  - <tt>sentMessage</tt> when the message was sent by the actor.
 	 */
-	public ATNil meta_send(ATMessage message) throws NATException;
+	public ATNil meta_send(ATAsyncMessage message) throws NATException;
 	
 	/**
 	 * Invoke a method corresponding to the selector (and located along the dynamic 

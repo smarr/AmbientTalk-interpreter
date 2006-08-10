@@ -81,6 +81,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * usage:
 	 *  if: booleanCondition then: { consequent } else: { alternative }
 	 * 
+	 * pseudo-implementation:
+	 *  booleanCondition.ifTrue: { consequent } ifFalse: { alternative }
+	 * 
 	 * @param cond a boolean object
 	 * @param consequent a closure containing the code to execute if the boolean is true
 	 * @param alternative a closure containing the code to execute if the boolean is false
@@ -97,13 +100,16 @@ public final class OBJLexicalRoot extends NATNil {
 	 * usage:
 	 *  while: { condition } do: { body }
 	 * 
+	 * pseudo-implementation:
+	 *  { condition }.whileTrue: { body }
+	 * 
 	 * @param condition a closure expected to return a boolean object
 	 * @param body a closure containing the code to execute as long as the condition closure returns true
 	 * @return the result of invoking { body }.whileTrue: { condition }
 	 * @throws NATException if raised inside the condition or body closures.
 	 */
 	public ATObject base_while_do_(ATClosure condition, ATClosure body) throws NATException {
-		return body.base_whileTrue_(condition);
+		return condition.base_whileTrue_(body);
 	}
 	
 	/**
@@ -111,6 +117,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * 
 	 * usage:
 	 *  foreach: { |v| body } in: [ table ]
+	 * 
+	 * pseudo-implementation:
+	 *  [ table ].each: { |v| body }
 	 * 
 	 * @param body a closure expected to take one argument to be applied to each element of the table
 	 * @param tab a table to apply the iterator block to
@@ -131,6 +140,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * usage:
 	 *  extend: anObject with: { someCode }
 	 * 
+	 * pseudo-implementation:
+	 *  mirrorOf(anObject).extend(someCode)
+	 *  
 	 * @param parent the object to extend
 	 * @param code a closure containing the code to extend the parent object with
 	 * @return an object whose dynamic parent is an is-a link to the parent parameter
@@ -147,7 +159,12 @@ public final class OBJLexicalRoot extends NATNil {
 	 * 
 	 * usage:
 	 *  object: { someCode }
-	 * 
+	 *  
+	 * pseudo-implementation:
+	 *  { def obj := objectP.new(mirrorOf(someCode).context.lexicalScope);
+	 *    mirrorOf(someCode).method.body.eval(contextP.new(obj, obj, nil));
+	 *    obj }
+	 *  
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent
 	 * @return a new object whose dynamic parent is NIL, whose lexical parent is the closure's lexical scope, initialized by the closure's code
 	 * @throws NATException if raised inside the code closure.
@@ -164,13 +181,16 @@ public final class OBJLexicalRoot extends NATNil {
 	 * usage:
 	 *  share: anObject with: { someCode }
 	 * 
+	 * pseudo-implementation:
+	 *  mirrorOf(anObject).share(someCode)
+	 * 
 	 * @param parent the object to extend
 	 * @param code a closure containing the code to extend the parent object with
 	 * @return an object whose dynamic parent is a shares-a link to the parent parameter
 	 * @throws NATException if raised inside the code closure.
 	 */
 	public ATObject base_share_with_(ATObject parent, ATClosure code) throws NATException {
-		return parent.meta_extend(code);
+		return parent.meta_share(code);
 	}
 
 }

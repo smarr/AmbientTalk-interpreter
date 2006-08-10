@@ -88,7 +88,7 @@ public final class JavaAnonymousMethod extends NATNil implements ATMethod {
 	public ATTable getArguments() { return _ANON_MTH_ARGS_; }
 
 	public ATAbstractGrammar getBody() {
-		return AGSymbol.alloc("Native implementation in " + creatorClass_.getName());
+		return AGSymbol.alloc("Native anonymous implementation in " + creatorClass_.getName());
 	}
 
 }

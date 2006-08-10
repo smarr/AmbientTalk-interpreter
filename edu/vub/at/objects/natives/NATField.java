@@ -43,7 +43,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 public class NATField extends NATNil implements ATField {
 
 	private final ATSymbol name_;
-	private NATCallframe frame_;
+	private final NATCallframe frame_;
 	
 	public NATField(ATSymbol name, NATCallframe frame) {
 		name_ = name;
@@ -71,7 +71,7 @@ public class NATField extends NATNil implements ATField {
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<field>");
+		return NATText.atValue("<field:"+name_.meta_print().javaValue+">");
 	}
 
 }

@@ -60,52 +60,10 @@ import java.util.regex.Pattern;
  * @deprecated BaseInterfaces are replaced by base_ calls
  */
 public class BaseInterfaceAdaptor {
-
+	
 	public static String transformSelector(
 			String addPrefix, String removePrefix, String selector) {
 		return addPrefix + selector.replaceFirst(removePrefix,"").replace(':', '_');
-	}
-	
-	
-	private static final Pattern oprName2opr = Pattern.compile("_opr(.*)_");
-	
-    //	 TODO: write a unit test!
-	public static String java2atSelector(String javaSelector) {
-		// strip away base_ or meta_ prefix
-		javaSelector = javaSelector.replaceFirst("\\A(base_|meta_)", "");
-		
-		// _operatorname_ -> operator symbol
-		Matcher m = oprName2opr.matcher(javaSelector);
-		StringBuffer sb = new StringBuffer();
-		while (m.find()) {
-			m.appendReplacement(sb, oprCode2Symbol(m.group(1)));
-		}
-		m.appendTail(sb);
-		// _ -> :
-		return javaSelector.replaceAll("_", ":");
-	}
-	
-	// TODO: replace by a hashcode index into a jumptable
-	private static final String oprCode2Symbol(String code) {
-		if (code2symbol.containsKey(code))
-			return (String) code2symbol.get(code);
-		else
-			return "_opr" + code + "_"; // no match, return original input
-	}
-	
-	private static final HashMap code2symbol = new HashMap();
-	static {
-		code2symbol.put("_plus_", "+");
-		code2symbol.put("_minus_", "-");
-		code2symbol.put("_times_", "*");
-		code2symbol.put("_divides_", "/");
-		code2symbol.put("_mod_", "\\");
-		code2symbol.put("_band_", "&");
-		code2symbol.put("_expt_", "^");
-		code2symbol.put("_bnot_", "!");
-		code2symbol.put("_gt_", ">");
-		code2symbol.put("_lt_", "<");
-		code2symbol.put("_eql_", "=");
 	}
 	
 	public static String transformField(

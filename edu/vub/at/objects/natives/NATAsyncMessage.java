@@ -72,9 +72,9 @@ public final class NATAsyncMessage extends NATMessage implements ATAsyncMessage 
 
 	/**
 	 * To evaluate an asynchronous message send, an asynchronous invoke is performed
-	 * on the receiver object, passing along this object representing the message itself.
+	 * on the receiver object.
 	 * 
-	 * @return NIL, by default.
+	 * @return NIL, by default. Overridable by the receiver.
 	 */
 	public ATObject meta_sendTo(ATObject receiver) throws NATException {
 		// fill in the receiver first

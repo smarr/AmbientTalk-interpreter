@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.objects.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -59,7 +60,7 @@ public class NATSuperObject extends NATNil implements ATObject {
 	 * -- Message Sending Protocol --
 	 * ------------------------------ */
 
-	public ATNil meta_send(ATMessage msg) throws NATException {
+	public ATNil meta_send(ATAsyncMessage msg) throws NATException {
 		return lookupFrame_.meta_send(msg);
 	}
 

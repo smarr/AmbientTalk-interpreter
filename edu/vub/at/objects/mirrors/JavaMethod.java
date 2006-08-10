@@ -35,10 +35,8 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.lang.reflect.Method;
 
@@ -61,7 +59,7 @@ public final class JavaMethod extends NATNil implements ATMethod {
 	 * AmbientTalk selector name.
 	 */
 	public ATSymbol getName() {
-		return AGSymbol.alloc(BaseInterfaceAdaptor.java2atSelector(javaMethod_.getName()));
+		return Reflection.downSelector(javaMethod_.getName());
 	}
 	
 	public ATTable getArguments() {
@@ -74,7 +72,7 @@ public final class JavaMethod extends NATNil implements ATMethod {
 	
 	public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException {
 		try {
-			return NATObject.cast(
+			return Reflection.downObject(
 					javaMethod_.invoke(ctx.getLexicalScope(), arguments.asNativeTable().elements_));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

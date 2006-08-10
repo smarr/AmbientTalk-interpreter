@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -51,6 +52,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.BaseInterfaceAdaptor;
 import edu.vub.at.objects.mirrors.NATPrimitiveField;
+import edu.vub.at.objects.mirrors.Reflection;
 
 /**
  * @author smostinc
@@ -71,7 +73,7 @@ public class NATNil implements ATNil {
 	 * Asynchronous messages sent to an object ( o<-m( args )) are handled by the 
 	 * actor in which the object is contained.
 	 */
-	public ATNil meta_send(ATMessage message) throws NATException {
+	public ATNil meta_send(ATAsyncMessage message) throws NATException {
          // TODO: nil <- m() => also do invoke-like deification?
 		throw new RuntimeException("Not yet implemented: async message sends to native values");
 	}
@@ -83,11 +85,12 @@ public class NATNil implements ATNil {
 	 * invoke the requested message, based on the passed selector and arguments.
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol methodName, ATTable arguments) throws NATException {
+		
 		String selector = methodName.getText().asNativeText().javaValue;
 		
 		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
 		
-		return NATObject.cast(
+		return Reflection.downObject(
 				BaseInterfaceAdaptor.deifyInvocation(
 					this.getClass(),
 					this,
@@ -126,7 +129,7 @@ public class NATNil implements ATNil {
 		try {
 			selector = BaseInterfaceAdaptor.transformField("base_get", "", selector, true);
 				
-			ATObject result = NATObject.cast(
+			ATObject result = Reflection.downObject(
 					BaseInterfaceAdaptor.deifyInvocation(
 						this.getClass(),
 						this,
@@ -165,7 +168,7 @@ public class NATNil implements ATNil {
 	 * ------------------------------------ */
 
 	public ATObject meta_clone() throws NATException {
-		return this;
+		throw new XIllegalOperation("Cannot clone an object of type " + this.getClass().getName());
 	}
 
 	public ATObject meta_extend(ATClosure code) throws NATException {
@@ -173,7 +176,7 @@ public class NATNil implements ATNil {
 	}
 
 	public ATObject meta_share(ATClosure code) throws NATException {
-		throw new XIllegalOperation("Cannot create a view upon an object of type " + this.getClass().getName());
+		throw new XIllegalOperation("Cannot share an object of type " + this.getClass().getName());
 	}
 	
 	/* ---------------------------------

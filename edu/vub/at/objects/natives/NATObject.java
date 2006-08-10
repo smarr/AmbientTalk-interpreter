@@ -31,15 +31,16 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -58,20 +59,6 @@ import java.util.Vector;
 public class NATObject extends NATCallframe implements ATObject{
 
 	// Auxiliary static methods
-	
-	/**
-	 * Allows converting an ordinary Object into an ATObject, wrapping it if necessary.
-	 */ 
-	public static ATObject cast(Object o) {
-		// Our own "dynamic dispatch"
-		if(o instanceof ATObject) {
-			return (ATObject)o;
-		} else {
-			// TODO Wrapping
-			throw new RuntimeException("Ordinary java objects are not wrapped yet.");			
-		}
-	}
-	
 	
 	public static final boolean _IS_A_ 		= true;
 	public static final boolean _SHARES_A_ 	= false;
@@ -149,7 +136,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * allowing intercepting of asynchronous message sends at the granularity of an object, 
 	 * rather than at the level of an actor.
 	 */
-	public ATNil meta_send(ATMessage message) throws NATException {
+	public ATNil meta_send(ATAsyncMessage message) throws NATException {
 		// assert(this == message.getReceiver());
 //		 TODO Implement the ATActor interface     
 //				ATActor actor = NATActor.currentActor();
@@ -316,7 +303,8 @@ public class NATObject extends NATCallframe implements ATObject{
 	}
 
 	public ATTable meta_listMethods() throws NATException {
-		return new NATTable(methodDictionary_.values().toArray());
+		Collection methods = methodDictionary_.values();
+		return new NATTable((ATObject[]) methods.toArray(new ATObject[methods.size()]));
 	}
 
 	

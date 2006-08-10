@@ -39,6 +39,7 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
 import java.util.LinkedList;
@@ -104,7 +105,7 @@ public final class NATTable extends AGExpression implements ATTable {
 				result.add(els[i].meta_eval(ctx));
 			}
 		}
-		return new NATTable(result.toArray(new ATObject[siz]));
+		return new NATTable((ATObject[]) result.toArray(new ATObject[siz]));
 	}
 	
 	/**
@@ -169,7 +170,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		
 		for(int i = 0; i < javaArray.length; i++) {
 			Object element = javaArray[i];
-			elements_[i] = NATObject.cast(element);
+			elements_[i] = Reflection.downObject(element);
 		}
 	}
 	
@@ -205,10 +206,6 @@ public final class NATTable extends AGExpression implements ATTable {
 		return new NATTable(result);
 	}
 	
-	/*private static final NATTable mapEvalOverExpressions(NATTable tab, ATContext ctx) throws NATException {
-
-}*/
-	
 	public ATTable asTable() { return this; }
 	
 	public NATTable asNativeTable() { return this; }
@@ -237,7 +234,7 @@ public final class NATTable extends AGExpression implements ATTable {
 				result.add(elements_[i].meta_eval(ctx));
 			}
 		}
-		return new NATTable(result.toArray(new ATObject[siz]));
+		return new NATTable((ATObject[]) result.toArray(new ATObject[siz]));
 	}
 	
 	/**
@@ -262,7 +259,7 @@ public final class NATTable extends AGExpression implements ATTable {
 				result.add(elements_[i].meta_quote(ctx));
 			}
 		}
-		return new NATTable(result.toArray(new ATObject[siz]));
+		return new NATTable((ATObject[]) result.toArray(new ATObject[siz]));
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
