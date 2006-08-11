@@ -28,9 +28,10 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -55,9 +56,13 @@ import java.util.Vector;
  */
 public class NATCallframe extends NATNil implements ATObject {
 	
-	protected final FieldMap 	variableMap_;
+	protected FieldMap 		variableMap_;
 	protected final Vector	stateVector_;
 	protected final ATObject 	lexicalParent_;
+	
+	public NATCallframe() {
+		this(OBJLexicalRoot._INSTANCE_);
+	}
 	
 	public NATCallframe(ATObject lexicalParent) {
 		variableMap_   = new FieldMap();
@@ -79,28 +84,52 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * ------------------------------ */
 	
 	/**
-	 * Invocations on an object ( o.m( args ) ) are not allowed on callframes since
-	 * they cannot be reified in the language (other than as lexical parents at the
-	 * meta-level).
+	 * Asynchronous messages sent to an object or a callframe ( o<-m( args )) are handled by the 
+	 * actor in which the object is contained. This method is a hook 
+	 * allowing intercepting of asynchronous message sends at the granularity of an object, 
+	 * rather than at the level of an actor.
+	 */
+	public ATNil meta_send(ATAsyncMessage message) throws NATException {
+		// assert(this == message.getReceiver());
+//		 TODO Implement the ATActor interface     
+//				ATActor actor = NATActor.currentActor();
+//				ATAsyncMessageCreation message = actor.createMessage(msg.sender, this, msg.selector, msg.arguments);
+//				actor.send(message);
+		throw new RuntimeException("Not yet implemented: async message sending");
+	}
+	
+	/**
+	 * Normally, call frames are not used in receiverful method invocation expressions.
+	 * That is, normally, the content of call frames is accessed via the meta_lookup operation.
 	 * 
-	 * @throws XIllegalOperation
+	 * A meta_invoke operation on call frames is much more ad hoc than on real objects.
+	 * A call frame responds to an invocation by looking up the selector in its own fields (without delegating!)
+	 * and by applying the closure bound to that field.
+	 * 
+	 * The 'receiver' argument should always equal 'this' because call frames do not delegate!
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
-		throw new XIllegalOperation("Call frames cannot be reified in the language " +
-		"and therefore no methods can be invoked on them.");
+		// assert(this == receiver)
+		return this.getLocalField(selector).asClosure().meta_apply(arguments);
 	}
 	
 	/**
 	 * respondsTo is a mechanism to ask any object o whether it would respond to the
-	 * method o.selector( args ). Since callframes cannot be reified in the language
-	 * using base-level mechanisms (they can be visible as lexical parents to the 
-	 * meta-level), callframes are said not to respond to any method invocation.
+	 * selection o.selector. A call frame implements respondsTo by checking whether
+	 * it contains a public field corresponding to the selector.
 	 * 
-	 * @throws XIllegalOperation
+	 * A call frame does not delegate to other objects to check
+	 * whether it can respond to a certain selector.
 	 */
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
-		throw new XIllegalOperation("Call frames cannot be reified in the language " +
-		"and therefore it cannot respond to any method invocation.");
+		return NATBoolean.atValue(this.hasLocalField(selector));
+	}
+
+	/**
+	 * By default, when a selection is not understood by an AmbientTalk object or call frame, an error is raised.
+	 */
+	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
+		throw new XSelectorNotFound(selector, this);
 	}
 	
 	/* ------------------------------------------
@@ -108,54 +137,65 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * ------------------------------------------ */
 	
 	/**
-	 * This method corresponds to code of the form ( o.m ). As callframes can not
-	 * be seen as first-class objects, the cannot be the target of this type of 
-	 * expressions. 
+	 * This method is used in the evaluation of the code <tt>o.m</tt>.
+	 * When o is a call frame, the selector is looked up in the fields of the call frame.
+	 * A call frame does not delegate the lookup to other objects.
 	 * 
-	 * @throws XIllegalOperation
+	 * A call frame also does not wrap the result of selection, because it does not contain
+	 * methods but rather closures, which are already paired with their proper evaluation context.
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
-		throw new XIllegalOperation("Call frames cannot be reified in the language " +
-		"and therefore no fields or methods can be selected from them.");
-	} 
+		return this.getLocalField(selector);
+	}
 	
 	/**
-	 * This method corresponds to code of the form ( x ) within the scope of this 
-	 * object. It searches for the requested selector among the methods and fields 
-	 * of the object and its dynamic parents.
+	 * This method is used to evaluate code of the form <tt>selector</tt> within the scope
+	 * of this call frame. A call frame resolves such a lookup request by checking whether
+	 * a field corresponding to the selector exists locally. If it does, the result is
+	 * returned. If it does not, the search continues recursively in the call frame's
+	 * lexical parent.
 	 */
 	public ATObject meta_lookup(ATSymbol selector) throws NATException {
-		ATObject result;
-		try {
-			result = getField(selector);
-		} catch (XSelectorNotFound exception2) {
-			result = lexicalParent_.meta_lookup(selector);
+		if (this.hasLocalField(selector)) {
+			return this.getLocalField(selector);
+		} else {
+			return lexicalParent_.meta_lookup(selector);
 		}
-		return result;
 	}
 
+	/**
+	 * A field can be added to either a call frame or an object.
+	 * In both cases, it is checked whether the field does not already exist.
+	 * If it does not, a new field is created and its value set to the given initial value.
+	 */
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
 		boolean fieldAdded = variableMap_.put(name);
 		if (!fieldAdded) {
 			// field already exists...
-			throw new XIllegalOperation("Definition of duplicate field " + name);
+			throw new XDuplicateSlot("field ", name.getText().asNativeText().javaValue);
 		} else {
-			// field now defined, add it to the state vector
+			// field now defined, add its value to the state vector
 			stateVector_.add(value);
 		}
 		return NATNil._INSTANCE_;
 	}
 	
+	/**
+	 * A field can be assigned in either a call frame or an object.
+	 * In both cases, if the field exists locally, it is set to the new value.
+	 * If it does not exist locally, the assignment is performed on the lexical parent.
+	 */
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
 		int index = variableMap_.get(name);
 		if(index != -1) {
+			// field exists, modify the state vector
 			stateVector_.set(index, value);
+			return NATNil._INSTANCE_;
 		} else {
 			// The lexical parent chain is followed for assignments. This implies
 			// that assignments on dynamic parents are disallowed.
-			lexicalParent_.meta_assignField(name, value);
+			return lexicalParent_.meta_assignField(name, value);
 		}
-		return NATNil._INSTANCE_;
 	}
 
 	/* ------------------------------------
@@ -163,19 +203,15 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * ------------------------------------ */
 
 	public ATObject meta_clone() throws NATException {
-		throw new XIllegalOperation("Call frames should not be cloned as they " +
-				"may only be part of an object hierarchy through the lexical " +
-				"parent, which is never cloned.");
+		throw new XIllegalOperation("Cannot clone a call frame, clone its owning object instead.");
 	}
 
 	public ATObject meta_extend(ATClosure code) throws NATException {
-		throw new XIllegalOperation("Call frames cannot be reified in the language " +
-				"and therefore cannot be extended.");
+		throw new XIllegalOperation("Cannot extend a call frame, extend its owning object instead.");
 	}
 
 	public ATObject meta_share(ATClosure code) throws NATException {
-		throw new XIllegalOperation("Call frames cannot be reified in the language " +
-				"and therefore cannot be shared as a dynamic parent.");
+		throw new XIllegalOperation("Cannot share a call frame, share its owning object instead.");
 	}
 
 	/* ---------------------------------
@@ -183,30 +219,17 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * --------------------------------- */
 	
 	public ATNil meta_addField(ATField field) throws NATException {
-		return meta_defineField(field.getName(), field.getValue());
+		return this.meta_defineField(field.getName(), field.getValue());
 	}
 	
 	public ATNil meta_addMethod(ATMethod method) throws NATException {
-		throw new XIllegalOperation("Adding a method to a callframe is not possible " +
-				"since the parser will instead add a closure as a field.");
-	}
-
-	/**
-	 * This variant returns the actual value of a field not a reification of the 
-	 * field itself.
-	 */
-	public ATObject getField(ATSymbol selector) throws NATException {
-		int index = variableMap_.get(selector);
-		if(index != -1) {
-			return (ATObject) (stateVector_.get(index));
-		} else {
-			throw new XSelectorNotFound(selector, this);
-		}
+		throw new XIllegalOperation("Cannot add method "+
+								   method.getName().getText().asNativeText().javaValue +
+				                    " to a call frame. Add it as a closure field instead.");
 	}
 	
-	public ATField meta_getField(ATSymbol selector) throws NATException {
-		int index = variableMap_.get(selector);
-		if(index != -1) {
+	public ATField meta_getField(ATSymbol selector) throws XSelectorNotFound {
+		if (this.hasLocalField(selector)) {
 			return new NATField(selector, this);
 		} else {
 			throw new XSelectorNotFound(selector, this);
@@ -214,12 +237,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	}
 
 	public ATMethod meta_getMethod(ATSymbol selector) throws NATException {
-		// TODO should this not always return nil?
-		try {
-			return getField(selector).asClosure().getMethod();
-		} catch (XTypeMismatch e) {
-			throw new XSelectorNotFound(selector, this);
-		}
+		throw new XSelectorNotFound(selector, this);
 	}
 
 	public ATTable meta_listFields() throws NATException {
@@ -253,6 +271,25 @@ public class NATCallframe extends NATNil implements ATObject {
 	
 	public boolean isCallFrame() {
 		return true;
+	}
+	
+	// protected methods, only to be used by NATCallframe and NATObject
+	
+	protected boolean hasLocalField(ATSymbol selector) {
+		return variableMap_.get(selector) != -1;
+	}
+	
+	/**
+	 * This variant returns the actual value of a field not a reification of the 
+	 * field itself.
+	 */
+	protected ATObject getLocalField(ATSymbol selector) throws XSelectorNotFound {
+		int index = variableMap_.get(selector);
+		if(index != -1) {
+			return (ATObject) (stateVector_.get(index));
+		} else {
+			throw new XSelectorNotFound(selector, this);
+		}
 	}
 	
 }

@@ -28,9 +28,11 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATFraction;
@@ -198,6 +200,7 @@ public final class Reflection {
 	 * implicitly performed Java invocation.
 	 * 
 	 * @param jRcvr the Java object having received the AmbientTalk method invocation
+	 * @param atOrigRcvr the original AmbientTalk object that received the invocation
 	 * @param atSelector the AmbientTalk selector, to be converted to a Java selector
 	 * @param atArgs the arguments to the AmbientTalk method invocation
 	 * @return the return value of the Java method invoked via the java invocation.
@@ -207,8 +210,42 @@ public final class Reflection {
 	 *  => upInvocation(aNATTable, "at", ATObject[] { ATNumber(1) })
 	 *  => NATTable must have a method named base_at
 	 */
-	public static final Object upInvocation(ATObject jRcvr, AGSymbol atSelector, ATObject[] atArgs) {
-		return null;
+	public static final Object upInvocation(ATObject jRcvr, ATObject atOrigRcvr, ATSymbol atSelector, ATTable atArgs) throws NATException {
+		String selector = atSelector.getText().asNativeText().javaValue;
+		
+		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
+		
+		return Reflection.downObject(
+				BaseInterfaceAdaptor.deifyInvocation(
+					jRcvr.getClass(),
+					jRcvr,
+					selector,
+					atArgs));
+	}
+	
+	/**
+	 * upRespondsTo transforms an explicit AmbientTalk respondsTo meta-level request
+	 * into an implicit check whether the given jRcvr java object has a method
+	 * corresponding to the given selector, prefixed with base_
+	 * 
+	 * @param jRcvr the Java object being queried for a certain selector
+	 * @param atSelector the AmbientTalk selector, to be converted to a Java selector
+	 * @return a boolean indicating whether the jRcvr implements a method corresponding to base_ + atSelector
+	 * 
+	 * Example:
+	 *  eval "(reflect: [1,2,3]).respondsTo("at")" where the receiver of repondsTo is a NATTable
+	 *  => upRespondsTo(aNATTable, "at")
+	 *  => NATTable must have a method named base_at
+	 */
+	public static final boolean upRespondsTo(ATObject jRcvr, ATSymbol atSelector) throws NATException {
+		String selector = atSelector.getText().asNativeText().javaValue;
+		
+		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
+
+		return BaseInterfaceAdaptor.hasApplicableMethod(
+				jRcvr.getClass(),
+				jRcvr,
+				selector);
 	}
 
 	/**
@@ -232,9 +269,13 @@ public final class Reflection {
 	
 	/**
 	 * upSelection takes an explicit AmbientTalk field selection and turns it into an
-	 * implicitly performed Java selection by invoking a getter method.
+	 * implicitly performed Java selection by invoking a getter method, if such a getter method
+	 * exists. If not, then it is checked whether a Java method exists that matches
+	 * the selector, prefixed with 'base_'. If so, this method is wrapped in a JavaClosure
+	 * and returned.
 	 * 
 	 * @param jRcvr the Java object having received the AmbientTalk field selection
+	 * @param atOrigRcvr the original AmbientTalk object that received the selection
 	 * @param atSelector the AmbientTalk selector, to be converted to a Java getter method selector
 	 * @return the return value of the Java getter method invoked via the AmbientTalk selection.
 	 * 
@@ -242,9 +283,26 @@ public final class Reflection {
 	 *  eval "msg.selector" where msg is a NATMessage
 	 *  => upSelection(aNATMessage, "selector")
 	 *  => NATMessage must have a zero-argument method named getSelector
+	 *  
+	 * Example:
+	 *  eval "[1,2,3].at"
+	 *  => upSelection(aNATTable, "at")
+	 *  => either NATTable must have a method getAt(), which is then invoked
+	 *     or it must have a method base_at, which is then wrapped
 	 */
-	public static final Object upSelection(ATObject jRcvr, AGSymbol atSelector) {
-		return null;
+	public static final Object upSelection(ATObject jRcvr, ATObject atOrigRcvr, ATSymbol atSelector) throws NATException {
+		String selector = atSelector.getText().asNativeText().javaValue;
+		// TODO: rewrite this properly without catching XTypeMismatch
+		try {
+			selector = BaseInterfaceAdaptor.transformField("base_get", "", selector, true);
+			return BaseInterfaceAdaptor.deifyInvocation(
+					jRcvr.getClass(),
+					jRcvr,
+					selector,
+					NATTable.EMPTY);
+		} catch (XTypeMismatch e) {
+			return jRcvr.meta_getMethod(atSelector);
+		}
 	}
 
 	/**

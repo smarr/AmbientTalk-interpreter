@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATNumber;
@@ -126,7 +127,7 @@ public class BaseInterfaceAdaptor {
 			Method[] applicable = getMethodsForSelector(baseInterface, methodName);
 			switch(applicable.length) {
 				case 0:
-					throw new XSelectorNotFound(AGSymbol.alloc(methodName), receiver);
+					return receiver.meta_doesNotUnderstand(AGSymbol.alloc(methodName));
 				case 1:
 					return applicable[0].invoke(receiver, arguments.asNativeTable().elements_);
 				default:
@@ -152,14 +153,14 @@ public class BaseInterfaceAdaptor {
 				baseInterface, selector).length != 0);
 	}
 	
-	public static JavaClosure wrapMethodFor(
+	public static ATClosure wrapMethodFor(
 			Class baseInterface, 
 			ATObject receiver,
 			String methodName) throws NATException {
 		Method[] applicable = getMethodsForSelector(baseInterface, methodName);
 		switch (applicable.length) {
 			case 0:
-				throw new XSelectorNotFound(AGSymbol.alloc(methodName), receiver);
+				return receiver.meta_doesNotUnderstand(AGSymbol.alloc(methodName)).asClosure();
 			case 1:
 				return new JavaClosure(receiver, new JavaMethod(applicable[0]));
 			default:

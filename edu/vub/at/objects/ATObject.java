@@ -40,6 +40,16 @@ import edu.vub.at.objects.natives.NATText;
  * 
  * Some meta methods defined in this interface will give rise to events in the receiver object's
  * beholders (i.e. the observers of the object's mirror).
+ * 
+ * The principal implementors of this interface are:
+ *  - NATNil which provides a default implementation for all native, non-object values
+ *    The default implementation tries to make a Java native object look like an AmbientTalk object.
+ *  - NATCallframe provides the implementation for a special kind of objects, namely call frames or
+ *    'activation records'. These are objects without true methods.
+ *  - NATObject provides the most important implementation, namely that of base-level AmbientTalk objects.
+ *  - NATSuperObject acts as a proxy to a NATObject. Therefore, it implements the ATObject interface
+ *    by properly forwarding all methods to a wrapped object.
+ * 
  */
 public interface ATObject extends ATConversions {
 
@@ -58,9 +68,15 @@ public interface ATObject extends ATConversions {
 	public ATNil meta_send(ATAsyncMessage message) throws NATException;
 	
 	/**
-	 * Invoke a method corresponding to the selector (and located along the dynamic 
-	 * parent chain) with the given arguments
-	 * @param receiver TODO
+	 * Invoke a method corresponding to the selector with the given arguments.
+	 * The selector is looked up along the dynamic delegation chain.
+	 * 
+	 * The first argument, 'receiver', denotes the original receiver of the method invocation.
+	 * Initially, this argument equals the current receiver, 'this'.
+	 * Via delegation, however, original and current receiver may differ and 'this' can be a
+	 * dynamic parent of 'receiver'.
+	 * 
+	 * @param receiver the original receiver of the invocation
 	 * @param selector the name of the method to be invoked
 	 * @param arguments the table of arguments passed to the method
 	 * @param receiver the value for self when invoking the method
@@ -74,19 +90,43 @@ public interface ATObject extends ATConversions {
 	
 	/**
 	 * Query an object for a given field or method which is visible to the outside world.
-	 * In other words only methods in the dynamic parent chain are considered.
-	 * @param selector the name of the method
-	 * @return a 'boolean' denoting whether the object responds to a message o.selector
+	 * Only methods in the dynamic parent chain are considered.
+	 * @param selector the name of a field or method
+	 * @return a boolean denoting whether the object responds to <tt>o.selector</tt>
 	 */
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException;
+
+	/**
+	 * Called when a selection fails because the selector was not
+	 * found along the dynamic delegation hierarchy.
+	 * 
+	 * Note the differences with Smalltalk's well-known 'doesNotUnderstand':
+	 *  - dNU is a meta-level operation in AmbientTalk; it is applied to mirrors.
+	 *  - dNU relates to attribute selection, not to method invocation. Hence, dNU
+	 *    in AmbientTalk is more general: it can be used to model 'virtual' fields
+	 *    by returning a value and it can be used to model 'virtual' methods by
+	 *    returning a block closure.
+	 * 
+	 * @param selector the selector that could not be found
+	 * @throws XSelectorNotFound the default reaction to a failed selection
+	 */
+	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException;
 	
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
 	 * ------------------------------------------ */
 	
 	/**
-	 * Select a slot (field | method) from an object's dynamic parent chain whose name
-	 * corresponds to the given selector.
+	 * Select a slot (field | method) from an object whose name corresponds to the given
+	 * selector. The slot lookup follows the dynamic delegation chain.
+	 * 
+	 * Like with method invocation, slot selection is parameterized by the 'original receiver'.
+	 * This original receiver is equal to 'this' the first time it is called. Via delegation,
+	 * 'this' may instead be a dynamic parent of 'receiver'.
+	 * 
+	 * When a method is selected from an object, it is wrapped in a closure such that
+	 * the 'self' is properly preserved.
+	 * 
 	 * @param receiver the dynamic receiver to which method closures should bind self.
 	 * @param selector the name of the field or method sought for. 
 	 * @return the contents of the slot
@@ -96,9 +136,13 @@ public interface ATObject extends ATConversions {
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException;
 	
 	/**
-	 * Select a slot (field | method) from an object's lexical parent chain whose name
-	 * corresponds to the given selector.
-	 * @param selector the name of the field or method sought for. 
+	 * Select a slot (field | method) from an object whose name corresponds to the given
+	 * selector. The slot lookup follows the lexical nesting chain.
+	 * 
+	 * When a method is found in an object, it is wrapped in a closure such that the 'self'
+	 * is properly preserved.
+	 * 
+	 * @param selector the name of the field or method to look up.
 	 * @return the contents of the slot
 	 * 
 	 * Triggers the <tt>slotSelected</tt> event on this object's beholders (mirror observers).
@@ -107,12 +151,14 @@ public interface ATObject extends ATConversions {
 	
 	/**
 	 * Defines a new field in an object.
+	 * 
+	 * @param name the name of the new field
+	 * @param value the value of the new field
+	 * @return nil
+	 * @throws XDuplicateSlot if the field name already exists
+	 * 
 	 * Triggers the <tt>fieldAdded</tt> event on this object's beholders (mirror observers) if
 	 * the field is added successfully.
-	 * 
-	 * @param a field name (a symbol) and a value (an object)
-	 * @return nil
-	 * @throws ATException if the field name already exists
 	 */
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException;
 	
@@ -143,7 +189,7 @@ public interface ATObject extends ATConversions {
 	 * 
 	 * Triggers the <tt>objectCloned</tt> event on this object's beholders (mirror observers).
 	 * 
-	 * Initializing the clone is the responsibility of the method named <new>.
+	 * Initializing the clone is the responsibility of the method named <init>.
 	 */
 	public ATObject meta_clone() throws NATException;
 	

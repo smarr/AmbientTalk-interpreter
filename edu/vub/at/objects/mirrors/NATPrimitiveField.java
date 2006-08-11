@@ -30,6 +30,7 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -44,8 +45,8 @@ import edu.vub.at.objects.natives.NATTable;
  */
 public class NATPrimitiveField extends NATNil implements ATField {
 
-	private JavaClosure getter_;
-	private JavaClosure setter_;
+	private ATClosure getter_;
+	private ATClosure setter_;
 	private ATSymbol name_;
 	
 	public static NATPrimitiveField createPrimitiveField(
@@ -55,8 +56,8 @@ public class NATPrimitiveField extends NATNil implements ATField {
 		String getterSel = BaseInterfaceAdaptor.transformField("base_get", "", selector, true);
 		String setterSel = BaseInterfaceAdaptor.transformField("base_set", "", selector, true);
 		
-		JavaClosure getter = BaseInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, getterSel);
-		JavaClosure setter = null;
+		ATClosure getter = BaseInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, getterSel);
+		ATClosure setter = null;
 		try {
 			setter = BaseInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, setterSel);
 		} catch (NATException e) {
@@ -67,7 +68,7 @@ public class NATPrimitiveField extends NATNil implements ATField {
 	}
 	
 	
-	private NATPrimitiveField(ATSymbol name, JavaClosure getter, JavaClosure setter) {
+	private NATPrimitiveField(ATSymbol name, ATClosure getter, ATClosure setter) {
 		name_ = name;
 		getter_ = getter;
 		setter_ = setter;

@@ -56,7 +56,7 @@ public class NATField extends NATNil implements ATField {
 
 	public ATObject getValue() {
 		try {
-			return frame_.getField(name_);
+			return frame_.getLocalField(name_);
 		} catch (NATException e) {
 			// TODO XIllegalOperation should be an unchecked exception (maybe two variants)
 			// Since the field was selected from the receiver, it should always be found

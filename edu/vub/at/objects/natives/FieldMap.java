@@ -60,6 +60,12 @@ public final class FieldMap {
 		free_ = 0;
 	}
 	
+	// used for internal cloning purposes only
+	private FieldMap(ATSymbol[] copiedNames, int copiedFree) {
+		varNames_ = copiedNames;
+		free_ = copiedFree;
+	}
+	
 	/**
 	 * Add a new field to the field map. The field will be assigned
 	 * the index of the map's current size.
@@ -95,6 +101,17 @@ public final class FieldMap {
 	 */
 	public ATSymbol[] listFields() {
 		return varNames_;
+	}
+	
+	/**
+	 * Creates a shallow copy of the field map.
+	 */
+	public FieldMap copy() {
+		// allocate a copy of the names array
+		ATSymbol[] newVarNames = new ATSymbol[varNames_.length];
+		// copy content into new array
+		System.arraycopy(varNames_, 0, newVarNames, 0, varNames_.length);
+		return new FieldMap(newVarNames, free_);
 	}
 	
 	/**

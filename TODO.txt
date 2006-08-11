@@ -32,11 +32,6 @@ similar to meta_call = meta_lookup + meta_apply
 => repercussions on code? e.g. on reflective invocations in Java: table.at() would then have to be transformed to meta_select("at") (which returns an ATClosure wrapper around a Java method) + meta_apply which triggers the Java method.
 would be less efficient
 
-* meta_clone => ensure that the clone follows a 'lazy copy' policy with respect to
-the variable map and the method dictionary, which are shared among clones but presumed to be immutable.
-Indeed, they are immutable once an object is fully created at the base-level, but they can be changed
-at the meta-level.
-
 * meta_defineField versus meta_addField => perhaps defineField is not accessible from the
 meta-level and should be renamed to defineField. Similarly, meta_assignField should come in two
 variants: meta_assignField(ATField f, ATObject val) and assignField(ATSymbol sel, ATObject val).

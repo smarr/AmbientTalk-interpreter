@@ -28,11 +28,11 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
-import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
@@ -43,8 +43,8 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * @author smostinc
  *
  * NATSuperObject is a decorator class for an ATObject when denoted using the super
- * pseudovariable. It is parameterised by two objects, namely the frame in which
- * all methods and fields are to be found and the late-bound receiver.
+ * pseudovariable. It is parameterised by two objects, namely the super object in which
+ * method lookup starts (lookupFrame_) and the late-bound receiver.
  */
 public class NATSuperObject extends NATNil implements ATObject {
 	
@@ -64,6 +64,12 @@ public class NATSuperObject extends NATNil implements ATObject {
 		return lookupFrame_.meta_send(msg);
 	}
 
+	/**
+	 * Invocation is treated differently for a SuperObject reference. While the method
+	 * lookup will start in the encapsulated lookupFrame_, the receiver will not be bound
+	 * to 'lookupFrame_', as would normally be the case, but to receiver_, implementing
+	 * 'late binding of self'.
+	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
 		return lookupFrame_.meta_invoke(receiver_, selector, arguments);
 	}
@@ -72,10 +78,20 @@ public class NATSuperObject extends NATNil implements ATObject {
 		return lookupFrame_.meta_respondsTo(selector);
 	}
 
+	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
+		return lookupFrame_.meta_doesNotUnderstand(selector);
+	}
+
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
 	 * ------------------------------------------ */
 	
+	/**
+	 * Selection is treated differently for a SuperObject reference. While the dynamic
+	 * lookup will start in the encapsulated lookupFrame_, the receiver will not be bound
+	 * to 'lookupFrame_', as would normally be the case, but to receiver_, implementing
+	 * 'late binding of self'.
+	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
 		return lookupFrame_.meta_select(receiver_, selector);
 	}
@@ -84,6 +100,10 @@ public class NATSuperObject extends NATNil implements ATObject {
 		return lookupFrame_.meta_lookup(selector);
 	}
 
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+		return lookupFrame_.meta_defineField(name, value);
+	}
+	
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
 		return lookupFrame_.meta_assignField(name, value);
 	}
@@ -154,6 +174,14 @@ public class NATSuperObject extends NATNil implements ATObject {
 
 	public ATObject getReceiver() {
 		return this.receiver_;
+	}
+	
+	/* -------------------------
+	 * -- Evaluation Protocol --
+	 * ------------------------- */
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return lookupFrame_.meta_print();
 	}
 
 }

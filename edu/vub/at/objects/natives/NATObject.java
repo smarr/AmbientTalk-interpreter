@@ -28,10 +28,10 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATMethod;
@@ -58,26 +58,49 @@ import java.util.Vector;
  */
 public class NATObject extends NATCallframe implements ATObject{
 
-	// Auxiliary static methods
-	
+	// Auxiliary static methods to support the type of dynamic parent
 	public static final boolean _IS_A_ 		= true;
 	public static final boolean _SHARES_A_ 	= false;
 	
+	/**
+	 * This flag determines the type of parent pointer of this object. We distinguish two cases:
+	 *  - 1: an is-a link, which results in a recursive cloning of the parent when this object is cloned.
+	 *  - 0: a shares-a link, which ensures that clones of this object share the same parent.
+	 */
+	private static final byte _ISAPARENT_FLAG_ = 1<<0;
+	
+	/**
+	 * This flag determines whether or not the field map of this object is shared by other objects:
+	 *  - 1: the map is shared, so modifications must be performed on a copy
+	 *  - 0: the map is not shared, modifications may be directly performed on it
+	 *  
+	 * This flag is important for maintaining the semantics that clones are self-sufficient objects:
+	 * they share field names and methods only at the implementation-level.
+	 */
+	private static final byte _SHARE_MAP_FLAG_ = 1<<1;
+	
+	/**
+	 * Similar to __SHARE_MAP_FLAG__ but for determining the shared status of the method dictionary.
+	 */
+	private static final byte _SHARE_DCT_FLAG_ = 1<<2;
+	
+	/**
+	 * The flags of an AmbientTalk object encode the following boolean information:
+	 *  Format: 0b00000dmp where
+	 *   p = parent flag: if set, dynamic parent is 'is-a' parent, otherwise 'shares-a' parent
+	 *   m = shares map flag: if set, the map of this object is shared between clones
+	 *   d = shares dictionary flag: if set, the method dictionary of this object is shared between clones
+	 */
+	private byte flags_;
+	
 	// inherited from NATCallframe:
-	// private Map 	    variableMap_ 			= new HashMap();
-	// private Vector	stateVector_ 			= new Vector();
+	// private FieldMap 	variableMap_;
+	// private Vector	stateVector_;
 	
 	/**
 	 * The method dictionary of this object. It maps method selectors to ATMethod objects.
 	 */
-	private final HashMap methodDictionary_;
-	
-	/**
-	 * The type of parent pointer of this object. We distinguish two cases:
-	 *  - an is-a link, which results in a recursive cloning of the parent when this object is cloned.
-	 *  - a shares-a link, which ensures that clones of this object share the same parent.
-	 */
-	private final boolean parentPointerType_;
+	private HashMap methodDictionary_;
 	
 	/**
 	 * The dynamic parent of this object (i.e. the delegation link).
@@ -95,8 +118,8 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
 	 */
 	public NATObject(ATObject lexicalParent) {
-		this(NATNil._INSTANCE_, lexicalParent, _SHARES_A_);
-	}	
+		this(OBJDynamicRoot._INSTANCE_, lexicalParent, _SHARES_A_);
+	}
 	
 	/**
 	 * Constructs a new ambienttalk object based on a set of parent pointers. 
@@ -108,66 +131,59 @@ public class NATObject extends NATCallframe implements ATObject{
 		super(lexicalParent);
 		methodDictionary_ = new HashMap();
 		dynamicParent_ = dynamicParent;
-		parentPointerType_ = parentType;
+		flags_ = 0; // by default, an object has a shares-a parent and does not share its map/dictionary
+		if (parentType) {
+			// requested an 'is-a' parent
+			setFlag(_ISAPARENT_FLAG_); // set is-a parent flag to 1
+		}
 	}
 	
 	/**
 	 * Constructs a new ambienttalk object as a clone of an existing object.
+	 * 
+	 * The caller of this method *must* ensure that the shares flags are set.
 	 */
 	private NATObject(FieldMap map,
 			         Vector state,
 			         HashMap methodDict,
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
-			         boolean parentType) {
+			         byte flags) {
 		super(map, state, lexicalParent);
 		methodDictionary_ = methodDict;
-		parentPointerType_ = parentType;
 		dynamicParent_ = dynamicParent;
+		flags_ = flags; //a cloned object inherits all flags from original
 	}
 	
 	/* ------------------------------
 	 * -- Message Sending Protocol --
 	 * ------------------------------ */
 
-	/**
-	 * Asynchronous messages sent to an object ( o<-m( args )) are handled by the 
-	 * actor in which the object is contained. This method is a hook 
-	 * allowing intercepting of asynchronous message sends at the granularity of an object, 
-	 * rather than at the level of an actor.
+	/*
+	 * Inherited from NATCallframe
 	 */
-	public ATNil meta_send(ATAsyncMessage message) throws NATException {
-		// assert(this == message.getReceiver());
-//		 TODO Implement the ATActor interface     
-//				ATActor actor = NATActor.currentActor();
-//				ATAsyncMessageCreation message = actor.createMessage(msg.sender, this, msg.selector, msg.arguments);
-//				actor.send(message);
-		throw new RuntimeException("Not yet implemented: async message sending");
-	}
+	//public ATNil meta_send(ATAsyncMessage message) throws NATException
 	
 	/**
-	 * Invocations on an object ( o.m( args ) ) are handled by looking up the requested
-	 * selector along the dynamic parent chain of o. The select operation should yield 
-	 * a closure (a method paired with a proper context for evaluating its body). This 
-	 * closure is then applied with the passed arguments. 
+	 * Invocations on an object ( <tt>o.m( args )</tt> ) are handled by looking up the requested
+	 * selector in the dynamic parent chain of the receiver. This dynamic lookup process
+	 * yields exactly the same result as a selection (e.g. <tt>o.m</tt>). The result
+	 * ought to be a closure (a method and its corresponding evaluation context), which
+	 * is applied to the provided arguments.
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
-		return meta_select(this, selector).asClosure().meta_apply(arguments);
+		return this.meta_select(receiver, selector).asClosure().meta_apply(arguments);
 	}
 	
 	/**
-	 * An ambienttalk object can respond to a message if a corresponding method or field exists
-	 * along the dynamic parent chain.
+	 * An ambienttalk object can respond to a message if a corresponding field or method exists
+	 * either in the receiver object locally, or in one of its dynamic parents.
 	 */
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
-		try {
-			meta_select(this, selector); // TODO: when events will be spawned for selection, make sure this does not trigger events...
-			// if the select operation succeeds, then this object responds to the given selector
+		if (this.hasLocalField(selector) || this.hasLocalMethod(selector))
 			return NATBoolean._TRUE_;
-			
-		} catch(XSelectorNotFound exception) {
-			return NATBoolean._FALSE_;
-		}
+		else
+			return this.dynamicParent_.meta_respondsTo(selector);
 	}
 
 
@@ -176,37 +192,36 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * ------------------------------------------ */
 	
 	/**
-	 * meta_select is used to evaluate code snippets like <tt>o.m</tt>
+	 * meta_select is used to evaluate code of the form <tt>o.m</tt>.
 	 * 
-	 * To select a field or method (a selector) from an object,
-	 * the receiver object's fields and method dictionary are searched.
-	 * If no match is found, the search is delegated to the dynamic parent.
-	 * 
-	 * If no match is found throughout the entire delegation chain, an XSelectorNotFound exception
-	 * will be raised.
+	 * To select a slot from an object:
+	 *  - first, the list of fields of the current receiver ('this') is searched.
+	 *    If a matching field exists, its value is returned.
+	 *  - second, the list of methods of the current receiver is searched.
+	 *    If a matching method exists, it is returned, but wrapped in a closure.
+	 *    This wrapping is vital to ensure that the method is paired with the correct 'self'.
+	 *    This 'self' does not necessarily equal 'this'.
+	 *  - third, the search for the slot is carried out recursively in the dynamic parent.
+	 *    As such, slot selection traverses the dynamic parent chain up to a dynamic root.
+	 *    The dynamic root deals with an unbound slot by sending the 'doesNotUnderstand' message
+	 *    to the original receiver.
+	 *    
+	 * @param receiver the original receiver of the selection
+	 * @param selector the selector to look up
+	 * @return the value of the found field, or a closure wrapping a found method
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
-		try {
-			ATMethod method = meta_getMethod(selector);
-			ATClosure result = new NATClosure(
-					/* code to be executed */
-					method, 
-					/* implementor - parent for lexical scoping */ 
-					this,
-					/* self pseudo-variable - late bound receiver of the message */
-					receiver
-			/* super pseudo-variable = implementor.getDynamicParent() */);
-			return result;
-		} catch(XSelectorNotFound exception) {
-			if(dynamicParent_ != null) {
-				// we forward the message and do not put in a static loop to allow
-				// objects represented by other mirrors to correctly intercept all
-				// calls. 
-				return dynamicParent_.meta_select(receiver, selector);
-			} else {
-				// If no dynamic parent is available rethrow the exception.
-				throw exception;
-			}
+		if (this.hasLocalField(selector)) {
+			return this.getLocalField(selector);
+		} else if (this.hasLocalMethod(selector)) {
+			// return a new closure (mth, ctx) where
+			//  mth = the method found in this object
+			//  ctx.scope = the implementing scope, being this object
+			//  ctx.self  = the late bound receiver, being the passed receiver
+			//  ctx.super = the parent of the implementor
+			return new NATClosure(this.getLocalMethod(selector), this, receiver);
+		} else {
+			return dynamicParent_.meta_select(receiver, selector);
 		}
 	} 
 	
@@ -217,28 +232,71 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * 
 	 * Overridden from NATCallframe to take methods into account as well.
 	 */
+	
+	/**
+	 * This method is used to evaluate code of the form <tt>selector</tt> within the scope
+	 * of this object. An object resolves such a lookup request as follows:
+	 *  - If a field corresponding to the selector exists locally, the field's value is returned.
+	 *  - If a method corresponding to the selector exists locally, the method is wrapped
+	 *    using the current object itself as implementor AND as 'self'.
+	 *    The reason for setting the closure's 'self' to the implementor is because a lookup can only
+	 *    be initiated by the object itself or a lexically nested one. Lexical nesting, however, has
+	 *    nothing to do with dynamic delegation, and it would be wrong to bind 'self' to a nested object
+	 *    which need not be a dynamic child of the implementor.
+	 *    
+	 *  - Otherwise, the search continues recursively in the object's lexical parent.
+	 */
 	public ATObject meta_lookup(ATSymbol selector) throws NATException {
-		ATObject result;
-		try {
-			result = getField(selector);
-		} catch (XSelectorNotFound exception) {
-			try {
-				ATMethod method = meta_getMethod(selector);
-				result = new NATClosure(method, this, this);
-			} catch (XSelectorNotFound exception2) {
-				result = lexicalParent_.meta_lookup(selector);
-			}
+		if (this.hasLocalField(selector)) {
+			return this.getLocalField(selector);
+		} else if (this.hasLocalMethod(selector)) {
+			// return a new closure (mth, ctx) where
+			//  mth = the method found in this object
+			//  ctx.scope = the implementing scope, being this object
+			//  ctx.self  = the receiver, being in this case again the implementor
+			//  ctx.super = the parent of the implementor
+			return new NATClosure(this.getLocalMethod(selector), this, this);
+		} else {
+			return lexicalParent_.meta_lookup(selector);
 		}
-		return result;
 	}
 
+	/**
+	 * When a new field is defined in an object, it is important to check whether or not
+	 * the field map is shared between clones or not. If it is shared, the map must be cloned first.
+	 */
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+		if (this.isFlagSet(_SHARE_MAP_FLAG_)) {
+			// copy the variable map
+			variableMap_ = variableMap_.copy();
+			// set the 'shares map' flag to false
+			unsetFlag(_SHARE_MAP_FLAG_);
+		}
+		return super.meta_defineField(name, value);
+	}
+	
 	/* ------------------------------------
 	 * -- Extension and cloning protocol --
 	 * ------------------------------------ */
 
+	/**
+	 * When cloning an object, it is first determined whether the parent
+	 * has to be shared by the clone, or whether the parent must also be cloned.
+	 * This depends on whether the dynamic parent is an 'is-a' parent or a 'shares-a'
+	 * parent. This is determined by the _ISAPARENT_FLAG_ object flag.
+	 * 
+	 * A cloned object shares with its original both the variable map
+	 * (to avoid having to copy space for field names) and the method dictionary
+	 * (method bindings are constant and can hence be shared).
+	 * 
+	 * Should either the original or the clone later modify the map or the dictionary
+	 * (at the meta-level), the map or dictionary will be copied first. Hence,
+	 * sharing between clones is an implementation-level optimization: clones
+	 * are completely self-sufficient and do not influence one another by meta-level operations.
+	 */
 	public ATObject meta_clone() throws NATException {
 		ATObject dynamicParent;
-		if(parentPointerType_) {
+		if(this.isFlagSet(_ISAPARENT_FLAG_)) {
 			// IS-A Relation : clone the dynamic parent.
 			dynamicParent = dynamicParent_.meta_clone();
 		} else {
@@ -246,36 +304,26 @@ public class NATObject extends NATCallframe implements ATObject{
 			dynamicParent = dynamicParent_;
 		}
 		
+		// ! set the shares flags of this object *and* of its clone
+		// both this object and the clone now share the map and method dictionary
+		setFlag(_SHARE_DCT_FLAG_);
+		setFlag(_SHARE_MAP_FLAG_);
+		
 		return new NATObject(variableMap_,
-				            (Vector) stateVector_.clone(),
+				            (Vector) stateVector_.clone(), // shallow copy
 				            methodDictionary_,
 				            dynamicParent,
 				            lexicalParent_,
-				            parentPointerType_);
+				            flags_);
 
-	}
-
-	private ATObject extend(ATClosure code, boolean parentPointerType) throws NATException {
-		NATObject extension = new NATObject(
-				/* dynamic parent */
-				this,
-				/* lexical parent */
-				code.getContext().getLexicalScope(),
-				/* parent porinter type */
-				parentPointerType);
-		
-		ATAbstractGrammar body = code.getMethod().getBody();
-		body.meta_eval(new NATContext(extension, extension, this));
-		
-		return extension;
 	}
 	
 	public ATObject meta_extend(ATClosure code) throws NATException {
-		return extend(code, _IS_A_);
+		return createChild(code, _IS_A_);
 	}
 
 	public ATObject meta_share(ATClosure code) throws NATException {
-		return extend(code, _SHARES_A_);
+		return createChild(code, _SHARES_A_);
 	}
 
 
@@ -283,11 +331,22 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * -- Structural Access Protocol  --
 	 * --------------------------------- */
 
+	/**
+	 * When a method is added to an object, it is first checked whether the method does not
+	 * already exist. Also, care has to be taken that the method dictionary of an object
+	 * does not affect clones. Therefore, if the method dictionary is shared, a copy
+	 * of the dictionary is taken before adding the method.
+	 */
 	public ATNil meta_addMethod(ATMethod method) throws NATException {
 		ATSymbol name = method.getName();
-		if(methodDictionary_.containsKey(name)) {
-			throw new XIllegalOperation("Trying to add an already existing method " + name);			
+		if (methodDictionary_.containsKey(name)) {
+			throw new XDuplicateSlot("method", name.getText().asNativeText().javaValue);			
 		} else {
+			// first check whether the method dictionary is shared
+			if (this.isFlagSet(_SHARE_DCT_FLAG_)) {
+				methodDictionary_ = (HashMap) methodDictionary_.clone();
+				this.unsetFlag(_SHARE_DCT_FLAG_);
+			}
 			methodDictionary_.put(name, method);
 		}
 		return NATNil._INSTANCE_;
@@ -306,7 +365,6 @@ public class NATObject extends NATCallframe implements ATObject{
 		Collection methods = methodDictionary_.values();
 		return new NATTable((ATObject[]) methods.toArray(new ATObject[methods.size()]));
 	}
-
 	
 	/* ---------------------
 	 * -- Mirror Fields   --
@@ -315,4 +373,46 @@ public class NATObject extends NATCallframe implements ATObject{
 	public ATObject getDynamicParent() {
 		return dynamicParent_;
 	};
+	
+	// private methods
+	
+	private boolean isFlagSet(byte flag) {
+		return (flags_ & flag) != 0;
+	}
+
+	private void setFlag(byte flag) {
+		flags_ = (byte) (flags_ | flag);
+	}
+
+	private void unsetFlag(byte flag) {
+		flags_ = (byte) (flags_ & (~flag));
+	}
+	
+	private boolean hasLocalMethod(ATSymbol selector) {
+		return methodDictionary_.containsKey(selector);
+	}
+	
+	private ATMethod getLocalMethod(ATSymbol selector) throws XSelectorNotFound {
+		ATMethod result = (ATMethod) methodDictionary_.get(selector);
+		if(result == null) {
+			throw new XSelectorNotFound(selector, this);
+		} else {
+			return result;
+		}
+	}
+	
+	private ATObject createChild(ATClosure code, boolean parentPointerType) throws NATException {
+		NATObject extension = new NATObject(
+				/* dynamic parent */
+				this,
+				/* lexical parent */
+				code.getContext().getLexicalScope(),
+				/* parent porinter type */
+				parentPointerType);
+		
+		ATAbstractGrammar body = code.getMethod().getBody();
+		body.meta_eval(new NATContext(extension, extension, this));
+		
+		return extension;
+	}
 }

@@ -79,40 +79,32 @@ public class NATNil implements ATNil {
 	}
 	
 	/**
-	 * The default behaviour of meta_invoke for most ambienttalk language values is
-	 * to check whether the requested functionality is provided in the interface 
-	 * they export to the base-level. Therefore the BaseInterfaceAdaptor will try to 
-	 * invoke the requested message, based on the passed selector and arguments.
+	 * The default behaviour of meta_invoke for primitive non-object ambienttalk language values is
+	 * to check whether the requested functionality is provided by a native Java method
+	 * with the same selector, but prefixed with 'base_'.
+	 * 
+	 * Because an explicit AmbientTalk method invocation must be converted into an implicit
+	 * Java method invocation, the invocation must be deified ('upped'). The result of the
+	 * upped invocation is a Java object, which must subsequently be 'downed' again.
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol methodName, ATTable arguments) throws NATException {
-		
-		String selector = methodName.getText().asNativeText().javaValue;
-		
-		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
-		
-		return Reflection.downObject(
-				BaseInterfaceAdaptor.deifyInvocation(
-					this.getClass(),
-					this,
-					selector,
-					arguments));
+	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
+		return Reflection.downObject(Reflection.upInvocation(this, receiver, selector, arguments));
 	}
 
 	/**
-	 * An ambienttalk language value can respond to a message if this message is found
-	 * in the interface it exports to the base-level.
+	 * An ambienttalk language value can respond to a message if it implements
+	 * a native Java method corresponding to the selector prefixed by 'base_'.
 	 */
-	public ATBoolean meta_respondsTo(ATSymbol methodName) throws NATException {
-		String selector = methodName.getText().asNativeText().javaValue;
-		
-		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
-
-		return NATBoolean.atValue(BaseInterfaceAdaptor.hasApplicableMethod(
-				this.getClass(),
-				this,
-				selector));
+	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
+		return NATBoolean.atValue(Reflection.upRespondsTo(this, selector));
 	}
 
+	/**
+	 * By default, when a selection is not understood by a primitive object, an error is raised.
+	 */
+	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
+		throw new XSelectorNotFound(selector, this);
+	}
 
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
@@ -123,40 +115,25 @@ public class NATNil implements ATNil {
 	 * offers the method in its provided interface. The result is a JavaMethod wrapper
 	 * which encapsulates the reflective Method object as well as the receiver.
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol name) throws NATException {
-		String selector = name.getText().asNativeText().javaValue;
-		
-		try {
-			selector = BaseInterfaceAdaptor.transformField("base_get", "", selector, true);
-				
-			ATObject result = Reflection.downObject(
-					BaseInterfaceAdaptor.deifyInvocation(
-						this.getClass(),
-						this,
-						selector,
-						NATTable.EMPTY));
-			
-			return result;
-		} catch (XTypeMismatch e) {
-			return meta_getMethod(name);
-		}
-
-		
-		
-		// return NATNil._INSTANCE_;
+	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
+		return Reflection.downObject(Reflection.upSelection(this, receiver, selector));
 	}
 
 	/**
-	 * A lookup can only be issued at the base level by writing ( x ) inside the scope
-	 * of a particular object. For ordinary base values, this is downright impossible.
-	 * Therefore we raise an illegal operation exception.
+	 * A lookup can only be issued at the base level by writing <tt>selector</tt> inside the scope
+	 * of a particular object. For primitive language values, this should not happen
+	 * as no AmbientTalk code can be possibly nested within native code. However, using
+	 * meta-programming a primitive object could be installed as the lexical parent of an AmbientTalk object.
+	 * 
+	 * In such cases a lookup is treated exactly like a selection, where the 'original receiver'
+	 * of the selection equals the primitive object.
 	 */
 	public ATObject meta_lookup(ATSymbol selector) throws NATException {
-		throw new XSelectorNotFound(selector, this); // FIXME: cannot pass 'this' here, should be dynamic receiver
+		return Reflection.downObject(Reflection.upSelection(this, this, selector));
 	}
 
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
-		throw new XIllegalOperation("Cannot add fields to an object of type " + this.getClass().getName());
+		throw new XIllegalOperation("Cannot add fields to a sealed " + this.getClass().getName());
 	}
 	
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {

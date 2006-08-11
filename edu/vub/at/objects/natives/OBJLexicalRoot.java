@@ -28,10 +28,13 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  * @author tvc
@@ -44,17 +47,34 @@ import edu.vub.at.objects.ATTable;
  * Such methods include control structures such as if:then:else: and while:do:
  * but also object creation methods like object: and extend:with:
  * 
+ * Furthermore, the lexical root is also responsible for ending recursive meta-level methods
+ * such as lookup and assignField.
+ * 
  * OBJLexicalRoot extends NATNil such that it inherits that class's ATObject protocol
- * to convert AmbientTalk invocations of a method m into Java meta_m invocations.
+ * to convert AmbientTalk invocations of a method m into Java base_m invocations.
  */
 public final class OBJLexicalRoot extends NATNil {
 
-	public final OBJLexicalRoot _INSTANCE_ = new OBJLexicalRoot();
+	public static final OBJLexicalRoot _INSTANCE_ = new OBJLexicalRoot();
 	
 	/**
 	 * Constructor made private for singleton design pattern
 	 */
 	private OBJLexicalRoot() { }
+	
+	/**
+	 * Unlike a failed meta_select, a failed meta_lookup will not perform a
+	 * 'doesNotUnderstand'-like extra invocation to intervene in the failed lookup.
+	 * This is because a failed lookup is generally a programming error, meaning a
+	 * variable was accessed which should have been lexically visible.
+	 */
+	public ATObject meta_lookup(ATSymbol selector) throws NATException {
+		throw new XUndefinedField("access", selector.getText().asNativeText().javaValue);
+	}
+	
+	public ATNil meta_assignField(ATSymbol selector, ATObject value) throws NATException {
+		throw new XUndefinedField("assignment", selector.getText().asNativeText().javaValue);
+	}
 	
 	/* ------------------------
 	 * -- Control Structures --
