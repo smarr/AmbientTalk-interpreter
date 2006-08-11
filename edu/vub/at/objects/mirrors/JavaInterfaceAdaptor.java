@@ -31,26 +31,21 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author smostinc
  *
- * BaseInterfaceAdaptor is a class which provides some static methods to deify method
- * calls from the ambienttalk level to the java level. Its use is twofold: it is used
- * by mirrors (which allow viewing a java-level object as an ambienttalk mirror) and
- * it allows sending messages to ambienttalk objects whose implementation is provided
- * by their java representation objects.
+ * JavaInterfaceAdaptor is a class providing several static methods which allow 
+ * accessing and invoking Java methods as if they were in fact AmbientTalk value.
+ * It is used by the Reflection class to up ambienttalk invocations and field 
+ * accesses and translate them using java reflection. 
  * 
  * This class also encapsulates static methods for manually implementing dynamic 
  * dispatch over Java types. This is needed since whenever an invocation is made on
@@ -58,13 +53,99 @@ import java.util.regex.Pattern;
  * technique to our advantage by using overloading on typically double dispatch 
  * methods such as plus.
  * 
- * @deprecated BaseInterfaces are replaced by base_ calls
  */
-public class BaseInterfaceAdaptor {
+public class JavaInterfaceAdaptor {
+		
+	/**
+	 * Tests given a class, whether the class either declares or inherits a method
+	 * for a given selector. 
+	 * @param jClass - a Java class, representing an AT object.
+	 * @param selector - a selector, describing the method to be searched for.
+	 * @return
+	 */
+	public static boolean hasApplicableJavaMethod (
+			Class jClass, 
+			String jSelector) {
+
+		return (getMethodsForSelector(jClass, jSelector).length != 0);
+	}
 	
-	public static String transformSelector(
-			String addPrefix, String removePrefix, String selector) {
-		return addPrefix + selector.replaceFirst(removePrefix,"").replace(':', '_');
+	/**
+	 * Invokes a method on a Java object   
+	 * @param jClass
+	 * @param jReceiver
+	 * @param jSelector
+	 * @param jArguments
+	 * @return
+	 * @throws NATException
+	 */	
+	public static Object invokeJavaMethod (
+			Class jClass, Object jReceiver,
+			String jSelector, Object[] jArguments) 
+			throws NATException {
+		
+		try {
+			Method[] applicable = getMethodsForSelector(jClass, jSelector);
+			switch(applicable.length) {
+				case 0:
+					throw new XSelectorNotFound(AGSymbol.alloc(jSelector), (ATObject)jReceiver);
+				case 1:
+					return applicable[0].invoke(jReceiver, jArguments);
+				default:
+					throw new XIllegalOperation("Dynamic dispatching on overloaded methods not yet implemented");
+			}
+		} catch (Exception e) {
+			// Exceptions during method invocation imply that the requested method was
+			// not found in the interface. Hence a XTypeMismatch is thrown to signal 
+			// that the object could not respond to the request.
+			// e.printStackTrace();
+			throw new XTypeMismatch(
+				"Could not invoke method with selector " + jSelector.toString() + " on the given object.",
+				e, (ATObject)jReceiver);
+		}
+	}
+
+
+	public static JavaClosure wrapMethodFor(
+			Class baseInterface, 
+			ATObject receiver,
+			String methodName) throws NATException {
+		Method[] applicable = getMethodsForSelector(baseInterface, methodName);
+		switch (applicable.length) {
+			case 0:
+				throw new XSelectorNotFound(AGSymbol.alloc(methodName), receiver);
+			case 1:
+				return new JavaClosure(receiver, new JavaMethod(applicable[0]));
+			default:
+				// TODO return new JavaMethod.Dispatched(receiver, applicable);
+				throw new XIllegalOperation("Java Method Wrappers not yet implemented");
+		}
+	}
+	
+	/**
+	 * Since Java uses strict matching when asked for a method, given an array of 
+	 * classes, this often means that the types are overspecified and therefore no
+	 * matches can be found. As a consequence we have our own mechanism to select
+	 * which set of methods is applicable given a selector. Further dispatch needs
+	 * only to be performed when more than a single match exists.
+	 * @param jClass - the class from which the methods will be selected.
+	 * @param selector - the name of the requested method.
+	 * @return
+	 */
+	private static Method[] getMethodsForSelector(Class jClass, String selector) {
+		Method[] allMethods = jClass.getMethods();
+		
+		Vector matchingMethods = new Vector();
+		int numMatchingMethods = 0;
+		
+		for (int i = 0; i < allMethods.length; i++) {
+			if (allMethods[i].getName().equals(selector)) {
+				matchingMethods.addElement(allMethods[i]);
+				numMatchingMethods++;
+			}
+		}
+		
+		return (Method[])matchingMethods.toArray(new Method[numMatchingMethods]);
 	}
 	
 	public static String transformField(
@@ -79,93 +160,5 @@ public class BaseInterfaceAdaptor {
 		
 		selector = new String(charArray);
 		return addPrefix + selector;
-	}
-	
-	private static class ObjectClassArray {
-		
-		private final Object[] values_;
-		private final Class[] types_;
-		
-		private ObjectClassArray(ATTable arguments) throws NATException {
-
-			int numberOfArguments = arguments.base_getLength().asNativeNumber().javaValue;
-			
-			values_	= new Object[numberOfArguments];
-			types_	= new Class[numberOfArguments];
-			
-			for(int i = 0; i < numberOfArguments; i++) {
-				ATObject argument = arguments.base_at(NATNumber.atValue(i+1));
-				values_[i] 	= argument;
-				types_[i] 	= argument.getClass();
-			};
-
-		}
-	}
-	
-	private static Method[] getMethodsForSelector(Class baseInterface, String selector) {
-		Method[] allMethods = baseInterface.getMethods();
-		
-		Vector matchingMethods = new Vector();
-		int numMatchingMethods = 0;
-		
-		for (int i = 0; i < allMethods.length; i++) {
-			if (allMethods[i].getName().equals(selector)) {
-				matchingMethods.addElement(allMethods[i]);
-				numMatchingMethods++;
-			}
-		}
-		
-		return (Method[])matchingMethods.toArray(new Method[numMatchingMethods]);
-	}
-		
-	public static Object deifyInvocation (
-			Class baseInterface, ATObject receiver,
-			String methodName, ATTable arguments) 
-			throws NATException {
-		
-		try {
-			Method[] applicable = getMethodsForSelector(baseInterface, methodName);
-			switch(applicable.length) {
-				case 0:
-					return receiver.meta_doesNotUnderstand(AGSymbol.alloc(methodName));
-				case 1:
-					return applicable[0].invoke(receiver, arguments.asNativeTable().elements_);
-				default:
-					throw new XIllegalOperation("Dynamic dispatching on overloaded methods not yet implemented");
-			}
-		} catch (Exception e) {
-			// Exceptions during method invocation imply that the requested method was
-			// not found in the interface. Hence a XTypeMismatch is thrown to signal 
-			// that the object could not respond to the request.
-			// e.printStackTrace();
-			throw new XTypeMismatch(
-				"Could not invoke method with selector " + methodName.toString() + " on the given object.",
-				e, receiver);
-		}
-	}
-
-	public static boolean hasApplicableMethod (
-			Class baseInterface, 
-			ATObject receiver,
-			String selector) {
-
-		return (getMethodsForSelector(
-				baseInterface, selector).length != 0);
-	}
-	
-	public static ATClosure wrapMethodFor(
-			Class baseInterface, 
-			ATObject receiver,
-			String methodName) throws NATException {
-		Method[] applicable = getMethodsForSelector(baseInterface, methodName);
-		switch (applicable.length) {
-			case 0:
-				return receiver.meta_doesNotUnderstand(AGSymbol.alloc(methodName)).asClosure();
-			case 1:
-				return new JavaClosure(receiver, new JavaMethod(applicable[0]));
-			default:
-				// TODO return new JavaMethod.Dispatched(receiver, applicable);
-				throw new XIllegalOperation("Java Method Wrappers not yet implemented");
-		}
 	}
 }

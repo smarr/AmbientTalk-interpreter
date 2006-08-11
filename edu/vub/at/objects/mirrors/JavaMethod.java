@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
@@ -79,6 +80,14 @@ public final class JavaMethod extends NATNil implements ATMethod {
 			e.printStackTrace();
 			throw new NATException("Invocation on a Java Method failed", e);
 		}
+	}
+
+	public ATMethod asMethod() throws XTypeMismatch {
+		return this;
+	}
+
+	public boolean isMethod() {
+		return true;
 	}
 
 }

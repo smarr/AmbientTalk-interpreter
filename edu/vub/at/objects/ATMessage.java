@@ -48,13 +48,19 @@ public interface ATMessage extends ATObject {
 	 * needs to be sought for.
 	 * @return a symbol denoting the selector
 	 */
-	public ATSymbol getSelector();
+	public ATSymbol base_getSelector();
 	
 	/**
-	 * Messages may optionally have arguments.
+	 * Messages may optionally have a table of arguments.
 	 * @return the arguments passed to the invocation
 	 */
-	public ATTable getArguments();
+	public ATTable base_getArguments();
+	
+	/**
+	 * Assigns the arguments of a first class method. 
+	 * @return nil
+	 */
+	public ATNil base_setArguments(ATTable arguments);
 	
 	/**
 	 * Sends this message to a particular receiver object. The way in which the message

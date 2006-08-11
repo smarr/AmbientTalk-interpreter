@@ -117,7 +117,7 @@ public final class Reflection {
 	 *   < -> ltx
 	 *   = -> eql
 	 */
-	public static final String upSelector(AGSymbol atSelector) throws NATException {
+	public static final String upSelector(ATSymbol atSelector) throws NATException {
 		// : -> _
 		String nam = atSelector.getText().asNativeText().javaValue;
 		nam = nam.replaceAll(":", "_");
@@ -133,6 +133,34 @@ public final class Reflection {
 		}
 		m.appendTail(sb);
 		return sb.toString();
+	}
+	
+	/**
+	 * A field name "field" passed from the AmbientTalk to the Java level undergoes the following transformations:
+	 * 
+	 * - any colons (:) are replaced by underscores (_)
+	 * - any operator symbol is replaced by _op{code}_ where code is generated as follows:
+	 *  Operator codes are:
+	 *   + -> pls
+	 *   - -> mns
+	 *   * -> tms
+	 *   / -> div
+	 *   \ -> bsl
+	 *   & -> and
+	 *   ^ -> car
+	 *   ! -> not
+	 *   > -> gtx
+	 *   < -> ltx
+	 *   = -> eql
+	 *  - the first letter is transformed into upper case such that it can be accessed using respectively
+	 *    "getField" | "setField" methods at the Java level.  
+	 */
+	public static final String upFieldName(ATSymbol atName) throws NATException {
+		char[] charArray = upSelector(atName).toCharArray();
+		
+		charArray[0] = Character.toUpperCase(charArray[0]);
+		
+		return new String(charArray);
 	}
 	
 	/**
@@ -192,7 +220,15 @@ public final class Reflection {
 	 * The base_ prefix is normally stripped off by a mirage.
 	 */
 	public static final ATObject downInvocation(ATObject atRcvr, String jSelector, ATObject[] jArgs) {
-		return null;
+		
+		// preliminary
+		try {
+			return downObject(JavaInterfaceAdaptor.invokeJavaMethod(atRcvr.getClass(), atRcvr, jSelector, jArgs));
+		} catch (NATException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
@@ -211,16 +247,14 @@ public final class Reflection {
 	 *  => NATTable must have a method named base_at
 	 */
 	public static final Object upInvocation(ATObject jRcvr, ATObject atOrigRcvr, ATSymbol atSelector, ATTable atArgs) throws NATException {
-		String selector = atSelector.getText().asNativeText().javaValue;
-		
-		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
+		String selector = "base_" + upSelector(atSelector);
 		
 		return Reflection.downObject(
-				BaseInterfaceAdaptor.deifyInvocation(
+				JavaInterfaceAdaptor.invokeJavaMethod(
 					jRcvr.getClass(),
 					jRcvr,
 					selector,
-					atArgs));
+					atArgs.asNativeTable().elements_));
 	}
 	
 	/**
@@ -238,13 +272,10 @@ public final class Reflection {
 	 *  => NATTable must have a method named base_at
 	 */
 	public static final boolean upRespondsTo(ATObject jRcvr, ATSymbol atSelector) throws NATException {
-		String selector = atSelector.getText().asNativeText().javaValue;
-		
-		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
+		String selector = "base_" + upSelector(atSelector);
 
-		return BaseInterfaceAdaptor.hasApplicableMethod(
+		return JavaInterfaceAdaptor.hasApplicableJavaMethod(
 				jRcvr.getClass(),
-				jRcvr,
 				selector);
 	}
 
@@ -287,21 +318,21 @@ public final class Reflection {
 	 * Example:
 	 *  eval "[1,2,3].at"
 	 *  => upSelection(aNATTable, "at")
-	 *  => either NATTable must have a method getAt(), which is then invoked
+	 *  => either NATTable must have a method base_getAt(), which is then invoked
 	 *     or it must have a method base_at, which is then wrapped
 	 */
 	public static final Object upSelection(ATObject jRcvr, ATObject atOrigRcvr, ATSymbol atSelector) throws NATException {
-		String selector = atSelector.getText().asNativeText().javaValue;
+		String selector = null;
 		// TODO: rewrite this properly without catching XTypeMismatch
 		try {
-			selector = BaseInterfaceAdaptor.transformField("base_get", "", selector, true);
-			return BaseInterfaceAdaptor.deifyInvocation(
+			selector = "base_get" + upFieldName(atSelector);
+			return JavaInterfaceAdaptor.invokeJavaMethod(
 					jRcvr.getClass(),
 					jRcvr,
 					selector,
-					NATTable.EMPTY);
+					new ATObject[0]);
 		} catch (XTypeMismatch e) {
-			return jRcvr.meta_getMethod(atSelector);
+			return new JavaClosure(jRcvr, (JavaMethod)jRcvr.meta_getMethod(atSelector));
 		}
 	}
 

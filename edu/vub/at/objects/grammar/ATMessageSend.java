@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.objects.ATNil;
+
 /**
  * @author tvc
  *
@@ -37,7 +39,10 @@ package edu.vub.at.objects.grammar;
  */
 public interface ATMessageSend extends ATExpression {
 
-	public ATExpression getReceiver();
+	public ATExpression meta_getReceiver();
+	
+	public ATNil meta_setReceiver(ATExpression rcv);
+	
 	public ATMessageCreation getMessage();
 	
 }

@@ -72,4 +72,5 @@ public class ReflectionTest extends TestCase {
 		assertEquals("yes?", Reflection.upSelector(AGSymbol.alloc("yes?")));
 	}
 	
+	
 }

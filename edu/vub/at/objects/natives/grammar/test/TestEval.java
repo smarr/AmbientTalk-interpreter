@@ -198,12 +198,12 @@ public class TestEval extends TestCase {
 		ATMessage methInv = evalAndReturn(".m(3)").asMessage();
 		ATMessage asyncMsg = evalAndReturn("<-m(3)").asMessage();
 
-		assertEquals(atM_, methInv.getSelector());
-		assertEquals(atThree_, methInv.getArguments().base_at(NATNumber.ONE));
+		assertEquals(atM_, methInv.base_getSelector());
+		assertEquals(atThree_, methInv.base_getArguments().base_at(NATNumber.ONE));
 		assertTrue(methInv instanceof ATMethodInvocation);
 		
-		assertEquals(atM_, asyncMsg.getSelector());
-		assertEquals(atThree_, asyncMsg.getArguments().base_at(NATNumber.ONE));
+		assertEquals(atM_, asyncMsg.base_getSelector());
+		assertEquals(atThree_, asyncMsg.base_getArguments().base_at(NATNumber.ONE));
 		assertTrue(asyncMsg instanceof ATAsyncMessage);
 		assertEquals(ctx_.getSelf(), ((ATAsyncMessage) asyncMsg).getSender());
 	}

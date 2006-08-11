@@ -57,6 +57,7 @@ public interface ATConversions {
 	public boolean isCallFrame();
 	public boolean isUnquoteSplice();
 	public boolean isSplice();
+	public boolean isMethod();
 	
 	public ATClosure   asClosure() throws XTypeMismatch;
 	public ATSymbol    asSymbol() throws XTypeMismatch;
@@ -64,6 +65,7 @@ public interface ATConversions {
 	public ATBoolean   asBoolean() throws XTypeMismatch;
 	public ATNumber    asNumber() throws XTypeMismatch;
 	public ATMessage   asMessage() throws XTypeMismatch;
+	public ATMethod    asMethod() throws XTypeMismatch;
 	
 	// Abstract Grammar Elements
 	

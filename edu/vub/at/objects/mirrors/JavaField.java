@@ -29,7 +29,6 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
-import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATObject;
@@ -43,32 +42,33 @@ import edu.vub.at.objects.natives.NATTable;
  * NATPrimitiveField allows an ambienttalk primitive to have a field if it has a
  * corresponding getter and optionally a setter method.
  */
-public class NATPrimitiveField extends NATNil implements ATField {
+public class JavaField extends NATNil implements ATField {
 
 	private ATClosure getter_;
 	private ATClosure setter_;
 	private ATSymbol name_;
 	
-	public static NATPrimitiveField createPrimitiveField(
+	public static JavaField createPrimitiveField(
 			ATObject receiver, ATSymbol fieldName) throws NATException {
 		String selector = fieldName.getText().asNativeText().javaValue;
 
-		String getterSel = BaseInterfaceAdaptor.transformField("base_get", "", selector, true);
-		String setterSel = BaseInterfaceAdaptor.transformField("base_set", "", selector, true);
+		String getterSel = JavaInterfaceAdaptor.transformField("base_get", "", selector, true);
+		String setterSel = JavaInterfaceAdaptor.transformField("base_set", "", selector, true);
 		
-		ATClosure getter = BaseInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, getterSel);
-		ATClosure setter = null;
+		JavaClosure getter = JavaInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, getterSel);
+		JavaClosure setter = null;
+
 		try {
-			setter = BaseInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, setterSel);
+			setter = JavaInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, setterSel);
 		} catch (NATException e) {
 			// The lack of a setter method for a field on a primitive can be tolerated
 		}	
 		
-		return new NATPrimitiveField(fieldName, getter, setter);
+		return new JavaField(fieldName, getter, setter);
 	}
 	
 	
-	private NATPrimitiveField(ATSymbol name, ATClosure getter, ATClosure setter) {
+	private JavaField(ATSymbol name, ATClosure getter, ATClosure setter) {
 		name_ = name;
 		getter_ = getter;
 		setter_ = setter;

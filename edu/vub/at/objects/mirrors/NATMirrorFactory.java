@@ -32,6 +32,8 @@ import edu.vub.at.exceptions.XReflectionFailure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATNil;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -78,17 +80,16 @@ class MirrorInvocationHandler implements InvocationHandler {
 	public Object invoke(Object proxy, Method method, Object[] args) throws NATException {
 		String selector = method.getName();
 		if(selector == "meta_invoke") {
-			ATSymbol methodName = ((ATObject)args[0]).asSymbol();
-			ATTable arguments = ((ATObject)args[1]).asTable();
+			ATSymbol methodName = ((ATObject)args[1]).asSymbol();
+			ATTable arguments = ((ATObject)args[2]).asTable();
 			
-			selector = methodName.getText().asNativeText().javaValue;
-			selector = BaseInterfaceAdaptor.transformSelector("meta_","",selector);
+			selector = "meta_" + Reflection.upSelector(methodName);
 			
-			return BaseInterfaceAdaptor.deifyInvocation(
+			return JavaInterfaceAdaptor.invokeJavaMethod(
 					objectRepresentation_.getClass(), 
 					objectRepresentation_,
 					selector,
-					arguments);
+					arguments.asNativeTable().elements_);
 			} else {
 				// TODO We can send the method to a NATMirror (or this?) to defer implementation.
 				// method.invoke(mirrorImplementation_, args);
@@ -107,13 +108,15 @@ class MirrorInvocationHandler implements InvocationHandler {
  * implies that a new representation needs to be created which will stand in for the
  * shell surrounding the java object at the ambienttalk level.
  */
-public class NATMirrorFactory {
+public class NATMirrorFactory extends NATNil {
 	
-	public static ATObject createMirror(ATObject objectRepresentation) {
-		return NATMirrorFactory.createMirrorForInterface(objectRepresentation, ATObject.class);
+	public static final NATMirrorFactory _INSTANCE_ = new NATMirrorFactory();
+	
+	public ATObject base_createMirror(ATObject objectRepresentation) {
+		return createMirrorForInterface(objectRepresentation, ATObject.class);
 	}
 
-	public static ATObject createMirrorForInterface(
+	private ATObject createMirrorForInterface(
 			ATObject objectRepresentation, Class anATInterface) {
 		return (ATObject)Proxy.newProxyInstance(
 				ClassLoader.getSystemClassLoader(), 

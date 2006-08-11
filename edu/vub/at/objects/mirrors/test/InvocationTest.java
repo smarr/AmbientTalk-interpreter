@@ -29,83 +29,29 @@
 package edu.vub.at.objects.mirrors.test;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.objects.ATBoolean;
-import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.mirrors.JavaClosure;
-import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATContext;
+import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
-import edu.vub.at.parser.NATLexer;
-import edu.vub.at.parser.NATParser;
-import edu.vub.at.parser.NATTreeWalker;
-
-import java.io.ByteArrayInputStream;
-
-import junit.framework.TestCase;
-import antlr.CommonAST;
 
 /**
  * @author smostinc
  * 
  * InvocationTest tests the various reflective machinery provided in the mirrors
- * package such as to see whether they work accurately. Two ATTypes are used in the
- * course of this tests, namely ATBoolean (which provides easy cases to test) and
- * ATTable (which is used amongst others to test field access).
+ * package such as to see whether they work accurately. Three ATTypes are used in the
+ * course of this tests, namely ATBoolean (which provides easy cases to test),
+ * ATTable (which is used amongst others to test field access), and ATMessage (which
+ * has fields that can be set at the base level).
  */
-public class InvocationTest extends TestCase {
+public class InvocationTest extends ReflectiveAccessTest {
 
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(InvocationTest.class);
 	}
 
-	/* ---------------------------
-	 * -- Auxiliary definitions --
-	 * --------------------------- */	
-	
-	private final NATClosure fail = new JavaClosure(null)  {
-		public ATObject meta_apply(ATTable arguments) throws NATException {
-			fail();
-			return NATNil._INSTANCE_;
-		}
-	};
-	
-	private final NATClosure success = new JavaClosure(null) {
-		public ATObject meta_apply(ATTable arguments) throws NATException {
-			return NATNil._INSTANCE_;
-		}		
-	};
-	
-	private final ATBoolean True		= NATBoolean._TRUE_;
-	private final ATBoolean False		= NATBoolean._FALSE_;
-	
-	private ATTable closures 			= new NATTable(
-			new ATObject[] { fail, fail, success });
-	
-	private void evaluateInput(String input, ATContext ctx) {
-        try {
-            NATLexer lexer = new NATLexer(new ByteArrayInputStream(input.getBytes()));
-            NATParser parser = new NATParser(lexer);
-            // Parse the input expression
-            parser.program();
-            CommonAST t = (CommonAST)parser.getAST();
-
-            // Traverse the tree created by the parser
-            NATTreeWalker walker = new NATTreeWalker();
-            NATAbstractGrammar ag = walker.program(t);
-
-            // Evaluate the corresponding tree of ATAbstractGrammar objects
-            ag.meta_eval(ctx);
-        } catch(Exception e) {
-            fail("exception: "+e);
-        }
-	}
 	
 	/**
 	 * Tests the invocation of methods on natively implemented objects which thus
@@ -124,7 +70,7 @@ public class InvocationTest extends TestCase {
 			False.base_ifTrue_ifFalse_(fail, success);
 		} catch (NATException e) {
 			e.printStackTrace();
-			fail();
+			fail("exception: "+e);
 		}
 	}
 	
@@ -157,7 +103,7 @@ public class InvocationTest extends TestCase {
 					new NATTable(new ATObject[] { fail, success }));
 		} catch (NATException e) {
 			e.printStackTrace();
-			fail();
+			fail("exception: "+e);
 		}
 	}
 	
@@ -168,14 +114,7 @@ public class InvocationTest extends TestCase {
 	 * base-level methods on native types in AmbientTalk.
 	 */
 	public void testBaseInvocation() {
-		try {
-			ATObject lexicalRoot = new NATObject(NATNil._INSTANCE_);
-			lexicalRoot.meta_defineField(AGSymbol.alloc("success"), success);
-			lexicalRoot.meta_defineField(AGSymbol.alloc("fail"), fail);
-			lexicalRoot.meta_defineField(AGSymbol.alloc("true"), True);
-			lexicalRoot.meta_defineField(AGSymbol.alloc("false"), False);
-			
-			evaluateInput(
+		evaluateInput(
 				"true.ifTrue: success;" +
 				"true.ifFalse: fail;" +
 				"true.ifTrue: success ifFalse: fail;" +
@@ -183,11 +122,6 @@ public class InvocationTest extends TestCase {
 				"false.ifFalse: success;" +
 				"false.ifTrue: fail ifFalse: success",
 				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-			
-		} catch (NATException e) {
-			e.printStackTrace();
-			fail();
-		}
 	}
 
 	/**
@@ -201,7 +135,7 @@ public class InvocationTest extends TestCase {
 			element.asClosure().meta_apply(NATTable.EMPTY);
 		} catch (NATException e) {
 			e.printStackTrace();
-			fail();
+			fail("exception: "+e);
 		}
 		
 	}
@@ -214,12 +148,13 @@ public class InvocationTest extends TestCase {
 	public void testSimulatedBaseFieldAccess() {
 		try {
 			ATObject accessor = closures.meta_select(closures, AGSymbol.alloc("at"));
-			ATObject element = accessor.asClosure().meta_apply(new NATTable(new ATObject[] {
+			ATObject element = accessor.asClosure().meta_apply(
+					new NATTable(new ATObject[] {
 							closures.meta_select(closures, AGSymbol.alloc("length"))}));
 			element.asClosure().meta_apply(NATTable.EMPTY);
 		} catch (NATException e) {
 			e.printStackTrace();
-			fail();
+			fail("exception: "+e);
 		}
 	}
 	
@@ -229,28 +164,86 @@ public class InvocationTest extends TestCase {
 	 *
 	 */
 	public void testBaseFieldAccess() {
+		evaluateInput(
+				"def accessor := closures.at;" +
+				"def expanded := accessor(closures.length);" +
+				"def coated := closures[closures.length];" +
+				"expanded();" +
+				"coated()",
+				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		
+		evaluateInput(
+				"closures.at(closures.length)();" +
+				"closures[closures.length]()",
+				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		
+	}
+
+	/**
+	 * Tests the assignment of fields on a natively implemented message send parse
+	 * tree element. This test calls the methods from java and thus will fail only 
+	 * when the corresponding implementation is corrupted.
+	 */
+	public void testJavaBaseFieldAssignment() {
 		try {
-			ATObject lexicalRoot = new NATObject(NATNil._INSTANCE_);
-			lexicalRoot.meta_defineField(AGSymbol.alloc("closures"), closures);
+			ATMessage message = new NATMethodInvocation(
+					AGSymbol.alloc("at"), 
+					NATTable.EMPTY);
+			
+			message.base_setArguments( 
+					new NATTable(new ATObject[] {
+							closures.base_getLength()	
+					}));
 
-			evaluateInput(
-					"def accessor := closures.at;" +
-					"def expanded := accessor(closures.length);" +
-					"def coated := closures[closures.length];" +
-					"expanded();" +
-					"coated()",
-					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-
-			evaluateInput(
-					"closures.at(closures.length)();" +
-					"closures[closures.length]()",
-					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+			ATObject element = message.meta_sendTo(closures);
+			
+			element.asClosure().meta_apply(NATTable.EMPTY);
 
 		} catch (NATException e) {
 			e.printStackTrace();
-			fail();
+			fail("exception: "+e);
 		}
 		
 	}
+
+	/**
+	 * Tests the assignment of fields on a natively implemented message send parse
+	 * tree element. If this test succeeds and the next test fails, the fault is 
+	 * due to the implementation of the AG-objects for assignment, quotation and or 
+	 * method invocation.
+	 */
+	public void testSimulatedBaseFieldAssignment() {
+		try {
+			ATMessage message = new NATMethodInvocation(
+					AGSymbol.alloc("at"), 
+					NATTable.EMPTY);
+			
+			message.meta_assignField(
+					AGSymbol.alloc("arguments"), 
+					new NATTable(new ATObject[] {
+							closures.base_getLength()	
+					}));
+
+			ATObject element = message.meta_sendTo(closures);
+			
+			element.asClosure().meta_apply(NATTable.EMPTY);
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail("exception: "+e);
+		}
+	}
 	
+	/**
+	 * Tests the accessing of fields on a natively implemented table. This test
+	 * uses ambienttalk code for the evaluation, so 
+	 *
+	 */
+	public void testBaseFieldAssignment() {
+		evaluateInput(
+				"def message       := .at();" +
+				"message.arguments := [closures.length];" +
+				"def result        := closure ~ message;" +
+				"result()",
+				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+	}
 }

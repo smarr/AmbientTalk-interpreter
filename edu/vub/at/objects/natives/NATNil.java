@@ -50,8 +50,8 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
-import edu.vub.at.objects.mirrors.BaseInterfaceAdaptor;
-import edu.vub.at.objects.mirrors.NATPrimitiveField;
+import edu.vub.at.objects.mirrors.JavaField;
+import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
 import edu.vub.at.objects.mirrors.Reflection;
 
 /**
@@ -115,6 +115,26 @@ public class NATNil implements ATNil {
 	 * offers the method in its provided interface. The result is a JavaMethod wrapper
 	 * which encapsulates the reflective Method object as well as the receiver.
 	 */
+//	public ATObject meta_select(ATObject receiver, ATSymbol name) throws NATException {
+//		String selector = name.getText().asNativeText().javaValue;
+//		
+//		try {
+//			selector = JavaInterfaceAdaptor.transformField("base_get", "", selector, true);
+//				
+//			ATObject result = Reflection.downObject(
+//					JavaInterfaceAdaptor.invokeJavaMethod(
+//						this.getClass(),
+//						this,
+//						selector,
+//						NATTable.EMPTY));
+//			
+//			return result;
+//		} catch (XTypeMismatch e) {
+//			return meta_getMethod(name);
+//		}
+//
+//		
+		
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
 		return Reflection.downObject(Reflection.upSelection(this, receiver, selector));
 	}
@@ -137,8 +157,18 @@ public class NATNil implements ATNil {
 	}
 	
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
-		throw new XIllegalOperation("Cannot assign field " + name.toString() + " of an object of type " + this.getClass().getName());
-	}
+		String selector = name.getText().asNativeText().javaValue;
+
+		selector = JavaInterfaceAdaptor.transformField("base_set", "", selector, true);
+
+		JavaInterfaceAdaptor.invokeJavaMethod(
+			this.getClass(),
+			this,
+			selector,
+			new ATObject[] { value });
+		
+		return NATNil._INSTANCE_;
+}
 
 	/* ------------------------------------
 	 * -- Extension and cloning protocol --
@@ -171,15 +201,13 @@ public class NATNil implements ATNil {
 	}
 
 	public ATField meta_getField(ATSymbol fieldName) throws NATException {
-		return NATPrimitiveField.createPrimitiveField(this, fieldName);
+		return JavaField.createPrimitiveField(this, fieldName);
 	}
 
 	public ATMethod meta_getMethod(ATSymbol methodName) throws NATException {
-		String selector = methodName.getText().asNativeText().javaValue;
+		String selector = "base_" + Reflection.upSelector(methodName);
 
-		selector = BaseInterfaceAdaptor.transformSelector("base_", "", selector);
-
-		return BaseInterfaceAdaptor.wrapMethodFor(
+		return JavaInterfaceAdaptor.wrapMethodFor(
 				this.getClass(),
 				this,
 				selector).getMethod();
@@ -268,6 +296,10 @@ public class NATNil implements ATNil {
 		return false;
 	}
 	
+	public boolean isMethod() {
+		return false;
+	}
+	
 	public boolean isNativeBoolean() {
 		return false;
 	}
@@ -294,6 +326,10 @@ public class NATNil implements ATNil {
 	
 	public ATMessage asMessage() throws XTypeMismatch {
 		throw new XTypeMismatch("Expected a first-class message, given: " + this.getClass().getName(), this);		
+	}
+	
+	public ATMethod asMethod() throws XTypeMismatch {
+		throw new XTypeMismatch("Expected a first-class method, given: " + this.getClass().getName(), this);		
 	}
 	
 	// Conversions for abstract grammar elements

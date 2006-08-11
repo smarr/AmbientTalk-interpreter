@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.objects.ATMessage;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
@@ -40,19 +41,24 @@ import edu.vub.at.objects.grammar.ATSymbol;
 public abstract class NATMessage extends NATNil implements ATMessage {
 
 	protected final ATSymbol selector_;
-	protected final ATTable  arguments_;
+	protected ATTable  arguments_;
 	
 	public NATMessage(ATSymbol sel, ATTable arg) {
 		selector_ = sel;
 		arguments_ = arg;
 	}
 
-	public ATSymbol getSelector() {
+	public ATSymbol base_getSelector() {
 		return selector_;
 	}
 
-	public ATTable getArguments() {
+	public ATTable base_getArguments() {
 		return arguments_;
+	}
+	
+	public ATNil base_setArguments(ATTable arguments) {
+		arguments_ = arguments;
+		return NATNil._INSTANCE_;
 	}
 	
 	public ATMessage asMessage() {
