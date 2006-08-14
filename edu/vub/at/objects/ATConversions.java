@@ -58,6 +58,7 @@ public interface ATConversions {
 	public boolean isUnquoteSplice();
 	public boolean isSplice();
 	public boolean isMethod();
+	public boolean isMirror();
 	
 	public ATClosure   asClosure() throws XTypeMismatch;
 	public ATSymbol    asSymbol() throws XTypeMismatch;
@@ -66,6 +67,7 @@ public interface ATConversions {
 	public ATNumber    asNumber() throws XTypeMismatch;
 	public ATMessage   asMessage() throws XTypeMismatch;
 	public ATMethod    asMethod() throws XTypeMismatch;
+	public ATMirror    asMirror() throws XTypeMismatch;
 	
 	// Abstract Grammar Elements
 	

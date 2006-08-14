@@ -237,7 +237,7 @@ public final class Reflection {
 	 * 
 	 * @param jRcvr the Java object having received the AmbientTalk method invocation
 	 * @param atOrigRcvr the original AmbientTalk object that received the invocation
-	 * @param atSelector the AmbientTalk selector, to be converted to a Java selector
+	 * @param jSelector the selector of the message to be invoked, converted to a Java selector
 	 * @param atArgs the arguments to the AmbientTalk method invocation
 	 * @return the return value of the Java method invoked via the java invocation.
 	 * 
@@ -246,15 +246,12 @@ public final class Reflection {
 	 *  => upInvocation(aNATTable, "at", ATObject[] { ATNumber(1) })
 	 *  => NATTable must have a method named base_at
 	 */
-	public static final Object upInvocation(ATObject jRcvr, ATObject atOrigRcvr, ATSymbol atSelector, ATTable atArgs) throws NATException {
-		String selector = "base_" + upSelector(atSelector);
-		
-		return Reflection.downObject(
-				JavaInterfaceAdaptor.invokeJavaMethod(
+	public static final Object upInvocation(ATObject jRcvr, ATObject atOrigRcvr, String jSelector, ATTable atArgs) throws NATException {
+		return JavaInterfaceAdaptor.invokeJavaMethod(
 					jRcvr.getClass(),
 					jRcvr,
-					selector,
-					atArgs.asNativeTable().elements_));
+					jSelector,
+					atArgs.asNativeTable().elements_);
 	}
 	
 	/**
@@ -263,7 +260,7 @@ public final class Reflection {
 	 * corresponding to the given selector, prefixed with base_
 	 * 
 	 * @param jRcvr the Java object being queried for a certain selector
-	 * @param atSelector the AmbientTalk selector, to be converted to a Java selector
+	 * @param jSelector the selector of the message to be invoked, converted to a Java selector
 	 * @return a boolean indicating whether the jRcvr implements a method corresponding to base_ + atSelector
 	 * 
 	 * Example:
@@ -271,43 +268,39 @@ public final class Reflection {
 	 *  => upRespondsTo(aNATTable, "at")
 	 *  => NATTable must have a method named base_at
 	 */
-	public static final boolean upRespondsTo(ATObject jRcvr, ATSymbol atSelector) throws NATException {
-		String selector = "base_" + upSelector(atSelector);
-
+	public static final boolean upRespondsTo(ATObject jRcvr,String jSelector) throws NATException {
 		return JavaInterfaceAdaptor.hasApplicableJavaMethod(
 				jRcvr.getClass(),
-				selector);
+				jSelector);
 	}
 
-	/**
-	 * downSelection takes an implicit Java selection (in the guise of invoking a getter method)
-	 * and turns it into an explicit AmbientTalk selection process. This happens when Java code sends normal
-	 * Java messages to AmbientTalk objects (wrapped by a mirage).
-	 * 
-	 * @param atRcvr the AmbientTalk object having received the Java selection
-	 * @param jSelector the Java selector, without the 'get' prefix, to be converted to an AmbientTalk selector
-	 * @return the value of the AmbientTalk field selected by the java selection.
-	 * 
-	 * Example:
-	 *  in Java: "msg.getSelector()" where msg is am ATMessage mirage wrapping a NATObject
-	 *  => downSelection(aNATObject, "selector")
-	 *  => aNATObject must implement a field named "selector"
-	 * The get prefix is normally stripped off by a mirage
-	 */
-	public static final ATObject downSelection(ATObject atRcvr, String jSelector) {
-		return null;
-	}
+//	/**
+//	 * downSelection takes an implicit Java selection (in the guise of invoking a getter method)
+//	 * and turns it into an explicit AmbientTalk selection process. This happens when Java code sends normal
+//	 * Java messages to AmbientTalk objects (wrapped by a mirage).
+//	 * 
+//	 * @param atRcvr the AmbientTalk object having received the Java selection
+//	 * @param jSelector the Java selector, without the 'get' prefix, to be converted to an AmbientTalk selector
+//	 * @return the value of the AmbientTalk field selected by the java selection.
+//	 * 
+//	 * Example:
+//	 *  in Java: "msg.getSelector()" where msg is am ATMessage mirage wrapping a NATObject
+//	 *  => downSelection(aNATObject, "selector")
+//	 *  => aNATObject must implement a field named "selector"
+//	 * The get prefix is normally stripped off by a mirage
+//	 */
+//	public static final ATObject downSelection(ATObject atRcvr, String jSelector) {
+//		return null;
+//	}
 	
 	/**
-	 * upSelection takes an explicit AmbientTalk field selection and turns it into an
-	 * implicitly performed Java selection by invoking a getter method, if such a getter method
-	 * exists. If not, then it is checked whether a Java method exists that matches
-	 * the selector, prefixed with 'base_'. If so, this method is wrapped in a JavaClosure
-	 * and returned.
+	 * upFieldSelection takes an explicit AmbientTalk field selection and turns it into 
+	 * an implicitly performed Java selection by invoking a getter method, if such a getter method
+	 * exists. 
 	 * 
 	 * @param jRcvr the Java object having received the AmbientTalk field selection
 	 * @param atOrigRcvr the original AmbientTalk object that received the selection
-	 * @param atSelector the AmbientTalk selector, to be converted to a Java getter method selector
+	 * @param jSelector the selector of the message to be invoked, converted to a Java selector
 	 * @return the return value of the Java getter method invoked via the AmbientTalk selection.
 	 * 
 	 * Example:
@@ -315,25 +308,32 @@ public final class Reflection {
 	 *  => upSelection(aNATMessage, "selector")
 	 *  => NATMessage must have a zero-argument method named getSelector
 	 *  
+	 */
+	public static final Object upFieldSelection(ATObject jRcvr, ATObject atOrigRcvr, String jSelector) throws NATException {
+		return JavaInterfaceAdaptor.invokeJavaMethod(
+				jRcvr.getClass(),
+				jRcvr,
+				jSelector,
+				new ATObject[0]);		
+	}
+	
+	/**
+	 * upMethodSelection takes an explicit AmbientTalk field selection and checks whether 
+	 * a Java method exists that matches the selector. If so, this method is wrapped in a 
+	 * JavaClosure and returned.
+	 * 
+	 * @param jRcvr the Java object having received the AmbientTalk field selection
+	 * @param atOrigRcvr the original AmbientTalk object that received the selection
+	 * @param jSelector the selector of the message to be invoked, converted to a Java selector
+	 * @return a closure wrapping the method selected via the AmbientTalk selection.
+	 * 
 	 * Example:
 	 *  eval "[1,2,3].at"
 	 *  => upSelection(aNATTable, "at")
-	 *  => either NATTable must have a method base_getAt(), which is then invoked
-	 *     or it must have a method base_at, which is then wrapped
+	 *  => either NATTable must have a method base_at, which is then wrapped
 	 */
-	public static final Object upSelection(ATObject jRcvr, ATObject atOrigRcvr, ATSymbol atSelector) throws NATException {
-		String selector = null;
-		// TODO: rewrite this properly without catching XTypeMismatch
-		try {
-			selector = "base_get" + upFieldName(atSelector);
-			return JavaInterfaceAdaptor.invokeJavaMethod(
-					jRcvr.getClass(),
-					jRcvr,
-					selector,
-					new ATObject[0]);
-		} catch (XTypeMismatch e) {
-			return new JavaClosure(jRcvr, (JavaMethod)jRcvr.meta_getMethod(atSelector));
-		}
+	public static final Object upMethodSelection(ATObject jRcvr, ATObject atOrigRcvr, String jSelector) throws NATException {
+		return JavaInterfaceAdaptor.wrapMethodFor(jRcvr.getClass(), jRcvr, jSelector);
 	}
 
 	/**

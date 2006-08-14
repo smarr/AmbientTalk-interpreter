@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.mirrors.NATMirrorFactory;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATNil;
@@ -47,6 +48,7 @@ import edu.vub.at.parser.NATTreeWalker;
 
 import java.io.ByteArrayInputStream;
 
+import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import antlr.CommonAST;
 
@@ -105,6 +107,7 @@ public class ReflectiveAccessTest extends TestCase {
             // Evaluate the corresponding tree of ATAbstractGrammar objects
             ag.meta_eval(ctx);
         } catch(Exception e) {
+        		e.printStackTrace();
             fail("exception: "+e);
         }
 	}
@@ -119,6 +122,19 @@ public class ReflectiveAccessTest extends TestCase {
 		lexicalRoot.meta_defineField(AGSymbol.alloc("true"), True);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("false"), False);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("closures"), closures);
+		
+		ATObject mirrors = new NATObject(lexicalRoot);
+		mirrors.meta_defineField(AGSymbol.alloc("Factory"), NATMirrorFactory._INSTANCE_);
+		
+		ATObject natives = new NATObject(lexicalRoot);
+		natives.meta_defineField(AGSymbol.alloc("Context"), NATMirrorFactory._INSTANCE_);
+		
+		ATObject at = new NATObject(lexicalRoot);
+		at.meta_defineField(AGSymbol.alloc("mirrors"), mirrors);
+		at.meta_defineField(AGSymbol.alloc("natives"), natives);
+		
+		lexicalRoot.meta_defineField(AGSymbol.alloc("at"), at);
+		lexicalRoot.meta_defineField(AGSymbol.alloc("root"), lexicalRoot);
 	}
 
 }

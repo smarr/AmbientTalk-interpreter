@@ -30,10 +30,12 @@ package edu.vub.at.objects.natives.grammar;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATMessageSend;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -43,7 +45,7 @@ import edu.vub.at.objects.natives.NATText;
  */
 public final class AGMessageSend extends AGExpression implements ATMessageSend {
 
-	private final ATExpression rcvExp_;
+	private ATExpression rcvExp_;
 	private final ATMessageCreation message_;
 	
 	public AGMessageSend(ATExpression rcv, ATMessageCreation msg) {
@@ -51,7 +53,12 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 		message_ = msg;
 	}
 	
-	public ATExpression getReceiver() { return rcvExp_; }
+	public ATExpression meta_getReceiver() { return rcvExp_; }
+	
+	public ATNil meta_setReceiver(ATExpression rcv) { 
+		rcvExp_ = rcv;
+		return NATNil._INSTANCE_;
+	}
 
 	public ATMessageCreation getMessage() { return message_; }
 
