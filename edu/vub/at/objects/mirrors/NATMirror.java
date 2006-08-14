@@ -66,6 +66,15 @@ import edu.vub.at.objects.natives.NATObject;
  */
 public class NATMirror extends NATNil implements ATMirror {
 
+	/**
+	 * The prototypical mirror object reflects on nil. This mirror (or in effect any
+	 * mirror in the system) can be used to create mirrors on objects. However, it is
+	 * important to note that <code>mirror.new(object)</code> is merely a shorthand
+	 * for a call to the mirror factory. This is in accordance with the principle 
+	 * that all mirror creation happens through the mediation of the factory.
+	 */
+	public static NATMirror _PROTOTYPE_ = new NATMirror(NATNil._INSTANCE_);
+	
 	private ATObject principal_;
 	
 	
@@ -234,12 +243,12 @@ public class NATMirror extends NATNil implements ATMirror {
 
 	/**
 	 * Meta_clone will be called whenever someone invokes a new: operation on a 
-	 * mirror. Instead of returning a new mirror (initialized with e.g. a nil value)
-	 * which can be properly initialised using base_init, we return nil. The init
-	 * implementation will instead contact the factory to create a new mirror.
+	 * mirror. We return a prototypical mirror (initialized with the nil value)
+	 * which can be properly initialised using base_init. The implementation of this
+	 * method contacts the factory in order to create a new mirror.
 	 */
 	public ATObject meta_clone() throws NATException {
-		return NATNil._INSTANCE_;
+		return NATMirror._PROTOTYPE_;
 	}
 
 
