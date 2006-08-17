@@ -399,6 +399,25 @@ public final class Reflection {
 	public static final Object upMethodSelection(ATObject jRcvr, ATObject atOrigRcvr, String jSelector) throws NATException {
 		return JavaInterfaceAdaptor.wrapMethodFor(jRcvr.getClass(), jRcvr, jSelector);
 	}
+	
+	/**
+	 * upInstanceCreation takes an explicit AmbientTalk 'new' invocation and turns it into an
+	 * implicit Java instance creation by calling a constructor. The initargs are upped as well
+	 * and are passed as arguments to the constructor.
+	 * 
+	 * @param jRcvr the Java object having received the call to new
+	 * @param atInitargs the arguments to the constructor
+	 * @return a new instance of a Java class
+	 * @throws NATException
+	 */
+	public static final Object upInstanceCreation(ATObject jRcvr, ATTable atInitargs) throws NATException {
+		ATObject[] args = atInitargs.asNativeTable().elements_;
+		Object[] uppedArgs = new Object[args.length];
+		for (int i = 0; i < uppedArgs.length; i++) {
+			uppedArgs[i] = upObject(args[i]);
+		}
+		return JavaInterfaceAdaptor.createClassInstance(jRcvr.getClass(), uppedArgs);
+	}
 
 	/**
 	 * Convert a Java object into an AmbientTalk object.
@@ -455,6 +474,7 @@ public final class Reflection {
 	 * TODO: write a 'toJava' method that for NATNumber etc. return an Integer etc.
 	 */
 	public static final Object upObject(ATObject atObj) {
+		// if atObj.isNativeNumber() return new Integer(atObj.asNativeNumber().javaValue)
 		return atObj;
 	}
 	

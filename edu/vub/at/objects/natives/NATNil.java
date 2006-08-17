@@ -182,9 +182,8 @@ public class NATNil implements ATNil {
 		throw new XIllegalOperation("Cannot clone an object of type " + this.getClass().getName());
 	}
 	
-	// TODO: try to turn the .new(args) into a constructor call with deified arguments
 	public ATObject meta_new(ATTable initargs) throws NATException {
-		throw new XIllegalOperation("Cannot create a new instance of type " + this.getClass().getName());
+		return Reflection.downObject(Reflection.upInstanceCreation(this, initargs));
 	}
 
 	public ATObject meta_extend(ATClosure code) throws NATException {

@@ -36,6 +36,8 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Vector;
 
@@ -113,7 +115,41 @@ public class JavaInterfaceAdaptor {
 				e, (ATObject)jReceiver);
 		}
 	}
-
+	
+	/**
+	 * Try to create a new instance of a Java class given an array of initialization arguments.
+	 * Because we do not have exact typing information, all of the public constructors of the
+	 * class are traversed until one is found that can create new instances given the current
+	 * initargs.
+	 */
+	public static Object createClassInstance(Class jClass, Object[] jInitArgs) throws NATException {
+		Constructor[] ctors = jClass.getConstructors();
+		for (int i = 0; i < ctors.length; i++) {
+			Constructor ctor = ctors[i];
+			if (ctor.getParameterTypes().length == jInitArgs.length) {
+				try {
+					return ctor.newInstance(jInitArgs);
+				} catch (IllegalArgumentException e) {
+					continue; // argument types don't match, may find other constructor
+				} catch (InstantiationException e) {
+					break; // class is an abstract class, won't find a match
+				} catch (IllegalAccessException e) {
+					continue; // private or protected constructor, may find another one
+				} catch (InvocationTargetException e) {
+					// an exception was raised by the constructor
+					if (e.getCause() instanceof NATException)
+						throw ((NATException) e.getCause());
+					else // fatal exception
+						throw new XIllegalOperation("Instance creation of type " + jClass.getName() + " failed: " + e.getMessage());
+				}
+			} else {
+				// arity does not match, try finding another one
+				continue;
+			}
+		}
+		// no matching constructors were found
+		throw new XIllegalOperation("Unable to create a new instance of type " + jClass.getName());
+	}
 
 	public static JavaClosure wrapMethodFor(
 			Class baseInterface, 
@@ -170,4 +206,5 @@ public class JavaInterfaceAdaptor {
 		selector = new String(charArray);
 		return addPrefix + selector;
 	}
+
 }
