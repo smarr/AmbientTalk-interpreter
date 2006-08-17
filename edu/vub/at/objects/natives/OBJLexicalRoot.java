@@ -35,6 +35,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NATMirrorFactory;
 
 /**
  * @author tvc
@@ -211,6 +212,22 @@ public final class OBJLexicalRoot extends NATNil {
 	 */
 	public ATObject base_share_with_(ATObject parent, ATClosure code) throws NATException {
 		return parent.meta_share(code);
+	}
+	
+	/**
+	 * The reflect: primitive, which returns a mirror on an object.
+	 * 
+	 * usage:
+	 *  reflect: anObject
+	 * 
+	 * pseudo-implementation:
+	 *  at.mirrors.mirrorfactory.createMirror(anObject)
+	 * 
+	 * @param reflectee the object to reflect upon
+	 * @return a mirror reflecting the given object
+	 */
+	public ATObject base_reflect_(ATObject reflectee) throws NATException {
+		return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
 	}
 
 }

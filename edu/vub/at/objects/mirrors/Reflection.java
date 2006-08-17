@@ -82,6 +82,8 @@ public final class Reflection {
 	 *   gtx -> >
 	 *   ltx -> <
 	 *   eql -> =
+	 *   til -> ~
+	 *   que -> ?
 	 * - any underscores (_) are replaced by colons (:)
 	 */
 	public static final ATSymbol downSelector(String jSelector) {
@@ -119,6 +121,8 @@ public final class Reflection {
 	 *   > -> gtx
 	 *   < -> ltx
 	 *   = -> eql
+	 *   ~ -> til
+	 *   ? -> que
 	 */
 	public static final String upSelector(ATSymbol atSelector) throws NATException {
 		// : -> _
@@ -155,20 +159,8 @@ public final class Reflection {
 	/**
 	 * A field name "field" passed from the AmbientTalk to the Java level undergoes the following transformations:
 	 * 
-	 * - any colons (:) are replaced by underscores (_)
-	 * - any operator symbol is replaced by _op{code}_ where code is generated as follows:
-	 *  Operator codes are:
-	 *   + -> pls
-	 *   - -> mns
-	 *   * -> tms
-	 *   / -> div
-	 *   \ -> bsl
-	 *   & -> and
-	 *   ^ -> car
-	 *   ! -> not
-	 *   > -> gtx
-	 *   < -> ltx
-	 *   = -> eql
+	 *  - the same transformations applicable to upSelector
+	 *    @see Reflection#upSelector(ATSymbol)
 	 *  - the first letter is transformed into upper case such that it can be accessed using respectively
 	 *    "getField" | "setField" methods at the Java level.  
 	 */
@@ -491,7 +483,8 @@ public final class Reflection {
 		switch (code.charAt(0)) {
 		  case 'p': if (code.equals("pls")) { return "+"; } else break;
 		  case 'm': if (code.equals("mns")) { return "-"; } else break;
-		  case 't': if (code.equals("tms")) { return "*"; } else break;
+		  case 't': if (code.equals("tms")) { return "*"; } else
+			        if (code.equals("til")) { return "~"; } else break;
 		  case 'd': if (code.equals("div")) { return "/"; } else break;
 		  case 'b': if (code.equals("bsl")) { return "\\"; } else break;
 		  case 'a': if (code.equals("and")) { return "&"; } else break;
@@ -500,6 +493,7 @@ public final class Reflection {
 		  case 'g': if (code.equals("gtx")) { return ">"; } else break;
 		  case 'l': if (code.equals("ltx")) { return "<"; } else break;
 		  case 'e': if (code.equals("eql")) { return "="; } else break;
+		  case 'q': if (code.equals("que")) { return "?"; } else break;
 		}
 		return "_op" + code + "_"; // no match, return original input
 	}
@@ -517,6 +511,8 @@ public final class Reflection {
 		  case '>': return "gtx";
 		  case '<': return "ltx";
 		  case '=': return "eql";
+		  case '~': return "til";
+		  case '?': return "que";
 		  default: return symbol; // no match, return original input
 		}	
 	}

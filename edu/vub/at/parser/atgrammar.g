@@ -306,7 +306,7 @@ protected ADDCHAR: ( '+' | '-')
 protected MULCHAR: ( '*' | '/' | '\\' | '&' )
 	;
 	
-protected POWCHAR: ( '^' | '!' )
+protected POWCHAR: ( '^' | '!' | '?')
 	;
 	
 protected OPRCHAR: CMPCHAR | ADDCHAR | MULCHAR | POWCHAR

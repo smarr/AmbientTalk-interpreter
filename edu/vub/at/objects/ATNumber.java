@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
@@ -37,4 +38,25 @@ import edu.vub.at.objects.grammar.ATExpression;
  */
 public interface ATNumber extends ATExpression {
 
+	// base-level interface
+	
+	public ATFraction base_cos();
+	public ATFraction base_sin();
+	public ATFraction base_tan();
+	
+	public ATNil base_doTimes_(ATClosure code) throws NATException;
+	public ATNil base_to_do_(ATNumber end, ATClosure code) throws NATException;
+	public ATNil base_to_step_do_(ATNumber end, ATNumber inc, ATClosure code) throws NATException;
+	
+	public ATTable base__opmul__opmul_(ATNumber end) throws NATException;
+	public ATTable base__opmul__opmul__opmul_(ATNumber end) throws NATException;
+	
+	public ATNumber base_inc();
+	public ATNumber base_dec();
+	public ATNumber base_abs();
+	public ATFraction base_log();
+	public ATFraction base_sqrt();
+	public ATFraction base_expt(ATFraction frc) throws NATException;
+	public ATFraction base__opque__opque_(ATNumber nbr) throws NATException;
+	
 }

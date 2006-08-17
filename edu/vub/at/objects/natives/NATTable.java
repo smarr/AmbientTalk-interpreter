@@ -160,6 +160,15 @@ public final class NATTable extends AGExpression implements ATTable {
 	
 	public final ATObject[] elements_;
 	
+	public static final NATTable atValue(ATObject[] array) {
+		if (array.length == 0)
+			return NATTable.EMPTY;
+		else
+			return new NATTable(array);
+	}
+	
+	// TODO: make these constructors private to ensure singleton EMPTY
+	
 	public NATTable(ATObject[] elements) {
 		// assert elements.length > 0
 		elements_ = elements;
