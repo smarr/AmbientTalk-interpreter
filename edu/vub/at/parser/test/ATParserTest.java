@@ -70,9 +70,9 @@ public class ATParserTest extends TestCase {
 		testParse("x := 7",
 				 "(begin (var-set (symbol x) (number 7)))");
 		testParse("x[5] := 7",
-		          "(begin (set (table-get ( symbol x ) ( number 5 ) ) (number 7)))");
+		          "(begin (table-set (table-get ( symbol x ) ( number 5 ) ) (number 7)))");
 		testParse("o.m := 1",
-                   "(begin (set (select (symbol o) (symbol m)) (number 1)))");
+                   "(begin (field-set (select (symbol o) (symbol m)) (number 1)))");
 	}
 	
 	/**

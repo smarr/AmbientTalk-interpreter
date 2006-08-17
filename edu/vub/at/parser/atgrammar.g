@@ -52,7 +52,7 @@ semicolonlist : statement (SMC! statement)* { #semicolonlist = #([AGBEGIN,"begin
 // Statements can be either definitions assignments or ordinary expressions
 statement: ("def"! definition)
          | (variable EQL) => varassignment
-         | (invocation EQL) => assignment
+         | (assignment) => assignment
          | expression;
 
 // Definitions start with ambienttalk/2's only reserved word def
@@ -83,8 +83,9 @@ keywordparam: KEY^ parameter;
 varassignment!: var:variable EQL val:expression { #varassignment = #([AGASSVAR, "var-set"], var, val); };
 
 // an assignment covers both table assignment t[i] := v and field assignment o.m := v
-// note that the parser also parses other invocations like m() := v. These will be rejected by the tree walker.
-assignment!: tbl:invocation EQL ass:expression { #assignment = #([AGASSIGN,"set"], tbl, ass); };
+assignment!: o:operand a:assign_table_or_field[#o] { #assignment = #a; };
+assign_table_or_field![AST functor]: tbl:tabulation[functor] EQL tvl:expression { #assign_table_or_field = #([AGASSTAB,"table-set"], tbl, tvl); }
+                                   | sel:selection[functor]  EQL fvl:expression { #assign_table_or_field = #([AGASSFLD,"field-set"], sel, fvl); };
 
 // Expressions are split up according to precedence. Ambienttalk/2's keyworded message
 // sends have lowest priority and are therefore the highest applicable rule.
@@ -150,12 +151,15 @@ curried_invocation![AST functor]:
 
 // Invocation expressions are a single curried expression whether to apply, tabulate or
 // invoke its functor. 
-invoke_expression![AST functor]:
-	  LPR args:commalist RPR  { #invoke_expression = #([AGAPL,"apply"], functor, args); }
-	| LBR idx:expression RBR { #invoke_expression = #([AGTBL,"table-get"], functor, idx); }
-	| (DOT variable LPR | DOT KEY) => DOT apl:application { #invoke_expression = #([AGSND,"send"], functor, #([AGMSG,"message"], apl)); }
-	| DOT var:variable { #invoke_expression = #([AGSEL,"select"], functor, var);}
-	| (ARW variable LPR | ARW KEY) => ARW snd:application { #invoke_expression = #([AGSND,"send"], functor, #([AGAMS,"async-message"], snd)); };
+invoke_expression[AST functor]:
+	 ! LPR args:commalist RPR  { #invoke_expression = #([AGAPL,"apply"], functor, args); }
+	|  tabulation[functor]
+	|! (DOT variable LPR | DOT KEY) => DOT apl:application { #invoke_expression = #([AGSND,"send"], functor, #([AGMSG,"message"], apl)); }
+	|  selection[functor]
+	|! (ARW variable LPR | ARW KEY) => ARW snd:application { #invoke_expression = #([AGSND,"send"], functor, #([AGAMS,"async-message"], snd)); };
+
+tabulation![AST functor]: LBR idx:expression RBR { #tabulation = #([AGTBL,"table-get"], functor, idx); };
+selection![AST functor]: DOT var:variable { #selection = #([AGSEL,"select"], functor, var); };
 
 // Function application can be done using two distinct mechanisms, either using a 
 // canonical format ( foobar( a1, a2 ) ) or using keywordlists (foo: a1 bar: a2).
@@ -254,28 +258,29 @@ protected AGDEFFIELD: "define-field";  // AGDefField(SYM nam, EXP val)
 protected AGDEFFUN  : "define-function";// AGDefFunction(SYM sel, TAB arg, BGN bdy)
 protected AGDEFTABLE: "define-table";  // AGDefTable(SYM tbl, EXP siz, EXP ini)
 // Assignments
-protected AGASSVAR  : "var-set";     // AGAssignField (SYM nam, EXP val)
-protected AGASSIGN  : "set";         // AGAssignTable(EXP tbl, EXP idx, EXP val) | AGAssignField(EXP rcv, SYM fld, EXP val)
+protected AGASSVAR  : "var-set";       // AGAssignField(SYM nam, EXP val)
+protected AGASSTAB  : "table-set";     // AGAssignTable(EXP tbl, EXP idx, EXP val)
+protected AGASSFLD  : "field-set";     // AGAssignField(EXP rcv, SYM fld, EXP val)
 // Expressions
-protected AGSND     : "send";          // AGMessageSend (EXP rcv, MSG msg)
-protected AGAPL     : "apply";         // AGApplication (SYM sel, TAB arg)
-protected AGSEL     : "select";        // AGSelection (EXP rcv, SYM sel)
-protected AGMSG     : "message";       // AGMethodInvocation (SYM sel, TAB arg)
-protected AGAMS     : "async-message"; // AGAsyncMessage (SYM sel, TAB arg)
-protected AGTBL     : "table-get";     // AGTabulation (EXP tbl, EXP idx)
-protected AGSYM     : "symbol";        // AGSymbol (TXT nam)
+protected AGSND     : "send";          // AGMessageSend(EXP rcv, MSG msg)
+protected AGAPL     : "apply";         // AGApplication(SYM sel, TAB arg)
+protected AGSEL     : "select";        // AGSelection(EXP rcv, SYM sel)
+protected AGMSG     : "message";       // AGMethodInvocation(SYM sel, TAB arg)
+protected AGAMS     : "async-message"; // AGAsyncMessage(SYM sel, TAB arg)
+protected AGTBL     : "table-get";     // AGTabulation(EXP tbl, EXP idx)
+protected AGSYM     : "symbol";        // AGSymbol(TXT nam)
 protected AGSLF     : "self";          // AGSelf
 protected AGSUP     : "super";         // AGSuper
-protected AGQUO     : "quote";         // AGQuote (STMT stmt)
-protected AGUNQ     : "unquote";       // AGUnquote (EXP exp)
-protected AGUQS     : "unquote-splice";// AGUnquoteSplice (EXP exp)
+protected AGQUO     : "quote";         // AGQuote(STMT stmt)
+protected AGUNQ     : "unquote";       // AGUnquote(EXP exp)
+protected AGUQS     : "unquote-splice";// AGUnquoteSplice(EXP exp)
 protected AGSPL     : "splice";        // AGSplice(EXP exp)
 // Literals
-protected AGNBR     : "number";        // NATNumber (<int>)
-protected AGFRC     : "fraction";      // NATFraction (<double>)
-protected AGTXT     : "text";          // NATText (<String>)
-protected AGTAB     : "table";         // NATTable (<ATObject[]>)
-protected AGCLO     : "closure";       // NATClosure (TAB arg, BGN bdy)
+protected AGNBR     : "number";        // NATNumber(<int>)
+protected AGFRC     : "fraction";      // NATFraction(<double>)
+protected AGTXT     : "text";          // NATText(<String>)
+protected AGTAB     : "table";         // NATTable(<ATObject[]>)
+protected AGCLO     : "closure";       // NATClosure(TAB arg, BGN bdy)
 
 // auxiliary tokens for operators
 protected AGCMP     : "symbol";
@@ -494,8 +499,8 @@ assignment returns [ATAssignment ass]
     ATSymbol nam;
     ATExpression rcv, val, idx; }
           : #(AGASSVAR nam=symbol val=expression) { ass = new AGAssignVariable(nam, val); }
-          | #(AGASSIGN #(AGTBL rcv=expression idx=expression) val=expression) { ass = new AGAssignTable(rcv, idx, val); }
-          //| #(AGASSIGN #(AGSEL rcv=expression nam=symbol) val=expression) { ass = new AGAssignField(rcv, nam, val); }
+          | #(AGASSTAB #(AGTBL rcv=expression idx=expression) val=expression) { ass = new AGAssignTable(rcv, idx, val); }
+          | #(AGASSFLD #(AGSEL rcv=expression nam=symbol) val=expression) { ass = new AGAssignField(rcv, nam, val); }
           ;
 
 expression returns [ATExpression exp]

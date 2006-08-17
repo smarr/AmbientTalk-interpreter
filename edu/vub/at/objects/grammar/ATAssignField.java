@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATAssignVariable.java created on 26-jul-2006 at 14:55:05
+ * ATAssignField.java created on 17-aug-2006 at 13:43:25
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -30,11 +30,12 @@ package edu.vub.at.objects.grammar;
 /**
  * @author tvc
  *
- * The public interface to a variable assignment abstract grammar element.
+ * The public interface to a field assignment abstract grammar element.
  */
-public interface ATAssignVariable extends ATAssignment {
-
-	public ATSymbol getName();
+public interface ATAssignField extends ATAssignment {
+	
+	public ATExpression getReceiver();
+	public ATSymbol getFieldName();
 	public ATExpression getValue();
 	
 }
