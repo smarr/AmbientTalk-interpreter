@@ -28,7 +28,6 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -86,17 +85,21 @@ public final class Reflection {
 	 * - any underscores (_) are replaced by colons (:)
 	 */
 	public static final ATSymbol downSelector(String jSelector) {
-		// _op{code}_ -> operator symbol
-		Matcher m = oprCode.matcher(jSelector);
-		StringBuffer sb = new StringBuffer();
-		while (m.find()) {
-             // find every occurence of _op\w\w\w_ and convert it into a symbol
-			m.appendReplacement(sb, oprCode2Symbol(m.group(1)));
-		}
-		m.appendTail(sb);
-		
-		// _ -> :
-		return AGSymbol.alloc(sb.toString().replaceAll("_", ":"));
+		return AGSymbol.alloc(javaToAmbientTalkSelector(jSelector));
+	}
+	
+	/**
+	 * Transforms a Java selector prefixed with base_ into an AmbientTalk selector without the prefix.
+	 */
+	public static final ATSymbol downBaseLevelSelector(String jSelector) throws NATException {
+		return AGSymbol.alloc(javaToAmbientTalkSelector(jSelector).replaceFirst(JavaInterfaceAdaptor._BASE_PREFIX_, ""));
+	}
+	
+	/**
+	 * Transforms a Java selector prefixed with meta_ into an AmbientTalk selector without the prefix.
+	 */
+	public static final ATSymbol downMetaLevelSelector(String jSelector) throws NATException {
+		return AGSymbol.alloc(javaToAmbientTalkSelector(jSelector).replaceFirst(JavaInterfaceAdaptor._META_PREFIX_, ""));
 	}
 	
 	/**
@@ -136,6 +139,20 @@ public final class Reflection {
 	}
 	
 	/**
+	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with base_.
+	 */
+	public static final String upBaseLevelSelector(ATSymbol atSelector) throws NATException {
+		return JavaInterfaceAdaptor._BASE_PREFIX_ + upSelector(atSelector);
+	}
+
+	/**
+	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with meta_.
+	 */
+	public static final String upMetaLevelSelector(ATSymbol atSelector) throws NATException {
+		return JavaInterfaceAdaptor._META_PREFIX_ + upSelector(atSelector);
+	}
+	
+	/**
 	 * A field name "field" passed from the AmbientTalk to the Java level undergoes the following transformations:
 	 * 
 	 * - any colons (:) are replaced by underscores (_)
@@ -157,10 +174,48 @@ public final class Reflection {
 	 */
 	public static final String upFieldName(ATSymbol atName) throws NATException {
 		char[] charArray = upSelector(atName).toCharArray();
-		
 		charArray[0] = Character.toUpperCase(charArray[0]);
-		
 		return new String(charArray);
+	}
+	
+	/**
+	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "base_get".
+	 * 
+	 * Example:
+	 *  upBaseFieldAccessSelector(ATSymbol('receiver')) => "base_getReceiver"
+	 */
+	public static final String upBaseFieldAccessSelector(ATSymbol atName) throws NATException {
+		return JavaInterfaceAdaptor._BGET_PREFIX_ + upFieldName(atName);
+	}
+
+	/**
+	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "base_set".
+	 * 
+	 * Example:
+	 *  upBaseFieldMutationSelector(ATSymbol('receiver')) => "base_setReceiver"
+	 */
+	public static final String upBaseFieldMutationSelector(ATSymbol atName) throws NATException {
+		return JavaInterfaceAdaptor._BSET_PREFIX_ + upFieldName(atName);
+	}
+
+	/**
+	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "meta_get".
+	 * 
+	 * Example:
+	 *  upMetaFieldAccessSelector(ATSymbol('receiver')) => "meta_getReceiver"
+	 */
+	public static final String upMetaFieldAccessSelector(ATSymbol atName) throws NATException {
+		return JavaInterfaceAdaptor._MGET_PREFIX_ + upFieldName(atName);
+	}
+	
+	/**
+	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "meta_set".
+	 * 
+	 * Example:
+	 *  upMetaFieldMutationSelector(ATSymbol('receiver')) => "meta_setReceiver"
+	 */
+	public static final String upMetaFieldMutationSelector(ATSymbol atName) throws NATException {
+		return JavaInterfaceAdaptor._MSET_PREFIX_ + upFieldName(atName);
 	}
 	
 	/**
@@ -235,6 +290,10 @@ public final class Reflection {
 	 * upInvocation takes an explicit AmbientTalk method invocation and turns it into an
 	 * implicitly performed Java invocation.
 	 * 
+	 * Depending on whether the AmbientTalk invocation happens at the base-level or the meta-level
+	 * (i.e. the receiver denotes a base-level object or a mirror), the jSelector parameter will have
+	 * a different prefix.
+	 * 
 	 * @param jRcvr the Java object having received the AmbientTalk method invocation
 	 * @param atOrigRcvr the original AmbientTalk object that received the invocation
 	 * @param jSelector the selector of the message to be invoked, converted to a Java selector
@@ -243,8 +302,13 @@ public final class Reflection {
 	 * 
 	 * Example:
 	 *  eval "tbl.at(1)" where tbl is a NATTable
-	 *  => upInvocation(aNATTable, "at", ATObject[] { ATNumber(1) })
+	 *  => upInvocation(aNATTable, "base_at", ATObject[] { ATNumber(1) })
 	 *  => NATTable must have a method named base_at
+	 * 
+	 * Example:
+	 *  eval "(reflect: tbl).invoke(tbl, "at", [1])" where tbl is a NATTable
+	 *  => upInvocation(aNATTable, "meta_invoke", ATObject[] { aNATTable, ATSymbol('at'), ATTable([ATNumber(1)]) })
+	 *  => NATTable must have a method named meta_invoke
 	 */
 	public static final Object upInvocation(ATObject jRcvr, ATObject atOrigRcvr, String jSelector, ATTable atArgs) throws NATException {
 		return JavaInterfaceAdaptor.invokeJavaMethod(
@@ -435,6 +499,20 @@ public final class Reflection {
 		  case '=': return "eql";
 		  default: return symbol; // no match, return original input
 		}	
+	}
+	
+	private static final String javaToAmbientTalkSelector(String jSelector) {
+		// _op{code}_ -> operator symbol
+		Matcher m = oprCode.matcher(jSelector);
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+             // find every occurence of _op\w\w\w_ and convert it into a symbol
+			m.appendReplacement(sb, oprCode2Symbol(m.group(1)));
+		}
+		m.appendTail(sb);
+		
+		// _ -> :
+		return sb.toString().replaceAll("_", ":");
 	}
 	
 }

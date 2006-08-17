@@ -72,7 +72,12 @@ class MirageInvocationHandler implements InvocationHandler {
 	 */
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 		// TODO check the meta insert, guess it should be - meta_ instead of +
-		ATSymbol selector = AGSymbol.alloc(NATText.atValue("meta_" + method.getName()));
+		// TODO tom: shouldn't it be as follows?
+		//  mirage.meta_xxx(args) should be forwarded to the mirrorRepresentation as is, i.e. mirrorrepr_.meta_xxx(args)
+		//  mirage.base_xxx(args) should be transformed into mirrorrepr_.meta_invoke(xxx, [args])
+		//  mirage.base_getxxx() should be transformed into mirrorrepr_.meta_select(xxx)
+		//  mirage.base_setxxx(arg) should be transformed into mirrorrepr_.meta_assign(xxx, arg)
+		ATSymbol selector = Reflection.downMetaLevelSelector(method.getName());
 		ATTable arguments = new NATTable(args);
 		return mirrorRepresentation_.meta_invoke(mirrorRepresentation_, selector, arguments);
 	}

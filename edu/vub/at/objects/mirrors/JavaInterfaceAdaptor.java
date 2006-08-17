@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * BaseInterfaceAdaptor.java created on Jul 13, 2006 at 10:25:01 PM
+ * JavaInterfaceAdaptor.java created on Jul 13, 2006 at 10:25:01 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -56,6 +56,15 @@ import java.util.Vector;
  */
 public class JavaInterfaceAdaptor {
 		
+	public static final String _BASE_PREFIX_ = "base_";
+	public static final String _BGET_PREFIX_ = "base_get";
+	public static final String _BSET_PREFIX_ = "base_set";
+	
+	public static final String _META_PREFIX_ = "meta_";
+	public static final String _MGET_PREFIX_ = "meta_get";
+	public static final String _MSET_PREFIX_ = "meta_set";
+	
+	
 	/**
 	 * Tests given a class, whether the class either declares or inherits a method
 	 * for a given selector. 

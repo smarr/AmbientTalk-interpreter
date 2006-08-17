@@ -218,7 +218,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					AGSymbol.alloc("at"), 
 					NATTable.EMPTY);
 			
-			message.meta_assignField(
+			message.meta_assignVariable(
 					AGSymbol.alloc("arguments"), 
 					new NATTable(new ATObject[] {
 							closures.base_getLength()	

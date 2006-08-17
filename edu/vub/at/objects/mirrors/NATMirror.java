@@ -134,7 +134,7 @@ public class NATMirror extends NATNil implements ATMirror {
 	 * give out a reference to its principal.</p>
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws NATException {
-		String jSelector = "meta_" + Reflection.upSelector(atSelector);
+		String jSelector = Reflection.upMetaLevelSelector(atSelector);
 		
 		try {
 			return NATMirrorFactory._INSTANCE_.base_createMirror(
@@ -182,8 +182,7 @@ public class NATMirror extends NATNil implements ATMirror {
 		String jSelector = null;
 		
 		try {
-			jSelector = "meta_get" + Reflection.upFieldName(atSelector);
-			
+			jSelector = Reflection.upMetaFieldAccessSelector(atSelector);
 			return NATMirrorFactory._INSTANCE_.base_createMirror(
 					Reflection.downObject(
 							Reflection.upFieldSelection(
@@ -193,7 +192,7 @@ public class NATMirror extends NATNil implements ATMirror {
 			
 		} catch (XTypeMismatch e) {
 			try {
-				jSelector = "meta_" + Reflection.upSelector(atSelector);
+				jSelector = Reflection.upMetaLevelSelector(atSelector);
 
 				return NATMirrorFactory._INSTANCE_.base_createMirror(
 						Reflection.downObject(
@@ -220,7 +219,7 @@ public class NATMirror extends NATNil implements ATMirror {
 		String jSelector = null;
 		
 		try{
-			jSelector = "meta_set" + Reflection.upFieldName(name);
+			jSelector = Reflection.upMetaFieldMutationSelector(name);
 
 			JavaInterfaceAdaptor.invokeJavaMethod(
 					principal_.getClass(),

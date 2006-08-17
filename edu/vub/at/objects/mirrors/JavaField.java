@@ -50,11 +50,10 @@ public class JavaField extends NATNil implements ATField {
 	
 	public static JavaField createPrimitiveField(
 			ATObject receiver, ATSymbol fieldName) throws NATException {
-		String selector = fieldName.getText().asNativeText().javaValue;
 
-		String getterSel = JavaInterfaceAdaptor.transformField("base_get", "", selector, true);
-		String setterSel = JavaInterfaceAdaptor.transformField("base_set", "", selector, true);
-		
+		String getterSel = Reflection.upBaseFieldAccessSelector(fieldName);
+		String setterSel = Reflection.upBaseFieldMutationSelector(fieldName);
+
 		JavaClosure getter = JavaInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, getterSel);
 		JavaClosure setter = null;
 
