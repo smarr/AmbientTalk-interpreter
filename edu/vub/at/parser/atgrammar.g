@@ -51,8 +51,8 @@ semicolonlist : statement (SMC! statement)* { #semicolonlist = #([AGBEGIN,"begin
 
 // Statements can be either definitions assignments or ordinary expressions
 statement: ("def"! definition)
-         | (variable EQL) => fieldassignment
-         | (invocation EQL) => tableassignment
+         | (variable EQL) => varassignment
+         | (invocation EQL) => assignment
          | expression;
 
 // Definitions start with ambienttalk/2's only reserved word def
@@ -80,9 +80,11 @@ keywordparam: KEY^ parameter;
 
 // Assignment of a variable is similar to its definition albeit without the word def.
 // TODO tabulation assignment requires the parser to look ahead arbitrarily far for a ':=' -> inefficient 
-fieldassignment!: var:variable EQL val:expression { #fieldassignment = #([AGASSFIELD, "field-set"], var, val); };
+varassignment!: var:variable EQL val:expression { #varassignment = #([AGASSVAR, "var-set"], var, val); };
 
-tableassignment!: tbl:invocation EQL ass:expression { #tableassignment = #([AGASSTABLE,"table-set"], tbl, ass); };
+// an assignment covers both table assignment t[i] := v and field assignment o.m := v
+// note that the parser also parses other invocations like m() := v. These will be rejected by the tree walker.
+assignment!: tbl:invocation EQL ass:expression { #assignment = #([AGASSIGN,"set"], tbl, ass); };
 
 // Expressions are split up according to precedence. Ambienttalk/2's keyworded message
 // sends have lowest priority and are therefore the highest applicable rule.
@@ -252,8 +254,8 @@ protected AGDEFFIELD: "define-field";  // AGDefField(SYM nam, EXP val)
 protected AGDEFFUN  : "define-function";// AGDefFunction(SYM sel, TAB arg, BGN bdy)
 protected AGDEFTABLE: "define-table";  // AGDefTable(SYM tbl, EXP siz, EXP ini)
 // Assignments
-protected AGASSFIELD: "field-set";     // AGAssignField (SYM nam, EXP val)
-protected AGASSTABLE: "table-set";     // AGAssignTable (EXP tbl, EXP idx, EXP val)
+protected AGASSVAR  : "var-set";     // AGAssignField (SYM nam, EXP val)
+protected AGASSIGN  : "set";         // AGAssignTable(EXP tbl, EXP idx, EXP val) | AGAssignField(EXP rcv, SYM fld, EXP val)
 // Expressions
 protected AGSND     : "send";          // AGMessageSend (EXP rcv, MSG msg)
 protected AGAPL     : "apply";         // AGApplication (SYM sel, TAB arg)
@@ -290,7 +292,7 @@ protected LETTER: ('a'..'z'|'A'..'Z' )
 protected EXPONENT: ('e' | 'E')
 	;
 	
-protected CMPCHAR: ('<' | '=' | '>' )
+protected CMPCHAR: ('<' | '=' | '>' | '~' )
 	;
 
 protected ADDCHAR: ( '+' | '-')
@@ -490,9 +492,10 @@ definition returns [ATDefinition def]
 assignment returns [ATAssignment ass]
   { ass = null;
     ATSymbol nam;
-    ATExpression tbl, val, idx; }
-          : #(AGASSFIELD nam=symbol val=expression) { ass = new AGAssignField(nam, val); }
-          | #(AGASSTABLE #(AGTBL tbl=expression idx=expression) val=expression) { ass = new AGAssignTable(tbl, idx, val); }
+    ATExpression rcv, val, idx; }
+          : #(AGASSVAR nam=symbol val=expression) { ass = new AGAssignVariable(nam, val); }
+          | #(AGASSIGN #(AGTBL rcv=expression idx=expression) val=expression) { ass = new AGAssignTable(rcv, idx, val); }
+          //| #(AGASSIGN #(AGSEL rcv=expression nam=symbol) val=expression) { ass = new AGAssignField(rcv, nam, val); }
           ;
 
 expression returns [ATExpression exp]

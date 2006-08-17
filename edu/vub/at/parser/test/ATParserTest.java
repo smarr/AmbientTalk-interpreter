@@ -68,9 +68,11 @@ public class ATParserTest extends TestCase {
 		testParse("def t[5] { a }",
 				 "(begin (define-table (symbol t) (number 5) (symbol a)))");
 		testParse("x := 7",
-				 "(begin (field-set (symbol x) (number 7)))");
+				 "(begin (var-set (symbol x) (number 7)))");
 		testParse("x[5] := 7",
-		          "(begin (table-set (table-get ( symbol x ) ( number 5 ) ) (number 7)))");
+		          "(begin (set (table-get ( symbol x ) ( number 5 ) ) (number 7)))");
+		testParse("o.m := 1",
+                   "(begin (set (select (symbol o) (symbol m)) (number 1)))");
 	}
 	
 	/**
@@ -155,7 +157,7 @@ public class ATParserTest extends TestCase {
 		testParse("{ | x, y | x + y }",
 				 "(begin (closure (table (symbol x) (symbol y)) (begin (+ (symbol x) (symbol y)))))");
 		testParse("{ a := 2; b }",
-				 "(begin (closure (table) (begin (field-set (symbol a) (number 2)) (symbol b))))");
+				 "(begin (closure (table) (begin (var-set (symbol a) (number 2)) (symbol b))))");
 	}
 	
 	/**
@@ -242,8 +244,8 @@ public class ATParserTest extends TestCase {
 				                                               "(begin (define-function (apply (symbol getX) (table)) (begin (symbol x)))" +
 				                                                      "(define-function (apply (symbol getY) (table)) (begin (symbol y)))" +
 				                                                      "(define-function (apply (symbol withX:Y:) (table (symbol anX) (symbol aY)))" +
-				                                                                      "(begin (field-set (symbol x) (symbol anX))" +
-				                                                                             "(field-set (symbol y) (symbol anY))))))))))");
+				                                                                      "(begin (var-set (symbol x) (symbol anX))" +
+				                                                                             "(var-set (symbol y) (symbol anY))))))))))");
 	}
 	
 }

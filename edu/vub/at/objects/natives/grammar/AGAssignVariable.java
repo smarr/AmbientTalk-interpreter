@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGAssignField.java created on 26-jul-2006 at 15:54:48
+ * AGAssignVariable.java created on 26-jul-2006 at 15:54:48
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -31,7 +31,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.grammar.ATAssignField;
+import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATNil;
@@ -40,47 +40,47 @@ import edu.vub.at.objects.natives.NATText;
 /**
  * @author tvc
  *
- * The native implementation of a field assignment AG element.
+ * The native implementation of a variable assignment AG element.
  * Examples:
  *  <tt>x := 5</tt>
  *  <tt>+ := m()</tt>
  */
-public final class AGAssignField extends NATAbstractGrammar implements ATAssignField {
+public final class AGAssignVariable extends NATAbstractGrammar implements ATAssignVariable {
 
-	private final ATSymbol fieldName_;
+	private final ATSymbol variableName_;
 	private final ATExpression valueExp_;
 	
-	public AGAssignField(ATSymbol nam, ATExpression val) {
-		fieldName_ = nam;
+	public AGAssignVariable(ATSymbol nam, ATExpression val) {
+		variableName_ = nam;
 		valueExp_ = val;
 	}
 	
-	public ATSymbol getName() { return fieldName_; }
+	public ATSymbol getName() { return variableName_; }
 
 	public ATExpression getValue() { return valueExp_; }
 
 	/**
-	 * To evaluate a field definition, evaluate the right hand side and ask
+	 * To evaluate a variable assignment, evaluate the right hand side and ask
 	 * the current object to assign that value to the field corresponding to the left hand side.
 	 * 
-	 * AGASSFIELD(nam,val).eval(ctx) = ctx.scope.assignField(nam, val.eval(ctx))
+	 * AGASSVAR(nam,val).eval(ctx) = ctx.scope.assignVariable(nam, val.eval(ctx))
 	 * 
 	 * @return NIL
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		ctx.getLexicalScope().meta_assignField(fieldName_, valueExp_.meta_eval(ctx));
+		ctx.getLexicalScope().meta_assignVariable(variableName_, valueExp_.meta_eval(ctx));
 		return NATNil._INSTANCE_;
 	}
 
 	/**
-	 * AGASSFIELD(nam,val).quote(ctx) = AGASSFIELD(nam.quote(ctx), val.quote(ctx))
+	 * AGASSVAR(nam,val).quote(ctx) = AGASSVAR(nam.quote(ctx), val.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws NATException {
-		return new AGAssignField(fieldName_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
+		return new AGAssignVariable(variableName_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue(fieldName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
+		return NATText.atValue(variableName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
 
 }

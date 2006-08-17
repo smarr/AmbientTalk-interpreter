@@ -138,14 +138,11 @@ public class NATCallframe extends NATNil implements ATObject {
 	
 	/**
 	 * This method is used in the evaluation of the code <tt>o.m</tt>.
-	 * When o is a call frame, the selector is looked up in the fields of the call frame.
-	 * A call frame does not delegate the lookup to other objects.
-	 * 
-	 * A call frame also does not wrap the result of selection, because it does not contain
-	 * methods but rather closures, which are already paired with their proper evaluation context.
+	 * When o is a call frame, this code is treated exactly as if <tt>m</tt> was
+	 * issued as a lookup within o.
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
-		return this.getLocalField(selector);
+		return this.meta_lookup(selector);
 	}
 	
 	/**
@@ -185,17 +182,25 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * In both cases, if the field exists locally, it is set to the new value.
 	 * If it does not exist locally, the assignment is performed on the lexical parent.
 	 */
-	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
-		int index = variableMap_.get(name);
-		if(index != -1) {
-			// field exists, modify the state vector
-			stateVector_.set(index, value);
+	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
+		if (this.setLocalField(name, value)) {
+			// field found and set locally
 			return NATNil._INSTANCE_;
 		} else {
 			// The lexical parent chain is followed for assignments. This implies
 			// that assignments on dynamic parents are disallowed.
-			return lexicalParent_.meta_assignField(name, value);
+			return lexicalParent_.meta_assignVariable(name, value);
 		}
+	}
+	
+	/**
+	 * Assigning a call frame's field externally is possible and is treated
+	 * as if it were a variable assignment. Hence, if <tt>o</tt> is a call frame,
+	 * then <tt>o.m := x</tt> follows the same evaluation semantics as those of
+	 * <tt>m := x</tt> when performed in the scope of <tt>o</tt>.
+	 */
+	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
+		return this.meta_assignVariable(name, value);
 	}
 
 	/* ------------------------------------
@@ -206,6 +211,10 @@ public class NATCallframe extends NATNil implements ATObject {
 		throw new XIllegalOperation("Cannot clone a call frame, clone its owning object instead.");
 	}
 
+	public ATObject meta_new(ATTable initargs) throws NATException {
+		throw new XIllegalOperation("Cannot create a new instance of a call frame, new its owning object instead.");
+	}
+	
 	public ATObject meta_extend(ATClosure code) throws NATException {
 		throw new XIllegalOperation("Cannot extend a call frame, extend its owning object instead.");
 	}
@@ -289,6 +298,21 @@ public class NATCallframe extends NATNil implements ATObject {
 			return (ATObject) (stateVector_.get(index));
 		} else {
 			throw new XSelectorNotFound(selector, this);
+		}
+	}
+	
+	/**
+	 * Set a given field if it exists.
+	 * @return whether the field existed (and the assignment has been performed)
+	 */
+	protected boolean setLocalField(ATSymbol selector, ATObject value) {
+		int index = variableMap_.get(selector);
+		if(index != -1) {
+			// field exists, modify the state vector
+			stateVector_.set(index, value);
+			return true;
+		} else {
+			return false;
 		}
 	}
 	

@@ -37,7 +37,7 @@ package edu.vub.at.exceptions;
 public final class XUndefinedField extends NATException {
 
 	public XUndefinedField(String message, String fieldName) {
-		super("Undefined field " + message + ": " + fieldName);
+		super("Undefined " + message + ": " + fieldName);
 	}
 
 }

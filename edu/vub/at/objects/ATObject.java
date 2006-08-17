@@ -163,10 +163,25 @@ public interface ATObject extends ATConversions {
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException;
 	
 	/**
-	 * Sets the value of the given field name to the value given.
+	 * Sets the value of the variable to the given value.
 	 * Triggers the <tt>fieldAssigned</tt> event on this object's beholders (mirror observers).
 	 * 
-	 * @param name a symbol representing the name of the field to assign.
+	 * Normally, a variable assignment can only be triggered from within the lexical scope of an object.
+	 * 
+	 * @param name a symbol representing the name of the variable to assign.
+	 * @param value the value to assign to the specified slot.
+	 * @return nil
+	 * @throws ATException if the field to set cannot be found.
+	 */
+	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException;
+
+	/**
+	 * Sets the value of a field to the given value.
+	 * Triggers the <tt>fieldAssigned</tt> event on this object's beholders (mirror observers).
+	 * 
+	 * Field assignment may result in the assignment of a parent's field.
+	 * 
+	 * @param name a symbol representing the field to assign.
 	 * @param value the value to assign to the specified slot.
 	 * @return nil
 	 * @throws ATException if the field to set cannot be found.
@@ -192,6 +207,19 @@ public interface ATObject extends ATConversions {
 	 * Initializing the clone is the responsibility of the method named <init>.
 	 */
 	public ATObject meta_clone() throws NATException;
+	
+	/**
+	 * Create a new instance of the receiver object. AmbientTalk mimics the initialization
+	 * protocol of Class-based languages like Smalltalk. In a typical CBL, object initialization
+	 * equals class allocation + new instance initialization. In AmbientTalk, class allocation
+	 * is replaced by cloning via the meta_clone operation. Object initialization itself differs
+	 * from cloning in that it additionally initializes the clone. For standard AmbientTalk objects,
+	 * this happens by invoking a method named 'init' on the newly created instance.
+	 * 
+	 * @param initargs arguments to the 'init' constructor method
+	 * @return the new instance
+	 */
+	public ATObject meta_new(ATTable initargs) throws NATException;
 	
 	/**
 	 * Create an is-a extension of the receiver object.

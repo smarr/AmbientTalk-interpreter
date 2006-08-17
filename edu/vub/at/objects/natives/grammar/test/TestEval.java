@@ -127,7 +127,7 @@ public class TestEval extends TestCase {
 	
 	// assignments
 	
-	public void testAssignField() throws NATException {
+	public void testAssignVariable() throws NATException {
 		// def x := nil
 		ctx_.getLexicalScope().meta_defineField(atX_, NATNil._INSTANCE_);
 		
@@ -142,6 +142,16 @@ public class TestEval extends TestCase {
 		
         evalAndCompareTo("x[1] := 3", NATNil._INSTANCE_);
         assertEquals(atThree_, table.base_at(NATNumber.ONE));
+	}
+	
+	public void testAssignField() throws NATException {
+		// def x := object: { def y := 0 }
+		ATObject x = new NATObject(ctx_.getLexicalScope());
+		x.meta_defineField(atY_, NATNumber.ZERO);
+		ctx_.getLexicalScope().meta_defineField(atX_, x);
+		
+         evalAndCompareTo("x.y := 3", NATNil._INSTANCE_);
+         assertEquals(atThree_, x.meta_select(x, atY_));
 	}
 	
 	// expressions

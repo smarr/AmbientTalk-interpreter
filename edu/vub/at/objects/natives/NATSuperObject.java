@@ -104,10 +104,14 @@ public class NATSuperObject extends NATNil implements ATObject {
 		return lookupFrame_.meta_defineField(name, value);
 	}
 	
+	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
+		return lookupFrame_.meta_assignVariable(name, value);
+	}
+
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
 		return lookupFrame_.meta_assignField(name, value);
 	}
-
+	
 	/* ------------------------------------
 	 * -- Extension and cloning protocol --
 	 * ------------------------------------ */
@@ -116,6 +120,10 @@ public class NATSuperObject extends NATNil implements ATObject {
 		return lookupFrame_.meta_clone();
 	}
 
+	public ATObject meta_new(ATTable initargs) throws NATException {
+		return lookupFrame_.meta_new(initargs);
+	}
+	
 	public ATObject meta_extend(ATClosure code) throws NATException {
 		return lookupFrame_.meta_extend(code);
 	}

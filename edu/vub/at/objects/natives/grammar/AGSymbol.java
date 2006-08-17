@@ -49,7 +49,8 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	private static final HashMap _STRINGPOOL_ = new HashMap();
 
 	public static final AGSymbol _LAMBDA_ = AGSymbol.alloc(NATText.atValue("lambda"));
-	
+	public static final AGSymbol _INIT_ = AGSymbol.alloc(NATText.atValue("init"));
+		
 	private final ATText txt_;
 	
 	protected AGSymbol(ATText txt) {

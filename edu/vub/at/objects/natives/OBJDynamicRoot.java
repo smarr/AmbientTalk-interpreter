@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
@@ -73,6 +74,10 @@ public final class OBJDynamicRoot extends NATNil {
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
 		return receiver.meta_doesNotUnderstand(selector);
+	}
+	
+	public ATNil meta_assignField(ATSymbol selector, ATObject value) throws NATException {
+		throw new XUndefinedField("field assignment", selector.getText().asNativeText().javaValue);
 	}
 	
 }

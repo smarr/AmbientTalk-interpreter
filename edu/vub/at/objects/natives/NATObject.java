@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XDuplicateSlot;
-import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
@@ -39,6 +38,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,7 +57,7 @@ import java.util.Vector;
  * variable map, the state vector and the lexical parent.
  */
 public class NATObject extends NATCallframe implements ATObject{
-
+	
 	// Auxiliary static methods to support the type of dynamic parent
 	public static final boolean _IS_A_ 		= true;
 	public static final boolean _SHARES_A_ 	= false;
@@ -111,6 +111,14 @@ public class NATObject extends NATCallframe implements ATObject{
 	/* ------------------
 	 * -- Constructors --
 	 * ------------------ */
+	
+	/**
+	 * Constructs a new AmbientTalk object whose lexical parent is the
+	 * lexical root and whose dynamic parent is the dynamic root.
+	 */
+	public NATObject() {
+		this(OBJLexicalRoot._INSTANCE_);
+	}
 	
 	/**
 	 * Constructs a new ambienttalk object parametrised by a lexical scope. The 
@@ -275,6 +283,28 @@ public class NATObject extends NATCallframe implements ATObject{
 		return super.meta_defineField(name, value);
 	}
 	
+	/** 
+	 * meta_assignField is used to evaluate code of the form <tt>o.m := v</tt>.
+	 * 
+	 * To assign a field in an object:
+	 *  - first, the list of fields of the current receiver ('this') is searched.
+	 *    If a matching field exists, its value is set.
+	 *  - If the field is not found, the search for the slot is carried out recursively in the dynamic parent.
+	 *    As such, field assignment traverses the dynamic parent chain up to a dynamic root.
+	 *    The dynamic root deals with an unbound field by throwing an error.
+	 *    
+	 * @param selector the field to assign
+	 * @param value the value to assign to the field
+	 * @return NIL
+	 */
+	public ATNil meta_assignField(ATSymbol selector, ATObject value) throws NATException {
+		if (this.setLocalField(selector, value)) {
+			return NATNil._INSTANCE_;
+		} else {
+			return dynamicParent_.meta_assignField(selector, value);
+		}
+	}
+	
 	/* ------------------------------------
 	 * -- Extension and cloning protocol --
 	 * ------------------------------------ */
@@ -316,6 +346,22 @@ public class NATObject extends NATCallframe implements ATObject{
 				            lexicalParent_,
 				            flags_);
 
+	}
+	
+	/**
+	 * When new is invoked on an object's mirror, the object is first cloned
+	 * by the mirror, after which the method named 'init' is invoked on it.
+	 * 
+	 * meta_new(t) = base_init(t) o meta_clone
+	 * 
+	 * Care should be taken that a shares-a child implements its own init method
+	 * which does NOT perform a super-send. If this is not the case, then it is
+	 * possible that a shared parent is accidentally re-initialized because a
+	 * sharing child is cloned via new.
+	 */
+	public ATObject meta_new(ATTable initargs) throws NATException {
+		ATObject clone = this.meta_clone();
+		return clone.meta_invoke(clone, AGSymbol._INIT_, initargs);
 	}
 	
 	public ATObject meta_extend(ATClosure code) throws NATException {

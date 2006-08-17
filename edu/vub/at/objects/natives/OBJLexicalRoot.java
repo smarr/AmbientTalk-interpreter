@@ -69,11 +69,11 @@ public final class OBJLexicalRoot extends NATNil {
 	 * variable was accessed which should have been lexically visible.
 	 */
 	public ATObject meta_lookup(ATSymbol selector) throws NATException {
-		throw new XUndefinedField("access", selector.getText().asNativeText().javaValue);
+		throw new XUndefinedField("variable access", selector.getText().asNativeText().javaValue);
 	}
 	
-	public ATNil meta_assignField(ATSymbol selector, ATObject value) throws NATException {
-		throw new XUndefinedField("assignment", selector.getText().asNativeText().javaValue);
+	public ATNil meta_assignVariable(ATSymbol selector, ATObject value) throws NATException {
+		throw new XUndefinedField("variable assignment", selector.getText().asNativeText().javaValue);
 	}
 	
 	/* ------------------------

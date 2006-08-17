@@ -89,7 +89,7 @@ public class NATNil implements ATNil {
 	 * upped invocation is a Java object, which must subsequently be 'downed' again.
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws NATException {
-		String jSelector = "base_" + Reflection.upSelector(atSelector);
+		String jSelector = Reflection.upBaseLevelSelector(atSelector);
 		
 		return Reflection.downObject(Reflection.upInvocation(this, receiver, jSelector, arguments));
 	}
@@ -99,7 +99,7 @@ public class NATNil implements ATNil {
 	 * a native Java method corresponding to the selector prefixed by 'base_'.
 	 */
 	public ATBoolean meta_respondsTo(ATSymbol atSelector) throws NATException {
-		String jSelector = "base_" + Reflection.upSelector(atSelector);
+		String jSelector = Reflection.upBaseLevelSelector(atSelector);
 
 		return NATBoolean.atValue(Reflection.upRespondsTo(this, jSelector));
 	}
@@ -124,11 +124,11 @@ public class NATNil implements ATNil {
 		String jSelector = null;
 		
 		try {
-			jSelector = "base_get" + Reflection.upFieldName(selector);
+			jSelector = Reflection.upBaseFieldAccessSelector(selector);
 			
 			return Reflection.downObject(Reflection.upFieldSelection(this, receiver, jSelector));
 		} catch (XTypeMismatch e) {
-			jSelector = "base_" + Reflection.upSelector(selector);
+			jSelector = Reflection.upBaseLevelSelector(selector);
 			
 			return Reflection.downObject(Reflection.upMethodSelection(this, receiver, jSelector));
 		}
@@ -151,11 +151,20 @@ public class NATNil implements ATNil {
 		throw new XIllegalOperation("Cannot add fields to a sealed " + this.getClass().getName());
 	}
 	
+	/**
+	 * Normally, a variable assignment cannot be performed on a native AmbientTalk object.
+	 * This is because a variable assignment can normally be only raised by performing
+	 * an assignment in the lexical scope of an object. However, using metaprogramming
+	 * a native object could be installed as the lexical parent of an AT object. In such
+	 * cases, variable assignment is treated as field assignment.
+	 */
+	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
+		return this.meta_assignField(name, value);
+    }
+	
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
-		String selector = name.getText().asNativeText().javaValue;
-
-		selector = JavaInterfaceAdaptor.transformField("base_set", "", selector, true);
-
+		String selector = Reflection.upBaseFieldMutationSelector(name);
+		
 		JavaInterfaceAdaptor.invokeJavaMethod(
 			this.getClass(),
 			this,
@@ -163,7 +172,7 @@ public class NATNil implements ATNil {
 			new ATObject[] { value });
 		
 		return NATNil._INSTANCE_;
-}
+	}
 
 	/* ------------------------------------
 	 * -- Extension and cloning protocol --
@@ -171,6 +180,11 @@ public class NATNil implements ATNil {
 
 	public ATObject meta_clone() throws NATException {
 		throw new XIllegalOperation("Cannot clone an object of type " + this.getClass().getName());
+	}
+	
+	// TODO: try to turn the .new(args) into a constructor call with deified arguments
+	public ATObject meta_new(ATTable initargs) throws NATException {
+		throw new XIllegalOperation("Cannot create a new instance of type " + this.getClass().getName());
 	}
 
 	public ATObject meta_extend(ATClosure code) throws NATException {
@@ -200,7 +214,7 @@ public class NATNil implements ATNil {
 	}
 
 	public ATMethod meta_getMethod(ATSymbol methodName) throws NATException {
-		String selector = "base_" + Reflection.upSelector(methodName);
+		String selector = Reflection.upBaseLevelSelector(methodName);
 
 		return JavaInterfaceAdaptor.wrapMethodFor(
 				this.getClass(),

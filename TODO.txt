@@ -3,7 +3,7 @@
 * ensure meta_print is overridden in each NAT class.
 
 - Natives
-* Refactor Base interfaces into base_ methods.
+* meta_new in NATNil -> turn into constructor call at Java level
 
 - Reflection
 * Review and fix mirrors and mirages (add/remove "base" and "meta" prefix)

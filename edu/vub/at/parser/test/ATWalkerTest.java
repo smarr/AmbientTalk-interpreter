@@ -46,6 +46,7 @@ public class ATWalkerTest extends TestCase {
 		testWalker("def t[5] { a }");
 		testWalker("x := 7");
 		testWalker("x[5] := 7");
+		testWalker("o.m := x");
 	}
 	
 	public void testExpressionGrammar() {
