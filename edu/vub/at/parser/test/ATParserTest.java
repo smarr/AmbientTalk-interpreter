@@ -67,12 +67,16 @@ public class ATParserTest extends TestCase {
 				 "(begin (define-function (apply (symbol foo:bar:) (table (symbol x) (symbol y))) (begin (number 5))))");
 		testParse("def t[5] { a }",
 				 "(begin (define-table (symbol t) (number 5) (symbol a)))");
+		testParse("def [x, y] := t",
+                   "(begin (multi-def (table (symbol x) (symbol y)) (symbol t)))");
 		testParse("x := 7",
 				 "(begin (var-set (symbol x) (number 7)))");
 		testParse("x[5] := 7",
 		          "(begin (table-set (table-get ( symbol x ) ( number 5 ) ) (number 7)))");
 		testParse("o.m := 1",
                    "(begin (field-set (select (symbol o) (symbol m)) (number 1)))");
+		testParse("[x, y] := [ y, x]",
+                  "(begin (multi-set (table (symbol x) (symbol y)) (table (symbol y) (symbol x))))");
 	}
 	
 	/**
@@ -168,13 +172,17 @@ public class ATParserTest extends TestCase {
 		testParse("def f(x,@y) { 1 }",
 				 "(begin (define-function (apply (symbol f) (table (symbol x) (splice (symbol y)))) (begin (number 1))))");
 		testParse("def foo: x bar: @y { 1 }",
-		          "(begin (define-function (apply (symbol foo:bar:) (table (symbol x) (splice (symbol y)))) (begin (number 1))))");		
+		          "(begin (define-function (apply (symbol foo:bar:) (table (symbol x) (splice (symbol y)))) (begin (number 1))))");	
+		testParse("def [x, @y] := t",
+                   "(begin (multi-def (table (symbol x) (splice (symbol y))) (symbol t)))");
 		testParse("f(1,@[2,3])",
                   "(begin (apply (symbol f) (table (number 1) (splice (table (number 2) (number 3))))))");
 		testParse("foo: 1 bar: @[2,3]",
                    "(begin (apply (symbol foo:bar:) (table (number 1) (splice (table (number 2) (number 3))))))");
 		testParse("[x, @[y,z], u, @v]",
                    "(begin (table (symbol x) (splice (table (symbol y) (symbol z))) (symbol u) (splice (symbol v))))");
+		testParse("[x, @y] := [ u, v, w]",
+                  "(begin (multi-set (table (symbol x) (splice (symbol y))) (table (symbol u) (symbol v) (symbol w))))");
 	}
 
 	/**

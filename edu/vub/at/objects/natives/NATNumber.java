@@ -62,7 +62,6 @@ public final class NATNumber extends AGExpression implements ATNumber {
 		javaValue = javaNumber;
 	}
 	
-	
 	public boolean equals(Object other) {
 		return (other instanceof NATNumber) &&
 			   (javaValue == ((NATNumber) other).javaValue);

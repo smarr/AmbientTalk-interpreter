@@ -116,9 +116,10 @@ public final class NATTable extends AGExpression implements ATTable {
 	 * @param scope the frame in which to store the bindings
 	 * @param parameters the formal parameter references (of which the last element may be a 'rest' arg to collect left-over arguments)
 	 * @param arguments the actual arguments, already evaluated
+	 * @param isDefinition if true, define the parameters, if false, assign them instead
 	 * @throws XArityMismatch when the formals don't match the actuals
 	 */
-	public static final void bindArguments(ATSymbol funnam, ATObject scope, ATTable parameters, ATTable arguments) throws NATException {
+	public static final void bindArguments(String funnam, ATObject scope, ATTable parameters, ATTable arguments, boolean isDefinition) throws NATException {
 		ATObject[] pars = parameters.asNativeTable().elements_;
 		ATObject[] args = arguments.asNativeTable().elements_;
 		
@@ -128,7 +129,7 @@ public final class NATTable extends AGExpression implements ATTable {
 			int numMandatoryPars = (pars.length - 1);
 			// if so, check whether at least all mandatory parameters are matched
 			if (args.length < numMandatoryPars)
-				throw new XArityMismatch(funnam.getText().asNativeText().javaValue, numMandatoryPars, args.length);
+				throw new XArityMismatch(funnam, numMandatoryPars, args.length);
 			
 			// bind all parameters except for the last one
 			for (int i = 0; i < numMandatoryPars; i++) {
@@ -142,15 +143,24 @@ public final class NATTable extends AGExpression implements ATTable {
 				restArgs[i] = args[i + numMandatoryPars];
 			}
 			ATSymbol restArgsName = pars[numMandatoryPars].asSplice().getExpression().asSymbol();
-			scope.meta_defineField(restArgsName, new NATTable(restArgs));
+			if (isDefinition)
+				scope.meta_defineField(restArgsName, new NATTable(restArgs));
+			else
+				scope.meta_assignField(restArgsName, new NATTable(restArgs));
 			
 		} else {
 			// regular parameter list: arguments and parameters have to match exactly
 			if (pars.length != args.length)
-				throw new XArityMismatch(funnam.getText().asNativeText().javaValue, pars.length, args.length);	
+				throw new XArityMismatch(funnam, pars.length, args.length);	
 		
-			for (int i = 0; i < pars.length; i++) {
-				scope.meta_defineField(pars[i].asSymbol(), args[i]);
+			if (isDefinition) {
+				for (int i = 0; i < pars.length; i++) {
+				     scope.meta_defineField(pars[i].asSymbol(), args[i]);	
+			    }
+			} else {
+				for (int i = 0; i < pars.length; i++) {
+					scope.meta_assignField(pars[i].asSymbol(), args[i]);	
+				}
 			}
 		}
 	}

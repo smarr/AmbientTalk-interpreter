@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * XArityMismatch.java created on 31-jul-2006 at 13:54:15
+ * ATMultiDefinition.java created on 18-aug-2006 at 10:12:03
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,27 +25,20 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.exceptions;
+package edu.vub.at.objects.grammar;
+
+import edu.vub.at.objects.ATTable;
 
 /**
  * @author tvc
  *
- * XArityMismatch is thrown during function application when actual arguments are bound to formal parameters
- * and there are either too many or too few actual arguments supplied.
+ * The public interface to a multiple definition AG element.
+ * Example:
+ *  <tt>def [x, y] := [1, 2]</tt>
  */
-public final class XArityMismatch extends NATException {
-
-    private static final String _TOO_MANY_ = "Too many arguments supplied for ";
-    private static final String _TOO_FEW_ = "Too few arguments supplied for ";
-    
-	/**
-	 * @param funnam the name of the function to be invoked (for debugging purposes only)
-	 * @param numParameters the number of parameters supplied
-	 * @param numArguments the number of arguments supplied
-	 */
-	public XArityMismatch(String funnam, int numParameters, int numArguments) {
-		super( ((numParameters < numArguments) ? _TOO_MANY_ : _TOO_FEW_)
-				 + funnam + "; expected " + numParameters + ", given " + numArguments);
-	}
-
+public interface ATMultiDefinition extends ATDefinition {
+	
+	public ATTable getParameters();
+	public ATExpression getValue();
+	
 }

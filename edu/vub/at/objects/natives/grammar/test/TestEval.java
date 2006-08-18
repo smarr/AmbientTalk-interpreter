@@ -154,6 +154,16 @@ public class TestEval extends TestCase {
          assertEquals(atThree_, x.meta_select(x, atY_));
 	}
 	
+	public void testMultiAssginment() throws NATException {
+		// def x := 1; def y := 3
+		ctx_.getLexicalScope().meta_defineField(atX_, NATNumber.ONE);
+		ctx_.getLexicalScope().meta_defineField(atY_, atThree_);
+		
+         evalAndCompareTo("[x, y] := [ y, x ]", NATNil._INSTANCE_);
+         assertEquals(atThree_, ctx_.getLexicalScope().meta_lookup(atX_));
+         assertEquals(NATNumber.ONE, ctx_.getLexicalScope().meta_lookup(atY_));
+	}
+	
 	// expressions
 	
 	public void testSymbolReference() throws NATException {
@@ -304,6 +314,14 @@ public class TestEval extends TestCase {
 		evalAndCompareTo("foo: 1 bar: @[2,3]", "[2, 3]");
 		evalAndCompareTo("foo: 1 bar: @[2]", "[2]");
 		evalAndCompareTo("foo: 1 bar: @[]", "[]");
+	}
+	
+	public void testVariableMultiDefinition() throws NATException {
+		// def [x, @y ] := [1, 2, 3, @[4, 5]
+		// => x = 1; y = [2, 3, 4, 5]
+		evalAndCompareTo("def [x, @y ] := [1, 2, 3, @[4, 5]]", NATNil._INSTANCE_);
+		assertEquals(NATNumber.ONE, ctx_.getLexicalScope().meta_lookup(atX_));
+		assertEquals("[2, 3, 4, 5]", ctx_.getLexicalScope().meta_lookup(atY_).meta_print().javaValue);
 	}
 	
 }

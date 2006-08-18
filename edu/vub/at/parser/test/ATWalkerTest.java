@@ -44,9 +44,11 @@ public class ATWalkerTest extends TestCase {
 		testWalker("def f(a,b) { 5 }");
 		testWalker("def foo: x bar: y { 5 }", "def foo:bar:(x,y) { 5 }");
 		testWalker("def t[5] { a }");
+		testWalker("def [x, y] := [y, x]");
 		testWalker("x := 7");
 		testWalker("x[5] := 7");
 		testWalker("o.m := x");
+		testWalker("[x, y] := [y, x]");
 	}
 	
 	public void testExpressionGrammar() {
@@ -91,9 +93,11 @@ public class ATWalkerTest extends TestCase {
 	public void testSplice() {
 		testWalker("def f(x,@y) { 1 }");
 		testWalker("def foo: x bar: @y { 1 }", "def foo:bar:(x, @y) { 1 }");
+		testWalker("[x, @y] := t");
 		testWalker("f(1,@[2,3])");
 		testWalker("foo: 1 bar: @[2,3]", "foo:bar:(1, @[2,3])");
 		testWalker("[x, @[y,z], u, @v]");
+		testWalker("[x, @y] := [u, v, w]");
 	}
 	
 	public void testCurriedInvocations() {

@@ -61,7 +61,8 @@ statement: ("def"! definition)
 // def <name>[size-exp] { <init-expression> } defines and initializes a new table of a given size
 definition!: nam:variable EQL val:expression { #definition = #([AGDEFFIELD,"define-field"], nam, val); }
            | inv:signature LBC bdy:semicolonlist RBC { #definition = #([AGDEFFUN,"define-function"], inv, bdy); }
-           | tbl:variable LBR siz:expression RBR LBC init:expression RBC { #definition = #([AGDEFTABLE,"define-table"], tbl, siz, init); };
+           | tbl:variable LBR siz:expression RBR LBC init:expression RBC { #definition = #([AGDEFTABLE,"define-table"], tbl, siz, init); }
+           | par:parametertable EQL vls:expression { #definition = #([AGMULTIDEF,"multi-def"], par, vls); };
 
 // A function signature can either be a canonical parameter list of the form <fun(a,b,c)>
 // or a keyworded list of the form <foo: a bar: b>
@@ -83,7 +84,8 @@ keywordparam: KEY^ parameter;
 varassignment!: var:variable EQL val:expression { #varassignment = #([AGASSVAR, "var-set"], var, val); };
 
 // an assignment covers both table assignment t[i] := v and field assignment o.m := v
-assignment!: o:operand a:assign_table_or_field[#o] { #assignment = #a; };
+assignment!: (parametertable EQL) => par:parametertable EQL val:expression { #assignment = #([AGMULTIASS,"multi-set"], par, val); }
+           | o:operand a:assign_table_or_field[#o] { #assignment = #a; };
 assign_table_or_field![AST functor]: tbl:tabulation[functor] EQL tvl:expression { #assign_table_or_field = #([AGASSTAB,"table-set"], tbl, tvl); }
                                    | sel:selection[functor]  EQL fvl:expression { #assign_table_or_field = #([AGASSFLD,"field-set"], sel, fvl); };
 
@@ -203,6 +205,9 @@ block!: PIP pars:parameterlist PIP body:semicolonlist RBC
 // Inline syntax for table expressions
 table!: slots:commalist RBR { #table = #slots; };
 
+// syntax for tables that act as the left hand side of multi definitions and assignments
+parametertable!: LBR slots:parameterlist RBR { #parametertable = #slots; };
+
 // Parses a list of expressions separated by commas. 
 // USAGE: canonical function application (arguments) and inline tables
 commalist: argument (COM! argument)* 
@@ -257,10 +262,12 @@ protected AGBEGIN   : "begin";         // AGBegin(TAB stmts)
 protected AGDEFFIELD: "define-field";  // AGDefField(SYM nam, EXP val)
 protected AGDEFFUN  : "define-function";// AGDefFunction(SYM sel, TAB arg, BGN bdy)
 protected AGDEFTABLE: "define-table";  // AGDefTable(SYM tbl, EXP siz, EXP ini)
+protected AGMULTIDEF: "multi-def";     // AGMultiDefinition(TAB par, EXP val)
 // Assignments
 protected AGASSVAR  : "var-set";       // AGAssignField(SYM nam, EXP val)
 protected AGASSTAB  : "table-set";     // AGAssignTable(EXP tbl, EXP idx, EXP val)
 protected AGASSFLD  : "field-set";     // AGAssignField(EXP rcv, SYM fld, EXP val)
+protected AGMULTIASS: "multi-set";     // AGMultiAssignment(TAB par, EXP val)
 // Expressions
 protected AGSND     : "send";          // AGMessageSend(EXP rcv, MSG msg)
 protected AGAPL     : "apply";         // AGApplication(SYM sel, TAB arg)
@@ -492,15 +499,18 @@ definition returns [ATDefinition def]
           : #(AGDEFFIELD nam=symbol val=expression) { def = new AGDefField(nam, val); }
           | #(AGDEFFUN #(AGAPL nam=symbol pars=table) bdy=begin) { def = new AGDefFunction(nam, pars, bdy); }
           | #(AGDEFTABLE nam=symbol idx=expression val=expression) { def = new AGDefTable(nam,idx,val); }
+          | #(AGMULTIDEF pars=table val=expression) { def = new AGMultiDefinition(pars,val); }
           ;
 
 assignment returns [ATAssignment ass]
   { ass = null;
     ATSymbol nam;
-    ATExpression rcv, val, idx; }
+    ATExpression rcv, val, idx;
+    NATTable par; }
           : #(AGASSVAR nam=symbol val=expression) { ass = new AGAssignVariable(nam, val); }
           | #(AGASSTAB #(AGTBL rcv=expression idx=expression) val=expression) { ass = new AGAssignTable(rcv, idx, val); }
           | #(AGASSFLD #(AGSEL rcv=expression nam=symbol) val=expression) { ass = new AGAssignField(rcv, nam, val); }
+          | #(AGMULTIASS par=table val=expression) { ass = new AGMultiAssignment(par, val); }
           ;
 
 expression returns [ATExpression exp]
