@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
+import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -228,6 +229,26 @@ public final class OBJLexicalRoot extends NATNil {
 	 */
 	public ATObject base_reflect_(ATObject reflectee) throws NATException {
 		return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
+	}
+	
+	/* -------------------
+	 * - Unary Operators -
+	 * ------------------- */
+	
+	/**
+	 * The unary ! primitive:
+	 * !b == b.not()
+	 */
+	public ATBoolean base_opnot_(ATBoolean b) throws NATException {
+		return b.base_not();
+	}
+	
+	/**
+	 * The unary - primitive:
+	 * -NBR(n) == NBR(-n)
+	 */
+	public ATNumber base_opmns_(ATNumber n) throws NATException {
+		return NATNumber.atValue(- n.asNativeNumber().javaValue);
 	}
 
 }

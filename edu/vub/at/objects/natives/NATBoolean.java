@@ -83,6 +83,10 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		
 		public NATTrue() { super(true); }
 		
+		public NATText meta_print() throws XTypeMismatch { return NATText.atValue("<true>"); }
+		
+		// base interface for true
+		
 		public ATObject base_ifTrue_(ATClosure clo) throws NATException {
 			return clo.meta_apply(NATTable.EMPTY);
 		}
@@ -95,7 +99,26 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 			return consequent.asClosure().meta_apply(NATTable.EMPTY);
 		}
 		
-		public NATText meta_print() throws XTypeMismatch { return NATText.atValue("<true>"); }
+		public ATBoolean base__opamp_(ATBoolean other) throws NATException {
+			return other; // true & something = something
+		}
+
+		public ATBoolean base__oppls_(ATBoolean other) throws NATException {
+			return this; // true | something = true
+		}
+		
+		public ATBoolean base_and_(ATClosure other) throws NATException {
+			return other.meta_apply(NATTable.EMPTY).asBoolean();
+		}
+		
+		public ATBoolean base_or_(ATClosure other) throws NATException {
+			return this;
+		}
+		
+		public ATBoolean base_not() {
+			return NATFalse._INSTANCE_;
+		}
+		
 	}
 
 	public static class NATFalse extends NATBoolean {
@@ -103,6 +126,10 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		public static NATFalse _INSTANCE_ = new NATFalse();
 		
 		public NATFalse() { super(false); }
+		
+		public NATText meta_print() throws XTypeMismatch { return NATText.atValue("<false>"); }
+
+		// base interface for false
 		
 		public ATObject base_ifTrue_(ATClosure clo) throws NATException {
 			return NATNil._INSTANCE_;
@@ -116,7 +143,25 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 			return alternative.asClosure().meta_apply(NATTable.EMPTY);
 		}
 		
-		public NATText meta_print() throws XTypeMismatch { return NATText.atValue("<false>"); }
+		public ATBoolean base__opamp_(ATBoolean other) throws NATException {
+			return this; // false & something = false
+		}
+
+		public ATBoolean base__oppls_(ATBoolean other) throws NATException {
+			return other; // false | something = something
+		}
+		
+		public ATBoolean base_and_(ATClosure other) throws NATException {
+			return this;
+		}
+		
+		public ATBoolean base_or_(ATClosure other) throws NATException {
+			return other.meta_apply(NATTable.EMPTY).asBoolean();
+		}
+		
+		public ATBoolean base_not() {
+			return NATTrue._INSTANCE_;
+		}
 
 	}
 	
