@@ -27,9 +27,19 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATNil;
+import edu.vub.at.objects.ATNumber;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.natives.grammar.AGExpression;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author tvc
@@ -68,6 +78,84 @@ public final class NATText extends AGExpression implements ATText {
 		
 		public int hashCode() {
 			return javaValue.hashCode();
+		}
+		
+		// base-level interface
+		
+		/**
+		 * Explodes a text string into a table of constinuent characters
+		 */
+		public ATTable explode() throws NATException {
+			ATObject[] chars = new ATObject[javaValue.length()];
+			char[] rawchars = javaValue.toCharArray();
+			for (int i = 0; i < chars.length; i++) {
+				chars[i] = NATText.atValue(Character.toString(rawchars[i]));
+			}
+			return NATTable.atValue(chars);
+		}
+		
+		/**
+		 * Split the string according to the given regular expression.
+		 * For regular expression syntax, see the Java API.
+		 */
+		public ATTable split(ATText regexp) throws NATException {
+			String[] elements = javaValue.split(regexp.asNativeText().javaValue);
+			ATObject[] tbl = new ATObject[elements.length];
+			for (int i = 0; i < elements.length; i++) {
+				tbl[i] = NATText.atValue(elements[i]);
+			}
+			return NATTable.atValue(tbl);
+		}
+		
+		public ATNil find_do_(ATText regexp, ATClosure consumer) throws NATException {
+			 Pattern p = Pattern.compile(regexp.asNativeText().javaValue);
+			 Matcher m = p.matcher(javaValue);
+			 while (m.find()) {
+				 consumer.meta_apply(new NATTable(new ATObject[] { NATText.atValue(m.group()) }));
+			 }
+			 return NATNil._INSTANCE_;
+		}
+		
+		public ATText replace_by_(ATText regexp, ATClosure transformer) throws NATException {
+			 Pattern p = Pattern.compile(regexp.asNativeText().javaValue);
+			 Matcher m = p.matcher(javaValue);
+			 StringBuffer sb = new StringBuffer();
+			 while (m.find()) {
+				 ATObject replacement = transformer.meta_apply(new NATTable(new ATObject[] { NATText.atValue(m.group()) }));
+			     m.appendReplacement(sb, replacement.asNativeText().javaValue);
+			 }
+			 m.appendTail(sb);
+			 return NATText.atValue(sb.toString());
+		}
+		
+		public ATText toUpperCase() {
+			return NATText.atValue(javaValue.toUpperCase());
+		}
+		
+		public ATText toLowerCase() {
+			return NATText.atValue(javaValue.toLowerCase());
+		}
+		
+		public ATNumber length() {
+			return NATNumber.atValue(javaValue.length());
+		}
+		
+		public ATText _oppls_(ATText other) throws NATException {
+			return NATText.atValue(javaValue + other.asNativeText().javaValue);
+		}
+		
+		public ATNumber _opltx__opeql__opgtx_(ATText other) throws NATException {
+			int cmp = javaValue.compareTo(other.asNativeText().javaValue);
+			if (cmp > 0)
+			    return NATNumber.ONE;
+			else if (cmp < 0)
+				return NATNumber.MONE;
+			else
+				return NATNumber.ZERO;
+		}
+		
+		public ATBoolean _optil__opeql_(ATText other) throws NATException {
+			return NATBoolean.atValue(javaValue.matches(other.asNativeText().javaValue));
 		}
 
 }

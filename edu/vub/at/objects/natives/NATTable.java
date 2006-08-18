@@ -38,7 +38,9 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.JavaClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
@@ -193,39 +195,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		}
 	}
 	
-	public ATNumber base_getLength() { return NATNumber.atValue(elements_.length); }
-
-	public ATObject base_at(ATNumber index) throws NATException {
-		return elements_[extractIndex(index)];
-	}
-
-	public ATObject base_atPut(ATNumber index, ATObject value) throws NATException {
-		elements_[extractIndex(index)] = value;
-		return value;
-	}
-	
-	public ATBoolean base_isEmpty() {
-		return NATBoolean.atValue(elements_.length == 0);
-	}
-	
-	public ATNil base_each_(ATClosure clo) throws NATException {
-		for (int i = 0; i < elements_.length; i++) {
-			clo.meta_apply(new NATTable(new ATObject[] { elements_[i] }));
-		}
-		return NATNil._INSTANCE_;
-	}
-	
-	public ATObject base_collect_(ATClosure clo) throws NATException {
-		if (this == EMPTY) return EMPTY;
-		
-		ATObject[] result = new ATObject[elements_.length];
-		for (int i = 0; i < elements_.length; i++) {
-			result[i] = clo.meta_apply(new NATTable(new ATObject[] { elements_[i] }));
-		}
-		return new NATTable(result);
-	}
-	
-	public ATTable asTable() { return this; }
+public ATTable asTable() { return this; }
 	
 	public NATTable asNativeTable() { return this; }
 	
@@ -283,6 +253,68 @@ public final class NATTable extends AGExpression implements ATTable {
 	
 	public NATText meta_print() throws XTypeMismatch {
 		return NATTable.printElements(this, "[", ", ","]");
+	}
+	
+	public ATNumber base_getLength() { return NATNumber.atValue(elements_.length); }
+
+	public ATObject base_at(ATNumber index) throws NATException {
+		return elements_[extractIndex(index)];
+	}
+
+	public ATObject base_atPut(ATNumber index, ATObject value) throws NATException {
+		elements_[extractIndex(index)] = value;
+		return value;
+	}
+	
+	public ATBoolean base_isEmpty() {
+		return NATBoolean.atValue(elements_.length == 0);
+	}
+	
+	public ATNil base_each_(ATClosure clo) throws NATException {
+		for (int i = 0; i < elements_.length; i++) {
+			clo.meta_apply(new NATTable(new ATObject[] { elements_[i] }));
+		}
+		return NATNil._INSTANCE_;
+	}
+
+	public ATObject base_map_(ATClosure clo) throws NATException {
+		if (this == EMPTY) return EMPTY;
+		
+		ATObject[] result = new ATObject[elements_.length];
+		for (int i = 0; i < elements_.length; i++) {
+			result[i] = clo.meta_apply(new NATTable(new ATObject[] { elements_[i] }));
+		}
+		return new NATTable(result);
+	}
+	
+	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws NATException {
+		ATObject total = init;
+		for (int i = 0; i < elements_.length; i++) {
+			total = clo.meta_apply(new NATTable(new ATObject[] { total, elements_[i] }));
+		}
+		return total;
+	}
+	
+	public ATText base_implode() throws NATException {
+		StringBuffer buff = new StringBuffer("");
+		for (int i = 0; i < elements_.length; i++) {
+			buff.append(elements_[i].asNativeText().javaValue);
+		}
+		return NATText.atValue(buff.toString());
+	}
+	
+	/**
+	 * tab.select(start, stop) == els = [ ] ; start.to: stop do: { |i| els << tab[i] } ; els
+	 */
+	public ATTable base_select(ATNumber first, ATNumber last) throws NATException {
+		final LinkedList selection = new LinkedList();
+		first.base_to_do_(last, new JavaClosure(this) {
+			public ATObject meta_apply(ATTable args) throws NATException {
+			    selection.add(base_at(args.base_at(NATNumber.ONE).asNumber()));
+			    return NATNil._INSTANCE_;
+			}
+		});
+		return NATTable.atValue((ATObject[]) selection.toArray(new ATObject[selection.size()]));
 	}
 	
 	protected int extractIndex(ATNumber atIndex) throws NATException {

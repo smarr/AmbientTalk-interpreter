@@ -313,7 +313,7 @@ protected ADDCHAR: ( '+' | '-')
 protected MULCHAR: ( '*' | '/' | '\\' | '&' )
 	;
 	
-protected POWCHAR: ( '^' | '!' | '?')
+protected POWCHAR: ( '^' | '!' | '?' | '%' )
 	;
 	
 protected OPRCHAR: CMPCHAR | ADDCHAR | MULCHAR | POWCHAR
@@ -334,7 +334,7 @@ protected NBR: (DIGIT)+
 protected FRC: NBR (SCALE | DOT NBR (SCALE)?)
 	;
 	
-NBR_OR_FRC: ( NBR EXPONENT ) => FRC  { $setType(FRC); }
+NBR_OR_FRC options { paraphrase = "a number or fraction"; }: ( NBR EXPONENT ) => FRC  { $setType(FRC); }
           | ( NBR DOT ) => FRC       { $setType(FRC); }
           |   NBR                    { $setType(NBR); }
     ;
@@ -342,13 +342,13 @@ NBR_OR_FRC: ( NBR EXPONENT ) => FRC  { $setType(FRC); }
 protected CMP: CMPCHAR (OPRCHAR)*
 	;
 
-ADD: ADDCHAR (OPRCHAR)*
+ADD options { paraphrase = "an additive operator"; }: ADDCHAR (OPRCHAR)*
 	;
 
-MUL: MULCHAR (OPRCHAR)*
+MUL options { paraphrase = "a multiplicative operator"; }: MULCHAR (OPRCHAR)*
 	;
 
-POW: POWCHAR (OPRCHAR)*
+POW options { paraphrase = "an exponential operator"; }: POWCHAR (OPRCHAR)*
     ;
 
 protected NAM: LETTER (DIGIT | LETTER)*
@@ -357,7 +357,7 @@ protected NAM: LETTER (DIGIT | LETTER)*
 protected KEY: NAM COLON
     ;
 
-NAM_OR_KEY: ( NAM COLON ) => KEY  { $setType(KEY); }
+NAM_OR_KEY options { paraphrase = "a name or a keyword"; }: ( NAM COLON ) => KEY  { $setType(KEY); }
           |   NAM                 { $setType(NAM); }
     ;
 
@@ -370,44 +370,45 @@ NEWLINE:  ( "\r\n" | '\r' | '\n')
             $setType(Token.SKIP); }
     ;
     
-LPR: '(';
-RPR: ')';
+LPR options { paraphrase = "a left parenthesis"; }: '(';
+RPR options { paraphrase = "a right parenthesis"; }: ')';
 
-LBR: '[';
-RBR: ']';
+LBR options { paraphrase = "a left bracket"; }: '[';
+RBR options { paraphrase = "a right bracket"; }: ']';
 
-LBC: '{';
-RBC: '}';
+LBC options { paraphrase = "a left brace"; }: '{';
+RBC options { paraphrase = "a right brace"; }: '}';
 
-COM: ',';
-SMC: ';';
+COM options { paraphrase = "a comma"; }: ',';
+SMC options { paraphrase = "a semicolon"; }: ';';
 
-EQL: ":=";
-DOT: '.';
+EQL options { paraphrase = "an assignment"; }: ":=";
+DOT options { paraphrase = "a selection"; }: '.';
 protected ARW: "<-";
-PIP: '|';
+PIP options { paraphrase = "a block argument list"; }: '|';
 
-BQU: '`';
-HSH: '#';
-CAT: '@';
+BQU options { paraphrase = "a quotation"; }: '`';
+HSH options { paraphrase = "an unquotation"; }: '#';
+CAT options { paraphrase = "a splice"; }: '@';
 
-CMP_OR_ARW: ( "<-" ) => ARW  { $setType(ARW); }
+CMP_OR_ARW options { paraphrase = "a comparator or asynchronous send"; }
+          : ( "<-" ) => ARW  { $setType(ARW); }
           |   CMP            { $setType(CMP); }
           ;
 
 
-TXT : '"' (ESC|~('"'|'\\'|'\n'|'\r'))* '"'
+TXT options { paraphrase = "a text string"; }: '"' (ESC|~('"'|'\\'|'\n'|'\r'))* '"'
 	;
 
     // Single-line comments
-SL_COMMENT
+SL_COMMENT options { paraphrase = "a single-line comment"; }
 	:	"//" WHITESPACE
 		(~('\n'|'\r'))* ('\n'|'\r'('\n')?)
 		{$setType(Token.SKIP); newline();}
 	;
 
 // multiple-line comments
-ML_COMMENT
+ML_COMMENT options { paraphrase = "a multi-line comment"; }
 	:	"/*" WHITESPACE
 		(	/*	'\r' '\n' can be matched in one alternative or by matching
 				'\r' in one iteration and '\n' in another. I am trying to

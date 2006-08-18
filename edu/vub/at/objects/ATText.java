@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.natives.NATText;
@@ -40,5 +41,20 @@ import edu.vub.at.objects.natives.NATText;
 public interface ATText extends ATExpression {
 
 	public NATText asNativeText() throws XTypeMismatch;
+
+	// base-level interface
+	
+	public ATTable explode() throws NATException;
+	public ATTable split(ATText separator) throws NATException;
+	public ATNil find_do_(ATText regexp, ATClosure consumer) throws NATException;
+	public ATText replace_by_(ATText regexp, ATClosure transformer) throws NATException;
+	
+	public ATText toUpperCase();
+	public ATText toLowerCase();
+	public ATNumber length();
+	
+	public ATText _oppls_(ATText other) throws NATException;
+	public ATNumber _opltx__opeql__opgtx_(ATText other) throws NATException;
+	public ATBoolean _optil__opeql_(ATText other) throws NATException;
 	
 }

@@ -39,6 +39,10 @@ import edu.vub.at.objects.natives.NATTable;
  */
 public interface ATTable extends ATExpression {
 
+	public NATTable asNativeTable();
+	
+	// base-level interface
+	
 	public ATNumber base_getLength();
 	public ATObject base_at(ATNumber index) throws NATException;
 	public ATObject base_atPut(ATNumber index, ATObject value) throws NATException;
@@ -56,7 +60,25 @@ public interface ATTable extends ATExpression {
 	 * Map a closure over each element of the table, resulting in a new table.
 	 * result := [ tab ].map: { |v| ... }
 	 */
-	public ATObject base_collect_(ATClosure clo) throws NATException;
+	public ATObject base_map_(ATClosure clo) throws NATException;
+
+	/**
+	 * Collect all elements of the table by combining them using the given closure.
+	 * The first time closure is called, the initialization element is passed as first argument.
+	 * result := [ tab ].with: 0 collect: { |total, next| total + next }
+	 */
+	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws NATException;
 	
-	public NATTable asNativeTable();
+	/**
+	 * Implode the receiver table of characters into a text string
+	 */
+	public ATText base_implode() throws NATException;
+	
+	/**
+	 * Select a subrange of the table:
+	 * idx: 1  2  3  4  5
+	 *     [a, b, c, d, e].select(2,4) => [b, c, d]
+	 */
+	public ATTable base_select(ATNumber start, ATNumber stop) throws NATException;
+	
 }

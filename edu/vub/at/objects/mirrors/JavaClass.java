@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
@@ -43,6 +44,7 @@ import edu.vub.at.objects.natives.NATTable;
  * @author smostinc
  *
  * JavaClass wraps a Java class under the guise of a table of JavaMethods.
+ * @deprecated is this class ever used?
  */
 public class JavaClass extends NATNil implements ATTable {
 
@@ -90,6 +92,38 @@ public class JavaClass extends NATNil implements ATTable {
 	}
 
 	public NATTable asNativeTable() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.vub.at.objects.ATTable#base_implode()
+	 */
+	public ATText base_implode() throws NATException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.vub.at.objects.ATTable#base_map_(edu.vub.at.objects.ATClosure)
+	 */
+	public ATObject base_map_(ATClosure clo) throws NATException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.vub.at.objects.ATTable#base_select(edu.vub.at.objects.ATNumber, edu.vub.at.objects.ATNumber)
+	 */
+	public ATTable base_select(ATNumber start, ATNumber stop) throws NATException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.vub.at.objects.ATTable#base_with_collect_(edu.vub.at.objects.ATObject, edu.vub.at.objects.ATClosure)
+	 */
+	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws NATException {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -33,9 +33,9 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATFraction;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
+import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.grammar.AGExpression;
 
 /**
  * @author tvc
@@ -43,10 +43,11 @@ import edu.vub.at.objects.natives.grammar.AGExpression;
  * The native implementation of an AmbientTalk number.
  * A number is implemented by a Java int.
  */
-public final class NATNumber extends AGExpression implements ATNumber {
+public final class NATNumber extends NATNumeric implements ATNumber {
 	
 	public static final NATNumber ZERO = new NATNumber(0);
 	public static final NATNumber ONE = new NATNumber(1);
+	public static final NATNumber MONE = new NATNumber(-1);
 	
 	public final int javaValue;
 	
@@ -75,32 +76,12 @@ public final class NATNumber extends AGExpression implements ATNumber {
         return NATText.atValue(String.valueOf(javaValue));
 	}
 	
+	// contract with NATNumeric
+	protected double getJavaValue() { return javaValue; }
+	
 	/* -----------------------------------
 	 * - base-level interface to numbers -
 	 * ----------------------------------- */
-	
-	// trigonometric functions
-	
-	/**
-	 * NBR(n).cos() => FRC(Math.cos(n))
-	 */
-	public ATFraction base_cos() {
-		return NATFraction.atValue(Math.cos(javaValue));
-	}
-	
-	/**
-	 * NBR(n).sin() => FRC(Math.sin(n))
-	 */
-	public ATFraction base_sin() {
-		return NATFraction.atValue(Math.sin(javaValue));
-	}
-	
-	/**
-	 * NBR(n).tan() => FRC(Math.tan(n))
-	 */
-	public ATFraction base_tan() {
-		return NATFraction.atValue(Math.tan(javaValue));
-	}
 	
 	// iteration constructs
 	
@@ -179,12 +160,12 @@ public final class NATNumber extends AGExpression implements ATNumber {
 		// x *** y == x ** y+1
 		int stop = end.asNativeNumber().javaValue;
 		if (javaValue < stop)
-		    return this.base__opmul__opmul_(end.base_inc());
+		    return this.base__opmul__opmul_(end.base_inc().asNumber());
 		else
-			return this.base__opmul__opmul_(end.base_dec());
+			return this.base__opmul__opmul_(end.base_dec().asNumber());
 	}
 
-	// miscellaneous arithmetic functions
+	// Number arithmetic operations
 	
 	/**
 	 * NBR(n).inc() => NBR(n+1)
@@ -208,27 +189,6 @@ public final class NATNumber extends AGExpression implements ATNumber {
 	}
 	
 	/**
-	 * NBR(n).log() => FRC(log(e,n))
-	 */
-	public ATFraction base_log() {
-		return NATFraction.atValue(Math.log(javaValue));
-	}
-	
-	/**
-	 * NBR(n).sqrt() => FRC(Math.sqrt(n))
-	 */
-	public ATFraction base_sqrt() {
-		return NATFraction.atValue(Math.sqrt(javaValue));
-	}
-	
-	/**
-	 * NBR(n).expt(NBR(e)) => FRC(Math.pow(n,e))
-	 */
-	public ATFraction base_expt(ATFraction frc) throws NATException {
-		return NATFraction.atValue(Math.pow(javaValue, frc.asNativeFraction().javaValue));
-	}
-	
-	/**
 	 * NBR(start) ?? NBR(stop) => FRC(n) where n chosen randomly in [ start, stop [
 	 */
 	public ATFraction base__opque__opque_(ATNumber nbr) throws NATException {
@@ -236,6 +196,91 @@ public final class NATNumber extends AGExpression implements ATNumber {
 		double rnd = Math.random(); // 0 <= rnd < 1.0
 		double frc = (rnd * (stop - javaValue)) + javaValue;
 		return NATFraction.atValue(frc);
+	}
+	
+	/**
+	 * NBR(n) % NBR(r) => NBR(n % r)
+	 */
+	public ATNumber base__oprem_(ATNumber n) throws NATException {
+		return NATNumber.atValue(javaValue % n.asNativeNumber().javaValue);
+	}
+	
+	/**
+	 * NBR(n) / NBR(d) => NBR(n / d)
+	 */
+	public ATNumber base__opdiv__opdiv_(ATNumber n) throws NATException {
+		return NATNumber.atValue(javaValue / n.asNativeNumber().javaValue);
+	}
+	
+	// Numeric arithmetic operations
+	
+	// addition +
+	public ATNumeric base__oppls_(ATNumeric other) throws NATException {
+		return other.base_addNumber(this);
+	}
+	public ATNumeric base_addNumber(ATNumber other) throws NATException {
+		return NATNumber.atValue(other.asNativeNumber().javaValue + javaValue);
+	}
+	public ATNumeric base_addFraction(ATFraction other) throws NATException {
+		return NATFraction.atValue(other.asNativeFraction().javaValue + javaValue);
+	}
+	
+	// subtraction -
+	public ATNumeric base__opmns_(ATNumeric other) throws NATException {
+		return other.base_subtractNumber(this);
+	}
+	public ATNumeric base_subtractNumber(ATNumber other) throws NATException {
+		return NATNumber.atValue(other.asNativeNumber().javaValue - javaValue);
+	}
+	public ATNumeric base_subtractFraction(ATFraction other) throws NATException {
+		return NATFraction.atValue(other.asNativeFraction().javaValue - javaValue);
+	}
+	
+	// multiplication *
+	public ATNumeric base__optms_(ATNumeric other) throws NATException {
+		return other.base_timesNumber(this);
+	}
+	public ATNumeric base_timesNumber(ATNumber other) throws NATException {
+		return NATNumber.atValue(other.asNativeNumber().javaValue * javaValue);
+	}
+	public ATNumeric base_timesFraction(ATFraction other) throws NATException {
+		return NATFraction.atValue(other.asNativeFraction().javaValue * javaValue);
+	}
+	
+	// division /
+	public ATNumeric base__opdiv_(ATNumeric other) throws NATException {
+		return other.base_divideNumber(this);
+	}
+	public ATNumeric base_divideNumber(ATNumber other) throws NATException {
+		return NATFraction.atValue((other.asNativeNumber().javaValue * 1.0) / javaValue);
+	}
+	public ATNumeric base_divideFraction(ATFraction other) throws NATException {
+		return NATFraction.atValue(other.asNativeFraction().javaValue / javaValue);
+	}
+	
+	// comparison: generalized equality <=>
+	public ATNumeric base__opltx__opeql__opgtx_(ATNumeric other) throws NATException {
+		return other.base_gequalsNumber(this);
+	}
+	public ATNumeric base_gequalsNumber(ATNumber other) throws NATException {
+		int n = other.asNativeNumber().javaValue;
+		if (n < javaValue) {
+			return NATNumber.MONE; // -1
+		} else if (n > javaValue) {
+			return NATNumber.ONE;  // +1
+		} else {
+			return NATNumber.ZERO; // 0
+		}
+	}
+	public ATNumeric base_gequalsFraction(ATFraction other) throws NATException {
+		double n = other.asNativeFraction().javaValue;
+		if (n < javaValue) {
+			return NATNumber.MONE; // -1
+		} else if (n > javaValue) {
+			return NATNumber.ONE;  // +1
+		} else {
+			return NATNumber.ZERO; // 0
+		}
 	}
 	
 }

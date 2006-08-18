@@ -84,6 +84,7 @@ public final class Reflection {
 	 *   eql -> =
 	 *   til -> ~
 	 *   que -> ?
+	 *   rem -> %
 	 * - any underscores (_) are replaced by colons (:)
 	 */
 	public static final ATSymbol downSelector(String jSelector) {
@@ -123,6 +124,7 @@ public final class Reflection {
 	 *   = -> eql
 	 *   ~ -> til
 	 *   ? -> que
+	 *   % -> rem
 	 */
 	public static final String upSelector(ATSymbol atSelector) throws NATException {
 		// : -> _
@@ -494,6 +496,7 @@ public final class Reflection {
 		  case 'l': if (code.equals("ltx")) { return "<"; } else break;
 		  case 'e': if (code.equals("eql")) { return "="; } else break;
 		  case 'q': if (code.equals("que")) { return "?"; } else break;
+		  case 'r': if (code.equals("rem")) { return "%"; } else break;
 		}
 		return "_op" + code + "_"; // no match, return original input
 	}
@@ -513,6 +516,7 @@ public final class Reflection {
 		  case '=': return "eql";
 		  case '~': return "til";
 		  case '?': return "que";
+		  case '%': return "rem";
 		  default: return symbol; // no match, return original input
 		}	
 	}

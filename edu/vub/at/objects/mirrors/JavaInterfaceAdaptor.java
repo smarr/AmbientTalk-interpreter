@@ -100,12 +100,12 @@ public class JavaInterfaceAdaptor {
 			switch(applicable.length) {
 				case 0:
 					throw new XSelectorNotFound(AGSymbol.alloc(jSelector), (ATObject)jReceiver);
-				case 1:
+				case 1: // TODO: will have to convert some NATObjects to proper ATXXX argument interfaces using mirages!
 					return applicable[0].invoke(jReceiver, jArguments);
 				default:
 					throw new XIllegalOperation("Dynamic dispatching on overloaded methods not yet implemented");
 			}
-		} catch (Exception e) {
+		} catch (Exception e) { //TODO: you're catching your own XIllegalOperation here...
 			// Exceptions during method invocation imply that the requested method was
 			// not found in the interface. Hence a XTypeMismatch is thrown to signal 
 			// that the object could not respond to the request.

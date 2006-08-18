@@ -5,7 +5,7 @@
 - Natives
 
 - Reflection
-* Review and fix mirrors and mirages (add/remove "base" and "meta" prefix)
+* Review and fix mirrors and mirages (add/remove "base" and "meta" prefix consistently to all methods in AT interfaces)
 
 - Core language evaluator
 * remove as much .asNative...() casts from the code as possible. Each such cast precludes use of custom AT objects.

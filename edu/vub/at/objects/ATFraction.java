@@ -27,14 +27,22 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.objects.grammar.ATExpression;
 
 /**
  * @author tvc
  *
  * The public interface to a native AmbientTalk fraction (a floating point value).
- * Extends the ATExpression interface becuase a fraction may be output by the parser as a literal.
  */
-public interface ATFraction extends ATExpression {
+public interface ATFraction extends ATNumeric {
 
+	// base-level interface
+	
+	public ATFraction base_inc();
+	public ATFraction base_dec();
+	public ATFraction base_abs();
+	
+	public ATNumber base_round();
+	public ATNumber base_floor();
+	public ATNumber base_ceiling();
+	
 }
