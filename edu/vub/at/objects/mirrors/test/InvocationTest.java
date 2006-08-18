@@ -242,7 +242,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 		evaluateInput(
 				"def message       := .at();" +
 				"message.arguments := [closures.length];" +
-				"def result        := closure ~ message;" +
+				"def result        := closures ~ message;" +
 				"result()",
 				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
 	}

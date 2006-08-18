@@ -361,4 +361,22 @@ public interface ATObject extends ATConversions {
 	 */
 	public NATText meta_print() throws XTypeMismatch;
 	
+	/* -------------------------------
+	 * - Base Level Object interface -
+	 * -------------------------------
+	 */
+	
+	/**
+	 * The universal ~ messaging operator.
+	 * o ~ msg sends the first-class message msg to the object o by invoking
+	 * (reflect: msg).sendTo(self)
+	 */
+	public ATObject base__optil_(ATMessage msg) throws NATException;
+	
+	/**
+	 * The pointer equality == operator.
+	 * OBJ(o1) == OBJ(o2) => BLN(o1.equals(o2))
+	 */
+	public ATBoolean base__opeql__opeql_(ATObject other) throws NATException;
+	
 }

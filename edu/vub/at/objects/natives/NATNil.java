@@ -409,9 +409,12 @@ public class NATNil implements ATNil {
 		}
 	}
 	
+	public ATObject base__optil_(ATMessage msg) throws NATException {
+		return msg.meta_sendTo(this);
+	}
+	
 	public ATBoolean base__opeql__opeql_(ATObject comparand) {
-		return NATBoolean.atValue(
-				this.equals(comparand));
+		return NATBoolean.atValue(this.equals(comparand));
 	}
 
 }
