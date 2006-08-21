@@ -114,14 +114,19 @@ public class InvocationTest extends ReflectiveAccessTest {
 	 * base-level methods on native types in AmbientTalk.
 	 */
 	public void testBaseInvocation() {
-		evaluateInput(
-				"true.ifTrue: success;" +
-				"true.ifFalse: fail;" +
-				"true.ifTrue: success ifFalse: fail;" +
-				"false.ifTrue: fail;" +
-				"false.ifFalse: success;" +
-				"false.ifTrue: fail ifFalse: success",
-				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		try {
+			evaluateInput(
+					"true.ifTrue: success;" +
+					"true.ifFalse: fail;" +
+					"true.ifTrue: success ifFalse: fail;" +
+					"false.ifTrue: fail;" +
+					"false.ifFalse: success;" +
+					"false.ifTrue: fail ifFalse: success",
+					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}
 	}
 
 	/**
@@ -164,18 +169,28 @@ public class InvocationTest extends ReflectiveAccessTest {
 	 *
 	 */
 	public void testBaseFieldAccess() {
-		evaluateInput(
-				"def accessor := closures.at;" +
-				"def expanded := accessor(closures.length);" +
-				"def coated := closures[closures.length];" +
-				"expanded();" +
-				"coated()",
-				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		try {
+			evaluateInput(
+					"def accessor := closures.at;" +
+					"def expanded := accessor(closures.length);" +
+					"def coated := closures[closures.length];" +
+					"expanded();" +
+					"coated()",
+					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}
 		
-		evaluateInput(
-				"closures.at(closures.length)();" +
-				"closures[closures.length]()",
-				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		try {
+			evaluateInput(
+					"closures.at(closures.length)();" +
+					"closures[closures.length]()",
+					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}
 		
 	}
 
@@ -239,11 +254,16 @@ public class InvocationTest extends ReflectiveAccessTest {
 	 *
 	 */
 	public void testBaseFieldAssignment() {
-		evaluateInput(
-				"def message       := .at();" +
-				"message.arguments := [closures.length];" +
-				"def result        := closures ~ message;" +
-				"result()",
-				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		try {
+			evaluateInput(
+					"def message       := .at();" +
+					"message.arguments := [closures.length];" +
+					"def result        := closures ~ message;" +
+					"result()",
+					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}
 	}
 }

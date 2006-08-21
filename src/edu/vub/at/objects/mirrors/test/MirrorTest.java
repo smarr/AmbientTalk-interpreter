@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.mirrors.NATMirrorFactory;
+import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
@@ -45,6 +46,42 @@ public class MirrorTest extends ReflectiveAccessTest {
 		junit.swingui.TestRunner.run(MirrorTest.class);
 	}	
 	
+	public void testErroneousMirrorUsage() {
+		
+		// Test setup : create a new scope and define a mirror inside it.
+		NATCallframe testScope = new NATCallframe(lexicalRoot);
+		
+		try {
+			evaluateInput(
+					"def mirror  := at.mirrors.Factory.createMirror(true);",
+					new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			// success
+		}
+		
+		// Invoking base-level reflectee behaviour on a mirror.
+		try {
+			evaluateInput(
+					"mirror.ifTrue: fail;",
+					new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			// success
+		}
+
+		// Mirror consistency : return values are mirrors too.
+		try {
+			evaluateInput(
+					"def responds    := mirror.respondsTo( symbol(\"ifTrue:\") );" +
+					"responds.ifTrue: fail ifFalse: fail",
+					new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			// success
+		}		
+		
+	};
+	
+	
+	
 	public void testJavaMirrorBaseRelation() {
 		ATMirror mirror = NATMirrorFactory._INSTANCE_.
 			base_createMirror(True);
@@ -52,13 +89,18 @@ public class MirrorTest extends ReflectiveAccessTest {
 	}
 	
 	public void testMirrorBaseRelation() {
-		evaluateInput(
-				"def mirror  := at.mirrors.Factory.createMirror(true);" +
-				"(true == mirror.getBase())" +
-				"  .ifTrue: success ifFalse: fail;" +
-				"(true == mirror.base)" +
-				"  .ifTrue: success ifFalse: fail",
-				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));		
+		try {
+			evaluateInput(
+					"def mirror  := at.mirrors.Factory.createMirror(true);" +
+					"(true == mirror.getBase())" +
+					"  .ifTrue: success ifFalse: fail;" +
+					"(true == mirror.base)" +
+					"  .ifTrue: success ifFalse: fail",
+					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}		
 	}	
 	
 	public void testJavaMirrorInvocation() {
@@ -76,13 +118,18 @@ public class MirrorTest extends ReflectiveAccessTest {
 		}
 	}
 			
-//	public void testMirrorInvocation() {
-//		evaluateInput(
-//				"def trueMirror  := at.mirrors.Factory.createMirror(true);" +
-//				"def responds    := trueMirror.respondsTo(`(ifTrue:));" +
-//				"responds.ifTrue: success ifFalse: fail",
-//				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));		
-//	}
+	public void testMirrorInvocation() {
+		try {
+			evaluateInput(
+					"def trueMirror  := at.mirrors.Factory.createMirror(true);" +
+					"def responds    := trueMirror.respondsTo( symbol(\"ifTrue:\") );" +
+					"responds.getBase().ifTrue: success ifFalse: fail",
+					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}		
+	}
 	
 	public void testJavaMirrorFieldAccess() {
 		try {
@@ -117,13 +164,18 @@ public class MirrorTest extends ReflectiveAccessTest {
 		}
 	}
 			
-//	public void testMirrorFieldAccess() {
-//		evaluateInput(
-//				"def msgSendMirror  := at.mirrors.Factory.createMirror(" +
-//				"  `(success.at(3)));" +
-//				"def receiver       := msgSendMirror.receiver;" +
-//				"msgSendMirror.receiver := closures;",
-//				new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));		
-//	}
+	public void testMirrorFieldAccess() {
+		try {
+			evaluateInput(
+					"def msgSendMirror  := at.mirrors.Factory.createMirror(" +
+					"  `(success.at(3)));" +
+					"def receiver       := msgSendMirror.receiver;" +
+					"msgSendMirror.receiver := closures;",
+					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}		
+	}
 	
 }

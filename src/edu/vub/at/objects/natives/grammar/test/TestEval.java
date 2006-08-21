@@ -1,11 +1,11 @@
 package edu.vub.at.objects.natives.grammar.test;
 
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
@@ -25,7 +25,7 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.parser.test.ATParserTest;
+import edu.vub.at.parser.NATParser;
 
 import junit.framework.TestCase;
 
@@ -61,7 +61,8 @@ public class TestEval extends TestCase {
 
 	public ATObject evalAndReturn(String input) {
         try {
-			ATAbstractGrammar ptree = ATParserTest.parseProgram(input);
+			ATAbstractGrammar ptree = 
+				NATParser._INSTANCE_.base_parse(NATText.atValue(input));
 			return ptree.meta_eval(ctx_);
 		} catch (XParseError e) {
 			fail("Parse error: "+e.getMessage());
