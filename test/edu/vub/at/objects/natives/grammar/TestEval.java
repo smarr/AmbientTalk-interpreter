@@ -1,4 +1,4 @@
-package edu.vub.at.objects.natives.grammar.test;
+package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.NATException;

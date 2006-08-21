@@ -1,4 +1,4 @@
-package edu.vub.at.objects.natives.test;
+package edu.vub.at.objects.natives;
 
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
