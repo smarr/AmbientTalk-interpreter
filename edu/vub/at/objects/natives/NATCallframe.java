@@ -31,7 +31,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.objects.ATAsyncMessage;
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;

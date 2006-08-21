@@ -5,7 +5,7 @@ import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.ATAsyncMessage;
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;

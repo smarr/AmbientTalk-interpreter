@@ -29,7 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAsyncMessage;
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -47,149 +47,149 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * method lookup starts (lookupFrame_) and the late-bound receiver.
  */
 public class NATSuperObject extends NATNil implements ATObject {
-	
-	private ATObject receiver_;
-	private ATObject lookupFrame_;
-	
-	public NATSuperObject(ATObject receiver, ATObject lookupFrame) {
-		receiver_ = receiver;
-		lookupFrame_ = lookupFrame;
-	}
 
-	/* ------------------------------
-	 * -- Message Sending Protocol --
-	 * ------------------------------ */
+    private ATObject receiver_;
+    private ATObject lookupFrame_;
 
-	public ATNil meta_send(ATAsyncMessage msg) throws NATException {
-		return lookupFrame_.meta_send(msg);
-	}
+    public NATSuperObject(ATObject receiver, ATObject lookupFrame) {
+        receiver_ = receiver;
+        lookupFrame_ = lookupFrame;
+    }
 
-	/**
-	 * Invocation is treated differently for a SuperObject reference. While the method
-	 * lookup will start in the encapsulated lookupFrame_, the receiver will not be bound
-	 * to 'lookupFrame_', as would normally be the case, but to receiver_, implementing
-	 * 'late binding of self'.
-	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
-		return lookupFrame_.meta_invoke(receiver_, selector, arguments);
-	}
+    /* ------------------------------
+      * -- Message Sending Protocol --
+      * ------------------------------ */
 
-	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
-		return lookupFrame_.meta_respondsTo(selector);
-	}
+    public ATNil meta_send(ATAsyncMessage msg) throws NATException {
+        return lookupFrame_.meta_send(msg);
+    }
 
-	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
-		return lookupFrame_.meta_doesNotUnderstand(selector);
-	}
+    /**
+     * Invocation is treated differently for a SuperObject reference. While the method
+     * lookup will start in the encapsulated lookupFrame_, the receiver will not be bound
+     * to 'lookupFrame_', as would normally be the case, but to receiver_, implementing
+     * 'late binding of self'.
+     */
+    public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
+        return lookupFrame_.meta_invoke(receiver_, selector, arguments);
+    }
 
-	/* ------------------------------------------
-	 * -- Slot accessing and mutating protocol --
-	 * ------------------------------------------ */
-	
-	/**
-	 * Selection is treated differently for a SuperObject reference. While the dynamic
-	 * lookup will start in the encapsulated lookupFrame_, the receiver will not be bound
-	 * to 'lookupFrame_', as would normally be the case, but to receiver_, implementing
-	 * 'late binding of self'.
-	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
-		return lookupFrame_.meta_select(receiver_, selector);
-	}
+    public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
+        return lookupFrame_.meta_respondsTo(selector);
+    }
 
-	public ATObject meta_lookup(ATSymbol selector) throws NATException {
-		return lookupFrame_.meta_lookup(selector);
-	}
+    public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
+        return lookupFrame_.meta_doesNotUnderstand(selector);
+    }
 
-	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
-		return lookupFrame_.meta_defineField(name, value);
-	}
-	
-	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
-		return lookupFrame_.meta_assignVariable(name, value);
-	}
+    /* ------------------------------------------
+      * -- Slot accessing and mutating protocol --
+      * ------------------------------------------ */
 
-	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
-		return lookupFrame_.meta_assignField(name, value);
-	}
-	
-	/* ------------------------------------
-	 * -- Extension and cloning protocol --
-	 * ------------------------------------ */
+    /**
+     * Selection is treated differently for a SuperObject reference. While the dynamic
+     * lookup will start in the encapsulated lookupFrame_, the receiver will not be bound
+     * to 'lookupFrame_', as would normally be the case, but to receiver_, implementing
+     * 'late binding of self'.
+     */
+    public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
+        return lookupFrame_.meta_select(receiver_, selector);
+    }
 
-	public ATObject meta_clone() throws NATException {
-		return lookupFrame_.meta_clone();
-	}
+    public ATObject meta_lookup(ATSymbol selector) throws NATException {
+        return lookupFrame_.meta_lookup(selector);
+    }
 
-	public ATObject meta_new(ATTable initargs) throws NATException {
-		return lookupFrame_.meta_new(initargs);
-	}
-	
-	public ATObject meta_extend(ATClosure code) throws NATException {
-		return lookupFrame_.meta_extend(code);
-	}
+    public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+        return lookupFrame_.meta_defineField(name, value);
+    }
 
-	public ATObject meta_share(ATClosure code) throws NATException {
-		return lookupFrame_.meta_share(code);
-	}
-	
-	/* ---------------------------------
-	 * -- Structural Access Protocol  --
-	 * --------------------------------- */
-	
-	public ATNil meta_addField(ATField field) throws NATException {
-		return lookupFrame_.meta_addField(field);
-	}
+    public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
+        return lookupFrame_.meta_assignVariable(name, value);
+    }
 
-	public ATNil meta_addMethod(ATMethod method) throws NATException {
-		return lookupFrame_.meta_addMethod(method);
-	}
+    public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
+        return lookupFrame_.meta_assignField(name, value);
+    }
 
-	public ATField meta_getField(ATSymbol selector) throws NATException {
-		return lookupFrame_.meta_getField(selector);
-	}
+    /* ------------------------------------
+      * -- Extension and cloning protocol --
+      * ------------------------------------ */
 
-	public ATMethod meta_getMethod(ATSymbol selector) throws NATException {
-		return lookupFrame_.meta_getMethod(selector);
-	}
+    public ATObject meta_clone() throws NATException {
+        return lookupFrame_.meta_clone();
+    }
 
-	public ATTable meta_listFields() throws NATException {
-		return lookupFrame_.meta_listFields();
-	}
+    public ATObject meta_new(ATTable initargs) throws NATException {
+        return lookupFrame_.meta_new(initargs);
+    }
 
-	public ATTable meta_listMethods() throws NATException {
-		return lookupFrame_.meta_listMethods();
-	}	
+    public ATObject meta_extend(ATClosure code) throws NATException {
+        return lookupFrame_.meta_extend(code);
+    }
 
-	/* ---------------------
-	 * -- Mirror Fields   --
-	 * --------------------- */
-	
-	public ATObject getDynamicParent() {
-		return lookupFrame_.getDynamicParent();
-	}
+    public ATObject meta_share(ATClosure code) throws NATException {
+        return lookupFrame_.meta_share(code);
+    }
 
-	public ATObject getLexicalParent() {
-		return lookupFrame_.getLexicalParent();
-	}
+    /* ---------------------------------
+      * -- Structural Access Protocol  --
+      * --------------------------------- */
 
-	/* ---------------------------------
-	 * -- Accessors for JUnit tests   --
-	 * --------------------------------- */	
-	
-	public ATObject getLookupFrame() {
-		return this.lookupFrame_;
-	}
+    public ATNil meta_addField(ATField field) throws NATException {
+        return lookupFrame_.meta_addField(field);
+    }
 
-	public ATObject getReceiver() {
-		return this.receiver_;
-	}
-	
-	/* -------------------------
-	 * -- Evaluation Protocol --
-	 * ------------------------- */
-	
-	public NATText meta_print() throws XTypeMismatch {
-		return lookupFrame_.meta_print();
-	}
+    public ATNil meta_addMethod(ATMethod method) throws NATException {
+        return lookupFrame_.meta_addMethod(method);
+    }
+
+    public ATField meta_getField(ATSymbol selector) throws NATException {
+        return lookupFrame_.meta_getField(selector);
+    }
+
+    public ATMethod meta_getMethod(ATSymbol selector) throws NATException {
+        return lookupFrame_.meta_getMethod(selector);
+    }
+
+    public ATTable meta_listFields() throws NATException {
+        return lookupFrame_.meta_listFields();
+    }
+
+    public ATTable meta_listMethods() throws NATException {
+        return lookupFrame_.meta_listMethods();
+    }
+
+    /* ---------------------
+      * -- Mirror Fields   --
+      * --------------------- */
+
+    public ATObject getDynamicParent() {
+        return lookupFrame_.getDynamicParent();
+    }
+
+    public ATObject getLexicalParent() {
+        return lookupFrame_.getLexicalParent();
+    }
+
+    /* ---------------------------------
+      * -- Accessors for JUnit tests   --
+      * --------------------------------- */
+
+    public ATObject getLookupFrame() {
+        return this.lookupFrame_;
+    }
+
+    public ATObject getReceiver() {
+        return this.receiver_;
+    }
+
+    /* -------------------------
+      * -- Evaluation Protocol --
+      * ------------------------- */
+
+    public NATText meta_print() throws XTypeMismatch {
+        return lookupFrame_.meta_print();
+    }
 
 }

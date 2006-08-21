@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATExpression.java created on 26-jul-2006 at 12:40:07
+ * BHActor.java created on Aug 21, 2006
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,13 +25,25 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.grammar;
+
+package edu.vub.at.actors.beholders;
+
+import edu.vub.at.actors.events.EActorDelete;
+import edu.vub.at.actors.events.EMsgProcess;
+import edu.vub.at.actors.events.EMailboxAdd;
+import edu.vub.at.actors.events.EMailboxRemove;
 
 /**
- * @author tvc
- *
- * ATExpression is the common interface of all expression abstract grammar elements.
+ *  
  */
-public interface ATExpression extends ATStatement {
+public interface BHActor extends ATBeholder
+{
 
+    public void onMsgProcess(EMsgProcess e);
+
+
+    public void onMailboxAdd(EMailboxAdd e);
+    public void onMailboxRemove(EMailboxRemove e);
+
+    public void onDeleted(EActorDelete e);
 }

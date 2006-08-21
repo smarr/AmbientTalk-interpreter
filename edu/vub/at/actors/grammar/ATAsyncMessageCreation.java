@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATExpression.java created on 26-jul-2006 at 12:40:07
+ * ATAsyncMessageCreation.java created on Jul 24, 2006 at 7:30:17 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,13 +25,34 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.grammar;
+package edu.vub.at.actors.grammar;
+
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.grammar.ATMessageCreation;
 
 /**
- * @author tvc
+ * @author smostinc
  *
- * ATExpression is the common interface of all expression abstract grammar elements.
+ * An ATAsyncMessageCreation instance is created whenever an asynchronous message send 
+ * <tt>o <- m()</tt> is performed, or when a first-class async msg is created using
+ * code such as <tt><- m()</tt>.
+ * 
+ * This interface does not describe the interface to the actual first-class message (that is the ATAsyncMessage interface).
+ * It only describes the interface to the AG component representing such a message.
  */
-public interface ATExpression extends ATStatement {
+public interface ATAsyncMessageCreation extends ATMessageCreation {
 
+    /**
+     * Messages always have a selector, a symbol denoting the field or method that
+     * needs to be sought for.
+     * @return a symbol denoting the selector
+     */
+    public ATSymbol getSelector();
+
+    /**
+     * Messages may optionally have arguments if they represent invocations.
+     * @return the arguments passed to the invocation
+     */
+    public ATTable getArguments();
 }

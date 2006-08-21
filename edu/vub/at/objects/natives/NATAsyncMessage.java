@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.objects.ATAsyncMessage;
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -43,43 +43,43 @@ import edu.vub.at.objects.grammar.ATSymbol;
  */
 public final class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 
-	private final ATObject sender_;
-	private ATObject receiver_ = NATNil._INSTANCE_;
-	
-	// TODO SM: Maybe we could include some abstract factory pattern to allow people to
-	//      intercept message creation and supply their own objects instead ;-)
-	// ---> The abstract factory is currently called ATMessageFactory and is situated in
-	//      the package edu.vub.at.actors.hooks along with a ATSendStrategy. The goal
-	//      is to have a vat point to one of each in this package. APPROVE?
-	
-	/**
-	 * @param sdr the sender of the asynchronous message
-	 * @param sel the selector of the asynchronous message
-	 * @param arg the arguments of the asynchronous message
-	 */
-	public NATAsyncMessage(ATObject sdr, ATSymbol sel, ATTable arg) {
-		super(sel, arg);
-		sender_ = sdr;
-	}
+    private final ATObject sender_;
+    private ATObject receiver_ = NATNil._INSTANCE_;
 
-	public ATObject getSender() {
-		return sender_;
-	}
+    // TODO SM: Maybe we could include some abstract factory pattern to allow people to
+    //      intercept message creation and supply their own objects instead ;-)
+    // ---> The abstract factory is currently called ATMessageFactory and is situated in
+    //      the package edu.vub.at.actors.hooks along with a ATSendStrategy. The goal
+    //      is to have a vat point to one of each in this package. APPROVE?
 
-	public ATObject getReceiver() {
-		return receiver_;
-	}
+    /**
+     * @param sdr the sender of the asynchronous message
+     * @param sel the selector of the asynchronous message
+     * @param arg the arguments of the asynchronous message
+     */
+    public NATAsyncMessage(ATObject sdr, ATSymbol sel, ATTable arg) {
+        super(sel, arg);
+        sender_ = sdr;
+    }
 
-	/**
-	 * To evaluate an asynchronous message send, an asynchronous invoke is performed
-	 * on the receiver object.
-	 * 
-	 * @return NIL, by default. Overridable by the receiver.
-	 */
-	public ATObject meta_sendTo(ATObject receiver) throws NATException {
-		// fill in the receiver first
-		this.receiver_ = receiver;
-		return receiver.meta_send(this);
-	}
+    public ATObject getSender() {
+        return sender_;
+    }
+
+    public ATObject getReceiver() {
+        return receiver_;
+    }
+
+    /**
+     * To evaluate an asynchronous message send, an asynchronous invoke is performed
+     * on the receiver object.
+     *
+     * @return NIL, by default. Overridable by the receiver.
+     */
+    public ATObject meta_sendTo(ATObject receiver) throws NATException {
+        // fill in the receiver first
+        this.receiver_ = receiver;
+        return receiver.meta_send(this);
+    }
 
 }

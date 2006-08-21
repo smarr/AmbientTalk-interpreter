@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATExpression.java created on 26-jul-2006 at 12:40:07
+ * BHVirtualMachine.java created on Aug 21, 2006
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,13 +25,22 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.grammar;
+
+package edu.vub.at.actors.beholders;
+
+import edu.vub.at.actors.events.EVMDisjoin;
+import edu.vub.at.actors.events.EVMJoin;
+import edu.vub.at.actors.events.EActorCreate;
+import edu.vub.at.actors.events.EActorDelete;
 
 /**
- * @author tvc
- *
- * ATExpression is the common interface of all expression abstract grammar elements.
+ *  
  */
-public interface ATExpression extends ATStatement {
+public interface BHVirtualMachine extends ATBeholder
+{
+    public void onPeerVMJoin(EVMJoin e);
+    public void onPeerVMDisjoin(EVMDisjoin e);
 
+    public void onActorCreate(EActorCreate e);
+    public void onActorDelete(EActorDelete e);
 }

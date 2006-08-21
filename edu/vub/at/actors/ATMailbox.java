@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATExpression.java created on 26-jul-2006 at 12:40:07
+ * ATMailbox.java created on Aug 21, 2006
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,13 +25,23 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.grammar;
+
+package edu.vub.at.actors;
+
+import edu.vub.at.objects.grammar.ATSymbol;
+
+import java.util.Iterator;
 
 /**
- * @author tvc
- *
- * ATExpression is the common interface of all expression abstract grammar elements.
+ *  
  */
-public interface ATExpression extends ATStatement {
+public interface ATMailbox
+{
+
+    public ATActor getActor();
+
+    public ATSymbol getName();
+
+    public Iterator getIterator();
 
 }
