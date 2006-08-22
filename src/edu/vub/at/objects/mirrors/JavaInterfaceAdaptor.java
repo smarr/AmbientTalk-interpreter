@@ -41,6 +41,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Vector;
 
+import junit.framework.AssertionFailedError;
+
 /**
  * @author smostinc
  *
@@ -105,7 +107,21 @@ public class JavaInterfaceAdaptor {
 				default:
 					throw new XIllegalOperation("Dynamic dispatching on overloaded methods not yet implemented");
 			}
-		} catch (Exception e) { //TODO: you're catching your own XIllegalOperation here...
+		} catch (NATException nate) {
+			// NATExceptions raised mean that the requested method is either overloaded or
+			// does not exist. These are ambienttalk exceptions and may be safely rethrown.
+			throw nate;
+		} catch (InvocationTargetException ite) { // XXX for the purpose of supporting junit tests
+			// An InvocationTargetException may be thrown when a junit components fails
+			// therefore we check the cause to propagate tyhe correct exception.
+			if(ite.getCause() instanceof AssertionFailedError) {
+				throw (AssertionFailedError)ite.getCause();
+			} else {
+				throw new XTypeMismatch(
+						"Could not invoke method with selector " + jSelector.toString() + " on the given object.",
+						ite, (ATObject)jReceiver);				
+			}
+		} catch (Exception e) {
 			// Exceptions during method invocation imply that the requested method was
 			// not found in the interface. Hence a XTypeMismatch is thrown to signal 
 			// that the object could not respond to the request.

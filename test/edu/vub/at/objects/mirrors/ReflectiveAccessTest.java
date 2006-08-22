@@ -87,6 +87,13 @@ public class ReflectiveAccessTest extends TestCase {
 		}				
 	};
 	
+	protected final NATClosure echo_ = new JavaClosure(null) {
+		public ATObject meta_apply(ATTable arguments) throws NATException {
+			System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
+			return NATNil._INSTANCE_;
+		}						
+	};
+	
 	protected final ATBoolean True		= NATBoolean._TRUE_;
 	protected final ATBoolean False		= NATBoolean._FALSE_;
 	
@@ -114,10 +121,13 @@ public class ReflectiveAccessTest extends TestCase {
 		lexicalRoot = new NATObject(NATNil._INSTANCE_);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("success"), success);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("fail"), fail);
+		lexicalRoot.meta_defineField(AGSymbol.alloc("echo:"), echo_);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("symbol"), symbol);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("true"), True);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("false"), False);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("closures"), closures);
+		
+		lexicalRoot.meta_defineField(AGSymbol.alloc("symIfTrue"), AGSymbol.alloc("ifTrue:"));
 		
 		ATObject mirrors = new NATObject(lexicalRoot);
 		mirrors.meta_defineField(AGSymbol.alloc("Factory"), NATMirrorFactory._INSTANCE_);

@@ -162,7 +162,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		public ATBoolean base_not() {
 			return NATTrue._INSTANCE_;
 		}
-
+		
 	}
 	
 	public static final NATTrue _TRUE_ = NATTrue._INSTANCE_;

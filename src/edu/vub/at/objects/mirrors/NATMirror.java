@@ -32,15 +32,19 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * <p>NATMirror represents  an ambienttalk object which is capable of offering the java 
@@ -96,7 +100,7 @@ public class NATMirror extends NATNil implements ATMirror {
 	public ATObject base_getBase() { return principal_; }
 
 	/** @return true */
-	public boolean isMirror() { return true; }
+	public ATBoolean base_isMirror() { return NATBoolean._TRUE_; }
 	
 	/** @return this */
 	public ATMirror asMirror() { return this; }
@@ -144,7 +148,7 @@ public class NATMirror extends NATNil implements ATMirror {
 									principal_, // self
 									jSelector,
 									arguments)));
-		} catch (XTypeMismatch e) {
+		} catch (XSelectorNotFound e) {
 			// Principal does not have a corresponding meta_level method
 			// try for a base_level method of the mirror itself.
 			return super.meta_invoke(receiver, atSelector, arguments);
@@ -190,7 +194,7 @@ public class NATMirror extends NATNil implements ATMirror {
 									principal_, 
 									jSelector)));
 			
-		} catch (XTypeMismatch e) {
+		} catch (XSelectorNotFound e) {
 			try {
 				jSelector = Reflection.upMetaLevelSelector(atSelector);
 
@@ -226,7 +230,7 @@ public class NATMirror extends NATNil implements ATMirror {
 					principal_,
 					jSelector,
 					new ATObject[] { value.asMirror().base_getBase() });
-		} catch (XTypeMismatch e) {
+		} catch (XSelectorNotFound e) {
 			// Principal does not have a corresponding meta_level method
 			// OR the passed value is not a mirror object
 			// try for a base_level method of the mirror itself.
@@ -287,5 +291,12 @@ public class NATMirror extends NATNil implements ATMirror {
 	public ATObject meta_share(ATClosure code) throws NATException {
 		return createChild(code, NATObject._SHARES_A_);
 	}
-
+	
+	/* ---------------------------------
+	 * -- Abstract Grammar Protocol   --
+	 * --------------------------------- */
+		
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<mirror>");
+	}
 }

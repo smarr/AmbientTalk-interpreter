@@ -270,7 +270,7 @@ public final class Reflection {
 	 */
 	public static final ATObject downInvocation(ATObject atRcvr, String jSelector, ATObject[] jArgs) {
 		
-		// preliminary
+		// TODO preliminary
 		try {
 			return downObject(JavaInterfaceAdaptor.invokeJavaMethod(atRcvr.getClass(), atRcvr, jSelector, jArgs));
 		} catch (NATException e) {

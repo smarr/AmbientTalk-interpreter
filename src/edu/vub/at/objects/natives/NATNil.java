@@ -91,7 +91,7 @@ public class NATNil implements ATNil {
     public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws NATException {
         String jSelector = Reflection.upBaseLevelSelector(atSelector);
 
-        return Reflection.downObject(Reflection.upInvocation(this, receiver, jSelector, arguments));
+	        return Reflection.downObject(Reflection.upInvocation(this, receiver, jSelector, arguments));
     }
 
     /**
@@ -308,8 +308,8 @@ public class NATNil implements ATNil {
         return false;
     }
 
-    public boolean isMirror() {
-        return false;
+    public ATBoolean base_isMirror() {
+        return NATBoolean._FALSE_;
     }
 
     public boolean isNativeBoolean() {

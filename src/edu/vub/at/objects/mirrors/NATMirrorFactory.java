@@ -32,12 +32,12 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATNil;
 
 /**
- * @author smostinc
- *
  * The NATMirrorFactory allows reifying an java-level implementation object which 
  * represents an ambienttalk object to be reified to the ambienttalk level. This 
  * implies that a new representation needs to be created which will stand in for the
  * shell surrounding the java object at the ambienttalk level.
+ * 
+ * @author smostinc
  */
 public class NATMirrorFactory extends NATNil {
 	

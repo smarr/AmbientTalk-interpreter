@@ -29,6 +29,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.mirrors.NATMirrorFactory;
@@ -46,48 +47,88 @@ public class MirrorTest extends ReflectiveAccessTest {
 		junit.swingui.TestRunner.run(MirrorTest.class);
 	}	
 	
-	public void testErroneousMirrorUsage() {
-		
-		// Test setup : create a new scope and define a mirror inside it.
-		NATCallframe testScope = new NATCallframe(lexicalRoot);
+	/**
+	 * This test goes over all abstract grammar elements and tests their accessors
+	 * for fields. If all works well, the test transforms one abstract syntax tree
+	 * into another one. The former does not care for stratified access whereas the
+	 * latter one does. 
+	 */
+	public void testAGMirrorInterface() {
+		System.out.println(" `( def [ mirror, statified ] := [ ]  })");
+	}
+	
+	/**
+	 * This test creates a mirror and attempts to use it in a non-stratified way.
+	 * The test assumes failure if these attempts succeed, and continues if they
+	 * result in the proper exception. The following tests are performed :
+	 * 
+	 * - Invoking base-level reflectee behaviour on a mirror
+	 * - Return values of meta_operations are mirrors
+	 * - Field selection from a mirror results in a mirror
+	 * - Field assignment on a mirror with a non-mirror value
+	 *
+	 */
+	public void testStratification() { 
 		
 		try {
-			evaluateInput(
-					"def mirror  := at.mirrors.Factory.createMirror(true);",
-					new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
-		} catch (NATException e) {
-			// success
-		}
-		
-		// Invoking base-level reflectee behaviour on a mirror.
-		try {
-			evaluateInput(
-					"mirror.ifTrue: fail;",
-					new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
-		} catch (NATException e) {
-			// success
-		}
+			// Test setup : create a new scope and define a mirror inside it.
+			NATCallframe testScope = new NATCallframe(lexicalRoot);
+			
+			try {
+				evaluateInput(
+						"def mirror  := at.mirrors.Factory.createMirror(true);",
+						new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
+			} catch (NATException e) {
+				fail("exception : could not create a mirror : " + e);
+			}
+			
+			// Invoking base-level reflectee behaviour on a mirror.
+			try {
+				evaluateInput(
+						"mirror.ifTrue: fail;" +
+						"fail()",
+						new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
+			} catch (XSelectorNotFound e) {
+				// the method meta_ifTrue on NATBoolean does not exist
+				// the method base_ifTrue on NATMirror does not exist
+				// success
+			}
 
-		// Mirror consistency : return values are mirrors too.
-		try {
-			evaluateInput(
-					"def responds    := mirror.respondsTo( symbol(\"ifTrue:\") );" +
-					"responds.ifTrue: fail ifFalse: fail",
-					new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
+			// Mirror consistency : return values are mirrors too.
+			try {
+				evaluateInput(
+						"def responds    := mirror.respondsTo( symbol(\"ifTrue:\") );" +
+						"(responds.isMirror())" +
+						"   .ifTrue: success ifFalse: fail;" +
+						"responds.ifTrue: fail ifFalse: fail",
+						new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
+			} catch (XSelectorNotFound e) {
+				// meta_ifTrue_ifFalse_ is not a method of NATBoolean
+				// base_ifTrue_ifFalse_ is not a method of NATMirror
+				// success
+			}
 		} catch (NATException e) {
-			// success
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}		
 		
 	};
 	
 	
-	
+	/**
+	 * Tests the correctness of the up-down relation in Java : 
+	 * - down(up(o)) == o
+	 */
 	public void testJavaMirrorBaseRelation() {
 		ATMirror mirror = NATMirrorFactory._INSTANCE_.
 			base_createMirror(True);
 		assertEquals(True, mirror.base_getBase());
 	}
 	
+	/**
+	 * Tests the correctness of the up-down relation in AmbientTalk : 
+	 * - down(up(o)) == o
+	 */
 	public void testMirrorBaseRelation() {
 		try {
 			evaluateInput(
@@ -122,8 +163,9 @@ public class MirrorTest extends ReflectiveAccessTest {
 		try {
 			evaluateInput(
 					"def trueMirror  := at.mirrors.Factory.createMirror(true);" +
-					"def responds    := trueMirror.respondsTo( symbol(\"ifTrue:\") );" +
-					"responds.getBase().ifTrue: success ifFalse: fail",
+					"def responds    := trueMirror.respondsTo( symIfTrue );" +
+					"def base        := responds.base;" +
+					"base.ifTrue: success ifFalse: fail",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
 		} catch (NATException e) {
 			e.printStackTrace();
@@ -149,7 +191,8 @@ public class MirrorTest extends ReflectiveAccessTest {
 			
 			receiver.base_getBase().asClosure().meta_apply(NATTable.EMPTY);
 			
-			msgSendMirror.meta_assignField(AGSymbol.alloc("receiver"), closures);
+			msgSendMirror.meta_assignField(AGSymbol.alloc("receiver"), 
+					NATMirrorFactory._INSTANCE_.base_createMirror(closures));
 			
 			ATMirror result = (ATMirror)msgSendMirror.meta_invoke(
 					msgSendMirror,
@@ -170,7 +213,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 					"def msgSendMirror  := at.mirrors.Factory.createMirror(" +
 					"  `(success.at(3)));" +
 					"def receiver       := msgSendMirror.receiver;" +
-					"msgSendMirror.receiver := closures;",
+					"msgSendMirror.receiver := at.mirrors.Factory.createMirror(closures);",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
 		} catch (NATException e) {
 			e.printStackTrace();

@@ -58,7 +58,7 @@ public interface ATConversions {
 	public boolean isUnquoteSplice();
 	public boolean isSplice();
 	public boolean isMethod();
-	public boolean isMirror();
+	public ATBoolean base_isMirror();
 	
 	public ATClosure   asClosure() throws XTypeMismatch;
 	public ATSymbol    asSymbol() throws XTypeMismatch;
