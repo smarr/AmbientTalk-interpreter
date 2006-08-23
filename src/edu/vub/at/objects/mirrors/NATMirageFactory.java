@@ -66,17 +66,70 @@ class MirageInvocationHandler implements InvocationHandler {
 	
 	/**
 	 * Reify and forward the received method to the denoted principal.
+	 * 
+	 * mirage.meta_xxx(args) should be transformed into mirrorrepr_.meta_invoke(xxx, [args])
+	 * mirage.meta_getxxx() should be transformed into mirrorrepr_.meta_select(xxx)
+	 * mirage.meta_setxxx(arg) should be transformed into mirrorrepr_.meta_assign(xxx, arg)
+	 * mirage.base_xxx(args) should be transformed into mirrorrepr_.meta_invoke(invoke, [xxx, [args]])
+	 * mirage.base_getxxx() should be transformed into mirrorrepr_.meta_invoke(select, [xxx])
+	 * mirage.base_setxxx(arg) should be transformed into mirrorrepr_.meta_invoke(assign, [xxx, arg])
+	 * 
 	 * @param proxy - the dynamic proxy created from this invocation handler
 	 * @param method - the method as invoked by the interpreter
 	 * @param args - a table of arguments
 	 */
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		// TODO check the meta insert, guess it should be - meta_ instead of +
-		// TODO tom: shouldn't it be as follows?
-		//  mirage.meta_xxx(args) should be forwarded to the mirrorRepresentation as is, i.e. mirrorrepr_.meta_xxx(args)
-		//  mirage.base_xxx(args) should be transformed into mirrorrepr_.meta_invoke(xxx, [args])
-		//  mirage.base_getxxx() should be transformed into mirrorrepr_.meta_select(xxx)
-		//  mirage.base_setxxx(arg) should be transformed into mirrorrepr_.meta_assign(xxx, arg)
+		
+		String name = method.getName();
+		
+		if (name.startsWith("meta_")) {
+			if(name.startsWith("meta_get")) {
+				mirrorRepresentation_.meta_select(
+						mirrorRepresentation_,
+						AGSymbol.alloc(name.replaceFirst("meta_get", "")));
+			} 
+			
+			else if(name.startsWith("meta_set")) {
+				mirrorRepresentation_.meta_assignField(
+						AGSymbol.alloc(name.replaceFirst("meta_set", "")),
+						(ATObject)args[0]);
+			} 
+			
+			else /* if(name.startsWith("meta_")) */ {
+				mirrorRepresentation_.meta_invoke(
+						mirrorRepresentation_,
+						AGSymbol.alloc(name.replaceFirst("meta_", "")),
+						new NATTable((ATObject[])args));
+			}
+		} else if (name.startsWith("base_")) {
+			if(name.startsWith("base_get")) {
+				mirrorRepresentation_.meta_invoke(
+						mirrorRepresentation_,
+						AGSymbol.alloc("select"),
+						new NATTable(new ATObject[] {
+								AGSymbol.alloc(name.replaceFirst("base_get", "")),
+								new NATTable((ATObject[])args)}));
+			} 
+			
+			else if(name.startsWith("base_set")) {
+				mirrorRepresentation_.meta_invoke(
+						mirrorRepresentation_,
+						AGSymbol.alloc("assignField"),
+						new NATTable(new ATObject[] {
+								AGSymbol.alloc(name.replaceFirst("base_set", "")),
+								new NATTable((ATObject[])args)}));
+			} 
+			
+			else /* if(name.startsWith("base_")) */ {
+				mirrorRepresentation_.meta_invoke(
+						mirrorRepresentation_,
+						AGSymbol.alloc("invoke"),
+						new NATTable(new ATObject[] {
+								AGSymbol.alloc(name.replaceFirst("base_", "")),
+								new NATTable((ATObject[])args)}));
+			}			
+		}
+		
 		ATSymbol selector = Reflection.downMetaLevelSelector(method.getName());
 		ATTable arguments = new NATTable(args);
 		return mirrorRepresentation_.meta_invoke(mirrorRepresentation_, selector, arguments);
