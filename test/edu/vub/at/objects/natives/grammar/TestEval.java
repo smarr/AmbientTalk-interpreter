@@ -1,10 +1,9 @@
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -14,7 +13,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosure;
-import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
@@ -22,17 +20,11 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATSuperObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.grammar.AGBegin;
-import edu.vub.at.objects.natives.grammar.AGSplice;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.parser.NATParser;
-
-import junit.framework.TestCase;
 
 /**
  * Tests the ATObject.meta_eval(ATContext) method for different kinds of abstract grammar elements.
  */
-public class TestEval extends TestCase {
+public class TestEval extends AmbientTalkTest {
 
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(TestEval.class);
@@ -44,52 +36,6 @@ public class TestEval extends TestCase {
 	private final AGSymbol atZ_ = AGSymbol.alloc(NATText.atValue("z"));
 	private final AGSymbol atM_ = AGSymbol.alloc(NATText.atValue("m"));
 	private final AGSymbol atFooBar_ = AGSymbol.alloc(NATText.atValue("foo:bar:"));
-	
-	private ATContext ctx_;
-	
-	protected void setUp() throws Exception {
-		ATObject root = new NATObject(NATNil._INSTANCE_); // object with no dyn or lex parent
-		ATObject supr = new NATObject(root); // supr has root as lex parent
-		ATObject self = new NATObject(supr, root, NATObject._SHARES_A_); // self has root as lex parent and supr as dyn parent
-		ATObject scope = new NATObject(self); // scope has no dyn parent and is nested within self
-		ctx_ = new NATContext(scope, self, supr);
-	}
-
-	protected void tearDown() throws Exception {
-		ctx_ = null;
-	}
-
-	public ATObject evalAndReturn(String input) {
-        try {
-			ATAbstractGrammar ptree = 
-				NATParser._INSTANCE_.base_parse(NATText.atValue(input));
-			return ptree.meta_eval(ctx_);
-		} catch (XParseError e) {
-			fail("Parse error: "+e.getMessage());
-		} catch (NATException e) {
-			e.printStackTrace();
-			fail("Eval error: "+e.getMessage());
-		}
-		return null;
-	}
-	
-	public void evalAndCompareTo(String input, ATObject output) {
-		ATObject result = evalAndReturn(input);
-		if (result != null) {
-			assertEquals(output, result);
-		}
-	}
-	
-	public void evalAndCompareTo(String input, String output) {
-		try {
-			ATObject result = evalAndReturn(input);
-			if (result != null) {
-				assertEquals(output, result.meta_print().javaValue);
-			}
-		} catch (XTypeMismatch e) {
-			fail(e.getMessage());
-		}
-	}
 
 	// statements
 	

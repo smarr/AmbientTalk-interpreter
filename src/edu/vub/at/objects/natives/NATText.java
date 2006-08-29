@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -40,6 +41,7 @@ import edu.vub.at.objects.natives.grammar.AGExpression;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author tvc
@@ -85,7 +87,7 @@ public final class NATText extends AGExpression implements ATText {
 		/**
 		 * Explodes a text string into a table of constinuent characters
 		 */
-		public ATTable explode() throws NATException {
+		public ATTable base_explode() throws NATException {
 			ATObject[] chars = new ATObject[javaValue.length()];
 			char[] rawchars = javaValue.toCharArray();
 			for (int i = 0; i < chars.length; i++) {
@@ -98,8 +100,14 @@ public final class NATText extends AGExpression implements ATText {
 		 * Split the string according to the given regular expression.
 		 * For regular expression syntax, see the Java API.
 		 */
-		public ATTable split(ATText regexp) throws NATException {
-			String[] elements = javaValue.split(regexp.asNativeText().javaValue);
+		public ATTable base_split(ATText regexp) throws NATException {
+			String[] elements = null;
+			 try {
+				 elements = javaValue.split(regexp.asNativeText().javaValue);
+			 } catch (PatternSyntaxException e) {
+				throw new XIllegalArgument("Illegal argument to split: " + e.getMessage());
+			 }
+			
 			ATObject[] tbl = new ATObject[elements.length];
 			for (int i = 0; i < elements.length; i++) {
 				tbl[i] = NATText.atValue(elements[i]);
@@ -107,8 +115,15 @@ public final class NATText extends AGExpression implements ATText {
 			return NATTable.atValue(tbl);
 		}
 		
-		public ATNil find_do_(ATText regexp, ATClosure consumer) throws NATException {
-			 Pattern p = Pattern.compile(regexp.asNativeText().javaValue);
+		public ATNil base_find_do_(ATText regexp, ATClosure consumer) throws NATException {
+			 Pattern p = null;
+			 
+			 try {
+				p = Pattern.compile(regexp.asNativeText().javaValue);
+			 } catch (PatternSyntaxException e) {
+				throw new XIllegalArgument("Illegal argument to find:do: " + e.getMessage());
+			 }
+			 
 			 Matcher m = p.matcher(javaValue);
 			 while (m.find()) {
 				 consumer.meta_apply(new NATTable(new ATObject[] { NATText.atValue(m.group()) }));
@@ -116,8 +131,15 @@ public final class NATText extends AGExpression implements ATText {
 			 return NATNil._INSTANCE_;
 		}
 		
-		public ATText replace_by_(ATText regexp, ATClosure transformer) throws NATException {
-			 Pattern p = Pattern.compile(regexp.asNativeText().javaValue);
+		public ATText base_replace_by_(ATText regexp, ATClosure transformer) throws NATException {
+			 Pattern p = null;
+			 
+			 try {
+				p = Pattern.compile(regexp.asNativeText().javaValue);
+			 } catch (PatternSyntaxException e) {
+				throw new XIllegalArgument("Illegal argument to replace:by: " + e.getMessage());
+			 }
+			 
 			 Matcher m = p.matcher(javaValue);
 			 StringBuffer sb = new StringBuffer();
 			 while (m.find()) {
@@ -128,23 +150,23 @@ public final class NATText extends AGExpression implements ATText {
 			 return NATText.atValue(sb.toString());
 		}
 		
-		public ATText toUpperCase() {
+		public ATText base_toUpperCase() {
 			return NATText.atValue(javaValue.toUpperCase());
 		}
 		
-		public ATText toLowerCase() {
+		public ATText base_toLowerCase() {
 			return NATText.atValue(javaValue.toLowerCase());
 		}
 		
-		public ATNumber length() {
+		public ATNumber base_length() {
 			return NATNumber.atValue(javaValue.length());
 		}
 		
-		public ATText _oppls_(ATText other) throws NATException {
+		public ATText base__oppls_(ATText other) throws NATException {
 			return NATText.atValue(javaValue + other.asNativeText().javaValue);
 		}
 		
-		public ATNumber _opltx__opeql__opgtx_(ATText other) throws NATException {
+		public ATNumber base__opltx__opeql__opgtx_(ATText other) throws NATException {
 			int cmp = javaValue.compareTo(other.asNativeText().javaValue);
 			if (cmp > 0)
 			    return NATNumber.ONE;
@@ -154,8 +176,12 @@ public final class NATText extends AGExpression implements ATText {
 				return NATNumber.ZERO;
 		}
 		
-		public ATBoolean _optil__opeql_(ATText other) throws NATException {
-			return NATBoolean.atValue(javaValue.matches(other.asNativeText().javaValue));
+		public ATBoolean base__optil__opeql_(ATText other) throws NATException {
+			try {
+				return NATBoolean.atValue(javaValue.matches(other.asNativeText().javaValue));
+			} catch (PatternSyntaxException e) {
+				throw new XIllegalArgument("Illegal argument to ~=: " + e.getMessage());
+			}
 		}
 
 }

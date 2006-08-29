@@ -3,6 +3,7 @@
 * ensure meta_print is overridden in each NAT class.
 
 - Natives
+* write unit tests for the native base-level methods of FRC, TXT, NBR, TAB
 
 - Reflection
 * Review and fix mirrors and mirages (add/remove "base" and "meta" prefix consistently to all methods in AT interfaces)
@@ -36,3 +37,5 @@ meta-level and should be renamed to defineField. Similarly, meta_assignField sho
 variants: meta_assignField(ATField f, ATObject val) and assignField(ATSymbol sel, ATObject val).
 The problem then becomes: ATObject interface only supports the meta_... variants, meaning that
 the evaluation code will require an .isNativeObject() -> .asNativeObject().defineField(...) check.
+
+* clean up the bindArguments function: use lambda abstraction for the ugly defineField/assignField dichotomy

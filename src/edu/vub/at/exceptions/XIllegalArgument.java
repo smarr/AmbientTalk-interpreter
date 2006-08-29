@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATText.java created on 26-jul-2006 at 15:18:43
+ * XIllegalArgument.java created on 29-aug-2006 at 16:23:43
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,36 +25,18 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
-
-import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.natives.NATText;
+package edu.vub.at.exceptions;
 
 /**
  * @author tvc
  *
- * The public interface to a native AmbientTalk string (a string of characters).
- * Extends the ATExpression interface as a Text can also be output by the parser as a literal.
+ * An XIllegalArgument exception is thrown when primitive operations on native types
+ * get passed an illegal argument value.
  */
-public interface ATText extends ATExpression {
+public final class XIllegalArgument extends NATException {
 
-	public NATText asNativeText() throws XTypeMismatch;
+	public XIllegalArgument(String message) {
+		super(message);
+	}
 
-	// base-level interface
-	
-	public ATTable base_explode() throws NATException;
-	public ATTable base_split(ATText separator) throws NATException;
-	public ATNil base_find_do_(ATText regexp, ATClosure consumer) throws NATException;
-	public ATText base_replace_by_(ATText regexp, ATClosure transformer) throws NATException;
-	
-	public ATText base_toUpperCase();
-	public ATText base_toLowerCase();
-	public ATNumber base_length();
-	
-	public ATText base__oppls_(ATText other) throws NATException;
-	public ATNumber base__opltx__opeql__opgtx_(ATText other) throws NATException;
-	public ATBoolean base__optil__opeql_(ATText other) throws NATException;
-	
 }
