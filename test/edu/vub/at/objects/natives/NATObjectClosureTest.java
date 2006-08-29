@@ -158,7 +158,7 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod scopeTestMethod = new NATMethod(
 					scopeTest, 
 					NATTable.EMPTY, 
-					new AGScopeTest(object, object,NATNil._INSTANCE_));
+					new AGScopeTest(object, object, object.getDynamicParent()));
 			object.meta_addMethod(scopeTestMethod);
 			
 			object.meta_invoke(object, scopeTest, NATTable.EMPTY);
@@ -186,7 +186,7 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod lateBoundSelfTestMethod = new NATMethod(
 					lateBoundSelf, 
 					NATTable.EMPTY, 
-					new AGScopeTest(parent, child, NATNil._INSTANCE_));
+					new AGScopeTest(parent, child, parent.getDynamicParent()));
 			
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
 			ATMethod superSemanticsTestMethod = new NATMethod(
@@ -244,7 +244,7 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod lateBoundSelfTestMethod = new NATMethod(
 					lateBoundSelf, 
 					NATTable.EMPTY, 
-					new AGScopeTest(parent, child, NATNil._INSTANCE_));
+					new AGScopeTest(parent, child, parent.getDynamicParent()));
 			
 			parent.meta_addMethod(lateBoundSelfTestMethod);
 			

@@ -69,7 +69,7 @@ public class ReflectionTest extends TestCase {
 		assertEquals("set_opnot_", Reflection.upSelector(AGSymbol.alloc("set!")));
 		assertEquals("foo__opltx_bar_", Reflection.upSelector(AGSymbol.alloc("foo:<bar:")));
 		assertEquals("_opbla_", Reflection.upSelector(AGSymbol.alloc(":opbla:")));
-		assertEquals("yes?", Reflection.upSelector(AGSymbol.alloc("yes?")));
+		assertEquals("yes_opque_", Reflection.upSelector(AGSymbol.alloc("yes?")));
 	}
 	
 	

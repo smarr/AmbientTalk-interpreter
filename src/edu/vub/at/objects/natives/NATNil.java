@@ -119,6 +119,11 @@ public class NATNil implements ATNil {
      * It is possible to select a method from any ambienttalk value provided that it
      * offers the method in its provided interface. The result is a JavaMethod wrapper
      * which encapsulates the reflective Method object as well as the receiver.
+     * 
+     * There exists a certain ambiguity in field selection on AmbientTalk implementation-level objects.
+     * When nativeObject.m is evaluated, the corresponding Java class must have a method named either
+     *  base_getM which means m is represented as a readable field, or
+     *  base_m which means m is represented as a method
      */
     public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
         String jSelector = null;
@@ -127,7 +132,7 @@ public class NATNil implements ATNil {
             jSelector = Reflection.upBaseFieldAccessSelector(selector);
 
             return Reflection.downObject(Reflection.upFieldSelection(this, receiver, jSelector));
-        } catch (XTypeMismatch e) {
+        } catch (XSelectorNotFound e) {
             jSelector = Reflection.upBaseLevelSelector(selector);
 
             return Reflection.downObject(Reflection.upMethodSelection(this, receiver, jSelector));

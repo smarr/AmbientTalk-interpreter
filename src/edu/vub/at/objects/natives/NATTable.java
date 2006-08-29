@@ -122,6 +122,13 @@ public final class NATTable extends AGExpression implements ATTable {
 	 * @throws XArityMismatch when the formals don't match the actuals
 	 */
 	public static final void bindArguments(String funnam, ATObject scope, ATTable parameters, ATTable arguments, boolean isDefinition) throws NATException {
+		if (parameters == NATTable.EMPTY) {
+			if (arguments == NATTable.EMPTY)
+				return; // no need to bind any arguments
+			else
+				throw new XArityMismatch(funnam, 0, arguments.base_getLength().asNativeNumber().javaValue); 
+		}
+		
 		ATObject[] pars = parameters.asNativeTable().elements_;
 		ATObject[] args = arguments.asNativeTable().elements_;
 		
@@ -135,7 +142,10 @@ public final class NATTable extends AGExpression implements ATTable {
 			
 			// bind all parameters except for the last one
 			for (int i = 0; i < numMandatoryPars; i++) {
-				scope.meta_defineField(pars[i].asSymbol(), args[i]);
+				if (isDefinition)
+					scope.meta_defineField(pars[i].asSymbol(), args[i]);
+				else
+					scope.meta_assignField(pars[i].asSymbol(), args[i]);
 			}
 			
 			// bind the last parameter to the remaining arguments
