@@ -46,7 +46,7 @@ public interface ATNumeric extends ATExpression {
 	
 	public ATFraction base_log();
 	public ATFraction base_sqrt();
-	public ATFraction base_expt(ATFraction frc) throws NATException;	
+	public ATFraction base_expt(ATNumeric pow) throws NATException;	
 	
 	// addition +
 	public ATNumeric base__oppls_(ATNumeric other) throws NATException;

@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATContext;
+import edu.vub.at.objects.natives.NATNumber;
 
 /**
  * @author tvc
@@ -121,5 +122,31 @@ public class JavaClosure extends NATClosure {
 			return method_.meta_apply(arguments, this.getContext());
 		}
 	}
+	
+	/**
+	 * Auxiliary method to more easily extract arguments from an ATTable
+	 */
+	public ATObject get(ATTable args, int n) throws NATException {
+		return args.base_at(NATNumber.atValue(n));
+	}
 
+	public int getNbr(ATTable args, int n) throws NATException {
+		return args.base_at(NATNumber.atValue(n)).asNativeNumber().javaValue;
+	}
+	
+	public double getFrc(ATTable args, int n) throws NATException {
+		return args.base_at(NATNumber.atValue(n)).asNativeFraction().javaValue;
+	}
+	
+	public String getTxt(ATTable args, int n) throws NATException {
+		return args.base_at(NATNumber.atValue(n)).asNativeText().javaValue;
+	}
+	
+	public boolean getBln(ATTable args, int n) throws NATException {
+		return args.base_at(NATNumber.atValue(n)).asNativeBoolean().javaValue;
+	}
+	
+	public Object[] getTab(ATTable args, int n) throws NATException {
+		return args.base_at(NATNumber.atValue(n)).asNativeTable().elements_;
+	}
 }

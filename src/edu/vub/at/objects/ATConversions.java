@@ -39,6 +39,7 @@ import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATNumeric;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -88,4 +89,5 @@ public interface ATConversions {
 	public NATText     asNativeText() throws XTypeMismatch;
 	public NATTable    asNativeTable() throws XTypeMismatch;
 	public NATBoolean  asNativeBoolean() throws XTypeMismatch;
+	public NATNumeric   asNativeNumeric() throws XTypeMismatch;
 }

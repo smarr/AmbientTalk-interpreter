@@ -52,6 +52,6 @@ public interface ATNumber extends ATNumeric {
 	public ATFraction base__opque__opque_(ATNumber nbr) throws NATException;
 	
 	public ATNumber base__oprem_(ATNumber n) throws NATException;
-	public ATNumber base__opdiv__opdiv_(ATNumber n) throws NATException;
+	public ATNumber base__opdiv__opmns_(ATNumber n) throws NATException;
 	
 }

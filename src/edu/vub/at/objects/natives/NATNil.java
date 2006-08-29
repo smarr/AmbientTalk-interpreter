@@ -41,6 +41,7 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
+import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
@@ -403,6 +404,10 @@ public class NATNil implements ATNil {
 
     public NATBoolean asNativeBoolean() throws XTypeMismatch {
         throw new XTypeMismatch("Expected a native boolean, given: " + this.getClass().getName(), this);
+    }
+    
+    public NATNumeric asNativeNumeric() throws XTypeMismatch {
+        throw new XTypeMismatch("Expected a native numeric (number or fraction), given: " + this.getClass().getName(), this);
     }
 
     public String toString() {

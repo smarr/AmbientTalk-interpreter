@@ -89,7 +89,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 * NBR(n).doTimes: { |i| code } => for i = 1 to n do code.eval(i) ; nil
 	 */
 	public ATNil base_doTimes_(ATClosure code) throws NATException {
-		for (int i = 1; i < javaValue; i++) {
+		for (int i = 1; i <= javaValue; i++) {
 			code.meta_apply(new NATTable(new ATObject[] { NATNumber.atValue(i) }));
 		}
 		return NATNil._INSTANCE_;
@@ -112,8 +112,8 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 		int stop = end.asNativeNumber().javaValue;
 		int step = inc.asNativeNumber().javaValue;
 		int start = javaValue;
-		if (stop > start) {
-			for (int i = stop; i >= start; i -= step) {
+		if (start > stop) {
+			for (int i = start; i >= stop; i -= step) {
 				code.meta_apply(new NATTable(new ATObject[] { NATNumber.atValue(i) }));
 			}
 		} else {
@@ -142,8 +142,8 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 			return NATTable.atValue(tbl);
 		} else {
 			ATObject[] tbl = new ATObject[start - stop];
-			for (int i = tbl.length; i > 0; i--) {
-				tbl[i] = NATNumber.atValue(stop + i);
+			for (int i = 0; i < tbl.length; i++) {
+				tbl[i] = NATNumber.atValue(start - i);
 			}
 			return NATTable.atValue(tbl);
 		}
@@ -157,9 +157,10 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 *  5 *** 2 => [ 5, 4, 3, 2 ]
 	 */
 	public ATTable base__opmul__opmul__opmul_(ATNumber end) throws NATException {
-		// x *** y == x ** y+1
+		// x *** y == x ** y+1 iff x < y
+		// x *** y == x ** y-1 iff y > x
 		int stop = end.asNativeNumber().javaValue;
-		if (javaValue < stop)
+		if (javaValue <= stop)
 		    return this.base__opmul__opmul_(end.base_inc().asNumber());
 		else
 			return this.base__opmul__opmul_(end.base_dec().asNumber());
@@ -206,9 +207,9 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	}
 	
 	/**
-	 * NBR(n) / NBR(d) => NBR(n / d)
+	 * NBR(n) /- NBR(d) => NBR(n / d)
 	 */
-	public ATNumber base__opdiv__opdiv_(ATNumber n) throws NATException {
+	public ATNumber base__opdiv__opmns_(ATNumber n) throws NATException {
 		return NATNumber.atValue(javaValue / n.asNativeNumber().javaValue);
 	}
 	

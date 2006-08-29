@@ -28,9 +28,9 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATFraction;
-import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
@@ -45,6 +45,10 @@ public abstract class NATNumeric extends AGExpression implements ATNumeric {
 	 * Template method that should return the value of the underlying number or fraction as a double
 	 */
 	protected abstract double getJavaValue();
+	
+	public NATNumeric asNativeNumeric() throws XTypeMismatch {
+		return this;
+	}
 	
 	// trigonometric functions
 	
@@ -84,10 +88,10 @@ public abstract class NATNumeric extends AGExpression implements ATNumeric {
 	}
 	
 	/**
-	 * NUM(n).expt(NBR(e)) => FRC(Math.pow(n,e))
+	 * NUM(n).expt(NUM(e)) => FRC(Math.pow(n,e))
 	 */
-	public ATFraction base_expt(ATFraction frc) throws NATException {
-		return NATFraction.atValue(Math.pow(getJavaValue(), frc.asNativeFraction().javaValue));
+	public ATFraction base_expt(ATNumeric pow) throws NATException {
+		return NATFraction.atValue(Math.pow(getJavaValue(), pow.asNativeNumeric().getJavaValue()));
 	}
 	
 	// Comparable 'mixin' based on <=>

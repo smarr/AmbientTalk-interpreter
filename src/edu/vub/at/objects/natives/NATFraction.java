@@ -57,6 +57,10 @@ public final class NATFraction extends NATNumeric implements ATFraction {
 		javaValue = javaFrc;
 	}
 	
+	public NATFraction asNativeFraction() {
+		return this;
+	}
+	
 	public boolean equals(Object other) {
 		return (other instanceof NATFraction) &&
 			   (javaValue == ((NATFraction) other).javaValue);
