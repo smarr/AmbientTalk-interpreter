@@ -151,6 +151,42 @@ public final class OBJLexicalRoot extends NATNil {
 	public ATObject base_foreach_in_(ATClosure body, ATTable tab) throws NATException {
 		return tab.base_each_(body);
 	}
+
+	/**
+	 * The do:if: primitive, which in Ruby terminology is a 'statement modifier'
+	 * 
+	 * usage:
+	 *  do: { body } if: condition
+	 * 
+	 * pseudo-implementation:
+	 *  condition.ifTrue: { body }
+	 * 
+	 * @param body a zero-argument closure to execute if the condition is true
+	 * @param condition a boolean expression
+	 * @return the result of invoking body if the condition is true or nil if the condition is false
+	 * @throws NATException if raised inside the body block.
+	 */
+	public ATObject base_do_if_(ATClosure body, ATBoolean bool) throws NATException {
+		return bool.base_ifTrue_(body);
+	}
+	
+	/**
+	 * The do:unless: primitive, which in Ruby terminology is a 'statement modifier'
+	 * 
+	 * usage:
+	 *  do: { body } unless: condition
+	 * 
+	 * pseudo-implementation:
+	 *  condition.ifFalse: { body }
+	 * 
+	 * @param body a zero-argument closure to execute if the condition is false
+	 * @param condition a boolean expression
+	 * @return the result of invoking body if the condition is false or nil if the condition is true
+	 * @throws NATException if raised inside the body block.
+	 */
+	public ATObject base_do_unless_(ATClosure body, ATBoolean bool) throws NATException {
+		return bool.base_ifFalse_(body);
+	}
 	
 	/* -----------------------------
 	 * -- Object Creation Methods --
