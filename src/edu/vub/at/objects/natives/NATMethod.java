@@ -86,7 +86,7 @@ public class NATMethod extends NATNil implements ATMethod {
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<method:"+name_.meta_print()+">");
+		return NATText.atValue("<method:"+name_.meta_print().javaValue+">");
 	}
 
 	public ATMethod asMethod() throws XTypeMismatch {

@@ -2,6 +2,8 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
@@ -26,10 +28,10 @@ public class PrimitivesTest extends AmbientTalkTest {
 		try {
 			// "ambienttalk".explode() => [a, m, b, i, e, n, t, t, a, l, k]
 			ATTable exploded = TXTambienttalk_.base_explode();
-			printedEquals(exploded, "[a, m, b, i, e, n, t, t, a, l, k]");
+			printedEquals(exploded, "[\"a\", \"m\", \"b\", \"i\", \"e\", \"n\", \"t\", \"t\", \"a\", \"l\", \"k\"]");
 			
 			// "one, two, three".split(", ") => [ "one", "two", "three" ]
-			printedEquals(TXTcommas_.base_split(NATText.atValue(", ")), "[one, two, three]");
+			printedEquals(TXTcommas_.base_split(NATText.atValue(", ")), "[\"one\", \"two\", \"three\"]");
 			
 			// "ambienttalk".find: "[aeiou]" do: { |vowel| buff << vowel; nil } => buff = "aiea"
 			final StringBuffer buff = new StringBuffer();
@@ -47,10 +49,10 @@ public class PrimitivesTest extends AmbientTalkTest {
 					return arguments.base_at(NATNumber.ONE).asNativeText().base_toUpperCase();
 				}
 			});
-			printedEquals(replaced, "AmbIEnttAlk");
+			printedEquals(replaced, "\"AmbIEnttAlk\"");
 			
 			// "A".toLowerCase() => "a"
-			printedEquals(NATText.atValue("A").base_toLowerCase(), "a");
+			printedEquals(NATText.atValue("A").base_toLowerCase(), "\"a\"");
 			
 			// "ambienttalk".length => 11
 			assertEquals(11, TXTambienttalk_.base_length().asNativeNumber().javaValue);
@@ -208,4 +210,123 @@ public class PrimitivesTest extends AmbientTalkTest {
 		}
 	}
 
+	public void testFractionPrimitives() {
+		try {
+			// 1.4.round() => 1
+			assertEquals(1, NATFraction.atValue(1.4).base_round().asNativeNumber().javaValue);
+			// 1.8.round() => 2
+			assertEquals(2, NATFraction.atValue(1.8).base_round().asNativeNumber().javaValue);
+			// 1.5.round() => 2
+			assertEquals(2, NATFraction.atValue(1.5).base_round().asNativeNumber().javaValue);
+			
+			// 1.8.floor() => 1
+			assertEquals(1, NATFraction.atValue(1.8).base_floor().asNativeNumber().javaValue);
+			// 1.4.ceiling() => 2
+			assertEquals(2, NATFraction.atValue(1.4).base_ceiling().asNativeNumber().javaValue);
+		} catch (NATException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testClosurePrimitives() {
+		try {
+			// whileTrue
+			ATObject result = evalAndReturn("def i := 0; { i < 5 }.whileTrue: { i := i + 1 }; i");
+			assertEquals(5, result.asNativeNumber().javaValue);
+		} catch (XTypeMismatch e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testTablePrimitives() {
+		try {
+			ATTable vowels = evalAndReturn("[\"a\", \"e\", \"i\", \"o\", \"u\"]").asTable();
+
+			// vowels.length = 5
+			assertEquals(5, vowels.base_getLength().asNativeNumber().javaValue);
+			
+			// vowels.at(1) = "a"
+			assertEquals("a", vowels.base_at(NATNumber.ONE).asNativeText().javaValue);
+			
+			// vowels.atPut(1, "z")
+			vowels.base_atPut(NATNumber.ONE, NATText.atValue("z"));
+			assertEquals("z", vowels.base_at(NATNumber.ONE).asNativeText().javaValue);
+			
+			// vowels.isEmpty() => false
+			assertFalse(vowels.base_isEmpty().asNativeBoolean().javaValue);
+			
+			// each: ablock
+			evalAndCompareTo("def sum := 0; [1,2,3].each: { |i| sum := sum + i }; sum", "6");
+			
+			// map: ablock
+			evalAndCompareTo("[1,2,3].map: { |i| i + 1 }", "[2, 3, 4]");
+			
+			// with: init collect: ablock
+			evalAndCompareTo("[1,2,3].with: 0 collect: { |total, next| total + next }", "6");
+			
+			// vowels.implode() => "zeiou"
+			assertEquals("zeiou", vowels.base_implode().asNativeText().javaValue);
+			
+			// vowels.select(2,4).implode() => "eio"
+			assertEquals("eio", vowels.base_select(NATNumber.atValue(2), NATNumber.atValue(4)).base_implode().asNativeText().javaValue);
+		} catch (NATException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	public void testBooleanPrimitives() {
+		try {
+			// (0 < 1).ifTrue: { 0 } => 0
+			assertEquals(NATNumber.ZERO, NATNumber.ZERO.base__opltx_(NATNumber.ONE).base_ifTrue_(new JavaClosure(null) {
+				public ATObject meta_apply(ATTable args) {
+					return NATNumber.ZERO;
+				}
+			}));
+			
+			// (0 < 1).ifFalse: { 0 } => nil
+			assertEquals(NATNil._INSTANCE_, NATNumber.ZERO.base__opltx_(NATNumber.ONE).base_ifFalse_(new JavaClosure(null) {
+				public ATObject meta_apply(ATTable args) {
+					return NATNumber.ZERO;
+				}
+			}));
+			
+			// true & false => false
+			assertFalse(NATBoolean._TRUE_.base__opamp_(NATBoolean._FALSE_).asNativeBoolean().javaValue);
+			
+			// false + true => true
+			assertTrue(NATBoolean._FALSE_.base__oppls_(NATBoolean._TRUE_).asNativeBoolean().javaValue);
+			
+			// false.and: { 1/0 } => false
+			try {
+				assertFalse(NATBoolean._FALSE_.base_and_(new JavaClosure(null) {
+					public ATObject meta_apply(ATTable args) throws NATException {
+						return NATNumber.ONE.base__opdiv_(NATNumber.ZERO);
+					}
+				}).asNativeBoolean().javaValue);
+			} catch (XIllegalArgument e) {
+				fail("short-circuit and: is broken.");
+			}
+			
+			// true.or: { 1/0 } => true
+			try {
+				assertTrue(NATBoolean._TRUE_.base_or_(new JavaClosure(null) {
+					public ATObject meta_apply(ATTable args) throws NATException {
+						return NATNumber.ONE.base__opdiv_(NATNumber.ZERO);
+					}
+				}).asNativeBoolean().javaValue);
+			} catch (XIllegalArgument e) {
+				fail("short-circuit or: is broken.");
+			}
+			
+			// false.or: { true } => true
+			assertTrue(NATBoolean._FALSE_.base_or_(new JavaClosure(null) {
+				public ATObject meta_apply(ATTable args) throws NATException {
+					return NATBoolean._TRUE_;
+				}
+			}).asNativeBoolean().javaValue);
+		} catch (NATException e) {
+			fail(e.getMessage());
+		}
+	}
+	
 }

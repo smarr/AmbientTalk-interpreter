@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATFraction;
 import edu.vub.at.objects.ATNumber;
@@ -161,9 +162,13 @@ public final class NATFraction extends NATNumeric implements ATFraction {
 		return other.base_divideFraction(this);
 	}
 	public ATNumeric base_divideNumber(ATNumber other) throws NATException {
+		if (javaValue == 0)
+			throw new XIllegalArgument("Division by zero: " + other);
 		return NATFraction.atValue((other.asNativeNumber().javaValue * 1.0) / javaValue);
 	}
 	public ATNumeric base_divideFraction(ATFraction other) throws NATException {
+		if (javaValue == 0)
+			throw new XIllegalArgument("Division by zero: " + other);
 		return NATFraction.atValue(other.asNativeFraction().javaValue / javaValue);
 	}
 	

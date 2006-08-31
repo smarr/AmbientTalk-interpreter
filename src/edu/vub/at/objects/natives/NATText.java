@@ -68,7 +68,7 @@ public final class NATText extends AGExpression implements ATText {
 		public NATText asNativeText() throws XTypeMismatch { return this; }
 		
 		public NATText meta_print() throws XTypeMismatch {
-	        return this;
+	        return NATText.atValue("\"" + javaValue + "\"");
 		}
 		
 		// comparison and identity operations

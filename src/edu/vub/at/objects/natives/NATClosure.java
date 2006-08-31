@@ -147,7 +147,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<closure:"+method_.getName().meta_print()+">");
+		return NATText.atValue("<closure:"+method_.getName().meta_print().javaValue+">");
 	}
 
 	
