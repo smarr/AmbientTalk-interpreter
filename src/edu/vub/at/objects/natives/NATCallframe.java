@@ -52,7 +52,7 @@ import java.util.Vector;
  * - it treats method definition as the addition of a closure to its variables.
  * - it cannot be reified such that send, invoke and select are impossible
  * - it cannot be reified such that it cannot be extended or explicitly shared
- * - since lexical parents are shared, cloning it indicates faulty behaviour  
+ * - since a call frame its lexical parent is shared, cloning it indicates faulty behaviour  
  */
 public class NATCallframe extends NATNil implements ATObject {
 	
@@ -127,6 +127,10 @@ public class NATCallframe extends NATNil implements ATObject {
 
 	/**
 	 * By default, when a selection is not understood by an AmbientTalk object or call frame, an error is raised.
+	 * 
+	 * Warning: this method overrides its parent method which has the exact same implementation.
+	 * This is done for purposes of clarity, by making NATCallframe implement all ATObject methods directly,
+	 * even if NATNil already provides a suitable implementation for these.
 	 */
 	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
 		throw new XSelectorNotFound(selector, this);

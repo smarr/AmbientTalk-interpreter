@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 /**
+ * @author tvcutsem
  * @author smostinc
  *
  * Native implementation of a default ambienttalk object.
@@ -80,7 +81,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	private static final byte _SHARE_MAP_FLAG_ = 1<<1;
 	
 	/**
-	 * Similar to __SHARE_MAP_FLAG__ but for determining the shared status of the method dictionary.
+	 * Similar to _SHARE_MAP_FLAG__ but for determining the shared status of the method dictionary.
 	 */
 	private static final byte _SHARE_DCT_FLAG_ = 1<<2;
 	

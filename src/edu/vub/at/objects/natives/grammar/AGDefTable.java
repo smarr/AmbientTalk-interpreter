@@ -70,9 +70,11 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 	 * AGDEFTABLE(nam,siz,ini).eval(ctx) =
 	 *   s = siz.eval(ctx)
 	 *   t[s] = nil
-	 *   for i = 0 to s do
-	 *     t[i] = ini.eval(ctx)
-	 *   ctx.scope.addField(nam, AGTABLE(t))
+	 *   i.from: 0 to: s do: {
+	 *     t[i] := ini.eval(ctx)
+	 *   }
+	 *   ctx.scope.defineField(nam, AGTABLE(t))
+	 *   nil
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
 		int siz = 0;
