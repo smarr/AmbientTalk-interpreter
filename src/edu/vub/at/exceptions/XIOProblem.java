@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * XParseError.java created on 29-jul-2006 at 14:36:07
+ * XIOProblem.java created on 6-sep-2006 at 16:17:42
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,45 +27,21 @@
  */
 package edu.vub.at.exceptions;
 
+import java.io.IOException;
+
 /**
  * @author tvc
  *
- * XParseError is thrown when illegal input is parsed by the AmbientTalk parser.
+ * The class XIOProblem is mainly a wrapper class for Java IOExceptions.
  */
-public final class XParseError extends NATException {
+public class XIOProblem extends NATException {
 
-	// for debugging purposes, this string indicates in which file the parse error occurred.
-	private String originatingFile_ = null;
-	
-	public XParseError() {
-		super();
-	}
-
-	public XParseError(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public XParseError(String message) {
-		super(message);
-	}
-
-	public XParseError(Throwable cause) {
+	public XIOProblem(IOException cause) {
 		super(cause);
 	}
-	
-	public void setOriginatingFile(String file) {
-		originatingFile_ = file;
-	}
-	
-	public String getOriginatingFile() {
-		return originatingFile_;
-	}
-	
+
 	public String getMessage() {
-		if (originatingFile_ == null)
-			return super.getMessage();
-		else
-			return super.getMessage() + " In file " + originatingFile_;
+		return getCause().getMessage();
 	}
 
 }

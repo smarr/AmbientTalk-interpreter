@@ -2,11 +2,9 @@
 
 * ensure meta_print is overridden in each NAT class.
 
-- Natives
-* write unit tests for the native base-level methods of FRC, TXT, NBR, TAB
-
 - Reflection
 * Review and fix mirrors and mirages (add/remove "base" and "meta" prefix consistently to all methods in AT interfaces)
+* isXXX and asXXX must become meta_isXXX and meta_asXXX
 
 - Core language evaluator
 * remove as much .asNative...() casts from the code as possible. Each such cast precludes use of custom AT objects.
