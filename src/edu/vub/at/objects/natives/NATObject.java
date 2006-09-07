@@ -152,7 +152,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * 
 	 * The caller of this method *must* ensure that the shares flags are set.
 	 */
-	private NATObject(FieldMap map,
+	protected NATObject(FieldMap map,
 			         Vector state,
 			         HashMap methodDict,
 			         ATObject dynamicParent,
@@ -340,12 +340,12 @@ public class NATObject extends NATCallframe implements ATObject{
 		setFlag(_SHARE_DCT_FLAG_);
 		setFlag(_SHARE_MAP_FLAG_);
 		
-		return new NATObject(variableMap_,
-				            (Vector) stateVector_.clone(), // shallow copy
-				            methodDictionary_,
-				            dynamicParent,
-				            lexicalParent_,
-				            flags_);
+		return createClone(variableMap_,
+				          (Vector) stateVector_.clone(), // shallow copy
+				          methodDictionary_,
+				          dynamicParent,
+				          lexicalParent_,
+				          flags_);
 
 	}
 	
@@ -420,6 +420,22 @@ public class NATObject extends NATCallframe implements ATObject{
 	public ATObject getDynamicParent() {
 		return dynamicParent_;
 	};
+	
+	// protected methods, may be adapted by extensions
+	
+	protected NATObject createClone(FieldMap map,
+	         					  Vector state,
+	         					  HashMap methodDict,
+	         					  ATObject dynamicParent,
+	         					  ATObject lexicalParent,
+	         					  byte flags) {
+		return new NATObject(map,
+	            state,
+	            methodDict,
+	            dynamicParent,
+	            lexicalParent,
+	            flags);
+	}
 	
 	// private methods
 	

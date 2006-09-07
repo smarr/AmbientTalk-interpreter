@@ -37,6 +37,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirrorFactory;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * @author tvc
@@ -56,7 +57,7 @@ import edu.vub.at.objects.mirrors.NATMirrorFactory;
  * to convert AmbientTalk invocations of a method m into Java base_m invocations.
  */
 public final class OBJLexicalRoot extends NATNil {
-
+	
 	public static final OBJLexicalRoot _INSTANCE_ = new OBJLexicalRoot();
 	
 	/**
@@ -65,17 +66,42 @@ public final class OBJLexicalRoot extends NATNil {
 	private OBJLexicalRoot() { }
 	
 	/**
-	 * Unlike a failed meta_select, a failed meta_lookup will not perform a
-	 * 'doesNotUnderstand'-like extra invocation to intervene in the failed lookup.
-	 * This is because a failed lookup is generally a programming error, meaning a
-	 * variable was accessed which should have been lexically visible.
+	 * The lexical root is a singleton
 	 */
-	public ATObject meta_lookup(ATSymbol selector) throws NATException {
-		throw new XUndefinedField("variable access", selector.getText().asNativeText().javaValue);
+	public ATObject meta_clone() {
+		return this;
 	}
 	
-	public ATNil meta_assignVariable(ATSymbol selector, ATObject value) throws NATException {
-		throw new XUndefinedField("variable assignment", selector.getText().asNativeText().javaValue);
+	/* ----------------------
+	 * -- Global variables --
+	 * ---------------------- */
+	
+	/**
+	 * nil
+	 */
+	public ATNil base_getNil() {
+		return NATNil._INSTANCE_;
+	}
+	
+	/**
+	 * true
+	 */
+	public ATBoolean base_getTrue() {
+		return NATBoolean._TRUE_;
+	}
+	
+	/**
+	 * false
+	 */
+	public ATBoolean base_getFalse() {
+		return NATBoolean._FALSE_;
+	}
+	
+	/**
+	 * '/' (the root namespace)
+	 */
+	public ATObject base_get_opdiv_() {
+		return NATNamespace._ROOT_NAMESPACE_;
 	}
 	
 	/* ------------------------

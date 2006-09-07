@@ -214,14 +214,14 @@ public class TestEval extends AmbientTalkTest {
 	}
 	
 	public void testQuotation() throws NATException {
-		evalAndCompareTo("`(3)", atThree_);
-		evalAndCompareTo("`(x)", atX_);
-		evalAndCompareTo("`(def x := 3)", "def x := 3");
-		evalAndCompareTo("`(def x := `(3))", "def x := `(3)");
-		evalAndCompareTo("`(def x := #(3))", "def x := 3");
-		evalAndCompareTo("`(def foo(a) { #([1,2,3]) })", "def foo(a) { [1, 2, 3] }");
-		evalAndCompareTo("`(def foo(#@(`([a,b,c]))) { #@([1,2,3]) })", "def foo(a, b, c) { 1; 2; 3 }");
-		evalAndCompareTo("`(def foo: x bar: #@(`([y,z])) { 1 })", "def foo:bar:(x, y, z) { 1 }");
+		evalAndCompareTo("`3", atThree_);
+		evalAndCompareTo("`x", atX_);
+		evalAndCompareTo("`{def x := 3}", "def x := 3");
+		evalAndCompareTo("`{def x := `3}", "def x := `(3)");
+		evalAndCompareTo("`{def x := #3}", "def x := 3");
+		evalAndCompareTo("`{def foo(a) { #([1,2,3]) }}", "def foo(a) { [1, 2, 3] }");
+		evalAndCompareTo("`{def foo(#@(`([a,b,c]))) { #@([1,2,3]) }}", "def foo(a, b, c) { 1; 2; 3 }");
+		evalAndCompareTo("`{def foo: x bar: #@(`([y,z])) { 1 }}", "def foo:bar:(x, y, z) { 1 }");
 	}
 	
 	public void testArgumentSplicing() throws NATException {

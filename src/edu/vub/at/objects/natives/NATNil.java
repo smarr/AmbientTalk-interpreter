@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -90,9 +91,12 @@ public class NATNil implements ATNil {
      * upped invocation is a Java object, which must subsequently be 'downed' again.
      */
     public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws NATException {
-        String jSelector = Reflection.upBaseLevelSelector(atSelector);
-
-	        return Reflection.downObject(Reflection.upInvocation(this, receiver, jSelector, arguments));
+        try {
+			String jSelector = Reflection.upBaseLevelSelector(atSelector);
+			return Reflection.downObject(Reflection.upInvocation(this, receiver, jSelector, arguments));
+		} catch (XSelectorNotFound e) {
+			return receiver.meta_doesNotUnderstand(atSelector);
+		}
     }
 
     /**
@@ -136,7 +140,11 @@ public class NATNil implements ATNil {
         } catch (XSelectorNotFound e) {
             jSelector = Reflection.upBaseLevelSelector(selector);
 
-            return Reflection.downObject(Reflection.upMethodSelection(this, receiver, jSelector));
+            try {
+				return Reflection.downObject(Reflection.upMethodSelection(this, receiver, jSelector));
+			} catch (XSelectorNotFound e2) {
+				return receiver.meta_doesNotUnderstand(selector);
+			}
         }
     }
 
@@ -146,11 +154,19 @@ public class NATNil implements ATNil {
      * as no AmbientTalk code can be possibly nested within native code. However, using
      * meta-programming a primitive object could be installed as the lexical parent of an AmbientTalk object.
      *
+     * One particular case where this method will often be called is when a lookup reaches
+     * the lexical root, OBJLexicalRoot, which inherits this implementation.
+     *
      * In such cases a lookup is treated exactly like a selection, where the 'original receiver'
      * of the selection equals the primitive object.
      */
     public ATObject meta_lookup(ATSymbol selector) throws NATException {
-        return this.meta_select(this, selector);
+        try {
+        	  return this.meta_select(this, selector);
+        } catch(XSelectorNotFound e) {
+        	  // transform selector not found in undefined variable access
+        	  throw new XUndefinedField("variable access", selector.getText().asNativeText().javaValue);
+        }
     }
 
     public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
@@ -163,9 +179,17 @@ public class NATNil implements ATNil {
      * an assignment in the lexical scope of an object. However, using metaprogramming
      * a native object could be installed as the lexical parent of an AT object. In such
      * cases, variable assignment is treated as field assignment.
+     * 
+     * One particular case where this method will often be called is when a variable assignment reaches
+     * the lexical root, OBJLexicalRoot, which inherits this implementation.
      */
     public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
-        return this.meta_assignField(name, value);
+        try {
+			return this.meta_assignField(name, value);
+		} catch (XSelectorNotFound e) {
+			// transform selector not found in undefined variable assignment
+			throw new XUndefinedField("variable assignment", name.getText().asNativeText().javaValue);
+		}
     }
 
     public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {

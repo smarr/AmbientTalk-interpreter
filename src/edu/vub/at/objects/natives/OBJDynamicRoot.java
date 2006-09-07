@@ -80,4 +80,11 @@ public final class OBJDynamicRoot extends NATNil {
 		throw new XUndefinedField("field assignment", selector.getText().asNativeText().javaValue);
 	}
 	
+	/**
+	 * The dynamic root is a singleton
+	 */
+	public ATObject meta_clone() {
+		return this;
+	}
+	
 }

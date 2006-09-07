@@ -34,25 +34,31 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Vector;
 
 /**
  * @author tvc
  *
  * Instances of the class NATNamespace represent namespace objects.
- * A namespace object is simply an object that is mirrored by a mirror whose doesNotUnderstand
- * method reacts differently from the standard semantics of raising a 'selector not found' exception.
  * 
- * A namespace object encapsulates an absolute file system directory path and a relative 'name'.
- * The name should correspond to a portion of the tail of the absolute path.
- * 
- * A namespace delegates to its parent (..) directory (shares-a link) and has the lexical root as its lexical parent.
- * 
+ * Namespace objects act as regular AmbientTalk objects with the following differences and conventions:
+ *  - Behaviourally, a namespace object is mirrored by a mirror whose doesNotUnderstand
+ *    method reacts differently from the standard semantics of raising a 'selector not found' exception.
+ *  - Structurally, a namespace has the lexical root as its lexical parent and the dynamic root as its dynamic parent.
+ *    Furthermore, a namespace object encapsulates an absolute file system path and a relative 'path name'.
+ *    The name should correspond to a portion of the tail of the absolute path.
+ *    These variables are not visible to AmbientTalk code. However, a namespace object does provide the following two slots:
+ *     '~' = bound to 'self', i.e. '~' is the 'current namespace' and represents the '.' directory
+ *     '^' = bound to the parent namespace, i.e. it represents the '..' directory
+ *         
  * When a slot is looked up in a namespace NS for a path P (via meta_select) and not found, the namespace object
  * queries the local file system to see whether the selector corresponds to a directory or file in the
  * directory P. Either the selector:
@@ -72,6 +78,14 @@ import java.io.InputStream;
 public final class NATNamespace extends NATObject {
 
 	private static final String _AT_EXT_ = ".at";
+	private static final AGSymbol _CURNS_SYM_ = AGSymbol.alloc("~");
+	private static final AGSymbol _SUPNS_SYM_ = AGSymbol.alloc("^");
+	
+	/**
+	 * The root '/' object, which is *not* a namespace object, but which is supposed
+	 * to have a slot for each directory in the object path bound to a corresponding namespace
+	 */
+	public static final NATObject _ROOT_NAMESPACE_ = new NATObject();
 	
 	private final String path_;
 	private final String name_;
@@ -84,10 +98,30 @@ public final class NATNamespace extends NATObject {
 	 * @param path an absolute path referring to a local file system directory.
 	 * @param parentNamespace this namespace's parent (the '..' directory)
 	 */
-	public NATNamespace(String name, String path, ATObject parentNamespace) {
-		super(parentNamespace, OBJLexicalRoot._INSTANCE_, NATObject._SHARES_A_);
+	public NATNamespace(String name, String path, ATObject parentNamespace) throws NATException {
+		super(OBJDynamicRoot._INSTANCE_, OBJLexicalRoot._INSTANCE_, NATObject._SHARES_A_);
 		name_ = name;
 		path_ = path;
+		// def ~ := self
+		this.meta_defineField(_CURNS_SYM_, this);
+		// def ^ := parentNamespace
+		this.meta_defineField(_SUPNS_SYM_, parentNamespace);
+	}
+	
+	/**
+	 * Private constructor used only for cloning
+	 */
+	private NATNamespace(FieldMap map,
+			  Vector state,
+			  HashMap methodDict,
+			  ATObject dynamicParent,
+			  ATObject lexicalParent,
+			  byte flags,
+			  String path,
+			  String name) {
+	  super(map, state, methodDict, dynamicParent, lexicalParent, flags);
+	  path_ = path;
+	  name_ = name;
 	}
 	
 	/**
@@ -127,7 +161,7 @@ public final class NATNamespace extends NATObject {
 					String code = loadContentOfFile(src);
 				
 				    // construct the proper evaluation context for the code
-				    NATContext ctx = new NATContext(childNS, childNS, this);
+				    NATContext ctx = new NATContext(childNS, childNS, childNS.dynamicParent_);
 				    
 				    // parse and evaluate the code in the proper context and bind its result to the missing slot
 					ATAbstractGrammar source = NATParser._INSTANCE_.base_parse(NATText.atValue(code));
@@ -151,6 +185,22 @@ public final class NATNamespace extends NATObject {
 
 	public NATText meta_print() {
 		return NATText.atValue("<ns:"+name_+">");
+	}
+	
+	protected NATObject createClone(FieldMap map,
+			  Vector state,
+			  HashMap methodDict,
+			  ATObject dynamicParent,
+			  ATObject lexicalParent,
+			  byte flags) {
+      return new NATNamespace(map,
+    		  				    state,
+    		  				    methodDict,
+    		  				    dynamicParent,
+    		  				    lexicalParent,
+    		  				    flags,
+    		  				    path_,
+    		  				    name_);
 	}
 
 	// auxiliary methods

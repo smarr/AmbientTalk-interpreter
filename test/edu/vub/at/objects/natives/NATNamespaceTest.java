@@ -26,7 +26,8 @@ public class NATNamespaceTest extends TestCase {
 	 *  at/test
 	 *  at/test/test.at, containing the following code:
 	 *     def x := 1 ;
-	 *     self.x
+	 *     def y := /.tmp;
+	 *     ~.x
 	 */
 	private File at_;
 	private File at_test_;
@@ -46,7 +47,7 @@ public class NATNamespaceTest extends TestCase {
 			}
 			
 			FileWriter fw = new FileWriter(at_test_testfile_at);
-			fw.write("def x := 1; \n self.x");
+			fw.write("def x := 1; \n def y := /.tmp; \n ~.x");
 			fw.close();
 			
 		} catch (IOException e) {
@@ -65,10 +66,14 @@ public class NATNamespaceTest extends TestCase {
 	
 	
 	public void testNamespaces() {
-		// create a 'root' namespace pointing to /tmp
-		NATNamespace root = new NATNamespace("", "/tmp", OBJDynamicRoot._INSTANCE_);
-		// now, try to select the 'at' slot
 		try {
+			// create a 'root' namespace pointing to /tmp
+			NATNamespace root = new NATNamespace("", "/tmp", NATNamespace._ROOT_NAMESPACE_);
+			
+			// add root to '/'
+			NATNamespace._ROOT_NAMESPACE_.meta_defineField(AGSymbol.alloc("tmp"), root);
+			
+			// now, try to select the 'at' slot
 			ATObject at = root.meta_select(root, AGSymbol.alloc("at"));
 			// the at slot should equal a namespace object
 			assertTrue(at instanceof NATNamespace);
@@ -79,9 +84,18 @@ public class NATNamespaceTest extends TestCase {
 			assertTrue(test instanceof NATNamespace);
 			assertEquals("<ns:/at/test>", test.meta_print().javaValue);	
 			
-			// select at.test.test which should load test.at and return 1
+			// select at.test.testfile which should load testfile.at and return 1
 			ATObject result = test.meta_select(test, AGSymbol.alloc("testfile"));
 			assertEquals(NATNumber.ONE, result);
+			
+			// ensure testfile is now really bound to 1 in the namespace 'test'
+			assertTrue(test.meta_respondsTo(AGSymbol.alloc("testfile")).asNativeBoolean().javaValue);
+			
+			// ensure test.~ == test
+			assertEquals(test, test.meta_select(test, AGSymbol.alloc("~")));
+			
+			// ensure test.^ == at
+			assertEquals(at, test.meta_select(test, AGSymbol.alloc("^")));
 		} catch (NATException e) {
 			fail(e.getMessage());
 		}
