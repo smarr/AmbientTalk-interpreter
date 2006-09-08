@@ -56,5 +56,4 @@ public interface ATText extends ATExpression {
 	public ATText base__oppls_(ATText other) throws NATException;
 	public ATNumber base__opltx__opeql__opgtx_(ATText other) throws NATException;
 	public ATBoolean base__optil__opeql_(ATText other) throws NATException;
-	
 }

@@ -30,6 +30,7 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
@@ -38,6 +39,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.natives.grammar.AGExpression;
+import edu.vub.at.parser.NATParser;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -29,15 +29,18 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirrorFactory;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.parser.NATParser;
 
 /**
  * @author tvc
@@ -99,9 +102,24 @@ public final class OBJLexicalRoot extends NATNil {
 	
 	/**
 	 * '/' (the root namespace)
+	 * '/' is an alias for 'lobby'
 	 */
 	public ATObject base_get_opdiv_() {
+		return base_getLobby();
+	}
+	
+	/**
+	 * lobby (the root namespace)
+	 */
+	public ATObject base_getLobby() {
 		return NATNamespace._ROOT_NAMESPACE_;
+	}
+	
+	/**
+	 * root (the lexical root itself)
+	 */
+	public ATObject base_getRoot() {
+		return this;
 	}
 	
 	/* ------------------------
@@ -293,9 +311,9 @@ public final class OBJLexicalRoot extends NATNil {
 		return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
 	}
 	
-	/* -------------------
-	 * - Unary Operators -
-	 * ------------------- */
+	/* --------------------
+	 * -- Unary Operators -
+	 * -------------------- */
 	
 	/**
 	 * The unary ! primitive:
@@ -312,5 +330,23 @@ public final class OBJLexicalRoot extends NATNil {
 	public ATNumber base_opmns_(ATNumber n) throws NATException {
 		return NATNumber.atValue(- n.asNativeNumber().javaValue);
 	}
+	
+	/* -------------------
+	 * -- Miscellaneous --
+	 * ------------------- */
+	
+	/**
+	 * parse: "text" => parses the given string into an AST
+	 */
+	public ATAbstractGrammar base_parse_(ATText source) throws NATException {
+		return NATParser._INSTANCE_.base_parse(source);
+	}
 
+	/**
+	 * print: expression => string representing the expression
+	 */
+	public ATText base_print_(ATObject obj) throws NATException {
+		return obj.meta_print();
+	}
+	
 }
