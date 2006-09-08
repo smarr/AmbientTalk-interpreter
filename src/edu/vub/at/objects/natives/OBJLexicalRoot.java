@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -336,10 +337,17 @@ public final class OBJLexicalRoot extends NATNil {
 	 * ------------------- */
 	
 	/**
-	 * parse: "text" => parses the given string into an AST
+	 * read: "text" => parses the given string into an AST
 	 */
-	public ATAbstractGrammar base_parse_(ATText source) throws NATException {
+	public ATAbstractGrammar base_read_(ATText source) throws NATException {
 		return NATParser._INSTANCE_.base_parse(source);
+	}
+	
+	/**
+	 * eval: ast in: obj => evaluates the given AST in the context of the given object, returning its value
+	 */
+	public ATObject base_eval_in_(ATAbstractGrammar ast, ATObject obj) throws NATException {
+		return ast.meta_eval(new NATContext(obj, obj, obj.getDynamicParent()));
 	}
 
 	/**
