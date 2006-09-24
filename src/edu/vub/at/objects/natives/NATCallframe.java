@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -59,10 +60,6 @@ public class NATCallframe extends NATNil implements ATObject {
 	protected FieldMap 		variableMap_;
 	protected final Vector	stateVector_;
 	protected final ATObject 	lexicalParent_;
-	
-	public NATCallframe() {
-		this(OBJLexicalRoot._INSTANCE_);
-	}
 	
 	public NATCallframe(ATObject lexicalParent) {
 		variableMap_   = new FieldMap();
@@ -169,7 +166,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * In both cases, it is checked whether the field does not already exist.
 	 * If it does not, a new field is created and its value set to the given initial value.
 	 */
-	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws XDuplicateSlot, XTypeMismatch {
 		boolean fieldAdded = variableMap_.put(name);
 		if (!fieldAdded) {
 			// field already exists...

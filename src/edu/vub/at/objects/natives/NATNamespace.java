@@ -28,8 +28,10 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XParseError;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -55,9 +57,7 @@ import java.util.Vector;
  *  - Structurally, a namespace has the lexical root as its lexical parent and the dynamic root as its dynamic parent.
  *    Furthermore, a namespace object encapsulates an absolute file system path and a relative 'path name'.
  *    The name should correspond to a portion of the tail of the absolute path.
- *    These variables are not visible to AmbientTalk code. However, a namespace object does provide the following two slots:
- *     '~' = bound to 'self', i.e. '~' is the 'current namespace' and represents the '.' directory
- *     '^' = bound to the parent namespace, i.e. it represents the '..' directory
+ *    These variables are not visible to AmbientTalk code.
  *         
  * When a slot is looked up in a namespace NS for a path P (via meta_select) and not found, the namespace object
  * queries the local file system to see whether the selector corresponds to a directory or file in the
@@ -67,9 +67,10 @@ import java.util.Vector;
  *    1) the slot is temporarily bound to nil
  *       (this is to prevent loops when the code to be evaluated would refer to itself;
  *        it also means there can be no circular dependencies, because referring to a slot still under construction yields nil)
- *    2) a new namespace object NNS initialized with path P/selector is created.
- *       This namespace object acts as the local scope for the file and delegates to its parent namespace.
- *    3) the code in the file is loaded and evaluated in the context (current=NNS, self=NNS, super=NS)
+ *    2) a new object FS (the 'file scope') is created.
+ *       This object acts as the local scope for the file and has access to its 'enclosing' namespace via the '~' slot.
+ *       Hence, it can refer to other files in the 'current directory' using ~.filename
+ *    3) the code in the file is loaded and evaluated in the context (current=FS, self=FS, super=FS.parent=dynroot)
  *    4) the result of the evaluated code is bound to the missing slot.
  *       The next time the slot is queried for in the namespace, the value is immediately returned. This prevents
  *       files from being loaded twice.
@@ -79,33 +80,20 @@ public final class NATNamespace extends NATObject {
 
 	private static final String _AT_EXT_ = ".at";
 	private static final AGSymbol _CURNS_SYM_ = AGSymbol.alloc("~");
-	private static final AGSymbol _SUPNS_SYM_ = AGSymbol.alloc("^");
 	
-	/**
-	 * The root '/' object, which is *not* a namespace object, but which is supposed
-	 * to have a slot for each directory in the object path bound to a corresponding namespace
-	 */
-	public static final NATObject _ROOT_NAMESPACE_ = new NATObject();
-	
-	private final String path_;
+	private final File path_;
 	private final String name_;
 	
 	/**
-	 * A namespace object encapsulates the given path, has the given shares-a dynamic parent
-	 * and has the lexical root as its lexical parent.
+	 * A namespace object encapsulates a given absolute path and represents the given relative path.
 	 * 
 	 * @param name the name of this namespace (corresponding to a certain depth to the tail of the absolute path)
 	 * @param path an absolute path referring to a local file system directory.
-	 * @param parentNamespace this namespace's parent (the '..' directory)
 	 */
-	public NATNamespace(String name, String path, ATObject parentNamespace) throws NATException {
-		super(OBJDynamicRoot._INSTANCE_, OBJLexicalRoot._INSTANCE_, NATObject._SHARES_A_);
+	public NATNamespace(String name, File path) {
+		super();
 		name_ = name;
 		path_ = path;
-		// def ~ := self
-		this.meta_defineField(_CURNS_SYM_, this);
-		// def ^ := parentNamespace
-		this.meta_defineField(_SUPNS_SYM_, parentNamespace);
 	}
 	
 	/**
@@ -117,7 +105,7 @@ public final class NATNamespace extends NATObject {
 			  ATObject dynamicParent,
 			  ATObject lexicalParent,
 			  byte flags,
-			  String path,
+			  File path,
 			  String name) {
 	  super(map, state, methodDict, dynamicParent, lexicalParent, flags);
 	  path_ = path;
@@ -137,7 +125,7 @@ public final class NATNamespace extends NATObject {
 		File dir = new File(path_, javaSelector);
 		if (dir.exists() && dir.isDirectory()) {
              // create a new namespace object for this directory
-			NATNamespace childNS = new NATNamespace(name_ + "/" + javaSelector, path_ + File.separator + javaSelector, this);
+			NATNamespace childNS = new NATNamespace(name_ + "/" + javaSelector, dir);
 
 			// bind the new child namespace to the selector
 			this.meta_defineField(selector, childNS);
@@ -151,29 +139,24 @@ public final class NATNamespace extends NATObject {
                  // bind the missing slot to nil to prevent calling this dNU recursively when evaluating the code in the file
 				this.meta_defineField(selector, NATNil._INSTANCE_);
 				
-	             // create a new namespace object for this file
-				NATNamespace childNS = new NATNamespace(name_ + "/" + javaSelector + _AT_EXT_,
-						                                path_ + File.separator + javaSelector,
-						                                this);
+	             // create a new file scope object for this file
+				NATObject fileScope = createFileScopeFor(this);
 				
 				try {
                      // load the code from the file
 					String code = loadContentOfFile(src);
 				
 				    // construct the proper evaluation context for the code
-				    NATContext ctx = new NATContext(childNS, childNS, childNS.dynamicParent_);
+				    NATContext ctx = new NATContext(fileScope, fileScope, fileScope.dynamicParent_);
 				    
 				    // parse and evaluate the code in the proper context and bind its result to the missing slot
-					ATAbstractGrammar source = NATParser._INSTANCE_.base_parse(NATText.atValue(code));
+					ATAbstractGrammar source = NATParser.parse(src.getName(), code);
 					ATObject result = source.meta_eval(ctx);
 					this.meta_assignField(selector, result);
 					
 					return result;
 				} catch (IOException e) {
 					throw new XIOProblem(e);
-				} catch (XParseError e) {
-					e.setOriginatingFile(src.getAbsolutePath());
-					throw e;
 				}
 				
 			} else { // neither a matching directory nor a matching file.at were found
@@ -185,6 +168,21 @@ public final class NATNamespace extends NATObject {
 
 	public NATText meta_print() {
 		return NATText.atValue("<ns:"+name_+">");
+	}
+	
+	public static NATObject createFileScopeFor(NATNamespace ns) {
+		NATObject fileScope = new NATObject();
+		// a fileScope object is empty, save for a reference to its creating namespace
+		try {
+			fileScope.meta_defineField(_CURNS_SYM_, ns);
+		} catch (XDuplicateSlot e) {
+			// impossible: the object is empty
+			e.printStackTrace();
+		} catch (XTypeMismatch e) {
+			// impossible: the given selector is native
+			e.printStackTrace();
+		}
+		return fileScope;
 	}
 	
 	protected NATObject createClone(FieldMap map,
@@ -208,7 +206,7 @@ public final class NATNamespace extends NATObject {
 	/**
 	 * Returns the raw contents of a file in a String (using this JVM's default character encoding)
 	 */
-    private static String loadContentOfFile(File file) throws IOException {
+    public static String loadContentOfFile(File file) throws IOException {
         InputStream is = new FileInputStream(file);
     
         // Get the size of the file

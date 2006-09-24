@@ -30,6 +30,7 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -115,10 +116,10 @@ public class NATObject extends NATCallframe implements ATObject{
 	
 	/**
 	 * Constructs a new AmbientTalk object whose lexical parent is the
-	 * lexical root and whose dynamic parent is the dynamic root.
+	 * global scope and whose dynamic parent is the dynamic root.
 	 */
 	public NATObject() {
-		this(OBJLexicalRoot._INSTANCE_);
+		this(OBJLexicalRoot.getGlobalLexicalScope());
 	}
 	
 	/**
@@ -128,6 +129,16 @@ public class NATObject extends NATCallframe implements ATObject{
 	 */
 	public NATObject(ATObject lexicalParent) {
 		this(OBJDynamicRoot._INSTANCE_, lexicalParent, _SHARES_A_);
+	}
+
+	/**
+	 * Constructs a new ambienttalk object with the given dynamic parent.
+	 * The lexical parent is assumed to be the global scope.
+	 * @param dynamicParent - the dynamic parent of the new object
+	 * @param parentType - the type of parent link
+	 */
+	public NATObject(ATObject dynamicParent, boolean parentType) {
+		this(dynamicParent, OBJLexicalRoot.getGlobalLexicalScope(), parentType);
 	}
 	
 	/**
@@ -274,7 +285,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * When a new field is defined in an object, it is important to check whether or not
 	 * the field map is shared between clones or not. If it is shared, the map must be cloned first.
 	 */
-	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws XDuplicateSlot, XTypeMismatch {
 		if (this.isFlagSet(_SHARE_MAP_FLAG_)) {
 			// copy the variable map
 			variableMap_ = variableMap_.copy();

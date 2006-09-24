@@ -19,8 +19,9 @@ public abstract class AmbientTalkTest extends TestCase {
 	protected ATContext ctx_;
 	
 	public AmbientTalkTest() {
-		ATObject supr = new NATObject(OBJLexicalRoot._INSTANCE_);
-		ATObject self = new NATObject(supr, OBJLexicalRoot._INSTANCE_, NATObject._SHARES_A_); // self has root as lex parent and supr as dyn parent
+		ATObject supr = new NATObject();
+		ATObject self =
+			new NATObject(supr, NATObject._SHARES_A_); // self has root as lex parent and supr as dyn parent
 		ATObject scope = new NATObject(self); // scope has no dyn parent and is nested within self
 		ctx_ = new NATContext(scope, self, supr);
 	}

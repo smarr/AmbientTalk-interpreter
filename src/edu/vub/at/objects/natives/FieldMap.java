@@ -53,6 +53,7 @@ public final class FieldMap {
 	
 	private ATSymbol[] varNames_;
 	
+	// next free position in the varNames_ array
 	private int free_;
 	
 	public FieldMap() {
@@ -100,7 +101,11 @@ public final class FieldMap {
 	 * @return an array of the field names stored in the map.
 	 */
 	public ATSymbol[] listFields() {
-		return varNames_;
+		ATSymbol[] varnames = new ATSymbol[free_];
+		for (int i = 0; i < varnames.length; i++) {
+			varnames[i] = varNames_[i];
+		}
+		return varnames;
 	}
 	
 	/**
