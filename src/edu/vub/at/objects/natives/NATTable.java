@@ -312,6 +312,18 @@ public ATTable asTable() { return this; }
 		}
 		return NATText.atValue(buff.toString());
 	}
+
+	public ATText base_join(ATText sep) throws NATException {
+		String separator = sep.asNativeText().javaValue;
+		StringBuffer buff = new StringBuffer("");
+		for (int i = 0; i < elements_.length-1; i++) {
+			buff.append(elements_[i].asNativeText().javaValue);
+			buff.append(separator);
+		}
+		if (elements_.length > 0)
+			buff.append(elements_[elements_.length-1].asNativeText().javaValue);
+		return NATText.atValue(buff.toString());
+	}
 	
 	/**
 	 * tab.select(start, stop) == els = [ ] ; start.to: stop do: { |i| els << tab[i] } ; els

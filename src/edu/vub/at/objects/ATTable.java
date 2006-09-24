@@ -75,6 +75,12 @@ public interface ATTable extends ATExpression {
 	public ATText base_implode() throws NATException;
 	
 	/**
+	 * Join all the text elements of the receiver table into a text string
+	 * where the argument is used as a separator
+	 */
+	public ATText base_join(ATText txt) throws NATException;
+	
+	/**
 	 * Select a subrange of the table:
 	 * idx: 1  2  3  4  5
 	 *     [a, b, c, d, e].select(2,4) => [b, c, d]

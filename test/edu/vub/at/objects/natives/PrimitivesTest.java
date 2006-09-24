@@ -267,6 +267,15 @@ public class PrimitivesTest extends AmbientTalkTest {
 			// vowels.implode() => "zeiou"
 			assertEquals("zeiou", vowels.base_implode().asNativeText().javaValue);
 			
+             // vowels.join(",") => "z,e,i,o,u"
+			assertEquals("z,e,i,o,u", vowels.base_join(NATText.atValue(",")).asNativeText().javaValue);
+			
+            // [].implode() => ""
+			assertEquals("", NATTable.EMPTY.base_implode().asNativeText().javaValue);
+			
+            // [].join(",") => ""
+			assertEquals("", NATTable.EMPTY.base_join(NATText.atValue(",")).asNativeText().javaValue);
+			
 			// vowels.select(2,4).implode() => "eio"
 			assertEquals("eio", vowels.base_select(NATNumber.atValue(2), NATNumber.atValue(4)).base_implode().asNativeText().javaValue);
 		} catch (NATException e) {

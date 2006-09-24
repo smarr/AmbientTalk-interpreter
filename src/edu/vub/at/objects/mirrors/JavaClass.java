@@ -104,6 +104,11 @@ public class JavaClass extends NATNil implements ATTable {
 		return null;
 	}
 
+	public ATText base_join(ATText txt) throws NATException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	/* (non-Javadoc)
 	 * @see edu.vub.at.objects.ATTable#base_map_(edu.vub.at.objects.ATClosure)
 	 */
