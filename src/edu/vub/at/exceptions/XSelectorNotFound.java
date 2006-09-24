@@ -43,9 +43,18 @@ public class XSelectorNotFound extends NATException {
 	public ATObject inObject_;
 	
 	public XSelectorNotFound(ATSymbol selector, ATObject inObject) {
-		super("Lookup failure : selector " + selector + " could not be found.");
 		selector_ = selector;
 		inObject_ = inObject;
+	}
+	
+	public String getMessage() {
+		String obj;
+		try {
+			obj = inObject_.meta_print().javaValue;
+		} catch(NATException e) {
+			obj = "<unprintable object: "+e.getMessage()+">";
+		}
+		return "Lookup failure : selector " + selector_ + " could not be found in "+ obj;
 	}
 	
 }
