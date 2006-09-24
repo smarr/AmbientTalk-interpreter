@@ -34,38 +34,65 @@ package edu.vub.at.exceptions;
  */
 public final class XParseError extends NATException {
 
-	// for debugging purposes, this string indicates in which file the parse error occurred.
-	private String originatingFile_ = null;
+	private String erroneousCode_;
 	
-	public XParseError() {
-		super();
-	}
+	// indicates the position of the parse error
+	private String fileName_;
+	private int line_;
+	private int column_;
 
 	public XParseError(String message, Throwable cause) {
 		super(message, cause);
 	}
-
-	public XParseError(String message) {
-		super(message);
-	}
-
-	public XParseError(Throwable cause) {
-		super(cause);
+	
+	public XParseError(String erroneousCode,
+			          String message,
+			          String filename,
+			          int line,
+			          int column,
+			          Throwable cause) {
+		super(message, cause);
+		erroneousCode_ = erroneousCode;
+		fileName_ = filename;
+		line_ = line;
+		column_ = column;
 	}
 	
-	public void setOriginatingFile(String file) {
-		originatingFile_ = file;
+	/**
+	 * @return Returns the column.
+	 */
+	public int getColumn() {
+		return column_;
 	}
-	
-	public String getOriginatingFile() {
-		return originatingFile_;
+
+	/**
+	 * @return Returns the fileName.
+	 */
+	public String getFileName() {
+		return fileName_;
 	}
+
+	/**
+	 * @return Returns the line.
+	 */
+	public int getLine() {
+		return line_;
+	}
+
+	/**
+	 * @return Returns the erroneous code.
+	 */
+	public String getErroneousCode() {
+		return erroneousCode_;
+	}
+
 	
 	public String getMessage() {
-		if (originatingFile_ == null)
+		if (fileName_ != null) {
+			return fileName_ + ":" + line_ + ":" + column_ + ":" + super.getMessage();
+		} else {
 			return super.getMessage();
-		else
-			return super.getMessage() + " In file " + originatingFile_;
+		}
 	}
 
 }
