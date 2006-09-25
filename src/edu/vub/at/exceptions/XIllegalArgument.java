@@ -38,5 +38,9 @@ public final class XIllegalArgument extends NATException {
 	public XIllegalArgument(String message) {
 		super(message);
 	}
+	
+	public XIllegalArgument(String message, Throwable cause) {
+		super(message, cause);
+	}
 
 }

@@ -28,6 +28,8 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.exceptions.XReflectionFailure;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
@@ -39,6 +41,7 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -75,10 +78,18 @@ public final class JavaMethod extends NATNil implements ATMethod {
 		try {
 			return Reflection.downObject(
 					javaMethod_.invoke(ctx.getLexicalScope(), arguments.asNativeTable().elements_));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new NATException("Invocation on a Java Method failed", e);
+		} catch (IllegalAccessException e) {
+			// the invoked method is not publicly accessible
+			throw new XReflectionFailure("Native method "+javaMethod_.getName() + " not accessible.", e);
+		} catch (IllegalArgumentException e) {
+			// illegal argument types were supplied
+			throw new XIllegalArgument("Illegal argument for native method "+javaMethod_.getName(), e);
+		} catch (InvocationTargetException e) {
+			// the invoked method threw an exception
+			if (e.getCause() instanceof NATException)
+				throw (NATException) e.getCause();
+			else
+				throw new XReflectionFailure("Native method "+javaMethod_.getName()+" threw internal exception", e);
 		}
 	}
 
@@ -88,6 +99,10 @@ public final class JavaMethod extends NATNil implements ATMethod {
 
 	public boolean isMethod() {
 		return true;
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<native method:"+getName().getText().asNativeText().javaValue+">");
 	}
 
 }

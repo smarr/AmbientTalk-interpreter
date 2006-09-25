@@ -114,5 +114,12 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		return this.txt_.hashCode();
 	}
 	
+	public String toString() {
+		try {
+			return txt_.asNativeText().javaValue;
+		} catch (XTypeMismatch e) {
+			return super.toString();
+		}
+	}
 
 }

@@ -29,12 +29,14 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author smostinc
@@ -94,4 +96,7 @@ public class JavaField extends NATNil implements ATField {
 		throw new XIllegalOperation("Field " + name_.getText().asNativeText().javaValue + " cannot be set.");
 	}
 
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<native field:"+name_.getText().asNativeText().javaValue+">");
+	}
 }

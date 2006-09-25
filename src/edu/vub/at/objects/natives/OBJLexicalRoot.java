@@ -144,7 +144,7 @@ public final class OBJLexicalRoot extends NATNil {
 	}
 	
 	/**
-	 * '/' (the root namespace)
+	 * '/' (the global namespace)
 	 * '/' is an alias for 'lobby'
 	 */
 	public ATObject base_get_opdiv_() {
@@ -152,17 +152,17 @@ public final class OBJLexicalRoot extends NATNil {
 	}
 	
 	/**
-	 * lobby (the root namespace)
+	 * lobby (the global namespace initialized using the objectpath)
 	 */
 	public ATObject base_getLobby() {
 		return getLobbyNamespace();
 	}
 	
 	/**
-	 * root (the lexical root itself)
+	 * root (the global scope)
 	 */
 	public ATObject base_getRoot() {
-		return this;
+		return getGlobalLexicalScope();
 	}
 	
 	/* ------------------------
@@ -362,7 +362,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * The unary ! primitive:
 	 * !b == b.not()
 	 */
-	public ATBoolean base_opnot_(ATBoolean b) throws NATException {
+	public ATBoolean base__opnot_(ATBoolean b) throws NATException {
 		return b.base_not();
 	}
 	
@@ -370,8 +370,16 @@ public final class OBJLexicalRoot extends NATNil {
 	 * The unary - primitive:
 	 * -NBR(n) == NBR(-n)
 	 */
-	public ATNumber base_opmns_(ATNumber n) throws NATException {
+	public ATNumber base__opmns_(ATNumber n) throws NATException {
 		return NATNumber.atValue(- n.asNativeNumber().javaValue);
+	}
+	
+	/**
+	 * The unary + primitive:
+	 * +NBR(n) == NBR(n)
+	 */
+	public ATNumber base__oppls_(ATNumber n) throws NATException {
+		return n;
 	}
 	
 	/* -------------------

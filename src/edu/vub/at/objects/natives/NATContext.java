@@ -75,7 +75,9 @@ public class NATContext extends NATNil implements ATContext {
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<context>");
+		return NATText.atValue("<context("+scope_.meta_print().javaValue+
+				                      ","+self_.meta_print().javaValue+
+				                      ","+super_.meta_print().javaValue+")>");
 	}
 	
 }

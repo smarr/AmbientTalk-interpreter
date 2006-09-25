@@ -263,6 +263,10 @@ public class NATCallframe extends NATNil implements ATObject {
 		return NATTable.EMPTY;
 	}
 	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<callframe>");
+	}
+	
 	/* ---------------------
 	 * -- Mirror Fields   --
 	 * --------------------- */

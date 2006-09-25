@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
@@ -39,6 +40,7 @@ import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author smostinc
@@ -54,6 +56,12 @@ public class JavaClass extends NATNil implements ATTable {
 		this.c_ = c;
 	}
 
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<javaclass>");
+	}
+	
+	// base-level interface
+	
 	public ATNumber base_getLength() {
 		return NATNumber.atValue(c_.getMethods().length);
 	}

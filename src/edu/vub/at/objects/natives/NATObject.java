@@ -424,6 +424,10 @@ public class NATObject extends NATCallframe implements ATObject{
 		return new NATTable((ATObject[]) methods.toArray(new ATObject[methods.size()]));
 	}
 	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<object>");
+	}
+	
 	/* ---------------------
 	 * -- Mirror Fields   --
 	 * --------------------- */

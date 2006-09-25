@@ -296,6 +296,6 @@ public class NATMirror extends NATNil implements ATMirror {
 	 * --------------------------------- */
 		
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<mirror>");
+		return NATText.atValue("<mirror on:"+principal_.meta_print().javaValue+">");
 	}
 }

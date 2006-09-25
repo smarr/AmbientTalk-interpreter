@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -35,6 +36,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -121,6 +123,10 @@ public class JavaClosure extends NATClosure {
 		} else {
 			return method_.meta_apply(arguments, this.getContext());
 		}
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<native closure:"+getMethod().getName().getText().asNativeText().javaValue+">");
 	}
 	
 	/**

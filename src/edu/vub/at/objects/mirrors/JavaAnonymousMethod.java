@@ -29,6 +29,7 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalApplication;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
@@ -37,6 +38,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -89,6 +91,10 @@ public final class JavaAnonymousMethod extends NATNil implements ATMethod {
 
 	public ATAbstractGrammar getBody() {
 		return AGSymbol.alloc("Native anonymous implementation in " + creatorClass_.getName());
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<anonymous java method in "+creatorClass_.getName()+">");
 	}
 
 }

@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -54,6 +55,10 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	 */
 	public ATObject meta_sendTo(ATObject receiver) throws NATException {
 		return receiver.meta_invoke(receiver, selector_, arguments_);
+	}
+	
+	public NATText meta_print() throws XTypeMismatch {
+		return NATText.atValue("<method invocation:"+selector_+NATTable.printAsList(arguments_)+">");
 	}
 
 }
