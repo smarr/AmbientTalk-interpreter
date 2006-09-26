@@ -36,6 +36,7 @@ import edu.vub.at.objects.ATNil;
  * 
  * Message sends of the form <o.m()> are transformed into <MESSAGE-SEND o <METHOD-INVOCATION m []>>
  * Message sends of the form <o<-m()> are transformed into <MESSAGE-SEND o <ASYNC-MESSAGE m []>>
+ * Message sends of the form <o<+exp> are transformed into <MESSAGE-SEND o <EXPRESSION exp>> 
  */
 public interface ATMessageSend extends ATExpression {
 
@@ -43,6 +44,6 @@ public interface ATMessageSend extends ATExpression {
 	
 	public ATNil meta_setReceiver(ATExpression rcv);
 	
-	public ATMessageCreation getMessage();
+	public ATExpression meta_getMessage();
 	
 }

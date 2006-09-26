@@ -180,7 +180,7 @@ public final class NATText extends AGExpression implements ATText {
 			try {
 				return NATBoolean.atValue(javaValue.matches(other.asNativeText().javaValue));
 			} catch (PatternSyntaxException e) {
-				throw new XIllegalArgument("Illegal argument to ~=: " + e.getMessage());
+				throw new XIllegalArgument("Illegal regular expression for ~=: " + e.getMessage());
 			}
 		}
 

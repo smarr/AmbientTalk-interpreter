@@ -57,6 +57,10 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 
 	public ATTable getArguments() { return arguments_; }
 
+	public boolean isMessageCreation() {
+   	    return true;
+    }
+	
 	public ATMessageCreation asMessageCreation() throws XTypeMismatch {
 		return this;
 	}

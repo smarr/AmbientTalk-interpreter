@@ -33,7 +33,6 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATMessageSend;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
@@ -46,9 +45,9 @@ import edu.vub.at.objects.natives.NATText;
 public final class AGMessageSend extends AGExpression implements ATMessageSend {
 
 	private ATExpression rcvExp_;
-	private final ATMessageCreation message_;
+	private final ATExpression message_;
 	
-	public AGMessageSend(ATExpression rcv, ATMessageCreation msg) {
+	public AGMessageSend(ATExpression rcv, ATExpression msg) {
 		rcvExp_ = rcv;
 		message_ = msg;
 	}
@@ -60,7 +59,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 		return NATNil._INSTANCE_;
 	}
 
-	public ATMessageCreation getMessage() { return message_; }
+	public ATExpression meta_getMessage() { return message_; }
 
 	/**
 	 * To evaluate a message send, evaluate the receiver expression into an object.
@@ -87,7 +86,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	
 	public NATText meta_print() throws XTypeMismatch {
 		return NATText.atValue(rcvExp_.meta_print().javaValue +
-				               message_.meta_print().javaValue);
+				               ((message_.isMessageCreation()) ? "" : "<+") + message_.meta_print().javaValue);
 	}
 
 }

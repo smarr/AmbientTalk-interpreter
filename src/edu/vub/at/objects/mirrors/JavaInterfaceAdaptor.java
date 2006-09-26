@@ -28,18 +28,17 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.XReflectionFailure;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.natives.NATNil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Vector;
-
-import junit.framework.AssertionFailedError;
 
 /**
  * @author smostinc
@@ -82,51 +81,78 @@ public class JavaInterfaceAdaptor {
 	}
 	
 	/**
-	 * Invokes a method on a Java object   
-	 * @param jClass
-	 * @param jReceiver
-	 * @param jSelector
-	 * @param jArguments
-	 * @return
-	 * @throws NATException
+	 * Invokes a method on a Java object identified by a selector.
+	 * 
+	 * @param jClass the class of the receiver object
+	 * @param jReceiver the receiver (normally an object from the AT hierarchy)
+	 * @param jSelector the java-level selector identifying the method to invoke
+	 * @param jArguments parameters, normally AT objects
+	 * @return the return value of the reflectively invoked method
 	 */	
-	public static Object invokeJavaMethod (
-			Class jClass, Object jReceiver,
-			String jSelector, Object[] jArguments) 
-			throws NATException {
-		
+	public static Object invokeJavaMethod (Class jClass, Object jReceiver,
+										 String jSelector, Object[] jArguments) throws NATException {
+		Method[] applicable = getMethodsForSelector(jClass, jSelector);
+		switch(applicable.length) {
+		  case 0:
+		  	throw new XSelectorNotFound(Reflection.downBaseLevelSelector(jSelector), (ATObject)jReceiver);
+		  case 1:
+			return invokeJavaMethod(applicable[0], jReceiver, jArguments);
+		  default:
+			throw new XIllegalOperation("Dynamic dispatching on overloaded methods not yet implemented");
+		}
+	}
+	
+	/**
+	 * Invokes a method on a Java object identified by a java.lang.reflect.Method object.
+	 * Note that if the method to invoke reflectively has a formal parameter list consisting
+	 * of one argument of type ATObject[], then the arguments are wrapped in an array such that
+	 * the function actually takes a variable number of arguments.
+	 * 
+	 * @param javaMethod the Java method to invoke
+	 * @param jReceiver the Java object representing the receiver (normally an AT object)
+	 * @param jArguments the AT arguments to pass
+	 * @return the return value of the reflectively invoked method
+	 */
+	public static Object invokeJavaMethod(Method javaMethod, Object jReceiver, Object[] jArguments) throws NATException {
+         // TODO: will have to convert some NATObjects to proper ATXXX argument interfaces using mirages!
 		try {
-			Method[] applicable = getMethodsForSelector(jClass, jSelector);
-			switch(applicable.length) {
-				case 0:
-					throw new XSelectorNotFound(AGSymbol.alloc(jSelector), (ATObject)jReceiver);
-				case 1: // TODO: will have to convert some NATObjects to proper ATXXX argument interfaces using mirages!
-					return applicable[0].invoke(jReceiver, jArguments);
-				default:
-					throw new XIllegalOperation("Dynamic dispatching on overloaded methods not yet implemented");
+			// if the native method takes an array as its sole parameter, it is interpreted as taking
+			// a variable number of ambienttalk arguments
+			Class[] params = javaMethod.getParameterTypes();
+			
+			/* for debugging purposes
+			System.err.println("Reflective invocation of "+javaMethod.getName());
+			System.err.print("Required parameters: ");
+			for (int i = 0; i < params.length; i++) {
+				System.err.print(params[i].getName());
 			}
-		} catch (NATException nate) {
-			// NATExceptions raised mean that the requested method is either overloaded or
-			// does not exist. These are ambienttalk exceptions and may be safely rethrown.
-			throw nate;
-		} catch (InvocationTargetException ite) { // XXX for the purpose of supporting junit tests
-			// An InvocationTargetException may be thrown when a junit components fails
-			// therefore we check the cause to propagate tyhe correct exception.
-			if(ite.getCause() instanceof AssertionFailedError) {
-				throw (AssertionFailedError)ite.getCause();
+			System.err.println();
+			System.err.print("Provided parameters: ");
+			for (int i = 0; i < jArguments.length; i++) {
+				System.err.print(jArguments[i].getClass().getName());
+			}*/
+			
+			if ((params.length == 1) && params[0].equals(ATObject[].class)) {
+				try {
+					return javaMethod.invoke(jReceiver, new Object[] { (ATObject[]) jArguments });
+				} catch (Exception e) {
+					e.printStackTrace(); return NATNil._INSTANCE_;
+				}
 			} else {
-				throw new XTypeMismatch(
-						"Could not invoke method " + Reflection.downSelector(jSelector) + " on native object of type "+jClass,
-						ite, (ATObject)jReceiver);				
+				return javaMethod.invoke(jReceiver, jArguments);
 			}
-		} catch (Exception e) {
-			// Exceptions during method invocation imply that the requested method was
-			// not found in the interface. Hence a XTypeMismatch is thrown to signal 
-			// that the object could not respond to the request.
-			// e.printStackTrace();
-			throw new XTypeMismatch(
-				"Could not invoke method with selector " + jSelector.toString() + " on the given object.",
-				e, (ATObject)jReceiver);
+		} catch (IllegalAccessException e) {
+			// the invoked method is not publicly accessible
+			throw new XReflectionFailure("Native method "+javaMethod.getName() + " not accessible.", e);
+		} catch (IllegalArgumentException e) {
+			// illegal argument types were supplied
+			throw new XIllegalArgument("Illegal argument for native method "+Reflection.downSelector(javaMethod.getName()) + ": " + e.getMessage(), e);
+		} catch (InvocationTargetException e) {
+			// the invoked method threw an exception
+			if (e.getCause() instanceof NATException)
+				throw (NATException) e.getCause();
+			else
+				throw new XReflectionFailure("Native method "+Reflection.downSelector(javaMethod.getName())+" threw internal exception", e);
 		}
 	}
 	
@@ -172,7 +198,7 @@ public class JavaInterfaceAdaptor {
 		Method[] applicable = getMethodsForSelector(baseInterface, methodName);
 		switch (applicable.length) {
 			case 0:
-				throw new XSelectorNotFound(AGSymbol.alloc(methodName), receiver);
+				throw new XSelectorNotFound(Reflection.downBaseLevelSelector(methodName), receiver);
 			case 1:
 				return new JavaClosure(receiver, new JavaMethod(applicable[0]));
 			default:

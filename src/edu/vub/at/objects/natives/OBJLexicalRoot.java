@@ -28,11 +28,9 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -402,19 +400,15 @@ public final class OBJLexicalRoot extends NATNil {
 		return obj.meta_print();
 	}
 	
-	// custom implementation of the default object methods ~ and ==
+	// custom implementation of the default object methods == and new
 	// the reason for this custom implementation: during the execution
 	// of these methods, 'this' should refer to the global lexical scope object (the root),
 	// not to the OBJLexicalRoot instance.
 	// hence, when invoking one of these methods lexically, the receiver is always 'root'
 	// For example, "==(obj)" is equivalent to "root == obj" (or "root.==(obj)")
-	
-    public ATObject base__optil_(ATMessage msg) throws NATException {
-    	    return msg.meta_sendTo(getGlobalLexicalScope());
-    }
 
     public ATBoolean base__opeql__opeql_(ATObject comparand) {
-        return NATBoolean.atValue(getGlobalLexicalScope().equals(comparand));
+        return getGlobalLexicalScope().base__opeql__opeql_(comparand);
     }
 	
     /**
@@ -428,8 +422,7 @@ public final class OBJLexicalRoot extends NATNil {
      * To catch such bugs quickly, root.new throws an exception rather than
      * silently returning the root itself.
      */
-    public ATObject base_new(ATTable initargs) throws NATException {
-	    //return getGlobalLexicalScope();
-    	    throw new XIllegalOperation("Cannot create a new instance of the root object");
+    public ATObject base_new(ATObject[] initargs) throws NATException {
+	    return getGlobalLexicalScope().base_new(initargs);
     }
 }

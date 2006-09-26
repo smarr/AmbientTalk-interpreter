@@ -46,9 +46,6 @@ import java.util.HashMap;
 import java.util.Vector;
 
 /**
- * @author tvcutsem
- * @author smostinc
- *
  * Native implementation of a default ambienttalk object.
  * 
  * Although a native AmbientTalk object is implemented as a subtype of callframes,
@@ -57,6 +54,9 @@ import java.util.Vector;
  * This is a pure form of implementation subclassing: we subclass NATCallframe only
  * for reusing the field definition/assignment protocol and for inheriting the
  * variable map, the state vector and the lexical parent.
+ * 
+ * @author tvcutsem
+ * @author smostinc
  */
 public class NATObject extends NATCallframe implements ATObject{
 	
@@ -192,7 +192,20 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * is applied to the provided arguments.
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
-		return this.meta_select(receiver, selector).asClosure().meta_apply(arguments);
+		// THIS CODE IS EQUIVALENT TO THE FOLLOWING:
+		//return this.meta_select(receiver, selector).asClosure().meta_apply(arguments);
+		// BUT SPECIALIZED FOR PERFORMANCE REASONS (no unnecessary closure is created)
+		if (this.hasLocalField(selector)) {
+			return this.getLocalField(selector).asClosure().meta_apply(arguments);
+		} else if (this.hasLocalMethod(selector)) {
+			// immediately execute the method in the context ctx where
+			//  ctx.scope = the implementing scope, being this object
+			//  ctx.self  = the late bound receiver, being the passed receiver
+			//  ctx.super = the parent of the implementor
+			return this.getLocalMethod(selector).meta_apply(arguments, new NATContext(this, receiver, dynamicParent_));
+		} else {
+			return dynamicParent_.meta_invoke(receiver, selector, arguments);
+		}
 	}
 	
 	/**
@@ -364,7 +377,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * When new is invoked on an object's mirror, the object is first cloned
 	 * by the mirror, after which the method named 'init' is invoked on it.
 	 * 
-	 * meta_new(t) = base_init(t) o meta_clone
+	 * meta_newInstance(t) = base_init(t) o meta_clone
 	 * 
 	 * Care should be taken that a shares-a child implements its own init method
 	 * which does NOT perform a super-send. If this is not the case, then it is
@@ -373,7 +386,8 @@ public class NATObject extends NATCallframe implements ATObject{
 	 */
 	public ATObject meta_newInstance(ATTable initargs) throws NATException {
 		ATObject clone = this.meta_clone();
-		return clone.meta_invoke(clone, AGSymbol._INIT_, initargs);
+		clone.meta_invoke(clone, AGSymbol._INIT_, initargs);
+		return clone;
 	}
 	
 	public ATObject meta_extend(ATClosure code) throws NATException {
@@ -425,7 +439,11 @@ public class NATObject extends NATCallframe implements ATObject{
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<object>");
+		return NATText.atValue("<object:"+this.hashCode()+">");
+	}
+	
+	public boolean isCallFrame() {
+		return false;
 	}
 	
 	/* ---------------------

@@ -368,13 +368,6 @@ public interface ATObject extends ATConversions {
       */
 
     /**
-     * The universal ~ messaging operator.
-     * o ~ msg sends the first-class message msg to the object o by invoking
-     * (reflect: msg).sendTo(self)
-     */
-    public ATObject base__optil_(ATMessage msg) throws NATException;
-
-    /**
      * The pointer equality == operator.
      * OBJ(o1) == OBJ(o2) => BLN(o1.equals(o2))
      */
@@ -382,8 +375,14 @@ public interface ATObject extends ATConversions {
 
     /**
      * The object instantiation method.
-     * obj.new(args) => (reflect: obj).newInstance(args)
+     * obj.new(@args) => (reflect: obj).newInstance(@args)
      */
-    public ATObject base_new(ATTable initargs) throws NATException;
+    public ATObject base_new(ATObject[] initargs) throws NATException;
 
+    /**
+     * The object initialisation method.
+     * By default, it does nothing.
+     * obj.init(@args) => nil
+     */
+    public ATObject base_init(ATObject[] initargs) throws NATException;
 }

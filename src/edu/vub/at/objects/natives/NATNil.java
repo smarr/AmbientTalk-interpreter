@@ -342,6 +342,10 @@ public class NATNil implements ATNil {
     public boolean isMethod() {
         return false;
     }
+    
+    public boolean isMessageCreation() {
+    	    return false;
+    }
 
     public ATBoolean base_isMirror() {
         return NATBoolean._FALSE_;
@@ -448,16 +452,16 @@ public class NATNil implements ATNil {
         }
     }
 
-    public ATObject base__optil_(ATMessage msg) throws NATException {
-        return msg.meta_sendTo(this);
-    }
-
     public ATBoolean base__opeql__opeql_(ATObject comparand) {
         return NATBoolean.atValue(this.equals(comparand));
     }
     
-    public ATObject base_new(ATTable initargs) throws NATException {
-    	    return this.meta_newInstance(initargs);
+    public ATObject base_new(ATObject[] initargs) throws NATException {
+    	    return this.meta_newInstance(NATTable.atValue(initargs));
+    }
+    
+    public ATObject base_init(ATObject[] initargs) throws NATException {
+    	    return NATNil._INSTANCE_;
     }
 
 }

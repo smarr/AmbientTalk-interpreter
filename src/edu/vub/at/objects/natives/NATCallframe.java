@@ -139,11 +139,15 @@ public class NATCallframe extends NATNil implements ATObject {
 	
 	/**
 	 * This method is used in the evaluation of the code <tt>o.m</tt>.
-	 * When o is a call frame, this code is treated exactly as if <tt>m</tt> was
-	 * issued as a lookup within o.
+	 * When o is a call frame, the call frame is searched for a field 'm'.
+	 * If it is not found, a call frame does not delegate to any dynamic parent, and yields an error.
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
-		return this.meta_lookup(selector);
+		if (this.hasLocalField(selector)) {
+			return this.getLocalField(selector);
+		} else {
+			throw new XSelectorNotFound(selector, this);
+		}
 	}
 	
 	/**

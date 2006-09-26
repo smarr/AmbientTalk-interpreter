@@ -9,12 +9,6 @@ checklist:
 - distribution: add comm protocol, discovery protocol, remote actors (what about using a lightweight lib?)
 
 - Root object and native base methods:
-* the base new(args) method is a native method that takes an unlimited number of arguments -> fix!
-* root.new(args) should result in the same behaviour being invoked as new(args)
-* == and ~ are not overridable for root (that is, they are overridable but will not work properly when
-they are invoked using ==(obj) and ~(msg) )
-Suggestion: bind ==, ~ and new as fields in all objects, bound to a JavaClosure? -> inefficient
-* Introduce ~ as syntax! (i.e. o <~ .msg() is parsed similar to o.msg() )
 * system.reset -> requires an OBJLexicalRoot.setGlobalScope/setLobby method, also requires
 the NATContext used in the REPL to be updated
 
@@ -38,13 +32,6 @@ to give an error when invoking 'init' (i.e. 'init' should only be invoked via me
 make sure it's called only once.
 Perhaps a cleaner meta-level interface is having meta_clone and meta_new => clone makes a clone without initializing it, new also does initialization.
 The reason being that explicitly providing meta_init allows base-level code to re-initialize a live object at the meta-level.
-
-* removing meta_invoke from the ATObject interface?
-a meta_invoke could be simulated by doing a meta_select + meta_apply.
-similar to meta_call = meta_lookup + meta_apply
-=> would simplify ATObject
-=> repercussions on code? e.g. on reflective invocations in Java: table.at() would then have to be transformed to meta_select("at") (which returns an ATClosure wrapper around a Java method) + meta_apply which triggers the Java method.
-would be less efficient
 
 * meta_defineField versus meta_addField => perhaps defineField is not accessible from the
 meta-level and should be renamed to defineField. Similarly, meta_assignField should come in two
