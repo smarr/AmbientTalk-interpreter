@@ -9,7 +9,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.parser.NATParser;
 
 import junit.framework.TestCase;

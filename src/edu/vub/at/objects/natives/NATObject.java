@@ -128,7 +128,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
 	 */
 	public NATObject(ATObject lexicalParent) {
-		this(OBJDynamicRoot._INSTANCE_, lexicalParent, _SHARES_A_);
+		this(NATNil._INSTANCE_, lexicalParent, _SHARES_A_);
 	}
 
 	/**
@@ -371,7 +371,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * possible that a shared parent is accidentally re-initialized because a
 	 * sharing child is cloned via new.
 	 */
-	public ATObject meta_new(ATTable initargs) throws NATException {
+	public ATObject meta_newInstance(ATTable initargs) throws NATException {
 		ATObject clone = this.meta_clone();
 		return clone.meta_invoke(clone, AGSymbol._INIT_, initargs);
 	}

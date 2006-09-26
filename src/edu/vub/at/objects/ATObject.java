@@ -220,7 +220,7 @@ public interface ATObject extends ATConversions {
      * @param initargs arguments to the 'init' constructor method
      * @return the new instance
      */
-    public ATObject meta_new(ATTable initargs) throws NATException;
+    public ATObject meta_newInstance(ATTable initargs) throws NATException;
 
     /**
      * Create an is-a extension of the receiver object.
@@ -379,5 +379,11 @@ public interface ATObject extends ATConversions {
      * OBJ(o1) == OBJ(o2) => BLN(o1.equals(o2))
      */
     public ATBoolean base__opeql__opeql_(ATObject other) throws NATException;
+
+    /**
+     * The object instantiation method.
+     * obj.new(args) => (reflect: obj).newInstance(args)
+     */
+    public ATObject base_new(ATTable initargs) throws NATException;
 
 }

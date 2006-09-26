@@ -28,7 +28,6 @@
 package edu.vub.at.objects.grammar;
 
 import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc

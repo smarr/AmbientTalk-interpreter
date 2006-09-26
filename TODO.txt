@@ -1,16 +1,22 @@
 === TODO ===
 
 checklist:
-- mirages + unit tests + become algorithm
+- mirages + unit tests
 - exception handling: handlers (own stack) + throw -> .raise conversion
-- iat: shell + add system object to lexroot
-(requires native objects to understand addField/addMethod or native objects to use explicit methods rather than reflectively invoked ones)
 - write AmbientTalk code: at.collections, at.unit, at.init, at.mirrors
 - use AspectJ introduction to separate passive obj model from active obj model
 - concurrency: add actors(vats) + message queues + threading/concurrency control + async msg passing
 - distribution: add comm protocol, discovery protocol, remote actors (what about using a lightweight lib?)
 
-* ensure meta_print is overridden in each NAT class.
+- Root object and native base methods:
+* the base new(args) method is a native method that takes an unlimited number of arguments -> fix!
+* root.new(args) should result in the same behaviour being invoked as new(args)
+* == and ~ are not overridable for root (that is, they are overridable but will not work properly when
+they are invoked using ==(obj) and ~(msg) )
+Suggestion: bind ==, ~ and new as fields in all objects, bound to a JavaClosure? -> inefficient
+* Introduce ~ as syntax! (i.e. o <~ .msg() is parsed similar to o.msg() )
+* system.reset -> requires an OBJLexicalRoot.setGlobalScope/setLobby method, also requires
+the NATContext used in the REPL to be updated
 
 - Reflection
 * Review and fix mirrors and mirages (add/remove "base" and "meta" prefix consistently to all methods in AT interfaces)

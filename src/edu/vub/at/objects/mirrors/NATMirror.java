@@ -143,8 +143,7 @@ public class NATMirror extends NATNil implements ATMirror {
 			return NATMirrorFactory._INSTANCE_.base_createMirror(
 					Reflection.downObject(
 							Reflection.upInvocation(
-									principal_, // implementor
-									principal_, // self
+									principal_, // implementor and self
 									jSelector,
 									arguments)));
 		} catch (XSelectorNotFound e) {
@@ -189,8 +188,7 @@ public class NATMirror extends NATNil implements ATMirror {
 			return NATMirrorFactory._INSTANCE_.base_createMirror(
 					Reflection.downObject(
 							Reflection.upFieldSelection(
-									principal_, 
-									principal_, 
+									principal_,
 									jSelector)));
 			
 		} catch (XSelectorNotFound e) {
@@ -200,7 +198,6 @@ public class NATMirror extends NATNil implements ATMirror {
 				return NATMirrorFactory._INSTANCE_.base_createMirror(
 						Reflection.downObject(
 								Reflection.upMethodSelection(
-										principal_, 
 										principal_, 
 										jSelector)));
 			} catch (XSelectorNotFound e2) {

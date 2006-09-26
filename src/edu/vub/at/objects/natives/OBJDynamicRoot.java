@@ -35,8 +35,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * @author tvc
- *
  * An instance of the class OBJDynamicRoot represents the root of all dynamic delegation
  * hierarchies within an actor. Since a dynamic root is sealed (it cannot be modified)
  * and contains no mutable fields, it should be possible to share a singleton instance of
@@ -48,6 +46,13 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * 
  * When reaching the top of the dynamic delegation chain, without success of finding a selector,
  * the meta_ method of OBJDynamicRoot should end the delegation with appropriate semantics.
+ * 
+ * @deprecated The sentinel functionality of OBJDynamicRoot can equally be fulfilled by the
+ * sole instance of the class NATNil. Furthermore, this allows NATObjects to inherit the 'base_*'
+ * native methods implemented by NATNil. Hence, rather than using OBJDynamicRoot._INSTANCE_, use
+ * NATNil._INSTANCE_.
+ * 
+ * @author tvc
  */
 public final class OBJDynamicRoot extends NATNil {
 
@@ -65,7 +70,7 @@ public final class OBJDynamicRoot extends NATNil {
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
 		return NATBoolean._FALSE_;
 	}
-	
+
 	/**
 	 * The select delegation chain is not ended by simply raising an error.
 	 * Instead, the initial receiver of the message is notified of the failure.
@@ -75,7 +80,7 @@ public final class OBJDynamicRoot extends NATNil {
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
 		return receiver.meta_doesNotUnderstand(selector);
 	}
-	
+
 	public ATNil meta_assignField(ATSymbol selector, ATObject value) throws NATException {
 		throw new XUndefinedField("field assignment", selector.getText().asNativeText().javaValue);
 	}

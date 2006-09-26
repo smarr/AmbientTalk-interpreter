@@ -212,7 +212,7 @@ public class NATCallframe extends NATNil implements ATObject {
 		throw new XIllegalOperation("Cannot clone a call frame, clone its owning object instead.");
 	}
 
-	public ATObject meta_new(ATTable initargs) throws NATException {
+	public ATObject meta_newInstance(ATTable initargs) throws NATException {
 		throw new XIllegalOperation("Cannot create a new instance of a call frame, new its owning object instead.");
 	}
 	

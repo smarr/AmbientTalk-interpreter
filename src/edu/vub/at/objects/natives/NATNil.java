@@ -92,7 +92,7 @@ public class NATNil implements ATNil {
     public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws NATException {
         try {
 			String jSelector = Reflection.upBaseLevelSelector(atSelector);
-			return Reflection.downObject(Reflection.upInvocation(this, receiver, jSelector, arguments));
+			return Reflection.downObject(Reflection.upInvocation(receiver, jSelector, arguments));
 		} catch (XSelectorNotFound e) {
 			return receiver.meta_doesNotUnderstand(atSelector);
 		}
@@ -135,12 +135,12 @@ public class NATNil implements ATNil {
         try {
             jSelector = Reflection.upBaseFieldAccessSelector(selector);
 
-            return Reflection.downObject(Reflection.upFieldSelection(this, receiver, jSelector));
+            return Reflection.downObject(Reflection.upFieldSelection(receiver, jSelector));
         } catch (XSelectorNotFound e) {
             jSelector = Reflection.upBaseLevelSelector(selector);
 
             try {
-				return Reflection.downObject(Reflection.upMethodSelection(this, receiver, jSelector));
+				return Reflection.downObject(Reflection.upMethodSelection(receiver, jSelector));
 			} catch (XSelectorNotFound e2) {
 				return receiver.meta_doesNotUnderstand(selector);
 			}
@@ -194,12 +194,18 @@ public class NATNil implements ATNil {
     public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
         String selector = Reflection.upBaseFieldMutationSelector(name);
 
-        JavaInterfaceAdaptor.invokeJavaMethod(
-            this.getClass(),
-            this,
-            selector,
-            new ATObject[] { value });
-
+        // try to invoke a native base_setName method
+        try {
+			JavaInterfaceAdaptor.invokeJavaMethod(
+			    this.getClass(),
+			    this,
+			    selector,
+			    new ATObject[] { value });
+		} catch (XSelectorNotFound e) {
+			// if such a method does not exist, the field assignment has failed
+			throw new XUndefinedField("field assignment", name.getText().asNativeText().javaValue);
+		}
+		
         return NATNil._INSTANCE_;
     }
 
@@ -208,10 +214,10 @@ public class NATNil implements ATNil {
       * ------------------------------------ */
 
     public ATObject meta_clone() throws NATException {
-        throw new XIllegalOperation("Cannot clone an object of type " + this.getClass().getName());
+        throw new XIllegalOperation("Cannot clone a native object of type " + this.getClass().getName());
     }
 
-    public ATObject meta_new(ATTable initargs) throws NATException {
+    public ATObject meta_newInstance(ATTable initargs) throws NATException {
         return Reflection.downObject(Reflection.upInstanceCreation(this, initargs));
     }
 
@@ -448,6 +454,10 @@ public class NATNil implements ATNil {
 
     public ATBoolean base__opeql__opeql_(ATObject comparand) {
         return NATBoolean.atValue(this.equals(comparand));
+    }
+    
+    public ATObject base_new(ATTable initargs) throws NATException {
+    	    return this.meta_newInstance(initargs);
     }
 
 }

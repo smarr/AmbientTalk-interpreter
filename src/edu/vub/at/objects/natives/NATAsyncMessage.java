@@ -84,7 +84,7 @@ public final class NATAsyncMessage extends NATMessage implements ATAsyncMessage 
     }
     
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<asynchronous message:"+selector_+NATTable.printAsList(arguments_)+">");
+		return NATText.atValue("<asynchronous message:"+selector_+NATTable.printAsList(arguments_).javaValue+">");
 	}
 
 }

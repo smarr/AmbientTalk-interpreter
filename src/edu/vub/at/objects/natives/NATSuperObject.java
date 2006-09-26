@@ -120,8 +120,8 @@ public class NATSuperObject extends NATNil implements ATObject {
         return lookupFrame_.meta_clone();
     }
 
-    public ATObject meta_new(ATTable initargs) throws NATException {
-        return lookupFrame_.meta_new(initargs);
+    public ATObject meta_newInstance(ATTable initargs) throws NATException {
+        return lookupFrame_.meta_newInstance(initargs);
     }
 
     public ATObject meta_extend(ATClosure code) throws NATException {

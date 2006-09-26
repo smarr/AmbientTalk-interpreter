@@ -288,7 +288,6 @@ public final class Reflection {
 	 * (i.e. the receiver denotes a base-level object or a mirror), the jSelector parameter will have
 	 * a different prefix.
 	 * 
-	 * @param jRcvr the Java object having received the AmbientTalk method invocation
 	 * @param atOrigRcvr the original AmbientTalk object that received the invocation
 	 * @param jSelector the selector of the message to be invoked, converted to a Java selector
 	 * @param atArgs the arguments to the AmbientTalk method invocation
@@ -304,10 +303,10 @@ public final class Reflection {
 	 *  => upInvocation(aNATTable, "meta_invoke", ATObject[] { aNATTable, ATSymbol('at'), ATTable([ATNumber(1)]) })
 	 *  => NATTable must have a method named meta_invoke
 	 */
-	public static final Object upInvocation(ATObject jRcvr, ATObject atOrigRcvr, String jSelector, ATTable atArgs) throws NATException {
+	public static final Object upInvocation(ATObject atOrigRcvr, String jSelector, ATTable atArgs) throws NATException {
 		return JavaInterfaceAdaptor.invokeJavaMethod(
-					jRcvr.getClass(),
-					jRcvr,
+				    atOrigRcvr.getClass(),
+				    atOrigRcvr,
 					jSelector,
 					atArgs.asNativeTable().elements_);
 	}
@@ -356,7 +355,6 @@ public final class Reflection {
 	 * an implicitly performed Java selection by invoking a getter method, if such a getter method
 	 * exists. 
 	 * 
-	 * @param jRcvr the Java object having received the AmbientTalk field selection
 	 * @param atOrigRcvr the original AmbientTalk object that received the selection
 	 * @param jSelector the selector of the message to be invoked, converted to a Java selector
 	 * @return the return value of the Java getter method invoked via the AmbientTalk selection.
@@ -367,10 +365,10 @@ public final class Reflection {
 	 *  => NATMessage must have a zero-argument method named getSelector
 	 *  
 	 */
-	public static final Object upFieldSelection(ATObject jRcvr, ATObject atOrigRcvr, String jSelector) throws NATException {
+	public static final Object upFieldSelection(ATObject atOrigRcvr, String jSelector) throws NATException {
 		return JavaInterfaceAdaptor.invokeJavaMethod(
-				jRcvr.getClass(),
-				jRcvr,
+				atOrigRcvr.getClass(),
+				atOrigRcvr,
 				jSelector,
 				new ATObject[0]);		
 	}
@@ -380,7 +378,6 @@ public final class Reflection {
 	 * a Java method exists that matches the selector. If so, this method is wrapped in a 
 	 * JavaClosure and returned.
 	 * 
-	 * @param jRcvr the Java object having received the AmbientTalk field selection
 	 * @param atOrigRcvr the original AmbientTalk object that received the selection
 	 * @param jSelector the selector of the message to be invoked, converted to a Java selector
 	 * @return a closure wrapping the method selected via the AmbientTalk selection.
@@ -390,8 +387,8 @@ public final class Reflection {
 	 *  => upSelection(aNATTable, "at")
 	 *  => either NATTable must have a method base_at, which is then wrapped
 	 */
-	public static final Object upMethodSelection(ATObject jRcvr, ATObject atOrigRcvr, String jSelector) throws NATException {
-		return JavaInterfaceAdaptor.wrapMethodFor(jRcvr.getClass(), jRcvr, jSelector);
+	public static final Object upMethodSelection(ATObject atOrigRcvr, String jSelector) throws NATException {
+		return JavaInterfaceAdaptor.wrapMethodFor(atOrigRcvr.getClass(), atOrigRcvr, jSelector);
 	}
 	
 	/**

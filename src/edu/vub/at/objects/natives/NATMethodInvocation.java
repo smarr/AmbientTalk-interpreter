@@ -58,7 +58,7 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<method invocation:"+selector_+NATTable.printAsList(arguments_)+">");
+		return NATText.atValue("<method invocation:"+selector_+NATTable.printAsList(arguments_).javaValue+">");
 	}
 
 }

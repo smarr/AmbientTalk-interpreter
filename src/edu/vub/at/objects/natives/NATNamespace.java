@@ -30,7 +30,6 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIOProblem;
-import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;

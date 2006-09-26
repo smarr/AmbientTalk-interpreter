@@ -32,8 +32,6 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.lang.reflect.Constructor;
@@ -118,7 +116,7 @@ public class JavaInterfaceAdaptor {
 				throw (AssertionFailedError)ite.getCause();
 			} else {
 				throw new XTypeMismatch(
-						"Could not invoke method with selector " + jSelector.toString() + " on the given object.",
+						"Could not invoke method " + Reflection.downSelector(jSelector) + " on native object of type "+jClass,
 						ite, (ATObject)jReceiver);				
 			}
 		} catch (Exception e) {

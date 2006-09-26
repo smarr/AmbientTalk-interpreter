@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.grammar;
 
-import edu.vub.at.objects.ATAbstractGrammar;
 
 /**
  * @author tvc
