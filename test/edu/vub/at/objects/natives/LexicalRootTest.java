@@ -1,6 +1,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.eval.Evaluator;
 
 /**
  * @author tvc
@@ -19,7 +20,7 @@ public class LexicalRootTest extends AmbientTalkTest {
 		evalAndCompareTo("nil", NATNil._INSTANCE_);
 		evalAndCompareTo("true", NATBoolean._TRUE_);
 		evalAndCompareTo("false", NATBoolean._FALSE_);
-		evalAndCompareTo("/", OBJLexicalRoot.getLobbyNamespace());
+		evalAndCompareTo("/", Evaluator.getLobbyNamespace());
 	}
 
 }

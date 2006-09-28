@@ -27,13 +27,13 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATMethodInvocation;
-import edu.vub.at.objects.natives.NATTable;
 
 /**
  * @author tvc
@@ -57,7 +57,7 @@ public final class AGMethodInvocationCreation extends AGMessageCreation {
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
 		return new NATMethodInvocation(this.getSelector(),
-				                      NATTable.evaluateArguments(this.getArguments().asNativeTable(), ctx));
+				                      Evaluator.evaluateArguments(this.getArguments().asNativeTable(), ctx));
 	}
 
 	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {

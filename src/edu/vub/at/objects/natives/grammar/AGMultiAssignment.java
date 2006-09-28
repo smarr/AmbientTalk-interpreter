@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -35,7 +36,6 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMultiAssignment;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -67,7 +67,7 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 	 * @return NIL
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		NATTable.bindArguments("multi-assignment", ctx.getLexicalScope(), parameters_, valueExp_.meta_eval(ctx).asTable(), false);
+		Evaluator.bindArguments("multi-assignment", ctx.getLexicalScope(), parameters_, valueExp_.meta_eval(ctx).asTable(), false);
 		return NATNil._INSTANCE_;
 	}
 

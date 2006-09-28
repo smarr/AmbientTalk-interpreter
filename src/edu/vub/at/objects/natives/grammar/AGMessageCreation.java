@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -34,7 +35,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -76,7 +76,7 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 	public NATText meta_print() throws XTypeMismatch {
 		return NATText.atValue(this.getMessageToken() +
 				               selector_.meta_print().javaValue +
-				               NATTable.printAsList(arguments_).javaValue);
+				               Evaluator.printAsList(arguments_).javaValue);
 	}
 	
 	/**

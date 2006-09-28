@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIOProblem;
@@ -35,13 +36,10 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -78,8 +76,6 @@ import java.util.Vector;
 public final class NATNamespace extends NATObject {
 
 	private static final String _AT_EXT_ = ".at";
-	private static final AGSymbol _CURNS_SYM_ = AGSymbol.alloc("~");
-	
 	private final File path_;
 	private final String name_;
 	
@@ -143,7 +139,7 @@ public final class NATNamespace extends NATObject {
 				
 				try {
                      // load the code from the file
-					String code = loadContentOfFile(src);
+					String code = Evaluator.loadContentOfFile(src);
 				
 				    // construct the proper evaluation context for the code
 				    NATContext ctx = new NATContext(fileScope, fileScope, fileScope.dynamicParent_);
@@ -173,7 +169,7 @@ public final class NATNamespace extends NATObject {
 		NATObject fileScope = new NATObject();
 		// a fileScope object is empty, save for a reference to its creating namespace
 		try {
-			fileScope.meta_defineField(_CURNS_SYM_, ns);
+			fileScope.meta_defineField(Evaluator._CURNS_SYM_, ns);
 		} catch (XDuplicateSlot e) {
 			// impossible: the object is empty
 			e.printStackTrace();
@@ -199,45 +195,5 @@ public final class NATNamespace extends NATObject {
     		  				    path_,
     		  				    name_);
 	}
-
-	// auxiliary methods
-	
-	/**
-	 * Returns the raw contents of a file in a String (using this JVM's default character encoding)
-	 */
-    public static String loadContentOfFile(File file) throws IOException {
-        InputStream is = new FileInputStream(file);
-    
-        // Get the size of the file
-        long length = file.length();
-    
-        // You cannot create an array using a long type.
-        // It needs to be an int type.
-        // Before converting to an int type, check
-        // to ensure that file is not larger than Integer.MAX_VALUE.
-        if (length > Integer.MAX_VALUE) {
-            throw new IOException("File is too large: "+file.getName());
-        }
-    
-        // Create the byte array to hold the data
-        byte[] bytes = new byte[(int)length];
-    
-        // Read in the bytes
-        int offset = 0;
-        int numRead = 0;
-        while (offset < bytes.length
-               && (numRead=is.read(bytes, offset, bytes.length-offset)) >= 0) {
-            offset += numRead;
-        }
-    
-        // Ensure all the bytes have been read in
-        if (offset < bytes.length) {
-            throw new IOException("Could not completely read file "+file.getName());
-        }
-    
-        // Close the input stream and return bytes
-        is.close();
-        return new String(bytes);
-    }
 	
 }

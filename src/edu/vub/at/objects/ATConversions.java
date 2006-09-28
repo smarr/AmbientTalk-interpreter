@@ -84,6 +84,7 @@ public interface ATConversions {
 	// Native Value Elements
 	
 	public boolean isNativeBoolean() throws XTypeMismatch;
+	public boolean isNativeText();
 	
 	public NATNumber   asNativeNumber() throws XTypeMismatch;
 	public NATFraction asNativeFraction() throws XTypeMismatch;

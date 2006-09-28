@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.actors.ATAsyncMessage;
@@ -84,7 +85,7 @@ public final class NATAsyncMessage extends NATMessage implements ATAsyncMessage 
     }
     
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<asynchronous message:"+selector_+NATTable.printAsList(arguments_).javaValue+">");
+		return NATText.atValue("<asynchronous message:"+selector_+Evaluator.printAsList(arguments_).javaValue+">");
 	}
 
 }

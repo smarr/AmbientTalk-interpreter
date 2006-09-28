@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -38,7 +39,6 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -114,7 +114,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	public NATText meta_print() throws XTypeMismatch {
 		return NATText.atValue("def " +
 				selectorExp_.meta_print().javaValue +
-				NATTable.printAsList(argumentExps_).javaValue +
+				Evaluator.printAsList(argumentExps_).javaValue +
 				" { " + bodyStmts_.meta_print().javaValue + " }");
 	}
 

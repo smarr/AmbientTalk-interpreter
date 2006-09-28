@@ -68,26 +68,26 @@ public class ReflectiveAccessTest extends TestCase {
 	 * -- Auxiliary definitions --
 	 * --------------------------- */	
 	
-	protected final NATClosure fail = new JavaClosure(null)  {
+	protected final NATClosure fail = new JavaClosure(NATNil._INSTANCE_)  {
 		public ATObject meta_apply(ATTable arguments) throws NATException {
 			fail();
 			return NATNil._INSTANCE_;
 		}
 	};
 	
-	protected final NATClosure success = new JavaClosure(null) {
+	protected final NATClosure success = new JavaClosure(NATNil._INSTANCE_) {
 		public ATObject meta_apply(ATTable arguments) throws NATException {
 			return NATNil._INSTANCE_;
 		}		
 	};
 	
-	protected final NATClosure symbol = new JavaClosure(null) {
+	protected final NATClosure symbol = new JavaClosure(NATNil._INSTANCE_) {
 		public ATObject meta_apply(ATTable arguments) throws NATException {
 			return AGSymbol.alloc(arguments.base_at(NATNumber.ONE).asNativeText());
 		}				
 	};
 	
-	protected final NATClosure echo_ = new JavaClosure(null) {
+	protected final NATClosure echo_ = new JavaClosure(NATNil._INSTANCE_) {
 		public ATObject meta_apply(ATTable arguments) throws NATException {
 			System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
 			return NATNil._INSTANCE_;

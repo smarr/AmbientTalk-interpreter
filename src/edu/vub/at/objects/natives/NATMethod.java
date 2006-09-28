@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
@@ -81,7 +82,7 @@ public class NATMethod extends NATNil implements ATMethod {
 	 */
 	public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException {
 		NATCallframe scope = new NATCallframe(ctx.getLexicalScope());
-		NATTable.bindArguments(name_.getText().asNativeText().javaValue, scope, parameters_, arguments, true);
+		Evaluator.bindArguments(name_.getText().asNativeText().javaValue, scope, parameters_, arguments, true);
 		return body_.meta_eval(ctx.withLexicalEnvironment(scope));
 	}
 	

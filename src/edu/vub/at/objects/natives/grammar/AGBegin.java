@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -34,7 +35,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.natives.NATNumber;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -83,7 +83,7 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	public ATTable getStatements() { return statements_; }
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATTable.printAsStatements(statements_);
+		return Evaluator.printAsStatements(statements_);
 	}
 	
 	public ATBegin asBegin() throws XTypeMismatch {

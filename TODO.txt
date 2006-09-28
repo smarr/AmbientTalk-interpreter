@@ -8,6 +8,18 @@ checklist:
 - concurrency: add actors(vats) + message queues + threading/concurrency control + async msg passing
 - distribution: add comm protocol, discovery protocol, remote actors (what about using a lightweight lib?)
 
+- Coercers: only necessary for symbiosis!
+For normal AT code: make a type ATEverything (bottom type) and make NATObject implement that interface
+e.g. base_ifTrue_ifFalse(ATClo c1, ATClo c2) { this.meta_invoke(this, "ifTrue:ifFalse:", new NATTable(c1,c2) }
+For symbiosis required (e.g. ActionListener example)
+
+- Symbiosis: introduce a 'jlobby' namespace similar to lobby, but initialized with CLASSPATH of JVM instead of OBJECTPATH -> can be queried for classes! e,g, jlobby.java.lang.String, jlobby.edu.vub.at.Evaluator, ...
+JavaPackage = namespace, JavaClass = object that understands 'new' and static methods, JavaObject = object whose methods become methods, whose getter/setter methods become fields
+Solve overloading by being able to annotate a method invocation => future work
+Automatic conversions: use coercers for going from an ATObject to a Java interface type
+Exceptions map to generic AT exceptions
+Threads -> currently 'you're on your own'? or consider wrapping each ATObject in a coercer that also acts as a far ref => converts invocations into enqueues, but this requires futures to block the waiting Java Thread
+
 - Root object and native base methods:
 * system.reset -> requires an OBJLexicalRoot.setGlobalScope/setLobby method, also requires
 the NATContext used in the REPL to be updated
@@ -18,6 +30,8 @@ the NATContext used in the REPL to be updated
 
 - Core language evaluator
 * remove as much .asNative...() casts from the code as possible. Each such cast precludes use of custom AT objects.
+
+* introduce a native method 'return:'
 
 * find a suitable semantics for object 'instantiation'.
 problem: 'init' is not a 'normal' method, if it would be, and you would invoke obj.clone.init, you might
@@ -32,6 +46,10 @@ to give an error when invoking 'init' (i.e. 'init' should only be invoked via me
 make sure it's called only once.
 Perhaps a cleaner meta-level interface is having meta_clone and meta_new => clone makes a clone without initializing it, new also does initialization.
 The reason being that explicitly providing meta_init allows base-level code to re-initialize a live object at the meta-level.
+
+idee: ipv base_new -> meta_apply op objecten de rol van base_new laten spelen?
+voordeel: propere manier om object instantiatie in de taal te krijgen zonder extra syntax
+nadeel: impliciet, moeilijk in de code op te sporen waar nieuwe objecten worden aangemaakt
 
 * meta_defineField versus meta_addField => perhaps defineField is not accessible from the
 meta-level and should be renamed to defineField. Similarly, meta_assignField should come in two

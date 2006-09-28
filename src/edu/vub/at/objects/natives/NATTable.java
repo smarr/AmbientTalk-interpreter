@@ -27,8 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIndexOutOfBounds;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
@@ -39,7 +39,6 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.JavaClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.grammar.AGExpression;
@@ -58,127 +57,6 @@ import java.util.LinkedList;
 public final class NATTable extends AGExpression implements ATTable {
 
 	public final static NATTable EMPTY = new NATTable(new ATObject[] {});
-	
-	// AUXILIARY STATIC FUNCTIONS
-	
-	/**
-	 * Auxiliary function used to print the elements of the table using various separators.
-	 */
-	public final static NATText printElements(NATTable tab,String start, String sep, String stop) throws XTypeMismatch {
-		ATObject[] els = tab.elements_;
-		if (els.length == 0)
-			return NATText.atValue(String.valueOf(start+stop));
-		
-	    StringBuffer buff = new StringBuffer(start);
-		for (int i = 0; i < els.length - 1; i++) {
-			buff.append(els[i].meta_print().asNativeText().javaValue + sep);
-		}
-		buff.append(els[els.length-1].meta_print().asNativeText().javaValue + stop);
-        return NATText.atValue(buff.toString());
-	}
-	
-	public static final NATText printAsStatements(ATTable tab) throws XTypeMismatch {
-		return printElements(tab.asNativeTable(), "", "; ", "");
-	}
-	
-	public static final NATText printAsList(ATTable tab) throws XTypeMismatch {
-		return printElements(tab.asNativeTable(), "(", ", ", ")");
-	}
-	
-	/**
-	 * This function is called whenever arguments to a function, message, method need to be evaluated.
-	 * TODO: currently does not work for user-defined tables
-	 */
-	public static final NATTable evaluateArguments(NATTable args, ATContext ctx) throws NATException {
-		if (args == EMPTY) return EMPTY;
-		
-		ATObject[] els = args.elements_;
-		
-		LinkedList result = new LinkedList();
-		int siz = els.length;
-		for (int i = 0; i < els.length; i++) {
-			if (els[i].isSplice()) {
-				ATObject[] tbl = els[i].asSplice().getExpression().meta_eval(ctx).asNativeTable().elements_;
-				for (int j = 0; j < tbl.length; j++) {
-					result.add(tbl[j]);
-				}
-				siz += (tbl.length - 1); // -1 because we replace one element by a table of elements
-			} else {
-				result.add(els[i].meta_eval(ctx));
-			}
-		}
-		return new NATTable((ATObject[]) result.toArray(new ATObject[siz]));
-	}
-	
-	/**
-	 * Auxiliary function to bind formal parameters to actual arguments within a certain scope.
-	 * TODO: currently does not work for user-defined ATTables
-	 * 
-	 * @param funnam the name of the function for which to bind these elements, for debugging purposes only
-	 * @param scope the frame in which to store the bindings
-	 * @param parameters the formal parameter references (of which the last element may be a 'rest' arg to collect left-over arguments)
-	 * @param arguments the actual arguments, already evaluated
-	 * @param isDefinition if true, define the parameters, if false, assign them instead
-	 * @throws XArityMismatch when the formals don't match the actuals
-	 */
-	public static final void bindArguments(String funnam, ATObject scope, ATTable parameters, ATTable arguments, boolean isDefinition) throws NATException {
-		if (parameters == NATTable.EMPTY) {
-			if (arguments == NATTable.EMPTY)
-				return; // no need to bind any arguments
-			else
-				throw new XArityMismatch(funnam, 0, arguments.base_getLength().asNativeNumber().javaValue); 
-		}
-		
-		ATObject[] pars = parameters.asNativeTable().elements_;
-		ATObject[] args = arguments.asNativeTable().elements_;
-		
-		// check to see whether the last argument is a spliced parameters, which
-		// indicates a variable parameter list
-		if (pars[pars.length - 1].isSplice()) {
-			int numMandatoryPars = (pars.length - 1);
-			// if so, check whether at least all mandatory parameters are matched
-			if (args.length < numMandatoryPars)
-				throw new XArityMismatch(funnam, numMandatoryPars, args.length);
-			
-			// bind all parameters except for the last one
-			for (int i = 0; i < numMandatoryPars; i++) {
-				if (isDefinition)
-					scope.meta_defineField(pars[i].asSymbol(), args[i]);
-				else
-					scope.meta_assignField(pars[i].asSymbol(), args[i]);
-			}
-			
-			// bind the last parameter to the remaining arguments
-			int numRemainingArgs = args.length - numMandatoryPars;
-			ATObject[] restArgs = new ATObject[numRemainingArgs];
-			for (int i = 0; i < numRemainingArgs; i++) {
-				restArgs[i] = args[i + numMandatoryPars];
-			}
-			ATSymbol restArgsName = pars[numMandatoryPars].asSplice().getExpression().asSymbol();
-			if (isDefinition)
-				scope.meta_defineField(restArgsName, new NATTable(restArgs));
-			else
-				scope.meta_assignField(restArgsName, new NATTable(restArgs));
-			
-		} else {
-			// regular parameter list: arguments and parameters have to match exactly
-			if (pars.length != args.length)
-				throw new XArityMismatch(funnam, pars.length, args.length);	
-		
-			if (isDefinition) {
-				for (int i = 0; i < pars.length; i++) {
-				     scope.meta_defineField(pars[i].asSymbol(), args[i]);	
-			    }
-			} else {
-				for (int i = 0; i < pars.length; i++) {
-					scope.meta_assignField(pars[i].asSymbol(), args[i]);	
-				}
-			}
-		}
-	}
-	
-	
-	// instance variables
 	
 	public final ATObject[] elements_;
 	
@@ -205,7 +83,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		}
 	}
 	
-public ATTable asTable() { return this; }
+    public ATTable asTable() { return this; }
 	
 	public NATTable asNativeTable() { return this; }
 	
@@ -262,7 +140,7 @@ public ATTable asTable() { return this; }
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATTable.printElements(this, "[", ", ","]");
+		return Evaluator.printElements(this, "[", ", ","]");
 	}
 	
 	public ATNumber base_getLength() { return NATNumber.atValue(elements_.length); }

@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATClosure;
@@ -35,7 +36,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATApplication;
 import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -67,7 +67,7 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
 		ATClosure clo = funExp_.meta_eval(ctx).asClosure();
-		return clo.meta_apply(NATTable.evaluateArguments(arguments_.asNativeTable(), ctx));
+		return clo.meta_apply(Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx));
 	}
 
 	/**
@@ -81,7 +81,7 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue(funExp_.meta_print().javaValue + NATTable.printAsList(arguments_).javaValue);
+		return NATText.atValue(funExp_.meta_print().javaValue + Evaluator.printAsList(arguments_).javaValue);
 	}
 
 }

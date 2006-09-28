@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
@@ -65,46 +66,7 @@ public final class OBJLexicalRoot extends NATNil {
 	/**
 	 * The singleton instance of the sentinel lexical root
 	 */
-	private static final OBJLexicalRoot _INSTANCE_ = new OBJLexicalRoot();
-	
-	/**
-	 * A thread-local variable is used to assign a unique global scope to
-	 * each separate actor. Each actor that invokes the getGlobalLexicalScope
-	 * method receives its own separate copy of the global scope
-	 */
-	private static final ThreadLocal _GLOBAL_SCOPE_ = new ThreadLocal() {
-        protected synchronized Object initialValue() {
-        	    // a global scope has the sentinel instance as its lexical parent 
-            return new NATObject(OBJLexicalRoot._INSTANCE_);
-        }
-	};
-	
-	/**
-	 * A thread-local variable is used to assign a unique lobby namespace to
-	 * each separate actor. Each actor that invokes the getLobby()
-	 * method receives its own separate copy of the lobby namespace
-	 */
-	private static final ThreadLocal _LOBBY_NAMESPACE_ = new ThreadLocal() {
-        protected synchronized Object initialValue() {
-        	    // a lobby namespace is a simple empty object
-            return new NATObject();
-        }
-	};
-	
-	/**
-	 * @return the 'global' lexical scope of an actor, which is a normal native object
-	 * whose lexical parent is OBJLexicalRoot.
-	 */
-	public static NATObject getGlobalLexicalScope() {
-		return (NATObject) _GLOBAL_SCOPE_.get();
-	}
-	
-	/**
-	 * @return the lobby namespace of an actor, which is a normal empty object
-	 */
-	public static NATObject getLobbyNamespace() {
-		return (NATObject) _LOBBY_NAMESPACE_.get();
-	}
+	static public final OBJLexicalRoot _INSTANCE_ = new OBJLexicalRoot();
 	
 	/**
 	 * Constructor made private for singleton design pattern
@@ -148,14 +110,14 @@ public final class OBJLexicalRoot extends NATNil {
 	 * lobby (the global namespace initialized using the objectpath)
 	 */
 	public ATObject base_getLobby() {
-		return getLobbyNamespace();
+		return Evaluator.getLobbyNamespace();
 	}
 	
 	/**
 	 * root (the global scope)
 	 */
 	public ATObject base_getRoot() {
-		return getGlobalLexicalScope();
+		return Evaluator.getGlobalLexicalScope();
 	}
 	
 	/* ------------------------
@@ -408,7 +370,7 @@ public final class OBJLexicalRoot extends NATNil {
 	// For example, "==(obj)" is equivalent to "root == obj" (or "root.==(obj)")
 
     public ATBoolean base__opeql__opeql_(ATObject comparand) {
-        return getGlobalLexicalScope().base__opeql__opeql_(comparand);
+        return Evaluator.getGlobalLexicalScope().base__opeql__opeql_(comparand);
     }
 	
     /**
@@ -423,6 +385,6 @@ public final class OBJLexicalRoot extends NATNil {
      * silently returning the root itself.
      */
     public ATObject base_new(ATObject[] initargs) throws NATException {
-	    return getGlobalLexicalScope().base_new(initargs);
+	    return Evaluator.getGlobalLexicalScope().base_new(initargs);
     }
 }

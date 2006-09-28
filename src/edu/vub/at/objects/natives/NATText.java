@@ -65,6 +65,7 @@ public final class NATText extends AGExpression implements ATText {
 			javaValue = javaString;
 		}
 
+		public boolean isNativeText() { return true; }
 		public NATText asNativeText() throws XTypeMismatch { return this; }
 		
 		public NATText meta_print() throws XTypeMismatch {

@@ -354,6 +354,10 @@ public class NATNil implements ATNil {
     public boolean isNativeBoolean() {
         return false;
     }
+    
+    public boolean isNativeText() {
+        return false;
+    }
 
     public ATClosure asClosure() throws XTypeMismatch {
         throw new XTypeMismatch("Expected a closure, given: " + this.getClass().getName(), this);
@@ -445,10 +449,9 @@ public class NATNil implements ATNil {
 
     public String toString() {
         try {
-            return this.getClass().getName() + ": " + this.meta_print().javaValue;
+            return this.meta_print().javaValue;
         } catch (XTypeMismatch e) {
-            e.printStackTrace();
-            return this.getClass().getName() + ": " + e.getMessage();
+            return "<unprintable "+this.getClass().getSimpleName() + ": " + e.getMessage() + ">";
         }
     }
 

@@ -1,5 +1,6 @@
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATObject;
@@ -83,7 +84,7 @@ public class NATNamespaceTest extends TestCase {
 	
 	public void testNamespaces() {
 		try {
-			NATObject lobby = OBJLexicalRoot.getLobbyNamespace();
+			NATObject lobby = Evaluator.getLobbyNamespace();
 			
 			// create the namespace 'at' bound to the path /tmp/at
 			NATNamespace atNS = new NATNamespace("/at", at_);
@@ -127,7 +128,7 @@ public class NATNamespaceTest extends TestCase {
 	 */
 	public void testReverseNamespaces() {
 		try {
-			NATObject lobby = OBJLexicalRoot.getLobbyNamespace();
+			NATObject lobby = Evaluator.getLobbyNamespace();
 			
 			// create the namespace 'at' bound to the path /tmp/at
 			NATNamespace atNS = new NATNamespace("/at", at_);

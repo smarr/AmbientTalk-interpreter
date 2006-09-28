@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATMethodInvocation;
@@ -58,7 +59,7 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<method invocation:"+selector_+NATTable.printAsList(arguments_).javaValue+">");
+		return NATText.atValue("<method invocation:"+selector_+Evaluator.printAsList(arguments_).javaValue+">");
 	}
 
 }

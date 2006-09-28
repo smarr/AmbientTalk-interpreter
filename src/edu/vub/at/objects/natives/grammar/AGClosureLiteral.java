@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -36,7 +37,6 @@ import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATClosureLiteral;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -67,7 +67,7 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 	 * @return a native closure closing over the current evaluation context.
 	 */
 	public ATObject meta_eval(ATContext ctx) {
-		return new NATClosure(new NATMethod(AGSymbol._LAMBDA_, arguments_, body_), ctx);
+		return new NATClosure(new NATMethod(Evaluator._LAMBDA_, arguments_, body_), ctx);
 	}
 
 	/**
@@ -85,7 +85,7 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 		if (arguments_.base_isEmpty().asNativeBoolean().javaValue) {
 		  return NATText.atValue("{ "+body_.meta_print().javaValue + " }");
 		} else
-		  return NATText.atValue(NATTable.printElements(arguments_.asNativeTable(), "{ |", ", ", " | ").javaValue +
+		  return NATText.atValue(Evaluator.printElements(arguments_.asNativeTable(), "{ |", ", ", " | ").javaValue +
 		                       body_.meta_print().javaValue+"}");
 	}
 

@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -39,7 +40,6 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -119,7 +119,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * global scope and whose dynamic parent is the dynamic root.
 	 */
 	public NATObject() {
-		this(OBJLexicalRoot.getGlobalLexicalScope());
+		this(Evaluator.getGlobalLexicalScope());
 	}
 	
 	/**
@@ -138,7 +138,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * @param parentType - the type of parent link
 	 */
 	public NATObject(ATObject dynamicParent, boolean parentType) {
-		this(dynamicParent, OBJLexicalRoot.getGlobalLexicalScope(), parentType);
+		this(dynamicParent, Evaluator.getGlobalLexicalScope(), parentType);
 	}
 	
 	/**
@@ -386,7 +386,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 */
 	public ATObject meta_newInstance(ATTable initargs) throws NATException {
 		ATObject clone = this.meta_clone();
-		clone.meta_invoke(clone, AGSymbol._INIT_, initargs);
+		clone.meta_invoke(clone, Evaluator._INIT_, initargs);
 		return clone;
 	}
 	
