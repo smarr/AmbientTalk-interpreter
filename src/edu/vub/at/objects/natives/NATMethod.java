@@ -82,7 +82,7 @@ public class NATMethod extends NATNil implements ATMethod {
 	 */
 	public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException {
 		NATCallframe scope = new NATCallframe(ctx.getLexicalScope());
-		Evaluator.bindArguments(name_.getText().asNativeText().javaValue, scope, parameters_, arguments, true);
+		Evaluator.defineParamsForArgs(name_.getText().asNativeText().javaValue, scope, parameters_, arguments);
 		return body_.meta_eval(ctx.withLexicalEnvironment(scope));
 	}
 	

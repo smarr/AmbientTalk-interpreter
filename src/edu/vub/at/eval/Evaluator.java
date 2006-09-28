@@ -131,6 +131,11 @@ public final class Evaluator {
 		return new NATTable((ATObject[]) result.toArray(new ATObject[siz]));
 	}
 
+	// auxiliary interface to support functor objects
+	private interface BindClosure {
+		public void bindParamToArg(ATObject inScope, ATSymbol param, ATObject arg) throws NATException;
+	}
+	
 	/**
 	 * Auxiliary function to bind formal parameters to actual arguments within a certain scope.
 	 * TODO: currently does not work for user-defined ATTables
@@ -139,10 +144,10 @@ public final class Evaluator {
 	 * @param scope the frame in which to store the bindings
 	 * @param parameters the formal parameter references (of which the last element may be a 'rest' arg to collect left-over arguments)
 	 * @param arguments the actual arguments, already evaluated
-	 * @param isDefinition if true, define the parameters, if false, assign them instead
+	 * @param binder a functor object describing the strategy to bind an argument to a parameter (assign or define the parameter)
 	 * @throws XArityMismatch when the formals don't match the actuals
 	 */
-	public static final void bindArguments(String funnam, ATObject scope, ATTable parameters, ATTable arguments, boolean isDefinition) throws NATException {
+	private static final void bindArguments(String funnam, ATObject scope, ATTable parameters, ATTable arguments, BindClosure binder) throws NATException {
 		if (parameters == NATTable.EMPTY) {
 			if (arguments == NATTable.EMPTY)
 				return; // no need to bind any arguments
@@ -163,10 +168,7 @@ public final class Evaluator {
 			
 			// bind all parameters except for the last one
 			for (int i = 0; i < numMandatoryPars; i++) {
-				if (isDefinition)
-					scope.meta_defineField(pars[i].asSymbol(), args[i]);
-				else
-					scope.meta_assignField(pars[i].asSymbol(), args[i]);
+				binder.bindParamToArg(scope, pars[i].asSymbol(), args[i]);
 			}
 			
 			// bind the last parameter to the remaining arguments
@@ -176,27 +178,41 @@ public final class Evaluator {
 				restArgs[i] = args[i + numMandatoryPars];
 			}
 			ATSymbol restArgsName = pars[numMandatoryPars].asSplice().getExpression().asSymbol();
-			if (isDefinition)
-				scope.meta_defineField(restArgsName, new NATTable(restArgs));
-			else
-				scope.meta_assignField(restArgsName, new NATTable(restArgs));
+			binder.bindParamToArg(scope, restArgsName, new NATTable(restArgs));
 			
 		} else {
 			// regular parameter list: arguments and parameters have to match exactly
 			if (pars.length != args.length)
 				throw new XArityMismatch(funnam, pars.length, args.length);	
 		
-			if (isDefinition) {
-				for (int i = 0; i < pars.length; i++) {
-				     scope.meta_defineField(pars[i].asSymbol(), args[i]);	
-			    }
-			} else {
-				for (int i = 0; i < pars.length; i++) {
-					scope.meta_assignField(pars[i].asSymbol(), args[i]);	
-				}
-			}
+			for (int i = 0; i < pars.length; i++) {
+			     binder.bindParamToArg(scope, pars[i].asSymbol(), args[i]);	
+		    }
 		}
 	}
+	
+	/**
+	 * Bind all of the given parameters as newly defined slots in the given scope to the given arguments
+	 */
+	public static final void defineParamsForArgs(String funnam, ATObject scope, ATTable parameters, ATTable arguments) throws NATException {
+		bindArguments(funnam, scope, parameters, arguments, new BindClosure() {
+			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws NATException {
+				scope.meta_defineField(param, arg);
+			}
+		});
+	}
+	
+	/**
+	 * Assign all of the formal parameter names in the scope object to the given arguments
+	 */
+	public static final void assignArgsToParams(String funnam, ATObject scope, ATTable parameters, ATTable arguments) throws NATException {
+		bindArguments(funnam, scope, parameters, arguments, new BindClosure() {
+			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws NATException {
+				scope.meta_assignVariable(param, arg);
+			}
+		});
+	}
+			
 
 	/**
 	 * Returns the raw contents of a file in a String (using this JVM's default character encoding)
