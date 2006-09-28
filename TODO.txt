@@ -20,10 +20,6 @@ Automatic conversions: use coercers for going from an ATObject to a Java interfa
 Exceptions map to generic AT exceptions
 Threads -> currently 'you're on your own'? or consider wrapping each ATObject in a coercer that also acts as a far ref => converts invocations into enqueues, but this requires futures to block the waiting Java Thread
 
-- Root object and native base methods:
-* system.reset -> requires an OBJLexicalRoot.setGlobalScope/setLobby method, also requires
-the NATContext used in the REPL to be updated
-
 - Reflection
 * Review and fix mirrors and mirages (add/remove "base" and "meta" prefix consistently to all methods in AT interfaces)
 * isXXX and asXXX must become meta_isXXX and meta_asXXX
@@ -56,5 +52,3 @@ meta-level and should be renamed to defineField. Similarly, meta_assignField sho
 variants: meta_assignField(ATField f, ATObject val) and assignField(ATSymbol sel, ATObject val).
 The problem then becomes: ATObject interface only supports the meta_... variants, meaning that
 the evaluation code will require an .isNativeObject() -> .asNativeObject().defineField(...) check.
-
-* clean up the bindArguments function: use lambda abstraction for the ugly defineField/assignField dichotomy

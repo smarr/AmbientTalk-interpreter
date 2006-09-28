@@ -309,6 +309,22 @@ public final class OBJLexicalRoot extends NATNil {
 		return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
 	}
 	
+	/**
+	 * The clone: primitive, which returns a clone of an object.
+	 * 
+	 * usage:
+	 *  clone: anObject
+	 * 
+	 * pseudo-implementation:
+	 *  (reflect: anObject).clone()
+	 * 
+	 * @param original the object to copy
+	 * @return a clone of the given object
+	 */
+	public ATObject base_clone_(ATObject original) throws NATException {
+		return original.meta_clone();
+	}
+	
 	/* --------------------
 	 * -- Unary Operators -
 	 * -------------------- */
