@@ -35,11 +35,24 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
+import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATBegin;
+import edu.vub.at.objects.grammar.ATDefinition;
+import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.grammar.ATMessageCreation;
+import edu.vub.at.objects.grammar.ATSplice;
+import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.grammar.ATUnquoteSplice;
+import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.mirrors.NATMirageFactory;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -510,5 +523,167 @@ public class NATObject extends NATCallframe implements ATObject{
 		body.meta_eval(new NATContext(extension, extension, this));
 		
 		return extension;
+	}
+
+	/* ---------------------------------------
+	 * -- Conversion and Testing Protocol   --
+	 * --------------------------------------- */
+	
+	// Objects allow their methods to intercept the 'isXXX' and 'asXXX' calls
+	
+	public ATBegin asBegin() throws XTypeMismatch {
+		try {
+			return (ATBegin) meta_respondsTo(AGSymbol.alloc("asBegin")).base_ifTrue_(
+				new JavaClosure(null) {
+					public ATObject meta_apply(NATTable arguments) throws NATException {
+						return NATMirageFactory.createMirageForInterface(
+							meta_invoke(this, AGSymbol.alloc("asBegin"), NATTable.EMPTY),
+							ATBegin.class);			
+					}
+			});
+		} catch (NATException e) {
+			return super.asBegin();
+		}
+	}
+
+	public ATBoolean asBoolean() throws XTypeMismatch {
+		try {
+			return (ATBoolean) meta_respondsTo(AGSymbol.alloc("asBoolean")).base_ifTrue_(
+				new JavaClosure(null) {
+					public ATObject meta_apply(NATTable arguments) throws NATException {
+						return NATMirageFactory.createMirageForInterface(
+							meta_invoke(this, AGSymbol.alloc("asBoolean"), NATTable.EMPTY),
+							ATBegin.class);			
+					}
+			});
+		} catch (NATException e) {
+			return super.asBoolean();
+		}
+	}
+
+	@Override
+	public ATClosure asClosure() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asClosure();
+	}
+
+	@Override
+	public ATDefinition asDefinition() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asDefinition();
+	}
+
+	@Override
+	public ATExpression asExpression() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asExpression();
+	}
+
+	@Override
+	public ATMessage asMessage() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asMessage();
+	}
+
+	@Override
+	public ATMessageCreation asMessageCreation() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asMessageCreation();
+	}
+
+	@Override
+	public ATMethod asMethod() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asMethod();
+	}
+
+	@Override
+	public ATMirror asMirror() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asMirror();
+	}
+
+	@Override
+	public ATNumber asNumber() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asNumber();
+	}
+
+	@Override
+	public ATSplice asSplice() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asSplice();
+	}
+
+	@Override
+	public ATStatement asStatement() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asStatement();
+	}
+
+	@Override
+	public ATSymbol asSymbol() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asSymbol();
+	}
+
+	@Override
+	public ATTable asTable() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asTable();
+	}
+
+	@Override
+	public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch {
+		// TODO Auto-generated method stub
+		return super.asUnquoteSplice();
+	}
+
+	@Override
+	public ATBoolean base_isMirror() {
+		// TODO Auto-generated method stub
+		return super.base_isMirror();
+	}
+
+	@Override
+	public boolean isBoolean() {
+		// TODO Auto-generated method stub
+		return super.isBoolean();
+	}
+
+	@Override
+	public boolean isClosure() {
+		// TODO Auto-generated method stub
+		return super.isClosure();
+	}
+
+	@Override
+	public boolean isMethod() {
+		// TODO Auto-generated method stub
+		return super.isMethod();
+	}
+
+	@Override
+	public boolean isSplice() {
+		// TODO Auto-generated method stub
+		return super.isSplice();
+	}
+
+	@Override
+	public boolean isSymbol() {
+		// TODO Auto-generated method stub
+		return super.isSymbol();
+	}
+
+	@Override
+	public boolean isTable() {
+		// TODO Auto-generated method stub
+		return super.isTable();
+	}
+
+	@Override
+	public boolean isUnquoteSplice() {
+		// TODO Auto-generated method stub
+		return super.isUnquoteSplice();
 	}
 }

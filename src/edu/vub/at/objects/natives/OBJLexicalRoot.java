@@ -37,7 +37,12 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.mirrors.JavaMethod;
+import edu.vub.at.objects.mirrors.NATMirageFactory;
+import edu.vub.at.objects.mirrors.NATMirror;
 import edu.vub.at.objects.mirrors.NATMirrorFactory;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
 
 /**
@@ -230,6 +235,7 @@ public final class OBJLexicalRoot extends NATNil {
 		return bool.base_ifFalse_(body);
 	}
 	
+	
 	/* -----------------------------
 	 * -- Object Creation Methods --
 	 * ----------------------------- */
@@ -325,6 +331,22 @@ public final class OBJLexicalRoot extends NATNil {
 		return original.meta_clone();
 	}
 	
+	
+	public ATObject base_mirror_(ATClosure code) throws NATException {
+		final ATObject mirageMaker = new NATObject(code.getContext().getLexicalScope(), NATMirror._PROTOTYPE_, NATObject._SHARES_A_);
+		final ATObject customMirror = mirageMaker.meta_extend(code);
+		mirageMaker.meta_defineField(
+				AGSymbol.alloc("newInstance"), 
+				new JavaClosure(this) {
+					public ATObject meta_apply(ATTable initargs) throws NATException {
+						ATObject newReflectee = NATMirageFactory.createMirage(customMirror);
+						newReflectee.meta_invoke(newReflectee, Evaluator._INIT_, initargs);
+						return newReflectee;
+					}
+				});
+		return customMirror;
+		
+	}
 	/* --------------------
 	 * -- Unary Operators -
 	 * -------------------- */

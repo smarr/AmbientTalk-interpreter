@@ -28,6 +28,8 @@
 
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.AmbientTalkTestCase;
+import edu.vub.at.OBJUnit;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.ATAbstractGrammar;
@@ -35,8 +37,6 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.mirrors.JavaClosure;
-import edu.vub.at.objects.mirrors.NATMirrorFactory;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATNil;
@@ -44,10 +44,9 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
-
-import junit.framework.TestCase;
 
 /**
  * @author smostinc
@@ -62,7 +61,7 @@ import junit.framework.TestCase;
  * This file establishes a common vocabulary for these idiosyncratic tests and allows
  * code reuse for commonly used features.
  */
-public class ReflectiveAccessTest extends TestCase {
+public class ReflectiveAccessTest extends AmbientTalkTestCase {
 
 	/* ---------------------------
 	 * -- Auxiliary definitions --
@@ -118,7 +117,7 @@ public class ReflectiveAccessTest extends TestCase {
 	 * Initializes the lexical root for the purpose of this test.
 	 */
 	protected void setUp() throws Exception {
-		lexicalRoot = new NATObject(NATNil._INSTANCE_);
+		lexicalRoot = new NATObject(OBJLexicalRoot._INSTANCE_);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("success"), success);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("fail"), fail);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("echo:"), echo_);
@@ -141,6 +140,10 @@ public class ReflectiveAccessTest extends TestCase {
 		
 		lexicalRoot.meta_defineField(AGSymbol.alloc("at"), at);
 		lexicalRoot.meta_defineField(AGSymbol.alloc("root"), lexicalRoot);
+		
+		lexicalRoot.meta_defineField(AGSymbol.alloc("unittest:"), unittest_);
+		
+		lexicalRoot.meta_defineField(AGSymbol.alloc("unit"), OBJUnit._INSTANCE_);
 	}
 
 }

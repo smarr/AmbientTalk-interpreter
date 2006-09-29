@@ -34,9 +34,13 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.NATParser;
@@ -64,6 +68,12 @@ public class OBJUnit extends NATNil {
 			NATNil._INSTANCE_);
 	
 	private OBJUnit() { }
+	
+	public NATNil base_echo_(ATObject message) throws XTypeMismatch {
+		System.out.println(message.meta_print().javaValue);
+		return NATNil._INSTANCE_;
+	};
+	
 	
 	public NATNil base_fail()  {
 		Assert.fail();
@@ -125,8 +135,8 @@ public class OBJUnit extends NATNil {
 	 *  unittest: { someCode }
 	 *  
 	 * pseudo-implementation:
-	 *  { def obj := objectP.new(mirrorOf(someCode).context.lexicalScope);
-	 *    mirrorOf(someCode).method.body.eval(contextP.new(obj, obj, nil));
+	 *  { def obj := objectP.new(at.unit, mirrorOf(someCode).context.lexicalScope);
+	 *    mirrorOf(someCode).method.body.eval(contextP.new(obj, obj, at.unit));
 	 *    obj }
 	 *  
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent

@@ -61,24 +61,24 @@ public class AmbientTalkTestCase extends TestCase {
 		ctx_ = null;
 	}
 	
-	public void testUnitTestFramework() {
-		try {
-			evaluateInput("unit.fail: \"This test should fail.\"", ctx_);
-		} catch (NATException e) {
-			fail("exception : " + e);
-		} catch (AssertionFailedError e) {
-			// ok. this test is supposed to fail
-		}
-
-		try {
-			evaluateInput("unittest: { self.fail: \"This test should fail.\" }", ctx_);
-		} catch (NATException e) {
-			e.printStackTrace();
-			fail("exception : " + e);
-		} catch (AssertionFailedError e) {
-			// ok. this test is supposed to fail
-		}
-	
-	}
+//	public void testUnitTestFramework() {
+//		try {
+//			evaluateInput("unit.fail: \"This test should fail.\"", ctx_);
+//		} catch (NATException e) {
+//			fail("exception : " + e);
+//		} catch (AssertionFailedError e) {
+//			// ok. this test is supposed to fail
+//		}
+//
+//		try {
+//			evaluateInput("unittest: { self.fail: \"This test should fail.\" }", ctx_);
+//		} catch (NATException e) {
+//			e.printStackTrace();
+//			fail("exception : " + e);
+//		} catch (AssertionFailedError e) {
+//			// ok. this test is supposed to fail
+//		}
+//	
+//	}
 	
 }

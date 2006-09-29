@@ -41,6 +41,8 @@ import edu.vub.at.objects.natives.NATText;
 
 import java.lang.reflect.Method;
 
+import junit.framework.AssertionFailedError;
+
 /**
  * @author smostinc
  *

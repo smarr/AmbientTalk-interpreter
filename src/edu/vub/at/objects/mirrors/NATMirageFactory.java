@@ -27,9 +27,11 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.objects.ATEverything;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -68,10 +70,10 @@ class MirageInvocationHandler implements InvocationHandler {
 	 * 
 	 * mirage.meta_xxx(args) should be transformed into mirrorrepr_.meta_invoke(xxx, [args])
 	 * mirage.meta_getxxx() should be transformed into mirrorrepr_.meta_select(xxx)
-	 * mirage.meta_setxxx(arg) should be transformed into mirrorrepr_.meta_assign(xxx, arg)
+	 * mirage.meta_setxxx(arg) should be transformed into mirrorrepr_.meta_assignField(xxx, arg)
 	 * mirage.base_xxx(args) should be transformed into mirrorrepr_.meta_invoke(invoke, [xxx, [args]])
 	 * mirage.base_getxxx() should be transformed into mirrorrepr_.meta_invoke(select, [xxx])
-	 * mirage.base_setxxx(arg) should be transformed into mirrorrepr_.meta_invoke(assign, [xxx, arg])
+	 * mirage.base_setxxx(arg) should be transformed into mirrorrepr_.meta_invoke(assignField, [xxx, arg])
 	 * 
 	 * @param proxy - the dynamic proxy created from this invocation handler
 	 * @param method - the method as invoked by the interpreter
@@ -81,50 +83,56 @@ class MirageInvocationHandler implements InvocationHandler {
 		
 		String name = method.getName();
 		
-		if (name.startsWith("meta_")) {
-			if(name.startsWith("meta_get")) {
-				mirrorRepresentation_.meta_select(
+		if(name.startsWith("is")) {
+			return NATBoolean._TRUE_;
+		} else if(name.startsWith("as")) {
+			return proxy;
+		}
+		
+		if (name.startsWith(JavaInterfaceAdaptor._META_PREFIX_)) {
+			if(name.startsWith(JavaInterfaceAdaptor._MGET_PREFIX_)) {
+				return mirrorRepresentation_.meta_select(
 						mirrorRepresentation_,
-						AGSymbol.alloc(name.replaceFirst("meta_get", "")));
+						AGSymbol.alloc(name.replaceFirst(JavaInterfaceAdaptor._MGET_PREFIX_, "")));
 			} 
 			
-			else if(name.startsWith("meta_set")) {
-				mirrorRepresentation_.meta_assignField(
-						AGSymbol.alloc(name.replaceFirst("meta_set", "")),
+			else if(name.startsWith(JavaInterfaceAdaptor._MSET_PREFIX_)) {
+				return mirrorRepresentation_.meta_assignField(
+						AGSymbol.alloc(name.replaceFirst(JavaInterfaceAdaptor._MSET_PREFIX_, "")),
 						(ATObject)args[0]);
 			} 
 			
 			else /* if(name.startsWith("meta_")) */ {
-				mirrorRepresentation_.meta_invoke(
+				return mirrorRepresentation_.meta_invoke(
 						mirrorRepresentation_,
-						AGSymbol.alloc(name.replaceFirst("meta_", "")),
-						new NATTable((ATObject[])args));
+						AGSymbol.alloc(name.replaceFirst(JavaInterfaceAdaptor._META_PREFIX_, "")),
+						new NATTable(/*(ATObject[])*/args));
 			}
-		} else if (name.startsWith("base_")) {
-			if(name.startsWith("base_get")) {
-				mirrorRepresentation_.meta_invoke(
+		} else if (name.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
+			if(name.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
+				return mirrorRepresentation_.meta_invoke(
 						mirrorRepresentation_,
 						AGSymbol.alloc("select"),
 						new NATTable(new ATObject[] {
-								AGSymbol.alloc(name.replaceFirst("base_get", "")),
+								AGSymbol.alloc(name.replaceFirst(JavaInterfaceAdaptor._BGET_PREFIX_, "")),
 								new NATTable((ATObject[])args)}));
 			} 
 			
-			else if(name.startsWith("base_set")) {
-				mirrorRepresentation_.meta_invoke(
+			else if(name.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
+				return mirrorRepresentation_.meta_invoke(
 						mirrorRepresentation_,
 						AGSymbol.alloc("assignField"),
 						new NATTable(new ATObject[] {
-								AGSymbol.alloc(name.replaceFirst("base_set", "")),
+								AGSymbol.alloc(name.replaceFirst(JavaInterfaceAdaptor._BSET_PREFIX_, "")),
 								new NATTable((ATObject[])args)}));
 			} 
 			
 			else /* if(name.startsWith("base_")) */ {
-				mirrorRepresentation_.meta_invoke(
+				return mirrorRepresentation_.meta_invoke(
 						mirrorRepresentation_,
 						AGSymbol.alloc("invoke"),
 						new NATTable(new ATObject[] {
-								AGSymbol.alloc(name.replaceFirst("base_", "")),
+								AGSymbol.alloc(name.replaceFirst(JavaInterfaceAdaptor._BASE_PREFIX_, "")),
 								new NATTable((ATObject[])args)}));
 			}			
 		}
@@ -156,7 +164,7 @@ public class NATMirageFactory {
 
 	// TODO: mirrorRepresentation.getClass() returns the NATxxx class instance, require mapping from NATxxx to ATxxx
 	public static ATObject createMirage(ATObject mirrorRepresentation) {
-		return NATMirageFactory.createMirageForInterface(mirrorRepresentation, mirrorRepresentation.getClass());
+		return NATMirageFactory.createMirageForInterface(mirrorRepresentation, ATEverything.class);
 	}
 
 	public static ATObject createMirageForInterface(

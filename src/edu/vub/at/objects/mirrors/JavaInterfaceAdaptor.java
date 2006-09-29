@@ -126,6 +126,7 @@ public class JavaInterfaceAdaptor {
 			for (int i = 0; i < params.length; i++) {
 				System.err.print(params[i].getName());
 			}
+
 			System.err.println();
 			System.err.print("Provided parameters: ");
 			for (int i = 0; i < jArguments.length; i++) {
@@ -232,19 +233,4 @@ public class JavaInterfaceAdaptor {
 		
 		return (Method[])matchingMethods.toArray(new Method[numMatchingMethods]);
 	}
-	
-	public static String transformField(
-			String addPrefix, String removePrefix, 
-			String selector, boolean toUpper) {
-		char[] charArray = selector.replaceFirst(removePrefix,"").toCharArray();
-		if(toUpper) {
-			charArray[0] = Character.toUpperCase(charArray[0]);
-		} else {
-			charArray[0] = Character.toLowerCase(charArray[0]);			
-		}
-		
-		selector = new String(charArray);
-		return addPrefix + selector;
-	}
-
 }
