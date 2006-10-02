@@ -86,8 +86,8 @@ public interface ATEverything
 		ATMessageCreation, ATMessageSend, ATMethod, ATMethodInvocation, 
 		ATMethodInvocationCreation,     ATMirror,    ATMultiAssignment, 
 		ATMultiDefinition,  ATNil,  ATNumber,  ATQuote,   ATResolution, 
-		ATSelection,  ATSendStrategy,  ATServiceDescription,  ATSplice, 
-		ATStatement, ATSymbol, ATTable, ATTabulation, ATText,ATUnquote, 
+		ATSelection,   ATServiceDescription,   ATSplice,   ATStatement, 
+		ATSymbol,    ATTable,    ATTabulation,    ATText,    ATUnquote, 
 		ATUnquoteSplice, ATVirtualMachine {
 
 }

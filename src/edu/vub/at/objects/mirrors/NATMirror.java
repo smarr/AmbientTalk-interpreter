@@ -251,7 +251,12 @@ public class NATMirror extends NATNil implements ATMirror {
 	}
 
 
+	public ATObject base_init(ATObject reflectee) {
+		return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
+	}
+	
 	private ATObject createChild(ATClosure code, boolean parentPointerType) throws NATException {
+
 		NATObject extension = new NATObject(
 				/* dynamic parent */
 				this,
@@ -260,7 +265,7 @@ public class NATMirror extends NATNil implements ATMirror {
 				/* parent porinter type */
 				parentPointerType);
 			
-		ATAbstractGrammar body = code.getMethod().getBody();
+		ATAbstractGrammar body = code.getMethod().getBodyExpression();
 		body.meta_eval(new NATContext(extension, extension, this));
 			
 		return extension;

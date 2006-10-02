@@ -32,13 +32,13 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.mirrors.JavaClosure;
-import edu.vub.at.objects.mirrors.JavaMethod;
 import edu.vub.at.objects.mirrors.NATMirageFactory;
 import edu.vub.at.objects.mirrors.NATMirror;
 import edu.vub.at.objects.mirrors.NATMirrorFactory;
@@ -277,7 +277,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 */
 	public ATObject base_object_(ATClosure code) throws NATException {
 		NATObject newObject = new NATObject(code.getContext().getLexicalScope());
-		code.getMethod().getBody().meta_eval(new NATContext(newObject, newObject, NATNil._INSTANCE_));
+		code.getMethod().getBodyExpression().meta_eval(new NATContext(newObject, newObject, NATNil._INSTANCE_));
 		return newObject;
 	}
 	
@@ -333,14 +333,179 @@ public final class OBJLexicalRoot extends NATNil {
 	
 	
 	public ATObject base_mirror_(ATClosure code) throws NATException {
+		
+		/*
+		 * mirageMaker is an object which implements the default behaviour for certain 
+		 * methods of mirrors. These methods are all part of the extension and cloning
+		 * protocol of objects, where special care needs to be taken to deal with the 
+		 * doulbe object identity of mirages (mirage <-> custom mirror + object <-> 
+		 * default behaviour).
+		 */
 		final ATObject mirageMaker = new NATObject(code.getContext().getLexicalScope(), NATMirror._PROTOTYPE_, NATObject._SHARES_A_);
+		
+		/*
+		 * customMirror is a user-defined mirror object, which implements (part of) the 
+		 * meta-object protocol using ordinary methods. Per construction new base-level 
+		 * objects created from the mirror will forward meta_operations to their mirror
+		 */
 		final ATObject customMirror = mirageMaker.meta_extend(code);
+		
+		// Therefore, the mirageMaker which defines the default cloning and extension 
+		// protocol for mirages does this by defining base-level methods newInstance,
+		// extend, share and clone. If these methods are not shadowed by definitions 
+		// in the customMirror object, lookup will resume in the mirageMaker.
+		//
+		// NOTE : if these methods need to be replaced with base_ methods, the mirageMaker
+		// would need to be a subclass of NATNil to ensure that these methods are found 
+		// before delegating to the default NATMirror. However, if the method would not
+		// exist (consider e.g. the defineField method), then special care needs to be 
+		// taken that the resulting exception would result in delegation. Given this rather
+		// complex mechanism, we consider this solution to have simpler semantics.
+		
+
+		/*
+		 * To manage the double identity of the mirage, we need a pointer to it from
+		 * the mirageMaker, to be able to extend or share it.
+		 */
+		mirageMaker.meta_defineField(
+				AGSymbol.alloc("mirage_"),
+				NATNil._INSTANCE_);
+		
+		/*
+		 * To manage allow for proper cloning of a mirage, the custom mirror object 
+		 * needs to be cloned, hence we store it in the mirageMaker.
+		 */
+		mirageMaker.meta_defineField(
+				AGSymbol.alloc("mirror_"),
+				customMirror);
+		
+		/*
+		 * Inside a JavaClosure this points to the closure, not to the surrounding 
+		 * mirageMaker object. In the face of cloning, a self-pointer is direly 
+		 * needed.
+		 */
+		mirageMaker.meta_defineField(
+				AGSymbol.alloc("mirror_"),
+				customMirror);
+		
+		/*
+		 * Instead of delegating to the default behaviour which makes a new object,
+		 * create a mirage such that the new meta-behaviour is used instead of the 
+		 * default meta-behaviour which is hardwired into the evaluator.
+		 */
 		mirageMaker.meta_defineField(
 				AGSymbol.alloc("newInstance"), 
 				new JavaClosure(this) {
 					public ATObject meta_apply(ATTable initargs) throws NATException {
 						ATObject newReflectee = NATMirageFactory.createMirage(customMirror);
 						newReflectee.meta_invoke(newReflectee, Evaluator._INIT_, initargs);
+						meta_assignField(
+								AGSymbol.alloc("mirage_"),
+								newReflectee);
+						return newReflectee;
+					}
+				});
+		
+		/*
+		 * Ensures the mirage is extended, not the default object.
+		 */
+		mirageMaker.meta_defineField(
+				AGSymbol.alloc("extend"), 
+				new JavaClosure(this) {
+					public ATObject meta_apply(ATClosure code) throws NATException {
+						ATObject mirage = meta_lookup(
+								AGSymbol.alloc("mirage_"));
+						
+						ATObject extension = new NATObject(code.getContext().getLexicalScope(), mirage, NATObject._IS_A_);
+						
+						ATAbstractGrammar body = code.getMethod().getBodyExpression();
+						body.meta_eval(new NATContext(extension, extension, this));
+						
+						return extension;
+					}
+				});
+		
+		/*
+		 * Ensures the mirage is extended, not the default object.
+		 */
+		mirageMaker.meta_defineField(
+				AGSymbol.alloc("share"), 
+				new JavaClosure(this) {
+					public ATObject meta_apply(ATClosure code) throws NATException {
+						ATObject mirage = meta_lookup(
+								AGSymbol.alloc("mirage_"));
+						
+						ATObject extension = new NATObject(code.getContext().getLexicalScope(), mirage, NATObject._SHARES_A_);
+						
+						ATAbstractGrammar body = code.getMethod().getBodyExpression();
+						body.meta_eval(new NATContext(extension, extension, this));
+						
+						return extension;
+					}
+				});
+		
+		mirageMaker.meta_defineField(
+				AGSymbol.alloc("clone"), 
+				new JavaClosure(this) {
+					public ATObject meta_apply() throws NATException {
+						/*
+						 * 1) Above the mirageMaker is a NATMirror instance which is linked to a unique 
+						 * base object. Since this base object may be modified as a result of adding
+						 * of fields and methods, the clone should also have these fields requiring 
+						 * a clone of both the NATMirror and its base to be made. 
+						 */
+						ATMirror defaultMirror 	= this.getDynamicParent().asMirror();
+						ATObject defaultBase		= defaultMirror.base_getBase();
+						
+						ATObject defaultMirrorClone = 
+							defaultMirror.base_init(new ATObject[] { defaultBase.meta_clone() });
+						
+						// XXX This trick fools the cloning algorithm and makes a clone of the customMirror
+						// transitively attached to the defaultMirrorClone, the pointer will be reset to our 
+						// defaultMirror afterwards.
+						
+						
+						/*
+						 * 2) Clone the mirageMaker object itself. This implies that a new object will be
+						 * returned yet it will not be bound to a new mirage yet. This clone will be 
+						 * created by cloning the custom mirror object (the 'self') which is connected
+						 * to the mirageMaker through an IS-A link. 
+						 */
+						// ATObject clone = this.meta_clone();
+						
+						/* 
+						 * 3) Clone the custom mirror object. This results in transitively cloning the 
+						 * mirageMaker and the defaultMirror. 
+						 */
+						ATObject customMirrorClone = 
+							this.meta_lookup(
+									AGSymbol.alloc("mirror_")).meta_clone();
+						
+						/*
+						 * Our own clone is the dynamic parent of the cloned customMirror.
+						 */
+						ATObject mirageMakerClone = 
+							customMirrorClone.getDynamicParent();
+						
+						//mirageMakerClone
+						
+						/*
+						 * Update the clone's down-pointer to its mirror for consistent cloning
+						 */
+						mirageMakerClone.meta_assignVariable(
+								AGSymbol.alloc("mirror_"),
+								customMirrorClone);
+						
+						/*
+						 * Finally, make a new mirage and register it with the cloned mirageMaker.
+						 * 
+						 * NOTE : Unlike when making a new instance, there is no init message sent. 
+						 */
+						ATObject newReflectee = NATMirageFactory.createMirage(customMirror);
+						meta_assignField(
+								AGSymbol.alloc("mirage_"),
+								newReflectee);
+						
 						return newReflectee;
 					}
 				});

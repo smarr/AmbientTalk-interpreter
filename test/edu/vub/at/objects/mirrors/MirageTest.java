@@ -75,8 +75,8 @@ public class MirageTest extends ReflectiveAccessTest {
 					"test(); \n" +
 					"test.baseField; \n" +
 					"test.baseField := 0; \n" +
-					" \n" /*+
-					"recursive.apply([]); \n" */+
+					" \n" +
+					/* "recursive.apply([]); \n" + */
 					"recursive.select(test, `(baseField)); \n" +
 					"recursive.assignField(`(baseField), 0); \n",
 					new NATContext(new NATCallframe(lexicalRoot), lexicalRoot, NATNil._INSTANCE_)

@@ -151,7 +151,8 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod scopeTestMethod = new NATMethod(
 					scopeTest, 
 					NATTable.EMPTY, 
-					new AGScopeTest(object, object, object.getDynamicParent()));
+					new AGBegin(new NATTable(new ATObject[] {
+							new AGScopeTest(object, object, object.getDynamicParent())})));
 			object.meta_addMethod(scopeTestMethod);
 			
 			object.meta_invoke(object, scopeTest, NATTable.EMPTY);
@@ -179,7 +180,8 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod lateBoundSelfTestMethod = new NATMethod(
 					lateBoundSelf, 
 					NATTable.EMPTY, 
-					new AGScopeTest(parent, child, parent.getDynamicParent()));
+					new AGBegin(new NATTable(new ATObject[] {
+							new AGScopeTest(parent, child, parent.getDynamicParent())})));
 			
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
 			ATMethod superSemanticsTestMethod = new NATMethod(
@@ -194,7 +196,8 @@ public class NATObjectClosureTest extends TestCase {
 //							return ctx.getParentObject();
 //						}
 //					}
-					new AGScopeTest(child, child, parent));
+					new AGBegin(new NATTable(new ATObject[] {
+							new AGScopeTest(child, child, parent)})));
 			
 			parent.meta_addMethod(lateBoundSelfTestMethod);
 			child.meta_addMethod(superSemanticsTestMethod);
@@ -223,12 +226,13 @@ public class NATObjectClosureTest extends TestCase {
 			NATObject child = (NATObject)parent.meta_extend(
 					new NATClosure(
 							new NATMethod(AGSymbol.alloc(NATText.atValue("lambda")), NATTable.EMPTY,
-								new AGDefFunction(superSemantics, NATTable.EMPTY, 
-									new AGBegin(
-										new NATTable(
-											new ATObject[] { test } )))),
-							lexicalRoot_,
-							lexicalRoot_));
+									new AGBegin(new NATTable(new ATObject[] {
+											new AGDefFunction(superSemantics, NATTable.EMPTY, 
+													new AGBegin(
+															new NATTable(
+																	new ATObject[] { test } )))}))),
+																	lexicalRoot_,
+																	lexicalRoot_));
 			
 			test.scope_ = child;
 			test.self_ = child;
@@ -237,7 +241,8 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod lateBoundSelfTestMethod = new NATMethod(
 					lateBoundSelf, 
 					NATTable.EMPTY, 
-					new AGScopeTest(parent, child, parent.getDynamicParent()));
+					new AGBegin(new NATTable(new ATObject[] {
+							new AGScopeTest(parent, child, parent.getDynamicParent())})));
 			
 			parent.meta_addMethod(lateBoundSelfTestMethod);
 			
