@@ -210,7 +210,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 							closures.base_getLength()	
 					}));
 
-			ATObject element = message.meta_sendTo(closures);
+			ATObject element = message.base_sendTo(closures);
 			
 			element.asClosure().base_apply(NATTable.EMPTY.elements_);
 
@@ -239,7 +239,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 							closures.base_getLength()	
 					}));
 
-			ATObject element = message.meta_sendTo(closures);
+			ATObject element = message.base_sendTo(closures);
 			
 			element.asClosure().base_apply(NATTable.EMPTY.elements_);
 		} catch (NATException e) {

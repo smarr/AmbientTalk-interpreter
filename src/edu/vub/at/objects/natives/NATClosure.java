@@ -68,7 +68,7 @@ public class NATClosure extends NATNil implements ATClosure {
 				/* self = ` start of lookup ` */
 				receiver, 
 				/* super = implementor.getNext() */
-				implementor.getDynamicParent()));
+				implementor.meta_getDynamicParent()));
 	}
 	
 	public NATClosure(ATMethod method, ATContext context) {
@@ -81,11 +81,11 @@ public class NATClosure extends NATNil implements ATClosure {
 	 * rather than the runtime context of the invoker.
 	 */
 	public ATObject base_apply(ATObject[] arguments) throws NATException {
-		return method_.meta_apply(new NATTable(arguments), context_);
+		return method_.base_apply(new NATTable(arguments), context_);
 	}
 	
 	public ATObject base_applyWithArgs(ATTable arguments) throws NATException {
-		return method_.meta_apply(arguments, context_);
+		return method_.base_apply(arguments, context_);
 	}
 
 	/**
@@ -134,11 +134,11 @@ public class NATClosure extends NATNil implements ATClosure {
 		
 	}
 	
-	public ATContext getContext() {
+	public ATContext base_getContext() {
 		return context_;
 	}
 
-	public ATMethod getMethod() {
+	public ATMethod base_getMethod() {
 		return method_;
 	}
 
@@ -151,7 +151,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<closure:"+method_.getName()+">");
+		return NATText.atValue("<closure:"+method_.base_getName()+">");
 	}
 
 	

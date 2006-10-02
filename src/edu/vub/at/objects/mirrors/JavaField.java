@@ -76,11 +76,11 @@ public class JavaField extends NATNil implements ATField {
 	}
 
 
-	public ATSymbol getName() {
+	public ATSymbol base_getName() {
 		return name_;
 	}
 
-	public ATObject getFieldValue() {
+	public ATObject base_getFieldValue() {
 		try {
 			return getter_.base_apply(NATTable.EMPTY.elements_);
 		} catch (NATException e) {
@@ -89,7 +89,7 @@ public class JavaField extends NATNil implements ATField {
 		}
 	}
 
-	public ATObject setValue(ATObject newValue) throws NATException {
+	public ATObject base_setValue(ATObject newValue) throws NATException {
 		// certain fields may not have setters
 		if(setter_ != null)
 			return getter_.base_apply(new ATObject[] { newValue });

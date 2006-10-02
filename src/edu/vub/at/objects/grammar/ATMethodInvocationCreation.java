@@ -39,6 +39,6 @@ import edu.vub.at.objects.ATTable;
 public interface ATMethodInvocationCreation extends ATMessageCreation {
 	
 	public ATSymbol getSelector();
-	public ATTable getArguments();
+	public ATTable base_getArguments();
 	
 }

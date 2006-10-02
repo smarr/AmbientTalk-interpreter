@@ -149,13 +149,13 @@ public class OBJUnit extends NATNil {
 				/* dynamic parent */
 				clone,
 				/* lexical parent */
-				code.getContext().getLexicalScope(),
+				code.base_getContext().base_getLexicalScope(),
 				/* parent pointer type */
 				NATObject._SHARES_A_);
 		
 		clone.ctx_ = new NATContext(extension, extension, clone);
 		
-		ATAbstractGrammar body = code.getMethod().getBodyExpression();
+		ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
 		body.meta_eval(clone.ctx_);
 		
 		return extension;

@@ -63,11 +63,11 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 		return selectorExp_;
 	}
 
-	public ATTable getArguments() {
+	public ATTable base_getArguments() {
 		return argumentExps_;
 	}
 
-	public ATBegin getBodyExpression() {
+	public ATBegin base_getBodyExpression() {
 		return bodyStmts_;
 	}
 
@@ -89,13 +89,13 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 * TODO: closure definition: should they really be fields? fields are mutable?
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		if (ctx.getLexicalScope().isCallFrame()) {
-			ctx.getLexicalScope().meta_defineField(
+		if (ctx.base_getLexicalScope().isCallFrame()) {
+			ctx.base_getLexicalScope().meta_defineField(
 					selectorExp_,
 					new NATClosure(new NATMethod(selectorExp_, argumentExps_, bodyStmts_),
 							      ctx));
 		} else {
-			ctx.getLexicalScope().meta_addMethod(new NATMethod(selectorExp_, argumentExps_, bodyStmts_));
+			ctx.base_getLexicalScope().meta_addMethod(new NATMethod(selectorExp_, argumentExps_, bodyStmts_));
 		}
 		return NATNil._INSTANCE_;
 	}

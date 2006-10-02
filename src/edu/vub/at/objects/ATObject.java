@@ -323,7 +323,7 @@ public interface ATObject extends ATConversions {
      * this dynamic parent chain to be accessed as a field of the object's
      * mirror.
      */
-    public ATObject getDynamicParent();
+    public ATObject meta_getDynamicParent();
 
     /**
      * Objects also have a lexical parent which is the scope in which their
@@ -331,7 +331,7 @@ public interface ATObject extends ATConversions {
      * This getter method allows accessing the parent alongside the lexical nesting
      * chain to be accessed as a field of the object's mirror.
      */
-    public ATObject getLexicalParent();
+    public ATObject meta_getLexicalParent();
 
     /* ------------------------------------------
       * -- Abstract Grammar evaluation protocol --

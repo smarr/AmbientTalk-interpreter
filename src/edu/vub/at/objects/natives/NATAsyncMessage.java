@@ -78,7 +78,7 @@ public final class NATAsyncMessage extends NATMessage implements ATAsyncMessage 
      *
      * @return NIL, by default. Overridable by the receiver.
      */
-    public ATObject meta_sendTo(ATObject receiver) throws NATException {
+    public ATObject base_sendTo(ATObject receiver) throws NATException {
         // fill in the receiver first
         this.receiver_ = receiver;
         return receiver.meta_send(this);

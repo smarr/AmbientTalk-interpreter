@@ -29,7 +29,6 @@ package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.natives.NATTable;
 
 /**
  * @author tvc
@@ -39,8 +38,6 @@ import edu.vub.at.objects.natives.NATTable;
  */
 public interface ATTable extends ATExpression {
 
-	public NATTable asNativeTable();
-	
 	// base-level interface
 	
 	public ATNumber base_getLength();

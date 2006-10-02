@@ -164,12 +164,12 @@ public class NATSuperObject extends NATNil implements ATObject {
       * -- Mirror Fields   --
       * --------------------- */
 
-    public ATObject getDynamicParent() {
-        return lookupFrame_.getDynamicParent();
+    public ATObject meta_getDynamicParent() {
+        return lookupFrame_.meta_getDynamicParent();
     }
 
-    public ATObject getLexicalParent() {
-        return lookupFrame_.getLexicalParent();
+    public ATObject meta_getLexicalParent() {
+        return lookupFrame_.meta_getLexicalParent();
     }
 
     /* ---------------------------------

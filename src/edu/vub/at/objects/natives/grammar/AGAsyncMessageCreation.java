@@ -58,8 +58,8 @@ public class AGAsyncMessageCreation extends AGMessageCreation {
 	 * @return a first-class asynchronous message
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		return new NATAsyncMessage(ctx.getSelf(), this.getSelector(),
-				                   Evaluator.evaluateArguments(this.getArguments().asNativeTable(), ctx));
+		return new NATAsyncMessage(ctx.base_getSelf(), this.getSelector(),
+				                   Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
 	}
 	
 	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {

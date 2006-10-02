@@ -67,7 +67,7 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
 	 * @return NIL
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		Evaluator.defineParamsForArgs("multi-definition", ctx.getLexicalScope(), parameters_, valueExp_.meta_eval(ctx).asTable());
+		Evaluator.defineParamsForArgs("multi-definition", ctx.base_getLexicalScope(), parameters_, valueExp_.meta_eval(ctx).asTable());
 		return NATNil._INSTANCE_;
 	}
 

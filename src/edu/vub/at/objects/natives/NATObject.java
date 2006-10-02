@@ -215,7 +215,7 @@ public class NATObject extends NATCallframe implements ATObject{
 			//  ctx.scope = the implementing scope, being this object
 			//  ctx.self  = the late bound receiver, being the passed receiver
 			//  ctx.super = the parent of the implementor
-			return this.getLocalMethod(selector).meta_apply(arguments, new NATContext(this, receiver, dynamicParent_));
+			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver, dynamicParent_));
 		} else {
 			return dynamicParent_.meta_invoke(receiver, selector, arguments);
 		}
@@ -423,7 +423,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * of the dictionary is taken before adding the method.
 	 */
 	public ATNil meta_addMethod(ATMethod method) throws NATException {
-		ATSymbol name = method.getName();
+		ATSymbol name = method.base_getName();
 		if (methodDictionary_.containsKey(name)) {
 			throw new XDuplicateSlot("method", name.getText().asNativeText().javaValue);			
 		} else {
@@ -463,7 +463,7 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * -- Mirror Fields   --
 	 * --------------------- */
 	
-	public ATObject getDynamicParent() {
+	public ATObject meta_getDynamicParent() {
 		return dynamicParent_;
 	};
 	
@@ -515,11 +515,11 @@ public class NATObject extends NATCallframe implements ATObject{
 				/* dynamic parent */
 				this,
 				/* lexical parent */
-				code.getContext().getLexicalScope(),
+				code.base_getContext().base_getLexicalScope(),
 				/* parent porinter type */
 				parentPointerType);
 		
-		ATAbstractGrammar body = code.getMethod().getBodyExpression();
+		ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
 		body.meta_eval(new NATContext(extension, extension, this));
 		
 		return extension;

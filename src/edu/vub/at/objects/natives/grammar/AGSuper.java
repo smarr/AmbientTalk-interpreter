@@ -54,7 +54,7 @@ public final class AGSuper extends AGSymbol {
 	 * AGSuper().eval(ctx) = AGSUPOBJ(ctx.self, ctx.super)
 	 */
 	public ATObject meta_eval(ATContext ctx) {
-		return new NATSuperObject(ctx.getSelf(), ctx.getSuper());
+		return new NATSuperObject(ctx.base_getSelf(), ctx.base_getSuper());
 	}
 	
 	/**

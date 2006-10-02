@@ -56,15 +56,15 @@ public class NATMethod extends NATNil implements ATMethod {
 		body_ 		= body;
 	}
 
-	public ATSymbol getName() {
+	public ATSymbol base_getName() {
 		return name_;
 	}
 
-	public ATTable getArguments() {
+	public ATTable base_getArguments() {
 		return parameters_;
 	}
 
-	public ATBegin getBodyExpression() {
+	public ATBegin base_getBodyExpression() {
 		return body_;
 	}
 	
@@ -80,10 +80,10 @@ public class NATMethod extends NATNil implements ATMethod {
 	 * @param ctx the context in which to evaluate the method body
 	 * @return the value of evaluating the function body
 	 */
-	public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException {
-		NATCallframe scope = new NATCallframe(ctx.getLexicalScope());
+	public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
+		NATCallframe scope = new NATCallframe(ctx.base_getLexicalScope());
 		Evaluator.defineParamsForArgs(name_.getText().asNativeText().javaValue, scope, parameters_, arguments);
-		return body_.meta_eval(ctx.withLexicalEnvironment(scope));
+		return body_.meta_eval(ctx.base_withLexicalEnvironment(scope));
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {

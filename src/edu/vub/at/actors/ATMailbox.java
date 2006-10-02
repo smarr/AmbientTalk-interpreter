@@ -40,7 +40,7 @@ public interface ATMailbox
 
     public ATActor getActor();
 
-    public ATSymbol getName();
+    public ATSymbol base_getName();
 
     public Iterator getIterator();
 

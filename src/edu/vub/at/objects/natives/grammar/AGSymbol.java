@@ -77,7 +77,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	 * @return the value bound to this symbol in the lexical environment
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		return ctx.getLexicalScope().meta_lookup(this);
+		return ctx.base_getLexicalScope().meta_lookup(this);
 	}
 
 	/**

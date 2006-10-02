@@ -36,7 +36,7 @@ import edu.vub.at.objects.ATTable;
  */
 public interface ATClosureLiteral extends ATExpression {
 	
-	public ATTable getArguments();
-	public ATBegin getBodyExpression();
+	public ATTable base_getArguments();
+	public ATBegin base_getBodyExpression();
 
 }

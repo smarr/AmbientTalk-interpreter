@@ -261,11 +261,11 @@ public class NATMirror extends NATNil implements ATMirror {
 				/* dynamic parent */
 				this,
 				/* lexical parent */
-				code.getContext().getLexicalScope(),
+				code.base_getContext().base_getLexicalScope(),
 				/* parent porinter type */
 				parentPointerType);
 			
-		ATAbstractGrammar body = code.getMethod().getBodyExpression();
+		ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
 		body.meta_eval(new NATContext(extension, extension, this));
 			
 		return extension;

@@ -67,7 +67,7 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 	 * @return NIL
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		Evaluator.assignArgsToParams("multi-assignment", ctx.getLexicalScope(), parameters_, valueExp_.meta_eval(ctx).asTable());
+		Evaluator.assignArgsToParams("multi-assignment", ctx.base_getLexicalScope(), parameters_, valueExp_.meta_eval(ctx).asTable());
 		return NATNil._INSTANCE_;
 	}
 

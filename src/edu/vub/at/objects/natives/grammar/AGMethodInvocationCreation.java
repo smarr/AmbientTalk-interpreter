@@ -57,7 +57,7 @@ public final class AGMethodInvocationCreation extends AGMessageCreation {
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
 		return new NATMethodInvocation(this.getSelector(),
-				                      Evaluator.evaluateArguments(this.getArguments().asNativeTable(), ctx));
+				                      Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
 	}
 
 	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {

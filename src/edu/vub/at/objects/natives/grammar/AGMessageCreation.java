@@ -55,7 +55,7 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 	
 	public ATSymbol getSelector() { return selector_; }
 
-	public ATTable getArguments() { return arguments_; }
+	public ATTable base_getArguments() { return arguments_; }
 
 	public boolean isMessageCreation() {
    	    return true;

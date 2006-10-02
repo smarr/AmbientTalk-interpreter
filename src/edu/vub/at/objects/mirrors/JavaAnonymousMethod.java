@@ -82,15 +82,15 @@ public final class JavaAnonymousMethod extends NATNil implements ATMethod {
 	 * It is an error to directly apply an anonymous method. The closure must be applied instead.
 	 * @throws XIllegalApplication because an anonymous method must be applied through its wrapping closure.
 	 */
-	public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException {
+	public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
 		throw new XIllegalApplication("Cannot apply an anonymous native method. Apply the closure instead.", creatorClass_);
 	}
 
-	public ATSymbol getName() { return _ANON_MTH_NAM_; }
+	public ATSymbol base_getName() { return _ANON_MTH_NAM_; }
 
-	public ATTable getArguments() { return _ANON_MTH_ARGS_; }
+	public ATTable base_getArguments() { return _ANON_MTH_ARGS_; }
 
-	public ATBegin getBodyExpression() {
+	public ATBegin base_getBodyExpression() {
 		return new AGBegin(new NATTable(new ATObject[] {
 				AGSymbol.alloc("Native anonymous implementation in " + creatorClass_.getName())}));
 	}

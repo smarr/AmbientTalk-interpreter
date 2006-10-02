@@ -46,12 +46,12 @@ public interface ATClosure extends ATObject {
 	/**
 	 * Structural access to the encapsulated method. 
 	 */
-	public ATMethod getMethod();
+	public ATMethod base_getMethod();
 
 	/**
 	 * Structural access to the scope of the closure.
 	 */
-	public ATContext getContext();
+	public ATContext base_getContext();
 	
 	/**
 	 * Applies the closure to the given arguments.

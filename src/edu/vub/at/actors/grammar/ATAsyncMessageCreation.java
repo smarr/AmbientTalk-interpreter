@@ -54,5 +54,5 @@ public interface ATAsyncMessageCreation extends ATMessageCreation {
      * Messages may optionally have arguments if they represent invocations.
      * @return the arguments passed to the invocation
      */
-    public ATTable getArguments();
+    public ATTable base_getArguments();
 }

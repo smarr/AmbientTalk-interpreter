@@ -276,8 +276,8 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @throws NATException if raised inside the code closure.
 	 */
 	public ATObject base_object_(ATClosure code) throws NATException {
-		NATObject newObject = new NATObject(code.getContext().getLexicalScope());
-		code.getMethod().getBodyExpression().meta_eval(new NATContext(newObject, newObject, NATNil._INSTANCE_));
+		NATObject newObject = new NATObject(code.base_getContext().base_getLexicalScope());
+		code.base_getMethod().base_getBodyExpression().meta_eval(new NATContext(newObject, newObject, NATNil._INSTANCE_));
 		return newObject;
 	}
 	
@@ -341,7 +341,7 @@ public final class OBJLexicalRoot extends NATNil {
 		 * doulbe object identity of mirages (mirage <-> custom mirror + object <-> 
 		 * default behaviour).
 		 */
-		final ATObject mirageMaker = new NATObject(code.getContext().getLexicalScope(), NATMirror._PROTOTYPE_, NATObject._SHARES_A_);
+		final ATObject mirageMaker = new NATObject(code.base_getContext().base_getLexicalScope(), NATMirror._PROTOTYPE_, NATObject._SHARES_A_);
 		
 		/*
 		 * customMirror is a user-defined mirror object, which implements (part of) the 
@@ -416,9 +416,9 @@ public final class OBJLexicalRoot extends NATNil {
 						ATObject mirage = meta_lookup(
 								AGSymbol.alloc("mirage_"));
 						
-						ATObject extension = new NATObject(code.getContext().getLexicalScope(), mirage, NATObject._IS_A_);
+						ATObject extension = new NATObject(code.base_getContext().base_getLexicalScope(), mirage, NATObject._IS_A_);
 						
-						ATAbstractGrammar body = code.getMethod().getBodyExpression();
+						ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
 						body.meta_eval(new NATContext(extension, extension, this));
 						
 						return extension;
@@ -435,9 +435,9 @@ public final class OBJLexicalRoot extends NATNil {
 						ATObject mirage = meta_lookup(
 								AGSymbol.alloc("mirage_"));
 						
-						ATObject extension = new NATObject(code.getContext().getLexicalScope(), mirage, NATObject._SHARES_A_);
+						ATObject extension = new NATObject(code.base_getContext().base_getLexicalScope(), mirage, NATObject._SHARES_A_);
 						
-						ATAbstractGrammar body = code.getMethod().getBodyExpression();
+						ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
 						body.meta_eval(new NATContext(extension, extension, this));
 						
 						return extension;
@@ -454,7 +454,7 @@ public final class OBJLexicalRoot extends NATNil {
 						 * of fields and methods, the clone should also have these fields requiring 
 						 * a clone of both the NATMirror and its base to be made. 
 						 */
-						ATMirror defaultMirror 	= this.getDynamicParent().asMirror();
+						ATMirror defaultMirror 	= this.meta_getDynamicParent().asMirror();
 						ATObject defaultBase		= defaultMirror.base_getBase();
 						
 						ATObject defaultMirrorClone = 
@@ -485,7 +485,7 @@ public final class OBJLexicalRoot extends NATNil {
 						 * Our own clone is the dynamic parent of the cloned customMirror.
 						 */
 						ATObject mirageMakerClone = 
-							customMirrorClone.getDynamicParent();
+							customMirrorClone.meta_getDynamicParent();
 						
 						//mirageMakerClone
 						
@@ -555,7 +555,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * eval: ast in: obj => evaluates the given AST in the context of the given object, returning its value
 	 */
 	public ATObject base_eval_in_(ATAbstractGrammar ast, ATObject obj) throws NATException {
-		return ast.meta_eval(new NATContext(obj, obj, obj.getDynamicParent()));
+		return ast.meta_eval(new NATContext(obj, obj, obj.meta_getDynamicParent()));
 	}
 
 	/**

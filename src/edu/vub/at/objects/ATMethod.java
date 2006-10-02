@@ -52,7 +52,7 @@ public interface ATMethod extends ATObject {
 	 * @param ctx the context in which to evaluate the method body
 	 * @return the value of evaluating the method body in the given context
 	 */
-	public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException;
+	public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException;
 	
 	/**
 	 * Structural access to the name of the method. Note that all methods (defined
@@ -60,15 +60,15 @@ public interface ATMethod extends ATObject {
 	 * the name with which they were first bound. Literal blocks which may be created
 	 * outside of a definition are implicitly named 'lambda'.
 	 */
-	public ATSymbol getName();
+	public ATSymbol base_getName();
 	
 	/**
 	 * Structural access to the argument list of the method.
 	 */
-	public ATTable getArguments();
+	public ATTable base_getArguments();
 	
 	/**
 	 * Structural access to the body of the method.
 	 */
-	public ATBegin getBodyExpression();
+	public ATBegin base_getBodyExpression();
 }

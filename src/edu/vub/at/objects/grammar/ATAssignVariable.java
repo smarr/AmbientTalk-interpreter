@@ -34,7 +34,7 @@ package edu.vub.at.objects.grammar;
  */
 public interface ATAssignVariable extends ATAssignment {
 
-	public ATSymbol getName();
+	public ATSymbol base_getName();
 	public ATExpression getValue();
 	
 }

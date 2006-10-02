@@ -70,6 +70,6 @@ public interface ATMessage extends ATObject {
 	 * @return the value of the method invocation or message send.
 	 * @throws NATException if the method is not found or an error occurs while processing the method.
 	 */
-	public ATObject meta_sendTo(ATObject receiver) throws NATException;
+	public ATObject base_sendTo(ATObject receiver) throws NATException;
 
 }

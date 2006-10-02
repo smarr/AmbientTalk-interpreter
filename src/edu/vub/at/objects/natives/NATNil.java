@@ -253,7 +253,7 @@ public class NATNil implements ATNil {
         return JavaInterfaceAdaptor.wrapMethodFor(
                 this.getClass(),
                 this,
-                selector).getMethod();
+                selector).base_getMethod();
     }
 
     public ATTable meta_listFields() throws NATException {
@@ -295,14 +295,14 @@ public class NATNil implements ATNil {
     /**
      * Only true extending objects have a dynamic pointer, others return nil
      */
-    public ATObject getDynamicParent() {
+    public ATObject meta_getDynamicParent() {
         return NATNil._INSTANCE_;
     };
 
     /**
      * By default numbers, tables and so on do not have lexical parents,
      */
-    public ATObject getLexicalParent() {
+    public ATObject meta_getLexicalParent() {
         return NATNil._INSTANCE_;
     }
 

@@ -33,19 +33,19 @@ import edu.vub.at.objects.grammar.ATSymbol;
 /**
  * @author smostinc
  *
- * ATFields is a mapping from a immutable name to a potentially mutable value.
+ * ATFields is a mapping from an immutable name to a potentially mutable value.
  */
 public interface ATField extends ATObject {
 	
 	/**
 	 * @return a string by which the slot can be identified.
 	 */
-	public ATSymbol getName();
+	public ATSymbol base_getName();
 	
 	/**
 	 * @return the current value of the field.
 	 */
-	public ATObject getFieldValue();
+	public ATObject base_getFieldValue();
 	
 	/**
 	 * Sets the value of the field if possible
@@ -53,6 +53,6 @@ public interface ATField extends ATObject {
 	 * @return - the value the field had before.
 	 * @throws NATException - if the field cannot be modified.
 	 */
-	public ATObject setValue(ATObject newValue) throws NATException;
+	public ATObject base_setValue(ATObject newValue) throws NATException;
 
 }

@@ -28,9 +28,7 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -39,8 +37,6 @@ import edu.vub.at.objects.natives.NATText;
  * Extends the ATExpression interface as a Text can also be output by the parser as a literal.
  */
 public interface ATText extends ATExpression {
-
-	public NATText asNativeText() throws XTypeMismatch;
 
 	// base-level interface
 	

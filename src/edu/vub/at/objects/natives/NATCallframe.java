@@ -233,12 +233,12 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * --------------------------------- */
 	
 	public ATNil meta_addField(ATField field) throws NATException {
-		return this.meta_defineField(field.getName(), field.getFieldValue());
+		return this.meta_defineField(field.base_getName(), field.base_getFieldValue());
 	}
 	
 	public ATNil meta_addMethod(ATMethod method) throws NATException {
 		throw new XIllegalOperation("Cannot add method "+
-								   method.getName().getText().asNativeText().javaValue +
+								   method.base_getName().getText().asNativeText().javaValue +
 				                    " to a call frame. Add it as a closure field instead.");
 	}
 	
@@ -275,11 +275,11 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * -- Mirror Fields   --
 	 * --------------------- */
 	
-	public ATObject getDynamicParent() {
+	public ATObject meta_getDynamicParent() {
 		return NATNil._INSTANCE_;
 	};
 	
-	public ATObject getLexicalParent() {
+	public ATObject meta_getLexicalParent() {
 		return lexicalParent_;
 	}
 

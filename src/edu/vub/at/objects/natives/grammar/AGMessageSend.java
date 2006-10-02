@@ -71,7 +71,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	 * @return the value of the invoked method or NIL in the case of an asynchronous message send.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		return message_.meta_eval(ctx).asMessage().meta_sendTo(rcvExp_.meta_eval(ctx));
+		return message_.meta_eval(ctx).asMessage().base_sendTo(rcvExp_.meta_eval(ctx));
 	}
 
 	/**

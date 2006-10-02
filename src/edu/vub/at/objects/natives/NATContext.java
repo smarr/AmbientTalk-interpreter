@@ -50,27 +50,27 @@ public class NATContext extends NATNil implements ATContext {
 		super_ = zuper;
 	}
 
-	public ATObject getLexicalScope() {
+	public ATObject base_getLexicalScope() {
 		return scope_;
 	}
 
-	public ATObject getSelf() {
+	public ATObject base_getSelf() {
 		return self_;
 	}
 
-	public ATObject getSuper() {
+	public ATObject base_getSuper() {
 		return super_;
 	}
 
-	public ATContext withLexicalEnvironment(ATObject scope) {
+	public ATContext base_withLexicalEnvironment(ATObject scope) {
 		return new NATContext(scope, self_, super_);
 	}
 	
-	public ATContext withParentObject(ATObject zuper) {
+	public ATContext base_withParentObject(ATObject zuper) {
 		return new NATContext(scope_, self_, zuper);
 	}
 	
-	public ATContext withDynamicReceiver(ATObject self, ATObject zuper) {
+	public ATContext base_withDynamicReceiver(ATObject self, ATObject zuper) {
 		return new NATContext(scope_, self, zuper);		
 	}
 	

@@ -95,7 +95,7 @@ public class JavaClosure extends NATClosure {
 	 * If receiver is an anonymous JavaClosure, an 'anonymous' JavaMethod is returned.
 	 * @return a JavaMethod wrapped by this JavaClosure.
 	 */
-	public ATMethod getMethod() {
+	public ATMethod base_getMethod() {
 		if (method_ == null)
 			method_ = new JavaAnonymousMethod(scope_.getClass());
 		return method_;
@@ -106,9 +106,9 @@ public class JavaClosure extends NATClosure {
 	 * 
 	 * A 'default' context is lazily constructed and returned.
 	 */
-	public ATContext getContext() {
+	public ATContext base_getContext() {
 		if (context_ == null)
-			context_ = new NATContext(scope_, scope_, scope_.getDynamicParent());
+			context_ = new NATContext(scope_, scope_, scope_.meta_getDynamicParent());
 		return context_;
 	}
 
@@ -121,12 +121,12 @@ public class JavaClosure extends NATClosure {
 			// this method is supposed to be overridden by an anonymous subclass
 			throw new RuntimeException("JavaClosure's meta_apply not properly overridden by " + scope_.getClass());
 		} else {
-			return method_.meta_apply(arguments, this.getContext());
+			return method_.base_apply(arguments, this.base_getContext());
 		}
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<native closure:"+getMethod().getName().getText().asNativeText().javaValue+">");
+		return NATText.atValue("<native closure:"+base_getMethod().base_getName().getText().asNativeText().javaValue+">");
 	}
 	
 	/**

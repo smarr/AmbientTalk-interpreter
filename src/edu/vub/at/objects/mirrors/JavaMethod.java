@@ -63,22 +63,22 @@ public final class JavaMethod extends NATNil implements ATMethod {
 	 * The name of a wrapped Java method is the name of the Java method, converted to an
 	 * AmbientTalk selector name.
 	 */
-	public ATSymbol getName() {
+	public ATSymbol base_getName() {
 		return Reflection.downSelector(javaMethod_.getName());
 	}
 	
-	public ATTable getArguments() {
+	public ATTable base_getArguments() {
 		return new NATTable(javaMethod_.getParameterTypes());
 	}
 
-	public ATBegin getBodyExpression() {
+	public ATBegin base_getBodyExpression() {
 		return new AGBegin(new NATTable(new ATObject[] {
 				NATText.atValue("Native implementation of " + javaMethod_.toString())}));
 	}
 	
-	public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException {
+	public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
 		return Reflection.downObject(
-				JavaInterfaceAdaptor.invokeJavaMethod(javaMethod_, ctx.getLexicalScope(),
+				JavaInterfaceAdaptor.invokeJavaMethod(javaMethod_, ctx.base_getLexicalScope(),
 						                              arguments.asNativeTable().elements_));
 	}
 
@@ -91,7 +91,7 @@ public final class JavaMethod extends NATNil implements ATMethod {
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<native method:"+getName().getText().asNativeText().javaValue+">");
+		return NATText.atValue("<native method:"+base_getName().getText().asNativeText().javaValue+">");
 	}
 
 }
