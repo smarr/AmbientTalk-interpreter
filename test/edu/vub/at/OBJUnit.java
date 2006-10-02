@@ -155,7 +155,7 @@ public class OBJUnit extends NATNil {
 		
 		clone.ctx_ = new NATContext(extension, extension, clone);
 		
-		ATAbstractGrammar body = code.getMethod().getBody();
+		ATAbstractGrammar body = code.getMethod().getBodyExpression();
 		body.meta_eval(clone.ctx_);
 		
 		return extension;

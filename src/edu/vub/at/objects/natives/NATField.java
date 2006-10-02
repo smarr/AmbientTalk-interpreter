@@ -54,7 +54,7 @@ public class NATField extends NATNil implements ATField {
 		return name_;
 	}
 
-	public ATObject getValue() {
+	public ATObject getFieldValue() {
 		try {
 			return frame_.getLocalField(name_);
 		} catch (NATException e) {
@@ -65,7 +65,7 @@ public class NATField extends NATNil implements ATField {
 	}
 
 	public ATObject setValue(ATObject newValue) throws NATException {
-		ATObject result = getValue();
+		ATObject result = getFieldValue();
 		frame_.meta_assignField(name_, newValue);
 		return result;
 	}

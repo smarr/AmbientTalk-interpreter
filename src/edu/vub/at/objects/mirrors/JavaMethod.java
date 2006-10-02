@@ -34,10 +34,12 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGBegin;
 
 import java.lang.reflect.Method;
 
@@ -69,8 +71,9 @@ public final class JavaMethod extends NATNil implements ATMethod {
 		return new NATTable(javaMethod_.getParameterTypes());
 	}
 
-	public ATAbstractGrammar getBody() {
-		return NATText.atValue("Native implementation of " + javaMethod_.toString());
+	public ATBegin getBodyExpression() {
+		return new AGBegin(new NATTable(new ATObject[] {
+				NATText.atValue("Native implementation of " + javaMethod_.toString())}));
 	}
 	
 	public ATObject meta_apply(ATTable arguments, ATContext ctx) throws NATException {

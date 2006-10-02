@@ -519,7 +519,7 @@ public class NATObject extends NATCallframe implements ATObject{
 				/* parent porinter type */
 				parentPointerType);
 		
-		ATAbstractGrammar body = code.getMethod().getBody();
+		ATAbstractGrammar body = code.getMethod().getBodyExpression();
 		body.meta_eval(new NATContext(extension, extension, this));
 		
 		return extension;
@@ -537,7 +537,7 @@ public class NATObject extends NATCallframe implements ATObject{
 				new JavaClosure(null) {
 					public ATObject meta_apply(NATTable arguments) throws NATException {
 						return NATMirageFactory.createMirageForInterface(
-							meta_invoke(this, AGSymbol.alloc("asBegin"), NATTable.EMPTY),
+							this.meta_invoke(this, AGSymbol.alloc("asBegin"), NATTable.EMPTY),
 							ATBegin.class);			
 					}
 			});
@@ -552,7 +552,7 @@ public class NATObject extends NATCallframe implements ATObject{
 				new JavaClosure(null) {
 					public ATObject meta_apply(NATTable arguments) throws NATException {
 						return NATMirageFactory.createMirageForInterface(
-							meta_invoke(this, AGSymbol.alloc("asBoolean"), NATTable.EMPTY),
+							this.meta_invoke(this, AGSymbol.alloc("asBoolean"), NATTable.EMPTY),
 							ATBegin.class);			
 					}
 			});
@@ -561,127 +561,106 @@ public class NATObject extends NATCallframe implements ATObject{
 		}
 	}
 
-	@Override
 	public ATClosure asClosure() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asClosure();
 	}
 
-	@Override
 	public ATDefinition asDefinition() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asDefinition();
 	}
 
-	@Override
 	public ATExpression asExpression() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asExpression();
 	}
 
-	@Override
 	public ATMessage asMessage() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asMessage();
 	}
 
-	@Override
 	public ATMessageCreation asMessageCreation() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asMessageCreation();
 	}
 
-	@Override
 	public ATMethod asMethod() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asMethod();
 	}
 
-	@Override
 	public ATMirror asMirror() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asMirror();
 	}
 
-	@Override
 	public ATNumber asNumber() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asNumber();
 	}
 
-	@Override
 	public ATSplice asSplice() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asSplice();
 	}
 
-	@Override
 	public ATStatement asStatement() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asStatement();
 	}
 
-	@Override
 	public ATSymbol asSymbol() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asSymbol();
 	}
 
-	@Override
 	public ATTable asTable() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asTable();
 	}
 
-	@Override
 	public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch {
 		// TODO Auto-generated method stub
 		return super.asUnquoteSplice();
 	}
 
-	@Override
 	public ATBoolean base_isMirror() {
 		// TODO Auto-generated method stub
 		return super.base_isMirror();
 	}
 
-	@Override
 	public boolean isBoolean() {
 		// TODO Auto-generated method stub
 		return super.isBoolean();
 	}
 
-	@Override
 	public boolean isClosure() {
 		// TODO Auto-generated method stub
 		return super.isClosure();
 	}
 
-	@Override
 	public boolean isMethod() {
 		// TODO Auto-generated method stub
 		return super.isMethod();
 	}
 
-	@Override
 	public boolean isSplice() {
 		// TODO Auto-generated method stub
 		return super.isSplice();
 	}
 
-	@Override
 	public boolean isSymbol() {
 		// TODO Auto-generated method stub
 		return super.isSymbol();
 	}
 
-	@Override
 	public boolean isTable() {
 		// TODO Auto-generated method stub
 		return super.isTable();
 	}
 
-	@Override
 	public boolean isUnquoteSplice() {
 		// TODO Auto-generated method stub
 		return super.isUnquoteSplice();

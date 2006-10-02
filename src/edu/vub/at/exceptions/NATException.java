@@ -27,6 +27,10 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.natives.NATBoolean;
+
 /**
  * @author smostinc
  *
@@ -63,6 +67,11 @@ public class NATException extends Exception {
 
 	public NATException(Throwable cause) {
 		super(cause);
-	} 
+	}
+	
+//	public ATBoolean base_match(ATObject filter) {
+//		return NATBoolean.atValue(
+//				(filter.getClass().isAssignableFrom(this.getClass())));
+//	}
 		
 }

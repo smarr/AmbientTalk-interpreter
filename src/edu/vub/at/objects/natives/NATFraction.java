@@ -83,21 +83,21 @@ public final class NATFraction extends NATNumeric implements ATFraction {
 	/**
 	 * FRC(n).inc() => FRC(n+1)
 	 */
-	public ATFraction base_inc() {
+	public ATNumeric base_inc() {
 		return NATFraction.atValue(javaValue+1);
 	}
 	
 	/**
 	 * FRC(n).dec() => FRC(n-1)
 	 */
-	public ATFraction base_dec() {
+	public ATNumeric base_dec() {
 		return NATFraction.atValue(javaValue-1);
 	}
 	
 	/**
 	 * FRC(n).abs() => FRC(abs(n))
 	 */
-	public ATFraction base_abs() {
+	public ATNumeric base_abs() {
 		return NATFraction.atValue(Math.abs(javaValue));
 	}
 	

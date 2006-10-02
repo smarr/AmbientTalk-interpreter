@@ -67,21 +67,27 @@ import edu.vub.at.objects.grammar.ATUnquoteSplice;
 
 /**
  * 
- * TODO document the class ATEverything
+ * ATEverything is an interface extending all AT language value interfaces.
+ * This makes it the top of the AT type lattice of which ATObject is the 
+ * bottom element. 
+ * 
+ * ATEverything is used to allow objects to act in the place of any primitive
+ * language value they want.
  *
  * @author smostinc
  */
-public interface ATEverything extends ATObject, ATAbstractGrammar, ATActor,
-		ATApplication, ATAssignField, ATAssignment, ATAssignTable,
-		ATAssignVariable, ATAsyncMessage, ATAsyncMessageCreation, ATBegin,
-		ATBeholder, ATBoolean, ATClosure, ATClosureLiteral, ATContext,
-		ATDefField, ATDefinition, ATDefMethod, ATDefTable, ATDevice, ATEvent,
-		ATExpression, ATField, ATHandler, ATMailbox, ATMessage,
-		ATMessageCreation, ATMessageFactory, ATMessageSend, ATMethod,
-		ATMethodInvocation, ATMethodInvocationCreation, ATMirror,
-		ATMultiAssignment, ATMultiDefinition, ATNil, ATNumeric,
-		ATQuote, ATResolution, ATSelection, ATSendStrategy,
-		ATServiceDescription, ATSplice, ATStatement, ATSymbol, ATTable,
-		ATTabulation, ATText, ATUnquote, ATUnquoteSplice, ATVirtualMachine {
+public interface ATEverything 
+		extends ATObject,  ATAbstractGrammar,  ATActor,  ATApplication,
+		ATAssignField, ATAssignment,  ATAssignTable,  ATAssignVariable, 
+		ATAsyncMessage,  ATAsyncMessageCreation,  ATBegin,  ATBeholder, 
+		ATBoolean, ATClosure, ATClosureLiteral, ATContext,  ATDefField, 
+		ATDefinition,   ATDefMethod,   ATDefTable,  ATDevice,  ATEvent,
+		ATExpression,   ATField,   ATFraction,   ATMailbox,  ATMessage,
+		ATMessageCreation, ATMessageSend, ATMethod, ATMethodInvocation, 
+		ATMethodInvocationCreation,     ATMirror,    ATMultiAssignment, 
+		ATMultiDefinition,  ATNil,  ATNumber,  ATQuote,   ATResolution, 
+		ATSelection,  ATSendStrategy,  ATServiceDescription,  ATSplice, 
+		ATStatement, ATSymbol, ATTable, ATTabulation, ATText,ATUnquote, 
+		ATUnquoteSplice, ATVirtualMachine {
 
 }

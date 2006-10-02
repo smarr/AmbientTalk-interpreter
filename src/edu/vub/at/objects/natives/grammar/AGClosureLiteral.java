@@ -56,7 +56,7 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 	
 	public ATTable getArguments() { return arguments_; }
 
-	public ATBegin getBody() { return body_; }
+	public ATBegin getBodyExpression() { return body_; }
 
 	/**
 	 * To evaluate a closure literal, construct a closure pairing the literal's arguments and body with the

@@ -37,9 +37,9 @@ public interface ATFraction extends ATNumeric {
 
 	// base-level interface
 	
-	public ATFraction base_inc();
-	public ATFraction base_dec();
-	public ATFraction base_abs();
+	public ATNumeric base_inc();
+	public ATNumeric base_dec();
+	public ATNumeric base_abs();
 	
 	public ATNumber base_round();
 	public ATNumber base_floor();

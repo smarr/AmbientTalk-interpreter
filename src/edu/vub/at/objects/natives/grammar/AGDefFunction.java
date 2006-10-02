@@ -67,7 +67,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 		return argumentExps_;
 	}
 
-	public ATBegin getBody() {
+	public ATBegin getBodyExpression() {
 		return bodyStmts_;
 	}
 

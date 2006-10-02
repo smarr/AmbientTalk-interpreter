@@ -57,7 +57,7 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 		valueExp_ = val;
 	}
 	
-	public ATExpression getReceiver() { return rcvExp_; }
+	public ATExpression getReceiverExpression() { return rcvExp_; }
 	
 	public ATSymbol getFieldName() { return fieldName_; }
 

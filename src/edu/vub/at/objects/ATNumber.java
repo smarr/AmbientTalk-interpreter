@@ -38,9 +38,9 @@ public interface ATNumber extends ATNumeric {
 
 	// base-level interface
 	
-	public ATNumber base_inc();
-	public ATNumber base_dec();
-	public ATNumber base_abs();
+	public ATNumeric base_inc();
+	public ATNumeric base_dec();
+	public ATNumeric base_abs();
 	
 	public ATNil base_doTimes_(ATClosure code) throws NATException;
 	public ATNil base_to_do_(ATNumber end, ATClosure code) throws NATException;

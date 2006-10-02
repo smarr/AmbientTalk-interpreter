@@ -1,5 +1,6 @@
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.AmbientTalkTestCase;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -11,7 +12,7 @@ import junit.framework.TestCase;
  * A Unit Test for the FieldMap class.
  * Tests the Field Map's behaviour for adding and looking up field names.
  */
-public class TestFieldMap extends TestCase {
+public class TestFieldMap extends AmbientTalkTestCase {
 
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(TestFieldMap.class);

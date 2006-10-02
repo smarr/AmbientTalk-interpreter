@@ -38,6 +38,6 @@ public interface ATDefMethod extends ATDefinition {
 
 	public ATSymbol getSelector();
 	public ATTable getArguments();
-	public ATBegin getBody();
+	public ATBegin getBodyExpression();
 	
 }

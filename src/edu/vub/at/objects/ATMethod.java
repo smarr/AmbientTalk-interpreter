@@ -28,6 +28,7 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
@@ -69,5 +70,5 @@ public interface ATMethod extends ATObject {
 	/**
 	 * Structural access to the body of the method.
 	 */
-	public ATAbstractGrammar getBody();
+	public ATBegin getBodyExpression();
 }

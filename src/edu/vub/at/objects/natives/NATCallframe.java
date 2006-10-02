@@ -233,7 +233,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * --------------------------------- */
 	
 	public ATNil meta_addField(ATField field) throws NATException {
-		return this.meta_defineField(field.getName(), field.getValue());
+		return this.meta_defineField(field.getName(), field.getFieldValue());
 	}
 	
 	public ATNil meta_addMethod(ATMethod method) throws NATException {

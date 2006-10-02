@@ -30,11 +30,11 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
@@ -47,10 +47,10 @@ public class NATMethod extends NATNil implements ATMethod {
 
 	private final ATSymbol 			name_;
 	private final ATTable 			parameters_;
-	private final ATAbstractGrammar	body_;
+	private final ATBegin				body_;
 	
 	
-	public NATMethod(ATSymbol name, ATTable parameters, ATAbstractGrammar body) {
+	public NATMethod(ATSymbol name, ATTable parameters, ATBegin body) {
 		name_ 		= name;
 		parameters_ 	= parameters;
 		body_ 		= body;
@@ -64,7 +64,7 @@ public class NATMethod extends NATNil implements ATMethod {
 		return parameters_;
 	}
 
-	public ATAbstractGrammar getBody() {
+	public ATBegin getBodyExpression() {
 		return body_;
 	}
 	

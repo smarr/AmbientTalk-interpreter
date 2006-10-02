@@ -51,7 +51,7 @@ public final class AGSelection extends AGExpression implements ATSelection {
 		selector_ = sel;
 	}
 	
-	public ATExpression getReceiver() { return rcvExp_; }
+	public ATExpression getReceiverExpression() { return rcvExp_; }
 
 	public ATSymbol getSelector() { return selector_; }
 

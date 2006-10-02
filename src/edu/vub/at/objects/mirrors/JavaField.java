@@ -80,7 +80,7 @@ public class JavaField extends NATNil implements ATField {
 		return name_;
 	}
 
-	public ATObject getValue() {
+	public ATObject getFieldValue() {
 		try {
 			return getter_.meta_apply(NATTable.EMPTY);
 		} catch (NATException e) {

@@ -34,7 +34,7 @@ package edu.vub.at.objects.grammar;
  */
 public interface ATSelection extends ATExpression {
 
-	public ATExpression getReceiver();
+	public ATExpression getReceiverExpression();
 	public ATSymbol getSelector();
 	
 }
