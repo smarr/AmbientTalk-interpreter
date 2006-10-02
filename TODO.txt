@@ -1,6 +1,15 @@
 === TODO ===
 
 checklist:
+Stijn:
+- exception handling
+- afwerken mirages
+
+Tom:
+- collections
+- coercer
+- meta_apply refactoren naar base_apply + varargs
+
 - mirages + unit tests
 - exception handling: handlers (own stack) + throw -> .raise conversion
 - write AmbientTalk code: at.collections, at.unit, at.init, at.mirrors

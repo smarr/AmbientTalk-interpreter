@@ -37,8 +37,6 @@ import edu.vub.at.actors.ATVirtualMachine;
 import edu.vub.at.actors.beholders.ATBeholder;
 import edu.vub.at.actors.events.ATEvent;
 import edu.vub.at.actors.grammar.ATAsyncMessageCreation;
-import edu.vub.at.actors.hooks.ATMessageFactory;
-import edu.vub.at.actors.hooks.ATSendStrategy;
 import edu.vub.at.objects.grammar.ATApplication;
 import edu.vub.at.objects.grammar.ATAssignField;
 import edu.vub.at.objects.grammar.ATAssignTable;

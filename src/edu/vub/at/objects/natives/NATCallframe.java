@@ -107,7 +107,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
 		// assert(this == receiver)
-		return this.getLocalField(selector).asClosure().meta_apply(arguments);
+		return this.getLocalField(selector).asClosure().base_applyWithArgs(arguments);
 	}
 	
 	/**

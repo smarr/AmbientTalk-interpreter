@@ -36,7 +36,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			// "ambienttalk".find: "[aeiou]" do: { |vowel| buff << vowel; nil } => buff = "aiea"
 			final StringBuffer buff = new StringBuffer();
 			TXTambienttalk_.base_find_do_(NATText.atValue("[aeiou]"), new JavaClosure(null) {
-				public ATObject meta_apply(ATTable arguments) throws NATException {
+				public ATObject base_apply(ATTable arguments) throws NATException {
 					buff.append(arguments.base_at(NATNumber.ONE).asNativeText().javaValue);
 					return NATNil._INSTANCE_;
 				}
@@ -45,7 +45,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// "ambienttalk".replace: "[aeiou]" by: { |vowel| vowel.toUpperCase() } => AmbIEnttAlk
 			ATText replaced = TXTambienttalk_.base_replace_by_(NATText.atValue("[aeiou]"), new JavaClosure(null) {
-				public ATObject meta_apply(ATTable arguments) throws NATException {
+				public ATObject base_apply(ATTable arguments) throws NATException {
 					return arguments.base_at(NATNumber.ONE).asNativeText().base_toUpperCase();
 				}
 			});
@@ -156,7 +156,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			// 3.doTimes: { |i| buff << i; nil } => buff = 123
 			final StringBuffer buff = new StringBuffer();
 			NATNumber.atValue(3).base_doTimes_(new JavaClosure(null) {
-				public ATObject meta_apply(ATTable args) throws NATException {
+				public ATObject base_apply(ATTable args) throws NATException {
 					buff.append(getNbr(args, 1));
 					return NATNil._INSTANCE_;
 				}
@@ -166,7 +166,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			// 3.to: 5 do: { |i| buff2 << i; nil } => buff2 = 345
 			final StringBuffer buff2 = new StringBuffer();
 			NATNumber.atValue(3).base_to_do_(NATNumber.atValue(5), new JavaClosure(null) {
-				public ATObject meta_apply(ATTable args) throws NATException {
+				public ATObject base_apply(ATTable args) throws NATException {
 					buff2.append(getNbr(args, 1));
 					return NATNil._INSTANCE_;
 				}
@@ -176,7 +176,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			// 50.to: 10 step: 10 do: { |i| buff3 << i; nil } => buff3 = 5040302010
 			final StringBuffer buff3 = new StringBuffer();
 			NATNumber.atValue(50).base_to_step_do_(NATNumber.atValue(10), NATNumber.atValue(10), new JavaClosure(null) {
-				public ATObject meta_apply(ATTable args) throws NATException {
+				public ATObject base_apply(ATTable args) throws NATException {
 					buff3.append(getNbr(args, 1));
 					return NATNil._INSTANCE_;
 				}
@@ -287,14 +287,14 @@ public class PrimitivesTest extends AmbientTalkTest {
 		try {
 			// (0 < 1).ifTrue: { 0 } => 0
 			assertEquals(NATNumber.ZERO, NATNumber.ZERO.base__opltx_(NATNumber.ONE).base_ifTrue_(new JavaClosure(null) {
-				public ATObject meta_apply(ATTable args) {
+				public ATObject base_apply(ATTable args) {
 					return NATNumber.ZERO;
 				}
 			}));
 			
 			// (0 < 1).ifFalse: { 0 } => nil
 			assertEquals(NATNil._INSTANCE_, NATNumber.ZERO.base__opltx_(NATNumber.ONE).base_ifFalse_(new JavaClosure(null) {
-				public ATObject meta_apply(ATTable args) {
+				public ATObject base_apply(ATTable args) {
 					return NATNumber.ZERO;
 				}
 			}));
@@ -308,7 +308,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			// false.and: { 1/0 } => false
 			try {
 				assertFalse(NATBoolean._FALSE_.base_and_(new JavaClosure(null) {
-					public ATObject meta_apply(ATTable args) throws NATException {
+					public ATObject base_apply(ATTable args) throws NATException {
 						return NATNumber.ONE.base__opdiv_(NATNumber.ZERO);
 					}
 				}).asNativeBoolean().javaValue);
@@ -319,7 +319,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			// true.or: { 1/0 } => true
 			try {
 				assertTrue(NATBoolean._TRUE_.base_or_(new JavaClosure(null) {
-					public ATObject meta_apply(ATTable args) throws NATException {
+					public ATObject base_apply(ATTable args) throws NATException {
 						return NATNumber.ONE.base__opdiv_(NATNumber.ZERO);
 					}
 				}).asNativeBoolean().javaValue);
@@ -329,7 +329,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// false.or: { true } => true
 			assertTrue(NATBoolean._FALSE_.base_or_(new JavaClosure(null) {
-				public ATObject meta_apply(ATTable args) throws NATException {
+				public ATObject base_apply(ATTable args) throws NATException {
 					return NATBoolean._TRUE_;
 				}
 			}).asNativeBoolean().javaValue);

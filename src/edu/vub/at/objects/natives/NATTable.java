@@ -160,7 +160,7 @@ public final class NATTable extends AGExpression implements ATTable {
 	
 	public ATNil base_each_(ATClosure clo) throws NATException {
 		for (int i = 0; i < elements_.length; i++) {
-			clo.meta_apply(new NATTable(new ATObject[] { elements_[i] }));
+			clo.base_apply(new ATObject[] { elements_[i] });
 		}
 		return NATNil._INSTANCE_;
 	}
@@ -170,7 +170,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		
 		ATObject[] result = new ATObject[elements_.length];
 		for (int i = 0; i < elements_.length; i++) {
-			result[i] = clo.meta_apply(new NATTable(new ATObject[] { elements_[i] }));
+			result[i] = clo.base_apply(new ATObject[] { elements_[i] });
 		}
 		return new NATTable(result);
 	}
@@ -178,7 +178,7 @@ public final class NATTable extends AGExpression implements ATTable {
 	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws NATException {
 		ATObject total = init;
 		for (int i = 0; i < elements_.length; i++) {
-			total = clo.meta_apply(new NATTable(new ATObject[] { total, elements_[i] }));
+			total = clo.base_apply(new ATObject[] { total, elements_[i] });
 		}
 		return total;
 	}
@@ -209,7 +209,7 @@ public final class NATTable extends AGExpression implements ATTable {
 	public ATTable base_select(ATNumber first, ATNumber last) throws NATException {
 		final LinkedList selection = new LinkedList();
 		first.base_to_do_(last, new JavaClosure(this) {
-			public ATObject meta_apply(ATTable args) throws NATException {
+			public ATObject base_apply(ATTable args) throws NATException {
 			    selection.add(base_at(args.base_at(NATNumber.ONE).asNumber()));
 			    return NATNil._INSTANCE_;
 			}

@@ -116,7 +116,7 @@ public class JavaClosure extends NATClosure {
 	 * Apply the JavaClosure, which either gives rise to executing a native piece of
 	 * code supplied by an anonymous subclass, or executes the wrapped JavaMethod.
 	 */
-	public ATObject meta_apply(ATTable arguments) throws NATException {
+	public ATObject base_apply(ATTable arguments) throws NATException {
 		if (method_ == null) {
 			// this method is supposed to be overridden by an anonymous subclass
 			throw new RuntimeException("JavaClosure's meta_apply not properly overridden by " + scope_.getClass());

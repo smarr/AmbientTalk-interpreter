@@ -120,25 +120,8 @@ public class JavaInterfaceAdaptor {
 			// a variable number of ambienttalk arguments
 			Class[] params = javaMethod.getParameterTypes();
 			
-			/* for debugging purposes
-			System.err.println("Reflective invocation of "+javaMethod.getName());
-			System.err.print("Required parameters: ");
-			for (int i = 0; i < params.length; i++) {
-				System.err.print(params[i].getName());
-			}
-
-			System.err.println();
-			System.err.print("Provided parameters: ");
-			for (int i = 0; i < jArguments.length; i++) {
-				System.err.print(jArguments[i].getClass().getName());
-			}*/
-			
 			if ((params.length == 1) && params[0].equals(ATObject[].class)) {
-				try {
-					return javaMethod.invoke(jReceiver, new Object[] { (ATObject[]) jArguments });
-				} catch (Exception e) {
-					e.printStackTrace(); return NATNil._INSTANCE_;
-				}
+				return javaMethod.invoke(jReceiver, new Object[] { (ATObject[]) jArguments });
 			} else {
 				return javaMethod.invoke(jReceiver, jArguments);
 			}

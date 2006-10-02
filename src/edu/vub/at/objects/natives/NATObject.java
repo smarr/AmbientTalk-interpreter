@@ -209,7 +209,7 @@ public class NATObject extends NATCallframe implements ATObject{
 		//return this.meta_select(receiver, selector).asClosure().meta_apply(arguments);
 		// BUT SPECIALIZED FOR PERFORMANCE REASONS (no unnecessary closure is created)
 		if (this.hasLocalField(selector)) {
-			return this.getLocalField(selector).asClosure().meta_apply(arguments);
+			return this.getLocalField(selector).asClosure().base_applyWithArgs(arguments);
 		} else if (this.hasLocalMethod(selector)) {
 			// immediately execute the method in the context ctx where
 			//  ctx.scope = the implementing scope, being this object

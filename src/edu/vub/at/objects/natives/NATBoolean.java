@@ -88,7 +88,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		// base interface for true
 		
 		public ATObject base_ifTrue_(ATClosure clo) throws NATException {
-			return clo.meta_apply(NATTable.EMPTY);
+			return clo.base_apply(NATTable.EMPTY.elements_);
 		}
 
 		public ATObject base_ifFalse_(ATClosure clo) throws NATException {
@@ -96,7 +96,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		}
 		
 		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws NATException {
-			return consequent.asClosure().meta_apply(NATTable.EMPTY);
+			return consequent.asClosure().base_apply(NATTable.EMPTY.elements_);
 		}
 		
 		public ATBoolean base__opamp_(ATBoolean other) throws NATException {
@@ -108,7 +108,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		}
 		
 		public ATBoolean base_and_(ATClosure other) throws NATException {
-			return other.meta_apply(NATTable.EMPTY).asBoolean();
+			return other.base_apply(NATTable.EMPTY.elements_).asBoolean();
 		}
 		
 		public ATBoolean base_or_(ATClosure other) throws NATException {
@@ -136,11 +136,11 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		}
 
 		public ATObject base_ifFalse_(ATClosure clo) throws NATException {
-			return clo.meta_apply(NATTable.EMPTY);
+			return clo.base_apply(NATTable.EMPTY.elements_);
 		}
 		
 		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws NATException {
-			return alternative.asClosure().meta_apply(NATTable.EMPTY);
+			return alternative.asClosure().base_apply(NATTable.EMPTY.elements_);
 		}
 		
 		public ATBoolean base__opamp_(ATBoolean other) throws NATException {
@@ -156,7 +156,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		}
 		
 		public ATBoolean base_or_(ATClosure other) throws NATException {
-			return other.meta_apply(NATTable.EMPTY).asBoolean();
+			return other.base_apply(NATTable.EMPTY.elements_).asBoolean();
 		}
 		
 		public ATBoolean base_not() {

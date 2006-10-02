@@ -58,7 +58,14 @@ public interface ATClosure extends ATObject {
 	 * @param arguments the already evaluated arguments
 	 * @return the value of evaluating the method body in the context of the closure
 	 */
-	public ATObject meta_apply(ATTable arguments) throws NATException;
+	public ATObject base_apply(ATObject[] arguments) throws NATException;
+	
+	/**
+	 * Applies the closure to the given arguments, already wrapped in a table
+	 * @param args the already evaluated arguments, wrapped in a table
+	 * @return the value of evaluating the method body in the context of the closure
+	 */
+	public ATObject base_applyWithArgs(ATTable args) throws NATException;
 	
 	/**
 	 * Allows AmbientTalk programmers to write

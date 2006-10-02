@@ -396,7 +396,7 @@ public final class OBJLexicalRoot extends NATNil {
 		mirageMaker.meta_defineField(
 				AGSymbol.alloc("newInstance"), 
 				new JavaClosure(this) {
-					public ATObject meta_apply(ATTable initargs) throws NATException {
+					public ATObject base_apply(ATTable initargs) throws NATException {
 						ATObject newReflectee = NATMirageFactory.createMirage(customMirror);
 						newReflectee.meta_invoke(newReflectee, Evaluator._INIT_, initargs);
 						meta_assignField(

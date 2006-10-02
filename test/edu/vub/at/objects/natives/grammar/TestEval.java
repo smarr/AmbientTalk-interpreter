@@ -132,7 +132,7 @@ public class TestEval extends AmbientTalkTest {
 	  ATClosure clo = evalAndReturn("{| x, y | 3 }").asClosure();
 	  ATSymbol nam = clo.getMethod().getName();
 	  ATTable arg = clo.getMethod().getArguments();
-	  ATAbstractGrammar bdy = clo.getMethod().getBody();
+	  ATAbstractGrammar bdy = clo.getMethod().getBodyExpression();
 	  ATContext ctx = clo.getContext();
 	  assertEquals(AGSymbol.alloc(NATText.atValue("lambda")), nam);
 	  assertEquals(atX_, arg.base_at(NATNumber.ONE));
