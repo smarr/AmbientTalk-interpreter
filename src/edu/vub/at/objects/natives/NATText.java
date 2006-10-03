@@ -127,7 +127,7 @@ public final class NATText extends AGExpression implements ATText {
 			 
 			 Matcher m = p.matcher(javaValue);
 			 while (m.find()) {
-				 consumer.base_apply(new ATObject[] { NATText.atValue(m.group()) });
+				 consumer.base_apply(new NATTable(new ATObject[] { NATText.atValue(m.group()) }));
 			 }
 			 return NATNil._INSTANCE_;
 		}
@@ -144,7 +144,7 @@ public final class NATText extends AGExpression implements ATText {
 			 Matcher m = p.matcher(javaValue);
 			 StringBuffer sb = new StringBuffer();
 			 while (m.find()) {
-				 ATObject replacement = transformer.base_apply(new ATObject[] { NATText.atValue(m.group()) });
+				 ATObject replacement = transformer.base_apply(new NATTable(new ATObject[] { NATText.atValue(m.group()) }));
 			     m.appendReplacement(sb, replacement.asNativeText().javaValue);
 			 }
 			 m.appendTail(sb);

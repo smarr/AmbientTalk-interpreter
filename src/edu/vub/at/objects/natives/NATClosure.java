@@ -80,11 +80,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	 * To apply a closure, apply its underlying method with the context of the closure,
 	 * rather than the runtime context of the invoker.
 	 */
-	public ATObject base_apply(ATObject[] arguments) throws NATException {
-		return method_.base_apply(new NATTable(arguments), context_);
-	}
-	
-	public ATObject base_applyWithArgs(ATTable arguments) throws NATException {
+	public ATObject base_apply(ATTable arguments) throws NATException {
 		return method_.base_apply(arguments, context_);
 	}
 
@@ -109,12 +105,12 @@ public class NATClosure extends NATNil implements ATClosure {
 		ATBoolean cond;
 		while (true) {
 			// cond = self.apply()
-			cond = this.base_apply(NATTable.EMPTY.elements_).asBoolean();
+			cond = this.base_apply(NATTable.EMPTY).asBoolean();
 			if(cond.isNativeBoolean()) {
 				// cond is a native boolean, perform the conditional ifTrue: test natively
 				if (cond.asNativeBoolean().javaValue) {
 					// execute body and continue while loop
-					body.base_apply(NATTable.EMPTY.elements_);
+					body.base_apply(NATTable.EMPTY);
 					continue;
 				} else {
 					// return nil
@@ -125,7 +121,7 @@ public class NATClosure extends NATNil implements ATClosure {
 				return cond.base_ifTrue_(new JavaClosure(this) {
 					public ATObject base_apply(ATTable args) throws NATException {
 						// if user-defined bool is true, execute body and recurse
-						body.base_apply(NATTable.EMPTY.elements_);
+						body.base_apply(NATTable.EMPTY);
 						return base_whileTrue_(body);
 					}
 				});

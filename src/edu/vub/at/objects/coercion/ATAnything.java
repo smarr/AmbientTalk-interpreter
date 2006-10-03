@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATEverything.java created on Sep 29, 2006 at 8:07:40 AM
+ * ATAnything.java created on Sep 29, 2006 at 8:07:40 AM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,7 +25,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
+package edu.vub.at.objects.coercion;
 
 import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
@@ -37,6 +37,21 @@ import edu.vub.at.actors.ATVirtualMachine;
 import edu.vub.at.actors.beholders.ATBeholder;
 import edu.vub.at.actors.events.ATEvent;
 import edu.vub.at.actors.grammar.ATAsyncMessageCreation;
+import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATFraction;
+import edu.vub.at.objects.ATMessage;
+import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATMethodInvocation;
+import edu.vub.at.objects.ATMirror;
+import edu.vub.at.objects.ATNil;
+import edu.vub.at.objects.ATNumber;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATApplication;
 import edu.vub.at.objects.grammar.ATAssignField;
 import edu.vub.at.objects.grammar.ATAssignTable;
@@ -64,17 +79,18 @@ import edu.vub.at.objects.grammar.ATUnquote;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 
 /**
+ * @deprecated scheduled for deletion, use coercers instead.
  * 
- * ATEverything is an interface extending all AT language value interfaces.
+ * ATAnything is an interface extending all AT language value interfaces.
  * This makes it the top of the AT type lattice of which ATObject is the 
  * bottom element. 
  * 
- * ATEverything is used to allow objects to act in the place of any primitive
+ * ATAnything is used to allow objects to act in the place of any primitive
  * language value they want.
  *
  * @author smostinc
  */
-public interface ATEverything 
+public interface ATAnything 
 		extends ATObject,  ATAbstractGrammar,  ATActor,  ATApplication,
 		ATAssignField, ATAssignment,  ATAssignTable,  ATAssignVariable, 
 		ATAsyncMessage,  ATAsyncMessageCreation,  ATBegin,  ATBeholder, 

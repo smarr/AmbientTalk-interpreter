@@ -25,9 +25,17 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
+package edu.vub.at.objects.coercion;
 
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATMessage;
+import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATMirror;
+import edu.vub.at.objects.ATNumber;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;

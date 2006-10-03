@@ -27,9 +27,9 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.objects.ATEverything;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.ATAnything;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATTable;
@@ -164,7 +164,7 @@ public class NATMirageFactory {
 
 	// TODO: mirrorRepresentation.getClass() returns the NATxxx class instance, require mapping from NATxxx to ATxxx
 	public static ATObject createMirage(ATObject mirrorRepresentation) {
-		return NATMirageFactory.createMirageForInterface(mirrorRepresentation, ATEverything.class);
+		return NATMirageFactory.createMirageForInterface(mirrorRepresentation, ATAnything.class);
 	}
 
 	public static ATObject createMirageForInterface(

@@ -189,7 +189,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 					msgSendMirror,
 					AGSymbol.alloc("receiver"));
 			
-			receiver.base_getBase().asClosure().base_apply(NATTable.EMPTY.elements_);
+			receiver.base_getBase().asClosure().base_apply(NATTable.EMPTY);
 			
 			msgSendMirror.meta_assignField(AGSymbol.alloc("receiver"), 
 					NATMirrorFactory._INSTANCE_.base_createMirror(closures));
@@ -199,7 +199,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 					AGSymbol.alloc("eval"),
 					new NATTable(new ATObject[] { new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_) }));
 			
-			result.base_getBase().asClosure().base_apply(NATTable.EMPTY.elements_);
+			result.base_getBase().asClosure().base_apply(NATTable.EMPTY);
 			
 		} catch (NATException e) {
 			e.printStackTrace();

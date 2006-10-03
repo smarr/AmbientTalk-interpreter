@@ -137,7 +137,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 	public void testJavaBaseFieldAccess() {
 		try {
 			ATObject element = closures.base_at(closures.base_getLength());
-			element.asClosure().base_apply(NATTable.EMPTY.elements_);
+			element.asClosure().base_apply(NATTable.EMPTY);
 		} catch (NATException e) {
 			e.printStackTrace();
 			fail("exception: "+e);
@@ -154,9 +154,9 @@ public class InvocationTest extends ReflectiveAccessTest {
 		try {
 			ATObject accessor = closures.meta_select(closures, AGSymbol.alloc("at"));
 			ATObject element = accessor.asClosure().base_apply(
-					new ATObject[] {
-							closures.meta_select(closures, AGSymbol.alloc("length"))});
-			element.asClosure().base_apply(NATTable.EMPTY.elements_);
+					new NATTable(new ATObject[] {
+							closures.meta_select(closures, AGSymbol.alloc("length"))}));
+			element.asClosure().base_apply(NATTable.EMPTY);
 		} catch (NATException e) {
 			e.printStackTrace();
 			fail("exception: "+e);
@@ -212,7 +212,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 
 			ATObject element = message.base_sendTo(closures);
 			
-			element.asClosure().base_apply(NATTable.EMPTY.elements_);
+			element.asClosure().base_apply(NATTable.EMPTY);
 
 		} catch (NATException e) {
 			e.printStackTrace();
@@ -241,7 +241,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 
 			ATObject element = message.base_sendTo(closures);
 			
-			element.asClosure().base_apply(NATTable.EMPTY.elements_);
+			element.asClosure().base_apply(NATTable.EMPTY);
 		} catch (NATException e) {
 			e.printStackTrace();
 			fail("exception: "+e);

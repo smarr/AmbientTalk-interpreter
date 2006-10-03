@@ -35,6 +35,7 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
@@ -42,6 +43,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -50,9 +52,6 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
-import edu.vub.at.objects.mirrors.JavaClosure;
-import edu.vub.at.objects.mirrors.NATMirageFactory;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -68,10 +67,26 @@ import java.util.Vector;
  * for reusing the field definition/assignment protocol and for inheriting the
  * variable map, the state vector and the lexical parent.
  * 
+ * NATObjects are one of the four native classes that implement the ATObject interface
+ * (next to NATCallFrame, NATNil and NATSuperObject). The implementation is such that
+ * a NATObject instance represents *both* a base-level AmbientTalk object, as well as a meta-level
+ * AmbientTalk mirror on that object.
+ * 
+ * An AmbientTalk base-level object has the following structure:
+ * - properties: a set of boolean flags denoting:
+ *   - whether the dynamic parent is an IS_A or a SHARES_A parent
+ *   - whether the object shares its variable map with clones
+ *   - whether the object shares its method dictionary with clones
+ * - a variable map, mapping variable names to indices into the state vector
+ * - a state vector, containing the field values of the object
+ * - a method dictionary, mapping selectors to methods
+ * - a dynamic object parent, to delegate select and invoke operations
+ * - a lexical object parent, to support lexical scoping
+ * 
  * @author tvcutsem
  * @author smostinc
  */
-public class NATObject extends NATCallframe implements ATObject{
+public class NATObject extends NATCallframe implements ATObject {
 	
 	// Auxiliary static methods to support the type of dynamic parent
 	public static final boolean _IS_A_ 		= true;
@@ -203,13 +218,14 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * yields exactly the same result as a selection (e.g. <tt>o.m</tt>). The result
 	 * ought to be a closure (a method and its corresponding evaluation context), which
 	 * is applied to the provided arguments.
+	 * 
+	 * The code for meta_invoke is actually equivalent to
+	 * <code>return this.meta_select(receiver, selector).asClosure().meta_apply(arguments);</code>
+	 * but has a specialized implementation for performance reasons (no unnecessary closure is created)
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
-		// THIS CODE IS EQUIVALENT TO THE FOLLOWING:
-		//return this.meta_select(receiver, selector).asClosure().meta_apply(arguments);
-		// BUT SPECIALIZED FOR PERFORMANCE REASONS (no unnecessary closure is created)
 		if (this.hasLocalField(selector)) {
-			return this.getLocalField(selector).asClosure().base_applyWithArgs(arguments);
+			return this.getLocalField(selector).asClosure().base_apply(arguments);
 		} else if (this.hasLocalMethod(selector)) {
 			// immediately execute the method in the context ctx where
 			//  ctx.scope = the implementing scope, being this object
@@ -530,140 +546,37 @@ public class NATObject extends NATCallframe implements ATObject{
 	 * -- Conversion and Testing Protocol   --
 	 * --------------------------------------- */
 	
-	// Objects allow their methods to intercept the 'isXXX' and 'asXXX' calls
+	// ALL asXXX methods return a coercer object which returns a proxy of the correct interface that will 'down'
+	// subsequent Java base-level invocations to the AmbientTalk level
 	
-	public ATBegin asBegin() throws XTypeMismatch {
-		try {
-			return (ATBegin) meta_respondsTo(AGSymbol.alloc("asBegin")).base_ifTrue_(
-				new JavaClosure(null) {
-					public ATObject meta_apply(NATTable arguments) throws NATException {
-						return NATMirageFactory.createMirageForInterface(
-							this.meta_invoke(this, AGSymbol.alloc("asBegin"), NATTable.EMPTY),
-							ATBegin.class);			
-					}
-			});
-		} catch (NATException e) {
-			return super.asBegin();
-		}
-	}
+	public ATBegin asBegin() throws XTypeMismatch { return (ATBegin) Coercer.coerce(this, ATBegin.class); }
+	public ATBoolean asBoolean() throws XTypeMismatch { return (ATBoolean) Coercer.coerce(this, ATBoolean.class); }
+	public ATClosure asClosure() throws XTypeMismatch { return (ATClosure) Coercer.coerce(this, ATClosure.class); }
+	public ATDefinition asDefinition() throws XTypeMismatch { return (ATDefinition) Coercer.coerce(this, ATDefinition.class); }
+	public ATExpression asExpression() throws XTypeMismatch { return (ATExpression) Coercer.coerce(this, ATExpression.class); }
+	public ATField asField() throws XTypeMismatch { return (ATField) Coercer.coerce(this, ATField.class); }
+	public ATMessage asMessage() throws XTypeMismatch { return (ATMessage) Coercer.coerce(this, ATMessage.class); }
+	public ATMessageCreation asMessageCreation() throws XTypeMismatch { return (ATMessageCreation) Coercer.coerce(this, ATMessageCreation.class); }
+	public ATMethod asMethod() throws XTypeMismatch { return (ATMethod) Coercer.coerce(this, ATMethod.class); }
+	public ATMirror asMirror() throws XTypeMismatch { return (ATMirror) Coercer.coerce(this, ATMirror.class); }
+	public ATNumber asNumber() throws XTypeMismatch { return (ATNumber) Coercer.coerce(this, ATNumber.class); }
+	public ATSplice asSplice() throws XTypeMismatch { return (ATSplice) Coercer.coerce(this, ATSplice.class); }
+	public ATStatement asStatement() throws XTypeMismatch { return (ATStatement) Coercer.coerce(this, ATStatement.class); }
+	public ATSymbol asSymbol() throws XTypeMismatch { return (ATSymbol) Coercer.coerce(this, ATSymbol.class); }
+	public ATTable asTable() throws XTypeMismatch { return (ATTable) Coercer.coerce(this, ATTable.class); }
+	public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch { return (ATUnquoteSplice) Coercer.coerce(this, ATUnquoteSplice.class); }
+	
+	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
+	
+	public ATBoolean base_isMirror() { return NATBoolean._TRUE_; }
+	public boolean isBoolean() { return true; }
+	public boolean isClosure() { return true; }
+	public boolean isMethod() { return true; }
+	public boolean isSplice() { return true; }
+	public boolean isSymbol() { return true; }
+	public boolean isTable() { return true; }
+	public boolean isUnquoteSplice() { return true; }
 
-	public ATBoolean asBoolean() throws XTypeMismatch {
-		try {
-			return (ATBoolean) meta_respondsTo(AGSymbol.alloc("asBoolean")).base_ifTrue_(
-				new JavaClosure(null) {
-					public ATObject meta_apply(NATTable arguments) throws NATException {
-						return NATMirageFactory.createMirageForInterface(
-							this.meta_invoke(this, AGSymbol.alloc("asBoolean"), NATTable.EMPTY),
-							ATBegin.class);			
-					}
-			});
-		} catch (NATException e) {
-			return super.asBoolean();
-		}
-	}
-
-	public ATClosure asClosure() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asClosure();
-	}
-
-	public ATDefinition asDefinition() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asDefinition();
-	}
-
-	public ATExpression asExpression() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asExpression();
-	}
-
-	public ATMessage asMessage() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asMessage();
-	}
-
-	public ATMessageCreation asMessageCreation() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asMessageCreation();
-	}
-
-	public ATMethod asMethod() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asMethod();
-	}
-
-	public ATMirror asMirror() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asMirror();
-	}
-
-	public ATNumber asNumber() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asNumber();
-	}
-
-	public ATSplice asSplice() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asSplice();
-	}
-
-	public ATStatement asStatement() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asStatement();
-	}
-
-	public ATSymbol asSymbol() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asSymbol();
-	}
-
-	public ATTable asTable() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asTable();
-	}
-
-	public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch {
-		// TODO Auto-generated method stub
-		return super.asUnquoteSplice();
-	}
-
-	public ATBoolean base_isMirror() {
-		// TODO Auto-generated method stub
-		return super.base_isMirror();
-	}
-
-	public boolean isBoolean() {
-		// TODO Auto-generated method stub
-		return super.isBoolean();
-	}
-
-	public boolean isClosure() {
-		// TODO Auto-generated method stub
-		return super.isClosure();
-	}
-
-	public boolean isMethod() {
-		// TODO Auto-generated method stub
-		return super.isMethod();
-	}
-
-	public boolean isSplice() {
-		// TODO Auto-generated method stub
-		return super.isSplice();
-	}
-
-	public boolean isSymbol() {
-		// TODO Auto-generated method stub
-		return super.isSymbol();
-	}
-
-	public boolean isTable() {
-		// TODO Auto-generated method stub
-		return super.isTable();
-	}
-
-	public boolean isUnquoteSplice() {
-		// TODO Auto-generated method stub
-		return super.isUnquoteSplice();
-	}
+	// TODO: what about natives?
+	
 }

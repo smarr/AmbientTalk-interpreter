@@ -8,7 +8,8 @@ Stijn:
 Tom:
 - collections
 - coercer
-- meta_apply refactoren naar base_apply + varargs
+
+- zorgen dat alle AT interfaces alleen nog base_ / meta_ methoden hebben? Vooral ATConversions, AGxxx
 
 - mirages + unit tests
 - exception handling: handlers (own stack) + throw -> .raise conversion

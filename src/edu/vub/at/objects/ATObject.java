@@ -29,6 +29,7 @@ package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.coercion.ATConversions;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.actors.ATAsyncMessage;

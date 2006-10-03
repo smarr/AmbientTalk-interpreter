@@ -67,7 +67,7 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
 		ATClosure clo = funExp_.meta_eval(ctx).asClosure();
-		return clo.base_applyWithArgs(Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx));
+		return clo.base_apply(Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx));
 	}
 
 	/**
