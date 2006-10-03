@@ -40,7 +40,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.mirrors.JavaClosure;
 import edu.vub.at.objects.mirrors.NATMirageFactory;
-import edu.vub.at.objects.mirrors.NATMirror;
+import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirrorFactory;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
@@ -341,7 +341,7 @@ public final class OBJLexicalRoot extends NATNil {
 		 * doulbe object identity of mirages (mirage <-> custom mirror + object <-> 
 		 * default behaviour).
 		 */
-		final ATObject mirageMaker = new NATObject(code.base_getContext().base_getLexicalScope(), NATMirror._PROTOTYPE_, NATObject._SHARES_A_);
+		final ATObject mirageMaker = new NATObject(code.base_getContext().base_getLexicalScope(), NATIntrospectiveMirror._PROTOTYPE_, NATObject._SHARES_A_);
 		
 		/*
 		 * customMirror is a user-defined mirror object, which implements (part of) the 

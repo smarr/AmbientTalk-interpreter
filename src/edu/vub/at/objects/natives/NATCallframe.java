@@ -169,8 +169,9 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * A field can be added to either a call frame or an object.
 	 * In both cases, it is checked whether the field does not already exist.
 	 * If it does not, a new field is created and its value set to the given initial value.
+	 * @throws NATException 
 	 */
-	public ATNil meta_defineField(ATSymbol name, ATObject value) throws XDuplicateSlot, XTypeMismatch {
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
 		boolean fieldAdded = variableMap_.put(name);
 		if (!fieldAdded) {
 			// field already exists...

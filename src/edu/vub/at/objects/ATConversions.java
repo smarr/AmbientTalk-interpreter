@@ -68,6 +68,7 @@ public interface ATConversions {
 	public ATBoolean   asBoolean() throws XTypeMismatch;
 	public ATNumber    asNumber() throws XTypeMismatch;
 	public ATMessage   asMessage() throws XTypeMismatch;
+	public ATField     asField() throws XTypeMismatch;
 	public ATMethod    asMethod() throws XTypeMismatch;
 	public ATMirror    asMirror() throws XTypeMismatch;
 	

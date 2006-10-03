@@ -46,10 +46,12 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * <p>NATMirror represents  an ambienttalk object which is capable of offering the java 
- * meta-interface of any language value at the ambienttalk level. NATMirror is simply
- * a wrapper object around an ambienttalk object which deifies (ups) methods invoked
- * upon it.</p>
+ * <p>NATIntrospectiveMirror is a default mirror to represent an ambienttalk object 
+ * which is capable of offering the java meta-interface of any language value at the 
+ * ambienttalk level. This allows introspection into the language value's internals
+ * as well as invoking some meta-level operations on it. Technically, NATMirror is 
+ * simply a wrapper object around an ambienttalk object which deifies (ups) methods 
+ * invoked upon it.</p>
  * 
  * <p>Note that whereas the mirror can offer e.g. an apply method when reifying a 
  * closure, this does not affect its own meta-interface. A NATMirror is always an 
@@ -67,7 +69,7 @@ import edu.vub.at.objects.natives.NATText;
  * 
  * @author smostinc
  */
-public class NATMirror extends NATNil implements ATMirror {
+public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 
 	/**
 	 * The prototypical mirror object reflects on nil. This mirror (or in effect any
@@ -76,9 +78,9 @@ public class NATMirror extends NATNil implements ATMirror {
 	 * for a call to the mirror factory. This is in accordance with the principle 
 	 * that all mirror creation happens through the mediation of the factory.
 	 */
-	public static NATMirror _PROTOTYPE_ = new NATMirror(NATNil._INSTANCE_);
+	public static NATIntrospectiveMirror _PROTOTYPE_ = new NATIntrospectiveMirror(NATNil._INSTANCE_);
 	
-	private ATObject principal_;
+	protected ATObject principal_;
 	
 	
 	/**
@@ -88,7 +90,7 @@ public class NATMirror extends NATNil implements ATMirror {
 	 * only the object's meta_level operations (implemented in Java) will be called
 	 * directly by the mirror. 
 	 */
-	NATMirror(ATObject representation) {
+	NATIntrospectiveMirror(ATObject representation) {
 		principal_ = representation;
 	}
 	
@@ -211,8 +213,8 @@ public class NATMirror extends NATNil implements ATMirror {
 	
 	/**
 	 * The effect of assigning a field on a mirror can be twofold. Either a meta_field
-	 * of the reflectee is altered (in this case, the passed value must be a mirror to)
-	 * uphold stratification. Otherwise it is possible that a base field of the mirror
+	 * of the reflectee is altered (in this case, the passed value must be a mirror to
+	 * uphold stratification). Otherwise it is possible that a base field of the mirror
 	 * itself is changed.
 	 */
 	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
@@ -241,16 +243,23 @@ public class NATMirror extends NATNil implements ATMirror {
 	 * ------------------------------------ */
 
 	/**
-	 * Meta_clone will be called whenever someone invokes a new: operation on a 
-	 * mirror. We return a prototypical mirror (initialized with the nil value)
-	 * which can be properly initialised using base_init. The implementation of this
-	 * method contacts the factory in order to create a new mirror.
+	 * We enforce the restriction that any object has but a single IntrospectiveMirror
+	 * by returning the mirror itself when asked to clone. The .new(object) operation, 
+	 * which invokes clone, still achieves the wanted behaviour since a new mirror can 
+	 * be properly initialised using base_init. The implementation of this method 
+	 * contacts the factory in order to create a new mirror.
 	 */
 	public ATObject meta_clone() throws NATException {
-		return NATMirror._PROTOTYPE_;
+		return this;
 	}
 
-
+	/**
+	 * This method allows re-initialise a mirror object. However, since the link from a 
+	 * mirror to its base object is immutable, this results in contacting the mirror
+	 * factory, to create a (new) mirror for the requested object.
+	 * @param reflectee - the object that needs to be reflects upon
+	 * @return <b>another</b> (possibly new) mirror object 
+	 */
 	public ATObject base_init(ATObject reflectee) {
 		return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
 	}
@@ -275,8 +284,8 @@ public class NATMirror extends NATNil implements ATMirror {
 	 * <p>Extending a mirror with a custom object is possible, and creates a new 
 	 * object which may override the meta_operations of the default mirror object. 
 	 * However, the extension does not replace the mirror used by the interpreter: 
-	 * to allow for objects to have a custom mirror, this mirror has to be supplied
-	 * at creation time.</p>
+	 * to allow for objects to have a custom mirror, this (intercessive) mirror has 
+	 * to be supplied at creation time.</p>
 	 */
 	public ATObject meta_extend(ATClosure code) throws NATException {
 		return createChild(code, NATObject._IS_A_);
@@ -286,8 +295,8 @@ public class NATMirror extends NATNil implements ATMirror {
 	 * <p>Sharing a mirror from a custom object is possible, and creates a new 
 	 * object which may override the meta_operations of the default mirror object. 
 	 * However, the extension does not replace the mirror used by the interpreter: 
-	 * to allow for objects to have a custom mirror, this mirror has to be supplied
-	 * at creation time.</p>
+	 * to allow for objects to have a custom mirror, this mirror (intercessive) mirror has 
+	 * to be supplied at creation time.</p>
 	 */
 	public ATObject meta_share(ATClosure code) throws NATException {
 		return createChild(code, NATObject._SHARES_A_);

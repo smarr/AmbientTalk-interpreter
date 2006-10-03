@@ -65,6 +65,8 @@ public class JavaInterfaceAdaptor {
 	public static final String _MGET_PREFIX_ = "meta_get";
 	public static final String _MSET_PREFIX_ = "meta_set";
 	
+	public static final String _MAGIC_PREFIX_ = "magic_";
+	
 	
 	/**
 	 * Tests given a class, whether the class either declares or inherits a method

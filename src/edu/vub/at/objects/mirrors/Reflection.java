@@ -159,6 +159,13 @@ public final class Reflection {
 	}
 	
 	/**
+	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with meta_.
+	 */
+	public static final String upMagicLevelSelector(ATSymbol atSelector) throws NATException {
+		return JavaInterfaceAdaptor._MAGIC_PREFIX_ + upSelector(atSelector);
+	}
+	
+	/**
 	 * A field name "field" passed from the AmbientTalk to the Java level undergoes the following transformations:
 	 * 
 	 *  - the same transformations applicable to upSelector

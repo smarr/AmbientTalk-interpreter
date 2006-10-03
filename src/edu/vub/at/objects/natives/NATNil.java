@@ -383,6 +383,10 @@ public class NATNil implements ATNil {
         throw new XTypeMismatch("Expected a first-class message, given: " + this.getClass().getName(), this);
     }
 
+    public ATField asField() throws XTypeMismatch {
+        throw new XTypeMismatch("Expected a first-class field, given: " + this.getClass().getName(), this);
+    }
+
     public ATMethod asMethod() throws XTypeMismatch {
         throw new XTypeMismatch("Expected a first-class method, given: " + this.getClass().getName(), this);
     }

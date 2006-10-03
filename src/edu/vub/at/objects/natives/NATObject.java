@@ -310,8 +310,9 @@ public class NATObject extends NATCallframe implements ATObject{
 	/**
 	 * When a new field is defined in an object, it is important to check whether or not
 	 * the field map is shared between clones or not. If it is shared, the map must be cloned first.
+	 * @throws NATException 
 	 */
-	public ATNil meta_defineField(ATSymbol name, ATObject value) throws XDuplicateSlot, XTypeMismatch {
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
 		if (this.isFlagSet(_SHARE_MAP_FLAG_)) {
 			// copy the variable map
 			variableMap_ = variableMap_.copy();

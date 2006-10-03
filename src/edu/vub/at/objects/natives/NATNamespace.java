@@ -176,6 +176,9 @@ public final class NATNamespace extends NATObject {
 		} catch (XTypeMismatch e) {
 			// impossible: the given selector is native
 			e.printStackTrace();
+		} catch (NATException e) {
+			// impossible : call cannot be intercepted : namespaces are not mirages
+			e.printStackTrace();			
 		}
 		return fileScope;
 	}
