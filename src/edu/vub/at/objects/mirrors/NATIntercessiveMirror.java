@@ -28,16 +28,17 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATMirror;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.FieldMap;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.natives.NATObject;
 
-import sun.security.action.GetBooleanAction;
+import java.util.HashMap;
+import java.util.Vector;
 
 /**
  * <p>NATIntercessiveMirror extends the default NATIntrospectiveMirror to also allow 
@@ -53,98 +54,80 @@ import sun.security.action.GetBooleanAction;
  *
  * @author smostinc
  */
-public class NATIntercessiveMirror extends NATIntrospectiveMirror {
+public class NATIntercessiveMirror extends NATObject implements ATMirror {
 
-	public NATIntercessiveMirror(NATMirage representation) {
-		// the base object reflected upon by an intercessive mirror is always a mirage 
-		super(representation);
-	}
+	protected NATMirage principal_;
 	
-	/*
-	 * Intercessive Mirrors inherit the default meta_extend and meta_share method 
-	 * from their Introspective counterparts. The chief difference is that these 
-	 * extensions can be used to intercept meta-level calls by invoking setMirror(this)
-	 * from within the scope of the newly created mirror.
-	 */
-//	public ATObject meta_extend(ATClosure code) throws NATException {
-//		return super.meta_extend(code);
-//	}
-//
-//	public ATObject meta_share(ATClosure code) throws NATException {
-//		return super.meta_share(code);
-//	}
-
-
-
 	/**
-	 * <p>The effect of invoking methods on a mirror (through meta_invoke) consists of
-	 * checking whether the requested functionality is provided as a meta-operation
-	 * by the principal that is wrapped by this mirror. Since such meta-operations
-	 * are intercepted and forwarded to allow for interception, the mirage is expected
-	 * to have a method for the given selector albeit prefixed with 'magic_'.</p>
-	 *  
+	 * Constructs a new ambienttalk mirror based on a set of parent pointers. 
+	 * @param lexicalParent - the lexical scope in which the object's definition was nested
+	 * @param parentType - how this object extends its dynamic parent (is-a or shares-a)
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws NATException {
-		
-//		if(atSelector.equals(AGSymbol.alloc("clone"))){
-//			
-//			// CLONES
-//			// 1) Custom mirror object
-//			// 2) This default mirror object (which is its IS-A parent)
-//			// 3) The base object (due to our meta_clone semantics)
-//			ATObject customMirrorClone = receiver.meta_clone();
-//			
-//			// The final link to be made goes from base (3) to the customMirror (1)
-//			// We use the *magic* setMeta operation defined on mirages to do this.
-//			// NOTE : invocation needs to be sent to the clone !!!
-//			// NOTE : this meta-message cannot be intercepted as it is sent to the NATIntercessiveMirror
-//			//        this is done to allow forbidding setMirror without harming the cloning process.
-//			customMirrorClone.meta_getDynamicParent().meta_invoke(this, AGSymbol.alloc("setMirror"), new NATTable(new ATObject[] { receiver }));
-//			
-//			return customMirrorClone;
-//			
-//		} else {
-			
-			// Same as upMetaLevelSelector but with magic_ instead of meta_
-			// invoking a meta-level operation in the base would mean the operation
-			// would be reified and passed to the customMirror resulting in an endless
-			// loop. Therefore the magic_ methods, which are defined only on mirages
-			// are used to cut off the infinite meta-regress.
-			String jSelector = Reflection.upMagicLevelSelector(atSelector);
-			
-			try {
-				return NATMirrorFactory._INSTANCE_.base_createMirror(
-						Reflection.downObject(
-								Reflection.upInvocation(
-										principal_, // implementor and self
-										jSelector,
-										arguments)));
-			} catch (XSelectorNotFound e) {
-				// Principal does not have a corresponding meta_level method
-				// try for a base_level method of the mirror itself. Note that 
-				// we cannot delegate to the super implementation, which would 
-				// imply invoking meta_ and thus an endless loop.
-				try {
-					
-					jSelector = Reflection.upBaseLevelSelector(atSelector);
-					return Reflection.downObject(Reflection.upInvocation(receiver, jSelector, arguments));
-				
-				} catch (XSelectorNotFound e2) {
-					
-					return receiver.meta_doesNotUnderstand(atSelector);
-				}
-			}
-//		}
+	public NATIntercessiveMirror(ATObject lexicalParent, boolean parentType) {
+		super(OBJMirrorRoot._INSTANCE_, lexicalParent, parentType);
+		principal_ = new NATMirage(this);
 	}
 	
-	// Invoke the actual cloning method of the mirage
+	/**
+	 * Constructs a new ambienttalk mirage as a clone of an existing one.
+	 */
+	protected NATIntercessiveMirror(FieldMap map,
+			         Vector state,
+			         HashMap methodDict,
+			         ATObject dynamicParent,
+			         ATObject lexicalParent,
+			         byte flags,
+			         NATMirage base) {
+		super(map, state, methodDict, dynamicParent, lexicalParent, flags);
+		principal_ = base;
+
+	}
+	
+	/* -----------------------
+	 * -- ATMirror Protocol --
+	 * ----------------------- */
+
+	public ATObject base_getBase() { return principal_; }
+
+	// not a base_ method => not exposed to the ambienttalk programmer.
+	public ATNil setBase(NATMirage base) {
+		principal_ = base;
+		return NATNil._INSTANCE_;
+	} 
+	
+	/** @return true */
+	public ATBoolean base_isMirror() { return NATBoolean._TRUE_; }
+	
+	/** @return this */
+	public ATMirror asMirror() { return this; }
+	
 	public ATObject meta_clone() throws NATException {
-		NATIntercessiveMirror clone = new NATIntercessiveMirror(
-				((NATMirage)base_getBase()).mirage_clone());
-		
-		clone.meta_invoke(clone, AGSymbol.alloc("setMirror"), NATTable.EMPTY);
-		return clone;
+		return principal_.magic_clone().getMirror();
+	}
+	
+	// CLONING AUXILIARY METHODS
+	
+	// Perform the actual cloning of this mirror object alone
+	// Cut-off for ping-pong of messages sent between mirror and mirage.
+	public NATIntercessiveMirror magic_clone() throws NATException {
+		return (NATIntercessiveMirror)super.meta_clone();
 	}
 
-
+	// Called by the default NATObject Cloning algorithm
+	protected NATObject createClone(FieldMap map,
+			Vector state,
+			HashMap methodDict,
+			ATObject dynamicParent,
+			ATObject lexicalParent,
+			byte flags) throws NATException {
+		return new NATIntercessiveMirror(map,
+				state,
+				methodDict,
+				dynamicParent,
+				lexicalParent,
+				flags,
+				// correct value for base_ set by NATMirage#createClone
+				principal_); 
+	}
+	
 }

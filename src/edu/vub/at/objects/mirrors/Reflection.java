@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -102,6 +103,16 @@ public final class Reflection {
 			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BSET_PREFIX_));
 		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
 			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._BASE_PREFIX_));
+		} else 
+			
+		// In Exceptional Cases magic_ may be used to invoke special primitives, so this method needs to support them
+		// since they are in all other regards equel to base_ methods
+		if (jSelector.startsWith(JavaInterfaceAdaptor._MAGET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MAGET_PREFIX_));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._MASET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MASET_PREFIX_));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._MAGIC_PREFIX_)) {
+			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._MAGIC_PREFIX_));
 		} else {
 			throw new XIllegalArgument("Reflection.downBaseLevelSelector was asked to down a non-base level selector: " + jSelector);
 		}
@@ -251,6 +262,25 @@ public final class Reflection {
 		return JavaInterfaceAdaptor._MSET_PREFIX_ + upFieldName(atName);
 	}
 	
+	/**
+	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "meta_get".
+	 * 
+	 * Example:
+	 *  upMetaFieldAccessSelector(ATSymbol('receiver')) => "meta_getReceiver"
+	 */
+	public static final String upMagicFieldAccessSelector(ATSymbol atName) throws NATException {
+		return JavaInterfaceAdaptor._MAGET_PREFIX_ + upFieldName(atName);
+	}
+	
+	/**
+	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "meta_set".
+	 * 
+	 * Example:
+	 *  upMetaFieldMutationSelector(ATSymbol('receiver')) => "meta_setReceiver"
+	 */
+	public static final String upMagicFieldMutationSelector(ATSymbol atName) throws NATException {
+		return JavaInterfaceAdaptor._MASET_PREFIX_ + upFieldName(atName);
+	}
 	/**
 	 * Constructs an AmbientTalk ATField from a pair of getter/setter methods of
 	 * a Java object. Given an object obj and a String sel, it is checked whether
@@ -460,7 +490,10 @@ public final class Reflection {
 	public static final ATObject downObject(Object jObj) {
 		// Our own "dynamic dispatch"
 		// mirror
-		if(jObj instanceof ATObject) {
+		if(jObj instanceof ATMirror) {
+			return ((ATMirror)jObj).base_getBase();
+		// object
+		} else if(jObj instanceof ATObject) {
 			return (ATObject) jObj;
 	    // integer
 		} else if (jObj instanceof Integer) {

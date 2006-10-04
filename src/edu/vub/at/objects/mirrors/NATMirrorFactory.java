@@ -44,6 +44,9 @@ public class NATMirrorFactory extends NATNil {
 	public static final NATMirrorFactory _INSTANCE_ = new NATMirrorFactory();
 	
 	public ATMirror base_createMirror(ATObject objectRepresentation) {
+		if(objectRepresentation instanceof NATMirage) {
+			return ((NATMirage)objectRepresentation).getMirror();
+		};
 		return new NATIntrospectiveMirror(objectRepresentation);
 	}
 	

@@ -491,7 +491,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	         					  HashMap methodDict,
 	         					  ATObject dynamicParent,
 	         					  ATObject lexicalParent,
-	         					  byte flags) {
+	         					  byte flags) throws NATException {
 		return new NATObject(map,
 	            state,
 	            methodDict,
@@ -527,21 +527,6 @@ public class NATObject extends NATCallframe implements ATObject {
 		}
 	}
 	
-	private ATObject createChild(ATClosure code, boolean parentPointerType) throws NATException {
-		NATObject extension = new NATObject(
-				/* dynamic parent */
-				this,
-				/* lexical parent */
-				code.base_getContext().base_getLexicalScope(),
-				/* parent porinter type */
-				parentPointerType);
-		
-		ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
-		body.meta_eval(new NATContext(extension, extension, this));
-		
-		return extension;
-	}
-
 	/* ---------------------------------------
 	 * -- Conversion and Testing Protocol   --
 	 * --------------------------------------- */

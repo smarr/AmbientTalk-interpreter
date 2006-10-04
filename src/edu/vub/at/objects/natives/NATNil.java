@@ -33,6 +33,7 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -221,14 +222,30 @@ public class NATNil implements ATNil {
         return Reflection.downObject(Reflection.upInstanceCreation(this, initargs));
     }
 
-    public ATObject meta_extend(ATClosure code) throws NATException {
-        throw new XIllegalOperation("Cannot extend an object of type " + this.getClass().getName());
-    }
+	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws NATException {
 
-    public ATObject meta_share(ATClosure code) throws NATException {
-        throw new XIllegalOperation("Cannot share an object of type " + this.getClass().getName());
-    }
+		NATObject extension = new NATObject(
+				/* dynamic parent */
+				this,
+				/* lexical parent */
+				code.base_getContext().base_getLexicalScope(),
+				/* parent porinter type */
+				parentPointerType);
+			
+		ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
+		body.meta_eval(new NATContext(extension, extension, this));
+			
+		return extension;
+	}
+	
+	public ATObject meta_extend(ATClosure code) throws NATException {
+		return createChild(code, NATObject._IS_A_);
+	}
 
+	public ATObject meta_share(ATClosure code) throws NATException {
+		return createChild(code, NATObject._SHARES_A_);
+	}
+    
     /* ---------------------------------
       * -- Structural Access Protocol  --
       * --------------------------------- */

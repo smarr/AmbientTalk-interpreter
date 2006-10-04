@@ -29,6 +29,7 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
@@ -260,46 +261,14 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * @param reflectee - the object that needs to be reflects upon
 	 * @return <b>another</b> (possibly new) mirror object 
 	 */
-	public ATObject base_init(ATObject reflectee) {
-		return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
-	}
-	
-	private ATObject createChild(ATClosure code, boolean parentPointerType) throws NATException {
-
-		NATObject extension = new NATObject(
-				/* dynamic parent */
-				this,
-				/* lexical parent */
-				code.base_getContext().base_getLexicalScope(),
-				/* parent porinter type */
-				parentPointerType);
-			
-		ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
-		body.meta_eval(new NATContext(extension, extension, this));
-			
-		return extension;
-	}
-	
-	/**
-	 * <p>Extending a mirror with a custom object is possible, and creates a new 
-	 * object which may override the meta_operations of the default mirror object. 
-	 * However, the extension does not replace the mirror used by the interpreter: 
-	 * to allow for objects to have a custom mirror, this (intercessive) mirror has 
-	 * to be supplied at creation time.</p>
-	 */
-	public ATObject meta_extend(ATClosure code) throws NATException {
-		return createChild(code, NATObject._IS_A_);
-	}
-
-	/**
-	 * <p>Sharing a mirror from a custom object is possible, and creates a new 
-	 * object which may override the meta_operations of the default mirror object. 
-	 * However, the extension does not replace the mirror used by the interpreter: 
-	 * to allow for objects to have a custom mirror, this mirror (intercessive) mirror has 
-	 * to be supplied at creation time.</p>
-	 */
-	public ATObject meta_share(ATClosure code) throws NATException {
-		return createChild(code, NATObject._SHARES_A_);
+	public ATObject base_init(ATObject[] initargs) throws XArityMismatch {
+		if(initargs.length > 1) {
+			ATObject reflectee = initargs[0];
+			return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
+		} else {
+			throw new XArityMismatch("init", 1, 0);
+		}
+		
 	}
 	
 	/* ---------------------------------

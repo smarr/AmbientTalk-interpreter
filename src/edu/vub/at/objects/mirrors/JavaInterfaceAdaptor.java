@@ -65,6 +65,8 @@ public class JavaInterfaceAdaptor {
 	public static final String _MSET_PREFIX_ = "meta_set";
 	
 	public static final String _MAGIC_PREFIX_ = "magic_";
+	public static final String _MAGET_PREFIX_ = "magic_get";
+	public static final String _MASET_PREFIX_ = "magic_set";
 	
 	
 	/**

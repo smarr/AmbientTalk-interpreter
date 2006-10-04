@@ -58,15 +58,17 @@ public class MirageTest extends ReflectiveAccessTest {
 					"      { baseField := value } \n" +
 					"  }; \n" +
 					"  def invoke(receiver, selector, arguments) { \n" +
-					"    unit.echo: selector \n" +
+					"    unit.echo: selector; \n" +
+					"    super.invoke(receiver, selector, arguments) \n" +
 					"  }; \n" +
 					"  def apply(arguments) { \n" +
+					"    unit.echo: \"apply\";" +
 					"    baseField := baseField + 1; \n" +
 					"    unit.success() \n" +
 					"  } \n" +
 					"}; \n" +
-					"def test := fakeMirror.newInstance(); \n" +
-					"def recursive := at.mirrors.Factory.createMirror(test); \n" +
+					"def test := fakeMirror.newInstance([]).base; \n" +
+					//"def recursive := at.mirrors.Factory.createMirror(test); \n" +
 					" \n" +
 					"fakeMirror.apply([]); \n" +
 					"fakeMirror.select(test, `(baseField)); \n" +
@@ -75,10 +77,10 @@ public class MirageTest extends ReflectiveAccessTest {
 					"test(); \n" +
 					"test.baseField; \n" +
 					"test.baseField := 0; \n" +
-					" \n" +
+					" \n" //+
 					/* "recursive.apply([]); \n" + */
-					"recursive.select(test, `(baseField)); \n" +
-					"recursive.assignField(`(baseField), 0); \n",
+					//"recursive.select(test, `(baseField)); \n" +
+					/*"recursive.assignField(`(baseField), 0); \n"*/,
 					new NATContext(new NATCallframe(lexicalRoot), lexicalRoot, NATNil._INSTANCE_)
 					);
 		} catch (NATException e) {
