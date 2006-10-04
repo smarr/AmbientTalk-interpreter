@@ -137,7 +137,7 @@ public class TestEval extends AmbientTalkTest {
 	  assertEquals(AGSymbol.alloc(NATText.atValue("lambda")), nam);
 	  assertEquals(atX_, arg.base_at(NATNumber.ONE));
 	  assertEquals(atY_, arg.base_at(NATNumber.atValue(2)));
-	  assertEquals(atThree_, bdy.asBegin().getStatements().base_at(NATNumber.ONE));
+	  assertEquals(atThree_, bdy.asBegin().base_getStatements().base_at(NATNumber.ONE));
 	  assertEquals(ctx_, ctx);
 	}
 	
@@ -172,7 +172,7 @@ public class TestEval extends AmbientTalkTest {
 		assertEquals(atM_, asyncMsg.base_getSelector());
 		assertEquals(atThree_, asyncMsg.base_getArguments().base_at(NATNumber.ONE));
 		assertTrue(asyncMsg instanceof ATAsyncMessage);
-		assertEquals(ctx_.base_getSelf(), ((ATAsyncMessage) asyncMsg).getSender());
+		assertEquals(ctx_.base_getSelf(), ((ATAsyncMessage) asyncMsg).base_getSender());
 	}
 	
 	public void testMethodApplication() throws NATException {

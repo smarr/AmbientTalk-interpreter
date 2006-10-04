@@ -56,11 +56,11 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 		valExp_ = val;
 	}
 
-	public ATExpression getTable() { return tblExp_; }
+	public ATExpression base_getTableExpression() { return tblExp_; }
 
-	public ATExpression getIndex() { return idxExp_; }
+	public ATExpression base_getIndexExpression() { return idxExp_; }
 
-	public ATExpression getValue() { return valExp_; }
+	public ATExpression base_getValueExpression() { return valExp_; }
 
 	/**
 	 * To evaluate a table assignment, evaluate its table expression to a valid ATTable.

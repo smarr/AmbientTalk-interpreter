@@ -35,7 +35,7 @@ package edu.vub.at.objects.grammar;
 public interface ATDefTable extends ATDefinition {
 
 	public ATSymbol base_getName();
-	public ATExpression getSize();
-	public ATExpression getInitialization();
+	public ATExpression base_getSizeExpression();
+	public ATExpression base_getInitializationExpression();
 	
 }

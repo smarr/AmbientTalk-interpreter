@@ -31,7 +31,7 @@ package edu.vub.at.actors;
 import edu.vub.at.objects.ATObject;
 
 /**
- *  
+ * @deprecated normally not necessary, the ATResolution can contain the service description directly
  */
 public interface ATServiceDescription
 {

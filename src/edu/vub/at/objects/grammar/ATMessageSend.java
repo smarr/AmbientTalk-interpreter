@@ -40,10 +40,10 @@ import edu.vub.at.objects.ATNil;
  */
 public interface ATMessageSend extends ATExpression {
 
-	public ATExpression meta_getReceiver();
+	public ATExpression base_getReceiverExpression();
 	
-	public ATNil meta_setReceiver(ATExpression rcv);
+	public ATNil base_setReceiverExpression(ATExpression rcv);
 	
-	public ATExpression meta_getMessage();
+	public ATExpression base_getMessageExpression();
 	
 }

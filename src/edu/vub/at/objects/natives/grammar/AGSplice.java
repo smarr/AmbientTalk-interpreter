@@ -49,7 +49,7 @@ public class AGSplice extends AGExpression implements ATSplice {
 		splExp_ = exp;
 	}
 	
-	public ATExpression getExpression() { return splExp_; }
+	public ATExpression base_getExpression() { return splExp_; }
 
 	/**
 	 * A spliced element cannot be evaluated, but rather gives rise to an XIllegalSplice exception.

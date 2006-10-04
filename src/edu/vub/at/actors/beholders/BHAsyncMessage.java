@@ -31,6 +31,5 @@ package edu.vub.at.actors.beholders;
 /**
  *  
  */
-public interface BHAsyncMessage
-{
+public interface BHAsyncMessage {
 }

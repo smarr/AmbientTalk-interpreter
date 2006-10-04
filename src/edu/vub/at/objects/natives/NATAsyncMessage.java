@@ -64,11 +64,11 @@ public final class NATAsyncMessage extends NATMessage implements ATAsyncMessage 
         sender_ = sdr;
     }
 
-    public ATObject getSender() {
+    public ATObject base_getSender() {
         return sender_;
     }
 
-    public ATObject getReceiver() {
+    public ATObject base_getReceiver() {
         return receiver_;
     }
 

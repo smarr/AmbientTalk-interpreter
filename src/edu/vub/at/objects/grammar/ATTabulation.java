@@ -34,7 +34,7 @@ package edu.vub.at.objects.grammar;
  */
 public interface ATTabulation extends ATExpression {
 
-	public ATExpression getTable();
-	public ATExpression getIndex();
+	public ATExpression base_getTableExpression();
+	public ATExpression base_getIndexExpression();
 	
 }

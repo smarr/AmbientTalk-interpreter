@@ -28,16 +28,15 @@
 
 package edu.vub.at.actors;
 
-import java.util.List;
+import edu.vub.at.objects.ATTable;
 
 /**
- *  
+ * A virtual machine is deployed on top of a physical device and may host a set of actors.
  */
-public interface ATVirtualMachine
-{
+public interface ATVirtualMachine {
 
-    public ATDevice getDevice();
+    public ATDevice base_getDevice();
 
-    public List getActors();
+    public ATTable base_getActors();
 
 }

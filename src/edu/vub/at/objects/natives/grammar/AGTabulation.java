@@ -53,9 +53,9 @@ public final class AGTabulation extends AGExpression implements ATTabulation {
 		idxExp_ = idx;
 	}
 	
-	public ATExpression getTable() { return tblExp_; }
+	public ATExpression base_getTableExpression() { return tblExp_; }
 
-	public ATExpression getIndex() { return idxExp_; }
+	public ATExpression base_getIndexExpression() { return idxExp_; }
 
 	/**
 	 * To evaluate a tabulation, evaluate the tabulation expression to a table,

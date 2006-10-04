@@ -53,9 +53,9 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 		valueExp_ = val;
 	}
 
-	public ATTable getParameters() { return parameters_; }
+	public ATTable base_getParameters() { return parameters_; }
 	
-	public ATExpression getValue() { return valueExp_; }
+	public ATExpression base_getValueExpression() { return valueExp_; }
 	
 	/**
 	 * To evaluate a multiple assignment, evaluate the right hand side to a table

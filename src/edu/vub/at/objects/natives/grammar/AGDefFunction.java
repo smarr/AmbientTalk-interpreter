@@ -59,7 +59,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 		bodyStmts_ = bdy;
 	}
 	
-	public ATSymbol getSelector() {
+	public ATSymbol base_getSelector() {
 		return selectorExp_;
 	}
 

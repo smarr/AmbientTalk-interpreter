@@ -38,7 +38,7 @@ import edu.vub.at.objects.ATTable;
  */
 public interface ATMultiAssignment extends ATAssignment {
 	
-	public ATTable getParameters();
-	public ATExpression getValue();
+	public ATTable base_getParameters();
+	public ATExpression base_getValueExpression();
 
 }

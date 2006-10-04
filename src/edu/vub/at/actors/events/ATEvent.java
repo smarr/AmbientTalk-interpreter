@@ -33,6 +33,5 @@ import edu.vub.at.objects.ATObject;
 /**
  *  
  */
-public interface ATEvent extends ATObject
-{
+public interface ATEvent extends ATObject {
 }

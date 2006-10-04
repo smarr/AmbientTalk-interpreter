@@ -126,7 +126,7 @@ public class JavaClosure extends NATClosure {
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<native closure:"+base_getMethod().base_getName().getText().asNativeText().javaValue+">");
+		return NATText.atValue("<native closure:"+base_getMethod().base_getName().base_getText().asNativeText().javaValue+">");
 	}
 	
 	/**

@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -92,17 +93,48 @@ public final class Reflection {
 	}
 	
 	/**
-	 * Transforms a Java selector prefixed with base_ into an AmbientTalk selector without the prefix.
+	 * Transforms a Java selector prefixed with base_/base_get/base_set into an AmbientTalk selector without the prefix.
 	 */
 	public static final ATSymbol downBaseLevelSelector(String jSelector) throws NATException {
-		return AGSymbol.alloc(javaToAmbientTalkSelector(jSelector).replaceFirst(JavaInterfaceAdaptor._BASE_PREFIX_, ""));
+		if (jSelector.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BGET_PREFIX_));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BSET_PREFIX_));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
+			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._BASE_PREFIX_));
+		} else {
+			throw new XIllegalArgument("Reflection.downBaseLevelSelector was asked to down a non-base level selector: " + jSelector);
+		}
 	}
 	
 	/**
-	 * Transforms a Java selector prefixed with meta_ into an AmbientTalk selector without the prefix.
+	 * Transforms a Java selector prefixed with meta_/meta_get/meta_set into an AmbientTalk selector without the prefix.
 	 */
 	public static final ATSymbol downMetaLevelSelector(String jSelector) throws NATException {
-		return AGSymbol.alloc(javaToAmbientTalkSelector(jSelector).replaceFirst(JavaInterfaceAdaptor._META_PREFIX_, ""));
+		if (jSelector.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BGET_PREFIX_));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BSET_PREFIX_));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
+			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._BASE_PREFIX_));
+		} else {
+			throw new XIllegalArgument("Reflection.downBaseLevelSelector was asked to down a non-base level selector: " + jSelector);
+		}
+		
+		//return AGSymbol.alloc(javaToAmbientTalkSelector(jSelector).replaceFirst(JavaInterfaceAdaptor._META_PREFIX_, ""));
+	}
+	
+	/**
+	 * A field name "Field" passed from the Java to the AmbientTalk level undergoes the following transformations:
+	 * 
+	 *  - the same transformations applicable to downSelector
+	 *    @see Reflection#downSelector(String)
+	 *  - the first letter is transformed into lower case (as it was uppercased for Java conventions)
+	 */
+	public static final ATSymbol downFieldName(String jName) throws NATException {
+		char[] charArray = jName.toCharArray();
+		charArray[0] = Character.toLowerCase(charArray[0]);
+		return downSelector(new String(charArray));
 	}
 	
 	/**
@@ -128,7 +160,7 @@ public final class Reflection {
 	 */
 	public static final String upSelector(ATSymbol atSelector) throws NATException {
 		// : -> _
-		String nam = atSelector.getText().asNativeText().javaValue;
+		String nam = atSelector.base_getText().asNativeText().javaValue;
 		nam = nam.replaceAll(":", "_");
 		
 		// operator symbol -> _op{code}_
@@ -159,7 +191,7 @@ public final class Reflection {
 	}
 	
 	/**
-	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with meta_.
+	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with magic_.
 	 */
 	public static final String upMagicLevelSelector(ATSymbol atSelector) throws NATException {
 		return JavaInterfaceAdaptor._MAGIC_PREFIX_ + upSelector(atSelector);
@@ -237,7 +269,7 @@ public final class Reflection {
 	 *  => NATMessage must have a zero-arg method getSelector and optionally setSelector
 	 */
 	public static final ATField downField(ATObject jObject, String jSelector) {
-		return null;
+		return null; // TODO: implement?
 	}
 	
 	/**
@@ -256,7 +288,7 @@ public final class Reflection {
 	 *  => NATTable must have a method named base_at
 	 */
 	public static final ATMethod downMethod(ATObject jObject, String jSelector) {
-		return null;
+		return null; // TODO: implement?
 	}
 
 	/**

@@ -50,7 +50,7 @@ public class AGUnquoteSplice extends AGExpression implements ATUnquoteSplice {
 		uqsExp_ = exp;
 	}
 	
-	public ATExpression getExpression() { return uqsExp_; }
+	public ATExpression base_getExpression() { return uqsExp_; }
 
 	/**
 	 * An unquotation cannot be evaluated, but rather gives rise to an XIllegalUnquote exception.

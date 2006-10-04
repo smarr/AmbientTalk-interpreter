@@ -29,7 +29,6 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -42,8 +41,6 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 
 import java.lang.reflect.Method;
-
-import junit.framework.AssertionFailedError;
 
 /**
  * @author smostinc
@@ -91,7 +88,7 @@ public final class JavaMethod extends NATNil implements ATMethod {
 	}
 	
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<native method:"+base_getName().getText().asNativeText().javaValue+">");
+		return NATText.atValue("<native method:"+base_getName().base_getText().asNativeText().javaValue+">");
 	}
 
 }

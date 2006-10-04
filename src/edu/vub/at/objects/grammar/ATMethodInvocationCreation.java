@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.grammar;
 
-import edu.vub.at.objects.ATTable;
 
 /**
  * @author tvc
@@ -38,7 +37,7 @@ import edu.vub.at.objects.ATTable;
  */
 public interface ATMethodInvocationCreation extends ATMessageCreation {
 	
-	public ATSymbol getSelector();
-	public ATTable base_getArguments();
+	//public ATSymbol base_getSelector();
+	//public ATTable base_getArguments();
 	
 }

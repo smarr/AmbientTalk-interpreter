@@ -36,7 +36,7 @@ import edu.vub.at.objects.ATTable;
  */
 public interface ATApplication extends ATExpression {
 
-	public ATExpression getFunction();
+	public ATExpression base_getFunction();
 	public ATTable base_getArguments();
 	
 }

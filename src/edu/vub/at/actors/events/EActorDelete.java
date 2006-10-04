@@ -31,6 +31,5 @@ package edu.vub.at.actors.events;
 /**
  *  
  */
-public interface EActorDelete extends ATEvent
-{
+public interface EActorDelete extends ATEvent {
 }

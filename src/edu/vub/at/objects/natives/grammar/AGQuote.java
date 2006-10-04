@@ -48,7 +48,7 @@ public final class AGQuote extends AGExpression implements ATQuote {
 		stmt_ = stmt;
 	}
 	
-	public ATStatement getStatement() { return stmt_; }
+	public ATStatement base_getStatement() { return stmt_; }
 
 	/**
 	 * To evaluate a quotation, start quoting its contained statement.

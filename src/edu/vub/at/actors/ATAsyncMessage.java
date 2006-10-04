@@ -44,13 +44,13 @@ public interface ATAsyncMessage extends ATMessage {
      * sent. In other words the sender of a message corresponds to the self at the
      * site where the message was sent.
      */
-    public ATObject getSender();
+    public ATObject base_getSender();
 
     /**
      * Messages also have an explicitly named receiver, which may either be a local
      * object, or a representative of an object inside another actor.
      * @return the receiver of the message
      */
-    public ATObject getReceiver();
+    public ATObject base_getReceiver();
 
 }

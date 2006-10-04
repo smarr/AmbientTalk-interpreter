@@ -45,7 +45,7 @@ public interface ATField extends ATObject {
 	/**
 	 * @return the current value of the field.
 	 */
-	public ATObject base_getFieldValue();
+	public ATObject base_getValue();
 	
 	/**
 	 * Sets the value of the field if possible

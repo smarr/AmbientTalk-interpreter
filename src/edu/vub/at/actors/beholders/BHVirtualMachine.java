@@ -36,11 +36,10 @@ import edu.vub.at.actors.events.EActorDelete;
 /**
  *  
  */
-public interface BHVirtualMachine extends ATBeholder
-{
-    public void onPeerVMJoin(EVMJoin e);
-    public void onPeerVMDisjoin(EVMDisjoin e);
+public interface BHVirtualMachine extends ATBeholder {
+    public void base_onPeerVMJoin(EVMJoin e);
+    public void base_onPeerVMDisjoin(EVMDisjoin e);
 
-    public void onActorCreate(EActorCreate e);
-    public void onActorDelete(EActorDelete e);
+    public void base_onActorCreate(EActorCreate e);
+    public void base_onActorDelete(EActorDelete e);
 }

@@ -34,6 +34,6 @@ package edu.vub.at.objects.grammar;
  */
 public interface ATUnquote extends ATExpression {
 	
-	public ATExpression getExpression();
+	public ATExpression base_getExpression();
 
 }

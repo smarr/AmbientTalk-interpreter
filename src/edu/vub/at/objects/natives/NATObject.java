@@ -442,7 +442,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public ATNil meta_addMethod(ATMethod method) throws NATException {
 		ATSymbol name = method.base_getName();
 		if (methodDictionary_.containsKey(name)) {
-			throw new XDuplicateSlot("method", name.getText().asNativeText().javaValue);			
+			throw new XDuplicateSlot("method", name.base_getText().asNativeText().javaValue);			
 		} else {
 			// first check whether the method dictionary is shared
 			if (this.isFlagSet(_SHARE_DCT_FLAG_)) {

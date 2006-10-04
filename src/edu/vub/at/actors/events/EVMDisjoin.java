@@ -31,6 +31,5 @@ package edu.vub.at.actors.events;
 /**
  *  
  */
-public interface EVMDisjoin extends ATEvent
-{
+public interface EVMDisjoin extends ATEvent {
 }

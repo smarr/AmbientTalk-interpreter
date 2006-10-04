@@ -28,10 +28,10 @@
 
 package edu.vub.at.actors;
 
-import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATObject;
-
-import java.util.List;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  *  
@@ -39,15 +39,15 @@ import java.util.List;
 public interface ATActor
 {
 
-    public ATVirtualMachine getVirtualMachine();
+    public ATVirtualMachine base_getVirtualMachine();
 
-    public List getMailboxes();
-    public ATMailbox getMailbox(ATSymbol name);
-    public void addMailbox(ATMailbox mailbox);
+    public ATTable base_getMailboxes();
+    public ATMailbox base_getMailbox(ATSymbol name);
+    public void base_addMailbox(ATMailbox mailbox);
 
-    public ATObject getFacade();
+    public ATObject base_getBehaviour();
     
-    public boolean isLocal();
-    public boolean isRemote();
+    public ATBoolean base_isLocal();
+    public ATBoolean base_isRemote();
 
 }

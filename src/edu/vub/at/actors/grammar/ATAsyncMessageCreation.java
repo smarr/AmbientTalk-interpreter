@@ -27,8 +27,6 @@
  */
 package edu.vub.at.actors.grammar;
 
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATMessageCreation;
 
 /**
@@ -48,11 +46,11 @@ public interface ATAsyncMessageCreation extends ATMessageCreation {
      * needs to be sought for.
      * @return a symbol denoting the selector
      */
-    public ATSymbol getSelector();
+    //public ATSymbol base_getSelector();
 
     /**
      * Messages may optionally have arguments if they represent invocations.
      * @return the arguments passed to the invocation
      */
-    public ATTable base_getArguments();
+    //public ATTable base_getArguments();
 }

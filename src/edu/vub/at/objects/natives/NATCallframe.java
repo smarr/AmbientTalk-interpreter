@@ -175,7 +175,7 @@ public class NATCallframe extends NATNil implements ATObject {
 		boolean fieldAdded = variableMap_.put(name);
 		if (!fieldAdded) {
 			// field already exists...
-			throw new XDuplicateSlot("field ", name.getText().asNativeText().javaValue);
+			throw new XDuplicateSlot("field ", name.base_getText().asNativeText().javaValue);
 		} else {
 			// field now defined, add its value to the state vector
 			stateVector_.add(value);
@@ -234,12 +234,12 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * --------------------------------- */
 	
 	public ATNil meta_addField(ATField field) throws NATException {
-		return this.meta_defineField(field.base_getName(), field.base_getFieldValue());
+		return this.meta_defineField(field.base_getName(), field.base_getValue());
 	}
 	
 	public ATNil meta_addMethod(ATMethod method) throws NATException {
 		throw new XIllegalOperation("Cannot add method "+
-								   method.base_getName().getText().asNativeText().javaValue +
+								   method.base_getName().base_getText().asNativeText().javaValue +
 				                    " to a call frame. Add it as a closure field instead.");
 	}
 	

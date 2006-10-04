@@ -37,7 +37,7 @@ import edu.vub.at.objects.ATTable;
  */
 public interface ATMessageCreation extends ATExpression {
 	
-	public ATSymbol getSelector();
+	public ATSymbol base_getSelector();
 	public ATTable base_getArguments();
 
 }

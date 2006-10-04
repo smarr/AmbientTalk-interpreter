@@ -31,6 +31,5 @@ package edu.vub.at.actors.events;
 /**
  *  
  */
-public interface EMsgProcess
-{
+public interface EMsgProcess {
 }

@@ -53,7 +53,7 @@ public final class AGApplication extends AGExpression implements ATApplication {
 		arguments_ = arg;
 	}
 	
-	public ATExpression getFunction() { return funExp_; }
+	public ATExpression base_getFunction() { return funExp_; }
 
 	public ATTable base_getArguments() { return arguments_; }
 

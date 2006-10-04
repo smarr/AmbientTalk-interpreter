@@ -52,14 +52,14 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 		message_ = msg;
 	}
 	
-	public ATExpression meta_getReceiver() { return rcvExp_; }
+	public ATExpression base_getReceiverExpression() { return rcvExp_; }
 	
-	public ATNil meta_setReceiver(ATExpression rcv) { 
+	public ATNil base_setReceiverExpression(ATExpression rcv) { 
 		rcvExp_ = rcv;
 		return NATNil._INSTANCE_;
 	}
 
-	public ATExpression meta_getMessage() { return message_; }
+	public ATExpression base_getMessageExpression() { return message_; }
 
 	/**
 	 * To evaluate a message send, evaluate the receiver expression into an object.

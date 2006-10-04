@@ -58,7 +58,7 @@ public class AGAsyncMessageCreation extends AGMessageCreation {
 	 * @return a first-class asynchronous message
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		return new NATAsyncMessage(ctx.base_getSelf(), this.getSelector(),
+		return new NATAsyncMessage(ctx.base_getSelf(), this.base_getSelector(),
 				                   Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
 	}
 	

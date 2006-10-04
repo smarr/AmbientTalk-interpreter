@@ -36,6 +36,6 @@ public interface ATDefField extends ATDefinition {
 
 	public ATSymbol base_getName();
 	
-	public ATExpression getValue();
+	public ATExpression base_getValueExpression();
 	
 }

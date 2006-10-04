@@ -33,7 +33,6 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XReflectionFailure;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.natives.NATNil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

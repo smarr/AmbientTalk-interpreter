@@ -32,7 +32,6 @@ import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATDevice;
 import edu.vub.at.actors.ATMailbox;
 import edu.vub.at.actors.ATResolution;
-import edu.vub.at.actors.ATServiceDescription;
 import edu.vub.at.actors.ATVirtualMachine;
 import edu.vub.at.actors.beholders.ATBeholder;
 import edu.vub.at.actors.events.ATEvent;
@@ -100,7 +99,7 @@ public interface ATAnything
 		ATMessageCreation, ATMessageSend, ATMethod, ATMethodInvocation, 
 		ATMethodInvocationCreation,     ATMirror,    ATMultiAssignment, 
 		ATMultiDefinition,  ATNil,  ATNumber,  ATQuote,   ATResolution, 
-		ATSelection,   ATServiceDescription,   ATSplice,   ATStatement, 
+		ATSelection,   ATSplice,   ATStatement, 
 		ATSymbol,    ATTable,    ATTabulation,    ATText,    ATUnquote, 
 		ATUnquoteSplice, ATVirtualMachine {
 

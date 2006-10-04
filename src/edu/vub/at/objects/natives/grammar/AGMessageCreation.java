@@ -53,7 +53,7 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 		arguments_ = args;
 	}
 	
-	public ATSymbol getSelector() { return selector_; }
+	public ATSymbol base_getSelector() { return selector_; }
 
 	public ATTable base_getArguments() { return arguments_; }
 

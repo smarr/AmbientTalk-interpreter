@@ -80,7 +80,7 @@ public class JavaField extends NATNil implements ATField {
 		return name_;
 	}
 
-	public ATObject base_getFieldValue() {
+	public ATObject base_getValue() {
 		try {
 			return getter_.base_apply(NATTable.EMPTY);
 		} catch (NATException e) {
@@ -93,10 +93,10 @@ public class JavaField extends NATNil implements ATField {
 		// certain fields may not have setters
 		if(setter_ != null)
 			return getter_.base_apply(new NATTable(new ATObject[] { newValue }));
-		throw new XIllegalOperation("Field " + name_.getText().asNativeText().javaValue + " cannot be set.");
+		throw new XIllegalOperation("Field " + name_.base_getText().asNativeText().javaValue + " cannot be set.");
 	}
 
 	public NATText meta_print() throws XTypeMismatch {
-		return NATText.atValue("<native field:"+name_.getText().asNativeText().javaValue+">");
+		return NATText.atValue("<native field:"+name_.base_getText().asNativeText().javaValue+">");
 	}
 }

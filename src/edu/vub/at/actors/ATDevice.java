@@ -28,14 +28,13 @@
 
 package edu.vub.at.actors;
 
-import java.util.Properties;
+import edu.vub.at.objects.ATObject;
 
 /**
- *  
+ * Devices represent physical entities in the network.
  */
-public interface ATDevice
-{
+public interface ATDevice {
 
-    public Properties getProperties();
+    public ATObject base_getProperties();
     
 }

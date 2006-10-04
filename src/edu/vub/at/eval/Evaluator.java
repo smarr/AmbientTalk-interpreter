@@ -119,7 +119,7 @@ public final class Evaluator {
 		int siz = els.length;
 		for (int i = 0; i < els.length; i++) {
 			if (els[i].isSplice()) {
-				ATObject[] tbl = els[i].asSplice().getExpression().meta_eval(ctx).asNativeTable().elements_;
+				ATObject[] tbl = els[i].asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -177,7 +177,7 @@ public final class Evaluator {
 			for (int i = 0; i < numRemainingArgs; i++) {
 				restArgs[i] = args[i + numMandatoryPars];
 			}
-			ATSymbol restArgsName = pars[numMandatoryPars].asSplice().getExpression().asSymbol();
+			ATSymbol restArgsName = pars[numMandatoryPars].asSplice().base_getExpression().asSymbol();
 			binder.bindParamToArg(scope, restArgsName, new NATTable(restArgs));
 			
 		} else {

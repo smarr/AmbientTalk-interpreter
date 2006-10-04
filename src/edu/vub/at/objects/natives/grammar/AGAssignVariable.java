@@ -57,7 +57,7 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 	
 	public ATSymbol base_getName() { return variableName_; }
 
-	public ATExpression getValue() { return valueExp_; }
+	public ATExpression base_getValueExpression() { return valueExp_; }
 
 	/**
 	 * To evaluate a variable assignment, evaluate the right hand side and ask

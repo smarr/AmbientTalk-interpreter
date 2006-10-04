@@ -37,6 +37,6 @@ import edu.vub.at.objects.ATTable;
  */
 public interface ATBegin extends ATAbstractGrammar {
 
-	public ATTable getStatements();
+	public ATTable base_getStatements();
 	
 }

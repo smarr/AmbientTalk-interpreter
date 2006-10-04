@@ -34,8 +34,8 @@ package edu.vub.at.objects.grammar;
  */
 public interface ATAssignField extends ATAssignment {
 	
-	public ATExpression getReceiverExpression();
-	public ATSymbol getFieldName();
-	public ATExpression getValue();
+	public ATExpression base_getReceiverExpression();
+	public ATSymbol base_getFieldName();
+	public ATExpression base_getValueExpression();
 	
 }

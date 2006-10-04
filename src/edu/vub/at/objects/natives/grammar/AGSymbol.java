@@ -67,7 +67,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		return existing;
 	}
 	
-	public ATText getText() { return txt_; }
+	public ATText base_getText() { return txt_; }
 
 	/**
 	 * To evaluate a symbol reference, look up the symbol in the lexical scope.

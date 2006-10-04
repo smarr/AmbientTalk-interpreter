@@ -102,7 +102,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		int siz = elements_.length;
 		for (int i = 0; i < elements_.length; i++) {
 			if (elements_[i].isSplice()) {
-				ATObject[] tbl = elements_[i].asSplice().getExpression().meta_eval(ctx).asNativeTable().elements_;
+				ATObject[] tbl = elements_[i].asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -127,7 +127,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		int siz = elements_.length;
 		for (int i = 0; i < elements_.length; i++) {
 			if (elements_[i].isUnquoteSplice()) {
-				ATObject[] tbl = elements_[i].asUnquoteSplice().getExpression().meta_eval(ctx).asNativeTable().elements_;
+				ATObject[] tbl = elements_[i].asUnquoteSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}

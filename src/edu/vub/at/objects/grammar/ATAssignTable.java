@@ -34,8 +34,8 @@ package edu.vub.at.objects.grammar;
  */
 public interface ATAssignTable extends ATAssignment {
 
-	public ATExpression getTable();
-	public ATExpression getIndex();
-	public ATExpression getValue();
+	public ATExpression base_getTableExpression();
+	public ATExpression base_getIndexExpression();
+	public ATExpression base_getValueExpression();
 	
 }

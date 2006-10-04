@@ -80,7 +80,7 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 		return new AGBegin(statements_.meta_quote(ctx).asTable());
 	}
 	
-	public ATTable getStatements() { return statements_; }
+	public ATTable base_getStatements() { return statements_; }
 	
 	public NATText meta_print() throws XTypeMismatch {
 		return Evaluator.printAsStatements(statements_);

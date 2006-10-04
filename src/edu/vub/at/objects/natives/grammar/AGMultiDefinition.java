@@ -53,9 +53,9 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
 		valueExp_ = val;
 	}
 
-	public ATTable getParameters() { return parameters_; }
+	public ATTable base_getParameters() { return parameters_; }
 	
-	public ATExpression getValue() { return valueExp_; }
+	public ATExpression base_getValueExpression() { return valueExp_; }
 	
 	/**
 	 * To evaluate a multiple definition, evaluate the right hand side to a table

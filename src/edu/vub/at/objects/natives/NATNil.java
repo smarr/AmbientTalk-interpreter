@@ -164,7 +164,7 @@ public class NATNil implements ATNil {
         	  return this.meta_select(this, selector);
         } catch(XSelectorNotFound e) {
         	  // transform selector not found in undefined variable access
-        	  throw new XUndefinedField("variable access", selector.getText().asNativeText().javaValue);
+        	  throw new XUndefinedField("variable access", selector.base_getText().asNativeText().javaValue);
         }
     }
 
@@ -187,7 +187,7 @@ public class NATNil implements ATNil {
 			return this.meta_assignField(name, value);
 		} catch (XSelectorNotFound e) {
 			// transform selector not found in undefined variable assignment
-			throw new XUndefinedField("variable assignment", name.getText().asNativeText().javaValue);
+			throw new XUndefinedField("variable assignment", name.base_getText().asNativeText().javaValue);
 		}
     }
 
@@ -203,7 +203,7 @@ public class NATNil implements ATNil {
 			    new ATObject[] { value });
 		} catch (XSelectorNotFound e) {
 			// if such a method does not exist, the field assignment has failed
-			throw new XUndefinedField("field assignment", name.getText().asNativeText().javaValue);
+			throw new XUndefinedField("field assignment", name.base_getText().asNativeText().javaValue);
 		}
 		
         return NATNil._INSTANCE_;

@@ -31,6 +31,5 @@ package edu.vub.at.actors.events;
 /**
  *  
  */
-public interface EActorCreate extends ATEvent
-{
+public interface EActorCreate extends ATEvent {
 }

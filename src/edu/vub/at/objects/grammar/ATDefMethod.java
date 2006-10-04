@@ -36,7 +36,7 @@ import edu.vub.at.objects.ATTable;
  */
 public interface ATDefMethod extends ATDefinition {
 
-	public ATSymbol getSelector();
+	public ATSymbol base_getSelector();
 	public ATTable base_getArguments();
 	public ATBegin base_getBodyExpression();
 	

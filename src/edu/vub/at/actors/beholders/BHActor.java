@@ -36,14 +36,12 @@ import edu.vub.at.actors.events.EMailboxRemove;
 /**
  *  
  */
-public interface BHActor extends ATBeholder
-{
+public interface BHActor extends ATBeholder {
 
-    public void onMsgProcess(EMsgProcess e);
+    public void base_onMessageProcessed(EMsgProcess e);
 
+    public void base_onMailboxAdded(EMailboxAdd e);
+    public void base_onMailboxRemoved(EMailboxRemove e);
 
-    public void onMailboxAdd(EMailboxAdd e);
-    public void onMailboxRemove(EMailboxRemove e);
-
-    public void onDeleted(EActorDelete e);
+    public void base_onDeleted(EActorDelete e);
 }

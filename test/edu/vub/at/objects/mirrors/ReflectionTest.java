@@ -47,7 +47,7 @@ public class ReflectionTest extends TestCase {
 	
 	private void compareSymbol(String str, ATSymbol sym) {
 		try {
-			assertEquals(str, sym.getText().asNativeText().javaValue);
+			assertEquals(str, sym.base_getText().asNativeText().javaValue);
 		} catch (XTypeMismatch e) {
 			fail(e.getMessage());
 		}

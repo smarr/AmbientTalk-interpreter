@@ -58,9 +58,9 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 	
 	public ATSymbol base_getName() { return tblName_; }
 
-	public ATExpression getSize() { return sizExp_; }
+	public ATExpression base_getSizeExpression() { return sizExp_; }
 
-	public ATExpression getInitialization() { return initExp_; }
+	public ATExpression base_getInitializationExpression() { return initExp_; }
 
 	/**
 	 * Defining a table requires evaluating its index expression to a size s,

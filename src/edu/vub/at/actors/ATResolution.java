@@ -28,14 +28,15 @@
 
 package edu.vub.at.actors;
 
+import edu.vub.at.objects.ATObject;
+
 /**
  *  
  */
-public interface ATResolution
-{
+public interface ATResolution {
 
-    public ATActor getActor();
+    public ATActor base_getActor();
 
-    public ATServiceDescription getServiceDescription();
+    public ATObject base_getServiceDescription();
 
 }

@@ -36,6 +36,6 @@ import edu.vub.at.objects.ATText;
  */
 public interface ATSymbol extends ATExpression {
 
-	public ATText getText();
+	public ATText base_getText();
 	
 }

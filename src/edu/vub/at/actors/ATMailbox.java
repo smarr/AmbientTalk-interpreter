@@ -28,20 +28,16 @@
 
 package edu.vub.at.actors;
 
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
-import java.util.Iterator;
-
 /**
- *  
+ * A mailbox is a special kind of table object used to buffer asynchronous messages
  */
-public interface ATMailbox
-{
+public interface ATMailbox extends ATTable {
 
-    public ATActor getActor();
+    public ATActor base_getActor();
 
     public ATSymbol base_getName();
-
-    public Iterator getIterator();
 
 }

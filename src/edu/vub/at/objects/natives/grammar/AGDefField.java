@@ -56,7 +56,7 @@ public final class AGDefField extends NATAbstractGrammar implements ATDefField {
 	}
 	
 	public ATSymbol base_getName() { return name_; }
-	public ATExpression getValue() { return valueExp_; }
+	public ATExpression base_getValueExpression() { return valueExp_; }
 	
 	/**
 	 * Defines a new field in the current scope. The return value is NIL.

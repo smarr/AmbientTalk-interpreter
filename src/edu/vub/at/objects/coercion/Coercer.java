@@ -28,6 +28,7 @@
 package edu.vub.at.objects.coercion;
 
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATTable;
 
@@ -66,7 +67,6 @@ public final class Coercer implements InvocationHandler {
 		return Proxy.newProxyInstance(type.getClassLoader(), new Class[] { type }, new Coercer(object));
 	}
 
-	// TODO: what about ATAnything, still necessary?
 	public Object invoke(Object receiver, Method method, Object[] arguments) throws Throwable {
 		// handle toString, hashCode and equals in a dedicated fashion
 		if (method.getDeclaringClass() == Object.class) {
@@ -77,6 +77,14 @@ public final class Coercer implements InvocationHandler {
 				throw e;
 			}
 		} else {
+			/*String methodName = method.getName();
+			if (methodName.startsWith(JavaInterfaceAdaptor._META_PREFIX_)) {
+				// the method is named meta_ ... => directly invoke it on the principal object
+				return method.invoke(principal_, arguments);
+			} else if (methodName.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
+				// the method is named base_get... => select the appropriate field from the principal object
+				return principal_.meta_select(principal_, Reflec)
+			}*/
 			// TODO: meta-level invocations (meta_ on ATObject)
 			// cannot just check getDeclaringClass() == ATObject because of base_new/init/==
 			// TODO: unit tests!
