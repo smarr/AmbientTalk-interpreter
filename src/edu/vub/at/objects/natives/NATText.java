@@ -163,7 +163,7 @@ public final class NATText extends AGExpression implements ATText {
 			return NATNumber.atValue(javaValue.length());
 		}
 		
-		public ATText base__oppls_(ATText other) throws NATException {
+		public ATText base__oppls_(ATObject other) throws NATException {
 			return NATText.atValue(javaValue + other.asNativeText().javaValue);
 		}
 		

@@ -44,49 +44,103 @@ public class MirageTest extends ReflectiveAccessTest {
 		junit.swingui.TestRunner.run(MirageTest.class);
 	}
 	
-	public void testMirage() {
-		try {
+	public void testMirageCloning() {
+		try{
 			evaluateInput(
-					"def baseField := 0; \n" +
-					"def fakeMirror := mirror: { \n" +
-					"  def metaField := 0; \n" +
-					"  def select(receiver, selector) { \n" +
-					"    if: (selector == `(baseField)) then: { baseField } \n" +
-					"  }; \n" +
-					"  def assignField(selector, value) { \n" +
-					"    if: (selector == `(baseField)) then:  \n" +
-					"      { baseField := value } \n" +
-					"  }; \n" +
-					"  def invoke(receiver, selector, arguments) { \n" +
-					"    unit.echo: selector; \n" +
-					"    super.invoke(receiver, selector, arguments) \n" +
-					"  }; \n" +
-					"  def apply(arguments) { \n" +
-					"    unit.echo: \"apply\";" +
-					"    baseField := baseField + 1; \n" +
-					"    unit.success() \n" +
-					"  } \n" +
-					"}; \n" +
-					"def test := fakeMirror.newInstance([]).base; \n" +
-					//"def recursive := at.mirrors.Factory.createMirror(test); \n" +
-					" \n" +
-					"fakeMirror.apply([]); \n" +
-					"fakeMirror.select(test, `(baseField)); \n" +
-					"fakeMirror.assignField(`(baseField), 0); \n" +
-					" \n" +
-					"test(); \n" +
-					"test.baseField; \n" +
-					"test.baseField := 0; \n" +
-					" \n" //+
-					/* "recursive.apply([]); \n" + */
-					//"recursive.select(test, `(baseField)); \n" +
-					/*"recursive.assignField(`(baseField), 0); \n"*/,
-					new NATContext(new NATCallframe(lexicalRoot), lexicalRoot, NATNil._INSTANCE_)
+					"def cloningMirror := \n" +
+					"	mirror: { \n" +
+					"		def IAmAClone := false; \n" +
+					"		def clone() { IAmAClone := true;  super.clone() }; \n" +
+					"		def doesNotUnderstand(@args) { \n" +
+					"			if: IAmAClone then: { \n" +
+					"				success(\"Field added after cloning was not visible\"); \n" +
+					"			} else: { \n" +
+					"				fail(\"Field was not properly added on the original\"); \n" +
+					"			} \n" +
+					"		} \n" +
+					"	}; \n" +
+					"\n" +
+					"def original := \n" +
+					"	cloningMirror.base; \n" +
+					//"def original.sharedField := \"The field is shared.\"; \n" +
+					"cloningMirror.defineField(`(sharedField) , \"The field is shared.\"); \n" +
+					"def clone := clone: original; \n" +
+					// "def clone := cloningMirror.clone().base; \n" +
+					"clone.sharedField := \"But its value is not.\"; \n" +
+					//"def original.nonSharedField := \"That's what happens when you clone too early.\"; \n" +
+					"cloningMirror.defineField(`(nonSharedField) , \"That's what happens when you clone too early.\"); \n" +
+					"echo: original.sharedField; \n" +
+					"echo: clone.sharedField; \n" +
+					"echo: original.nonSharedField; \n" +
+					"echo: clone.nonSharedField;"
+					, new NATContext(new NATCallframe(lexicalRoot), lexicalRoot, NATNil._INSTANCE_)
 					);
 		} catch (NATException e) {
 			e.printStackTrace();
 			fail("exception : " + e);
 		}
+	};
+	
+	public void testMirageInvocation() {
+		try {
+			evaluateInput(
+					"def loggingMirror := {" +
+					"	def defaultSpacing := 2;" +
+					"	def indentLevel := 0;" +
+					"	def spaces() {" +
+					"		def result := \"\";" +
+					"		indentLevel.doTimes: { | i |" +
+					"			defaultSpacing.doTimes: { | j |" +
+					"				result := result + \" \";" +
+					"			}" +
+					"		};" +
+					"		result;" +
+					"	};" +
+					"" +
+					"	mirror: {" +
+					"		def invoke(receiver, selector, args) {" +
+					"			echo: (spaces() + \"Invocation of method \" + selector + \" with arguments \" + args + \" on \" + receiver);" +
+					"			indentLevel := indentLevel + 1;" +
+					"			def result := super.invoke(receiver, selector, args);" +
+					"			indentLevel := indentLevel - 1;" +
+					"			echo: (spaces() + \"Invocation of method \" + selector + \" yielded \" + result );" +
+					"			result;" +
+					"		}" +
+					"	}" +
+					"}();" +
+					"" +
+					"def mirroredParent := object: {" +
+					"	def m() { self.n() };" +
+					"	def n() { echo: \"ok\" };" +
+					"} mirroredBy: loggingMirror;" +
+					"" +
+					"def unmirroredChild := " +
+					"	extend: mirroredParent" +
+					"	with: {" +
+					"		def m() { " +
+					"			echo: \"My parent will start logging now\";" +
+					"			super.m();" +
+					"		};" +
+					"	};" +
+					"" +
+					"def mirroredChild := " +
+					"	extend: mirroredParent" +
+					"	with: {" +
+					"		def n() { " +
+					"			echo: \"Indentation of this call should be correct as the lexical scope is shared by both mirrors\";" +
+					"			super.n();" +
+					"		};" +
+					"	} mirroredBy: loggingMirror;" +
+					"" +
+					"mirroredParent.m();"  +
+					"unmirroredChild.m();" +
+					"mirroredChild.m();"
+					, new NATContext(new NATCallframe(lexicalRoot), lexicalRoot, NATNil._INSTANCE_)
+					);
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail("exception : " + e);
+		}		
 	}
 	
 }

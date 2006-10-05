@@ -103,7 +103,7 @@ public final class Reflection {
 		} else 
 			
 		// In Exceptional Cases magic_ may be used to invoke special primitives, so this method needs to support them
-		// since they are in all other regards equel to base_ methods
+		// since they are in all other regards equal to base_ methods
 		if (jSelector.startsWith(JavaInterfaceAdaptor._MAGET_PREFIX_)) {
 			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MAGET_PREFIX_));
 		} else if (jSelector.startsWith(JavaInterfaceAdaptor._MASET_PREFIX_)) {

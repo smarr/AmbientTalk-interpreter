@@ -65,6 +65,16 @@ public class NATMirage extends NATObject {
 		mirror_ = mirror;
 	}
 	
+	public NATMirage(ATObject lexicalParent, NATIntercessiveMirror mirror) {
+		super(lexicalParent);
+		mirror_ = mirror;
+	}
+	
+	public NATMirage(ATObject dynamicParent, ATObject lexicalParent, NATIntercessiveMirror mirror, boolean parentType) {
+		super(dynamicParent, lexicalParent, parentType);
+		mirror_ = mirror;
+	}
+	
 	/**
 	 * Constructs a new ambienttalk mirage as a clone of an existing one.
 	 */
@@ -256,7 +266,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("extend"),
-				NATTable.EMPTY
+				new NATTable(new ATObject[] { code })
 				));
 	}
 	

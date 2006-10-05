@@ -32,18 +32,15 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.mirrors.JavaClosure;
-import edu.vub.at.objects.mirrors.NATMirageFactory;
-import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
+import edu.vub.at.objects.mirrors.NATIntercessiveMirror;
+import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NATMirrorFactory;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
 
 /**
@@ -338,6 +335,47 @@ public final class OBJLexicalRoot extends NATNil {
 		// return the newly created NATIntercessiveMirror, it needs to be upped explicitly.
 		return NATMirrorFactory._INSTANCE_.base_createMirror(OBJMirrorRoot._INSTANCE_.meta_extend(code));
 	}
+	
+	public ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws NATException {
+		
+		// Initialise a new pair of mirror-mirage : note that we don't use clone here
+		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
+		NATMirage newMirage = new NATMirage(code.base_getContext().base_getLexicalScope(), mirrorClone);
+		mirrorClone.setBase(newMirage);
+		
+		code.base_getMethod().base_getBodyExpression().meta_eval(new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
+		
+		return newMirage;
+
+	}
+	
+	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws NATException {
+		
+		// Initialise a new pair of mirror-mirage : note that we don't use clone here
+		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
+		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._IS_A_);
+		mirrorClone.setBase(newMirage);
+		
+		code.base_getMethod().base_getBodyExpression().meta_eval(new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
+		
+		return newMirage;
+
+	}
+	
+	public ATObject base_share_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws NATException {
+		
+		// Initialise a new pair of mirror-mirage : note that we don't use clone here
+		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
+		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._SHARES_A_);
+		mirrorClone.setBase(newMirage);
+		
+		code.base_getMethod().base_getBodyExpression().meta_eval(new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
+		
+		return newMirage;
+
+	}
+	
+	
 	/* --------------------
 	 * -- Unary Operators -
 	 * -------------------- */

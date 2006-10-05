@@ -453,7 +453,8 @@ public class NATNil implements ATNil {
     }
 
     public NATText asNativeText() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a native text, given: " + this.getClass().getName(), this);
+    		return this.meta_print();
+        // throw new XTypeMismatch("Expected a native text, given: " + this.getClass().getName(), this);
     }
 
     public NATTable asNativeTable() throws XTypeMismatch {
