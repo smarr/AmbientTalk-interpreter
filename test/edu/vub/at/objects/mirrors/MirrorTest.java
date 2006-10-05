@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ReflectionTest.java created on Aug 11, 2006 at 11:27:03 PM
+ * MirrorTest.java created on Aug 11, 2006 at 11:27:03 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 

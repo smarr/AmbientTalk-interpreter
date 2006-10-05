@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.coercion;
 
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.mirrors.Reflection;
 
@@ -61,8 +62,14 @@ public final class Coercer implements InvocationHandler {
 		principal_ = principal;
 	}
 	
-	public static final Object coerce(ATObject object, Class type) {
-		return Proxy.newProxyInstance(type.getClassLoader(), new Class[] { type }, new Coercer(object));
+	public static final Object coerce(ATObject object, Class type) throws XTypeMismatch {
+		if (type.isInstance(object)) { // object instanceof type
+			return object; // no need to coerce
+		} else if (type.isInterface()) {
+			return Proxy.newProxyInstance(type.getClassLoader(), new Class[] { type }, new Coercer(object));
+		} else {
+			throw new XTypeMismatch("Expected a " + type.getSimpleName() + ", given: " + object.getClass().getSimpleName(), object);
+		}
 	}
 
 	public Object invoke(Object receiver, Method method, Object[] arguments) throws Throwable {
@@ -75,7 +82,9 @@ public final class Coercer implements InvocationHandler {
 				throw e.getTargetException();
 			}
 		} else {
-			return Reflection.downInvocation(principal_, method.getName(), arguments);
+			ATObject result = Reflection.downInvocation(principal_, method.getName(), arguments);
+			// properly 'cast' the returned objet into the appropriate interface
+			return coerce(result, method.getReturnType());
 		}
 	}
 	

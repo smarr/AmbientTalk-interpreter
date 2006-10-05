@@ -38,6 +38,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATFraction;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -397,7 +398,7 @@ public final class Reflection {
 		if (jSelector.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
 			// obj.base_getSelector() => obj.meta_select(obj, selector)
 			if (jArgs.length != 0) {
-				throw new XArityMismatch(downBaseFieldMutationSelector(jSelector).toString(), 0, jArgs.length);
+				throw new XArityMismatch(downBaseFieldAccessSelector(jSelector).toString(), 0, jArgs.length);
 			}
 			return atRcvr.meta_select(atRcvr, downBaseFieldAccessSelector(jSelector));
 		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
@@ -413,7 +414,7 @@ public final class Reflection {
 			// obj.meta_selector(args) => obj.meta_selector(args)
 			return downObject(JavaInterfaceAdaptor.invokeJavaMethod(atRcvr.getClass(), atRcvr, jSelector, jArgs));
 		} else {
-			throw new XIllegalArgument("invocation downed without appropriate java selector: " + jSelector);
+			throw new XIllegalArgument("invocation downed with inappropriate java selector: " + jSelector);
 		}
 	}
 
@@ -507,7 +508,7 @@ public final class Reflection {
 				atOrigRcvr.getClass(),
 				atOrigRcvr,
 				jSelector,
-				new ATObject[0]);		
+				NATTable.EMPTY.elements_);		
 	}
 	
 	/**
@@ -595,6 +596,9 @@ public final class Reflection {
 				atTable[i] = downObject(jArray[i]);
 			}
 			return new NATTable(atTable);
+	    // null
+		} else if (jObj == null) {
+			return NATNil._INSTANCE_;
 		} else {
 			throw new RuntimeException("Cannot wrap Java objects of type " + jObj.getClass());			
 		}
@@ -622,6 +626,9 @@ public final class Reflection {
 			return new Boolean(true);
 		} else if (atObj == NATBoolean._FALSE_) {
 			return new Boolean(false);
+	    // nil
+		} else if (atObj == NATNil._INSTANCE_) {
+			return null;
 		// Object[]
 		} else if (atObj instanceof NATTable) {
 			ATObject[] atArray = ((NATTable) atObj).elements_;

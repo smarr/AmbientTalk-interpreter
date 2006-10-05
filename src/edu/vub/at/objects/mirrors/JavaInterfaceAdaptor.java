@@ -32,7 +32,9 @@ import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XReflectionFailure;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.coercion.Coercer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -92,8 +94,8 @@ public class JavaInterfaceAdaptor {
 	 * @param jArguments parameters, normally AT objects
 	 * @return the return value of the reflectively invoked method
 	 */	
-	public static Object invokeJavaMethod (Class jClass, Object jReceiver,
-										 String jSelector, Object[] jArguments) throws NATException {
+	public static Object invokeJavaMethod(Class jClass, Object jReceiver,
+										String jSelector, Object[] jArguments) throws NATException {
 		Method[] applicable = getMethodsForSelector(jClass, jSelector);
 		switch(applicable.length) {
 		  case 0:
@@ -117,7 +119,6 @@ public class JavaInterfaceAdaptor {
 	 * @return the return value of the reflectively invoked method
 	 */
 	public static Object invokeJavaMethod(Method javaMethod, Object jReceiver, Object[] jArguments) throws NATException {
-         // TODO: will have to convert some NATObjects to proper ATXXX argument interfaces using mirages!
 		try {
 			// if the native method takes an array as its sole parameter, it is interpreted as taking
 			// a variable number of ambienttalk arguments
@@ -126,7 +127,9 @@ public class JavaInterfaceAdaptor {
 			if ((params.length == 1) && params[0].equals(ATObject[].class)) {
 				return javaMethod.invoke(jReceiver, new Object[] { (ATObject[]) jArguments });
 			} else {
-				return javaMethod.invoke(jReceiver, jArguments);
+				// make sure to properly 'coerce' each argument into the proper AT interface type
+				Object[] coercedArgs = coerceArguments(jArguments, javaMethod.getParameterTypes());
+				return javaMethod.invoke(jReceiver, coercedArgs);
 			}
 		} catch (IllegalAccessException e) {
 			// the invoked method is not publicly accessible
@@ -155,7 +158,9 @@ public class JavaInterfaceAdaptor {
 			Constructor ctor = ctors[i];
 			if (ctor.getParameterTypes().length == jInitArgs.length) {
 				try {
-					return ctor.newInstance(jInitArgs);
+					// make sure to properly 'coerce' each argument into the proper AT interface type
+					Object[] coercedInitArgs = coerceArguments(jInitArgs, ctor.getParameterTypes());
+					return ctor.newInstance(coercedInitArgs);
 				} catch (IllegalArgumentException e) {
 					continue; // argument types don't match, may find other constructor
 				} catch (InstantiationException e) {
@@ -226,5 +231,13 @@ public class JavaInterfaceAdaptor {
 		}
 		
 		return (Method[])matchingMethods.toArray(new Method[numMatchingMethods]);
+	}
+	
+	private static Object[] coerceArguments(Object[] args, Class[] types) throws XTypeMismatch {
+		Object[] coercedArgs = new Object[args.length];
+		for (int i = 0; i < args.length; i++) {
+			coercedArgs[i] = Coercer.coerce((ATObject) args[i], types[i]);
+		}
+		return coercedArgs;
 	}
 }

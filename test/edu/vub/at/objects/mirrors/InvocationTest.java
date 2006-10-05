@@ -52,7 +52,6 @@ public class InvocationTest extends ReflectiveAccessTest {
 		junit.swingui.TestRunner.run(InvocationTest.class);
 	}
 
-	
 	/**
 	 * Tests the invocation of methods on natively implemented objects which thus
 	 * adhere to the expected interfaces. This test checks the semantics of the
