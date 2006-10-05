@@ -28,6 +28,7 @@
 
 package edu.vub.at;
 
+import edu.vub.at.objects.mirrors.CoercionTest;
 import edu.vub.at.objects.mirrors.InvocationTest;
 import edu.vub.at.objects.mirrors.MirrorTest;
 import edu.vub.at.objects.mirrors.ReflectionTest;
@@ -64,6 +65,7 @@ public class InterpreterTests {
 		suite.addTestSuite(PrimitivesTest.class);
 		suite.addTestSuite(LexicalRootTest.class);
 		suite.addTestSuite(NATNamespaceTest.class);
+		suite.addTestSuite(CoercionTest.class);
 		//$JUnit-END$
 		return suite;
 	}

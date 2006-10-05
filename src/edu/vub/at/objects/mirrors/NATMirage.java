@@ -59,7 +59,7 @@ import java.util.Vector;
  */
 public class NATMirage extends NATObject {
 
-	private NATIntercessiveMirror mirror_;
+	protected NATIntercessiveMirror mirror_;
 	
 	public NATMirage(NATIntercessiveMirror mirror) {
 		mirror_ = mirror;

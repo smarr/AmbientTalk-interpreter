@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
@@ -94,14 +95,10 @@ public final class Reflection {
 	}
 	
 	/**
-	 * Transforms a Java selector prefixed with base_/base_get/base_set into an AmbientTalk selector without the prefix.
+	 * Transforms a Java selector prefixed with base_ into an AmbientTalk selector without the prefix.
 	 */
 	public static final ATSymbol downBaseLevelSelector(String jSelector) throws NATException {
-		if (jSelector.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BGET_PREFIX_));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BSET_PREFIX_));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
+		if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
 			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._BASE_PREFIX_));
 		} else 
 			
@@ -114,25 +111,75 @@ public final class Reflection {
 		} else if (jSelector.startsWith(JavaInterfaceAdaptor._MAGIC_PREFIX_)) {
 			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._MAGIC_PREFIX_));
 		} else {
-			throw new XIllegalArgument("Reflection.downBaseLevelSelector was asked to down a non-base level selector: " + jSelector);
+			throw new XIllegalArgument("Illegal base level selector to down: " + jSelector);
 		}
 	}
 	
 	/**
-	 * Transforms a Java selector prefixed with meta_/meta_get/meta_set into an AmbientTalk selector without the prefix.
+	 * Transforms a Java selector prefixed with meta_ into an AmbientTalk selector without the prefix.
 	 */
 	public static final ATSymbol downMetaLevelSelector(String jSelector) throws NATException {
+		if (jSelector.startsWith(JavaInterfaceAdaptor._META_PREFIX_)) {
+			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._META_PREFIX_));
+		} else {
+			throw new XIllegalArgument("Illegal meta level selector to down: " + jSelector);
+		}
+	}
+	
+	/**
+	 * Transforms a Java selector prefixed with base_get into an equivalent AmbientTalk selector.
+	 * 
+	 * Example:
+	 *  downBaseFieldAccessSelector("base_getReceiver") => ATSymbol("receiver")
+	 */
+	public static final ATSymbol downBaseFieldAccessSelector(String jSelector) throws NATException {
 		if (jSelector.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
 			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BGET_PREFIX_));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BSET_PREFIX_));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
-			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._BASE_PREFIX_));
 		} else {
-			throw new XIllegalArgument("Reflection.downBaseLevelSelector was asked to down a non-base level selector: " + jSelector);
+			throw new XIllegalArgument("Illegal base level accessor to down: " + jSelector);
 		}
-		
-		//return AGSymbol.alloc(javaToAmbientTalkSelector(jSelector).replaceFirst(JavaInterfaceAdaptor._META_PREFIX_, ""));
+	}
+
+	/**
+	 * Transforms a Java selector prefixed with base_set into an equivalent AmbientTalk selector.
+	 * 
+	 * Example:
+	 *  downBaseFieldMutationSelector("base_setReceiver") => ATSymbol("receiver")
+	 */
+	public static final ATSymbol downBaseFieldMutationSelector(String jSelector) throws NATException {
+		if (jSelector.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BSET_PREFIX_));
+		} else {
+			throw new XIllegalArgument("Illegal base level mutator to down: " + jSelector);
+		}
+	}
+
+	/**
+	 * Transforms a Java selector prefixed with meta_get into an equivalent AmbientTalk selector
+	 * 
+	 * Example:
+	 *  downMetaFieldAccessSelector("meta_getReceiver") => ATSymbol("receiver")
+	 */
+	public static final ATSymbol downMetaFieldAccessSelector(String jSelector) throws NATException {
+		if (jSelector.startsWith(JavaInterfaceAdaptor._MGET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MGET_PREFIX_));
+		} else {
+			throw new XIllegalArgument("Illegal meta level accessor to down: " + jSelector);
+		}
+	}
+	
+	/**
+	 * Transforms a Java selector prefixed with meta_set into an equivalent AmbientTalk selector.
+	 * 
+	 * Example:
+	 *  downMetaFieldMutationSelector("meta_setReceiver") => ATSymbol("receiver")
+	 */
+	public static final ATSymbol downMetaFieldMutationSelector(String jSelector) throws NATException {
+		if (jSelector.startsWith(JavaInterfaceAdaptor._MSET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MSET_PREFIX_));
+		} else {
+			throw new XIllegalArgument("Illegal meta level mutator to down: " + jSelector);
+		}
 	}
 	
 	/**
@@ -287,7 +334,7 @@ public final class Reflection {
 	 *  a) obj has a method named 'get' + Sel, if so, a field can be created
 	 *  b) obj has a method named 'set' + Sel, if so, the field is mutable, otherwise it is read-only
 	 *
-	 * The getter method cannot take any arguments, the setter method must be unary.
+	 * The getter method cannot take any arguments, the setter method must have a unary arity.
 	 *
 	 * @param jObject the Java object in which the getter/setter methods should be found
 	 * @param jSelector a selector which, when prefixed with 'get' or 'set' should yield a method in jObject
@@ -298,8 +345,8 @@ public final class Reflection {
 	 *  => downField(aNATMessage, "selector")
 	 *  => NATMessage must have a zero-arg method getSelector and optionally setSelector
 	 */
-	public static final ATField downField(ATObject jObject, String jSelector) {
-		return null; // TODO: implement?
+	public static final ATField downField(ATObject jObject, String jSelector) throws NATException {
+		return JavaField.createPrimitiveField(jObject, downSelector(jSelector));
 	}
 	
 	/**
@@ -317,8 +364,8 @@ public final class Reflection {
 	 *  => downMethod(aNATTable, "at")
 	 *  => NATTable must have a method named base_at
 	 */
-	public static final ATMethod downMethod(ATObject jObject, String jSelector) {
-		return null; // TODO: implement?
+	public static final ATMethod downMethod(ATObject jObject, String jSelector) throws NATException {
+		return JavaInterfaceAdaptor.getMethod(jObject.getClass(), jObject, jSelector);
 	}
 
 	/**
@@ -328,24 +375,45 @@ public final class Reflection {
 	 * 
 	 * @param atRcvr the AmbientTalk object having received the Java method invocation
 	 * @param jSelector the Java selector, to be converted to an AmbientTalk selector
-	 * @param jArgs the arguments to the Java method invocation (normally all args are ATObjects) 
+	 * @param jArgs the arguments to the Java method invocation (normally all args are ATObjects)
+	 * jArgs may be null, indicating that there are no arguments
 	 * @return the return value of the AmbientTalk method invoked via the java invocation.
 	 * 
 	 * Example:
-	 *  in Java: "tbl.base_at(1)" where tbl is an ATTable mirage wrapping aNATObject
-	 *  => downInvocation(aNATObject, "at", ATObject[] { ATNumber(1) })
+	 *  in Java: "tbl.base_at(1)" where tbl is an ATTable coercer wrapping aNATObject
+	 *  => downInvocation(aNATObject, "base_at", ATObject[] { ATNumber(1) })
 	 *  => aNATObject must implement a method named "at"
-	 * The base_ prefix is normally stripped off by a mirage.
+	 *  
+	 * Depending on the prefix of the invoked Java method selector, the following translation should occur:
+	 *  - obj.base_selector(args) => obj.meta_invoke(obj, selector, args)
+	 *  - obj.base_getSelector() => obj.meta_select(obj, selector)
+	 *  - obj.base_setSelector(x) => obj.meta_assignField(selector, x)
+	 *  - obj.meta_selector(args) => obj.meta_selector(args)
+	 *  - obj.meta_set|getSelector(args) => obj.meta_set|getSelector(args)
 	 */
-	public static final ATObject downInvocation(ATObject atRcvr, String jSelector, ATObject[] jArgs) {
+	public static final ATObject downInvocation(ATObject atRcvr, String jSelector, Object[] jArgs) throws NATException {
+		if (jArgs == null) { jArgs = NATTable.EMPTY.elements_; }
 		
-		// TODO preliminary
-		try {
+		if (jSelector.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
+			// obj.base_getSelector() => obj.meta_select(obj, selector)
+			if (jArgs.length != 0) {
+				throw new XArityMismatch(downBaseFieldMutationSelector(jSelector).toString(), 0, jArgs.length);
+			}
+			return atRcvr.meta_select(atRcvr, downBaseFieldAccessSelector(jSelector));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
+			// obj.base_setSelector(x) => obj.meta_assignField(selector, x)
+			if (jArgs.length != 1) {
+				throw new XArityMismatch(downBaseFieldMutationSelector(jSelector).toString(), 1, jArgs.length);
+			}
+			return atRcvr.meta_assignField(downBaseFieldMutationSelector(jSelector), downObject(jArgs[0]));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
+			// obj.base_selector(args) => obj.meta_invoke(obj, selector, args)
+			return atRcvr.meta_invoke(atRcvr, downBaseLevelSelector(jSelector), new NATTable(jArgs));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._META_PREFIX_)) {
+			// obj.meta_selector(args) => obj.meta_selector(args)
 			return downObject(JavaInterfaceAdaptor.invokeJavaMethod(atRcvr.getClass(), atRcvr, jSelector, jArgs));
-		} catch (NATException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+		} else {
+			throw new XIllegalArgument("invocation downed without appropriate java selector: " + jSelector);
 		}
 	}
 
@@ -534,11 +602,37 @@ public final class Reflection {
 
 	/**
 	 * Convert an AmbientTalk object into its Java equivalent.
-	 * TODO: write a 'toJava' method that for NATNumber etc. return an Integer etc.
 	 */
 	public static final Object upObject(ATObject atObj) {
-		// if atObj.isNativeNumber() return new Integer(atObj.asNativeNumber().javaValue)
-		return atObj;
+		// Our own "dynamic dispatch"
+		// mirage
+		if(atObj instanceof NATMirage) {
+			return ((NATMirage) atObj).mirror_;
+	    // integer
+		} else if (atObj instanceof NATNumber) {
+			return new Integer(((NATNumber) atObj).javaValue);
+		// double
+		} else if (atObj instanceof NATFraction) {
+			return new Double(((NATFraction) atObj).javaValue);
+		// string
+		} else if (atObj instanceof NATText) {
+			return ((NATText) atObj).javaValue;
+		// booleans
+		} else if (atObj == NATBoolean._TRUE_) {
+			return new Boolean(true);
+		} else if (atObj == NATBoolean._FALSE_) {
+			return new Boolean(false);
+		// Object[]
+		} else if (atObj instanceof NATTable) {
+			ATObject[] atArray = ((NATTable) atObj).elements_;
+			Object[] jArray = new Object[atArray.length];
+			for (int i = 0; i < jArray.length; i++) {
+				jArray[i] = upObject(atArray[i]);
+			}
+			return jArray;
+		} else {
+			return atObj;	
+		}
 	}
 	
 	

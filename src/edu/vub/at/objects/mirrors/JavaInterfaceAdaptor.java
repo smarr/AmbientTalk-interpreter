@@ -182,15 +182,23 @@ public class JavaInterfaceAdaptor {
 			Class baseInterface, 
 			ATObject receiver,
 			String methodName) throws NATException {
+		JavaMethod method = getMethod(baseInterface, receiver, methodName);
+	    return new JavaClosure(receiver, method);
+	}
+	
+	public static JavaMethod getMethod(
+			Class baseInterface, 
+			ATObject receiver,
+			String methodName) throws NATException {
 		Method[] applicable = getMethodsForSelector(baseInterface, methodName);
 		switch (applicable.length) {
 			case 0:
 				throw new XSelectorNotFound(Reflection.downBaseLevelSelector(methodName), receiver);
 			case 1:
-				return new JavaClosure(receiver, new JavaMethod(applicable[0]));
+				return new JavaMethod(applicable[0]);
 			default:
 				// TODO return new JavaMethod.Dispatched(receiver, applicable);
-				throw new XIllegalOperation("Java Method Wrappers not yet implemented");
+				throw new XIllegalOperation("A native method uses overloading!");
 		}
 	}
 	
