@@ -452,6 +452,7 @@ public final class OBJLexicalRoot extends NATNil {
      * silently returning the root itself.
      */
     public ATObject base_new(ATObject[] initargs) throws NATException {
+    	    // root.new(@initargs)
 	    return Evaluator.getGlobalLexicalScope().base_new(initargs);
     }
 }
