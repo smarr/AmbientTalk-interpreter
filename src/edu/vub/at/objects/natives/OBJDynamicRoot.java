@@ -81,7 +81,7 @@ public final class OBJDynamicRoot extends NATNil {
 		return receiver.meta_doesNotUnderstand(selector);
 	}
 
-	public ATNil meta_assignField(ATSymbol selector, ATObject value) throws NATException {
+	public ATNil meta_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws NATException {
 		throw new XUndefinedField("field assignment", selector.base_getText().asNativeText().javaValue);
 	}
 	

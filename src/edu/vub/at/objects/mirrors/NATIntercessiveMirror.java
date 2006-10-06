@@ -29,13 +29,16 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 import java.util.HashMap;
@@ -61,13 +64,25 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	
 	/**
 	 * Constructs a new ambienttalk mirror based on a set of parent pointers. 
-	 * @param lexicalParent - the lexical scope in which the object's definition was nested
+	 * @param lexicalParent - the lexical scope in which the mirror's definition was nested
 	 * @param parentType - how this object extends its dynamic parent (is-a or shares-a)
 	 */
 	public NATIntercessiveMirror(ATObject lexicalParent, boolean parentType) {
 		super(OBJMirrorRoot._INSTANCE_, lexicalParent, parentType);
 		principal_ = new NATMirage(this);
 	}
+	
+	/**
+	 * Constructs a new ambienttalk mirror based on a set of parent pointers. 
+	 * @param dynamicParent - the dynamic parent of the new mirror, which should also be a mirror
+	 * @param lexicalParent - the lexical scope in which the mirror's definition was nested
+	 * @param parentType - how this object extends its dynamic parent (is-a or shares-a)
+	 */
+	public NATIntercessiveMirror(NATIntercessiveMirror dynamicParent, ATObject lexicalParent, boolean parentType) {
+		super(dynamicParent, lexicalParent, parentType);
+		principal_ = dynamicParent.principal_;
+	}
+	
 	
 	/**
 	 * Constructs a new ambienttalk mirage as a clone of an existing one.
@@ -129,6 +144,22 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 				flags,
 				// correct value for base_ set by NATMirage#createClone
 				principal_); 
+	}
+	
+	// Called by the default NATObject Extension algorithm
+	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws NATException {
+
+		NATIntercessiveMirror extension = new NATIntercessiveMirror(
+				/* dynamic parent */
+				this,
+				/* lexical parent */
+				code.base_getContext().base_getLexicalScope(),
+				/* parent porinter type */
+				parentPointerType);
+			
+		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(extension, extension, this));
+			
+		return NATMirrorFactory._INSTANCE_.createMirror(extension);
 	}
 	
 	/* ---------------------------------

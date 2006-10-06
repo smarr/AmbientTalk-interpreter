@@ -37,6 +37,7 @@ import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.NATParser;
 
@@ -150,8 +151,7 @@ public class OBJUnit extends NATNil {
 		
 		clone.ctx_ = new NATContext(extension, extension, clone);
 		
-		ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
-		body.meta_eval(clone.ctx_);
+		code.base_getMethod().base_apply(NATTable.EMPTY, clone.ctx_);
 		
 		return extension;
 	}

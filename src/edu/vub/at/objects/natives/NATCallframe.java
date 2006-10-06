@@ -204,7 +204,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * then <tt>o.m := x</tt> follows the same evaluation semantics as those of
 	 * <tt>m := x</tt> when performed in the scope of <tt>o</tt>.
 	 */
-	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException {
 		return this.meta_assignVariable(name, value);
 	}
 
@@ -275,11 +275,11 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * -- Mirror Fields   --
 	 * --------------------- */
 	
-	public ATObject meta_getDynamicParent() {
+	public ATObject meta_getDynamicParent() throws NATException {
 		return NATNil._INSTANCE_;
 	};
 	
-	public ATObject meta_getLexicalParent() {
+	public ATObject meta_getLexicalParent() throws NATException {
 		return lexicalParent_;
 	}
 

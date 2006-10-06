@@ -29,13 +29,14 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATTable;
 
 /**
  * 
@@ -71,7 +72,7 @@ public class OBJMirrorRoot extends NATNil {
 		String jSelector = Reflection.upMagicLevelSelector(atSelector);
 		
 		try {
-			return NATMirrorFactory._INSTANCE_.base_createMirror(
+			return NATMirrorFactory._INSTANCE_.createMirror(
 					Reflection.downObject(
 							Reflection.upInvocation(
 									principal, // implementor and self
@@ -106,8 +107,7 @@ public class OBJMirrorRoot extends NATNil {
 				/* parent pointer type */
 				parentPointerType);
 			
-		ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
-		body.meta_eval(new NATContext(extension, extension, this));
+		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(extension, extension, this));
 			
 		return extension;
 	}
@@ -151,7 +151,7 @@ public class OBJMirrorRoot extends NATNil {
 		
 		try {
 			jSelector = Reflection.upMagicFieldAccessSelector(atSelector);
-			return NATMirrorFactory._INSTANCE_.base_createMirror(
+			return NATMirrorFactory._INSTANCE_.createMirror(
 					Reflection.downObject(
 							Reflection.upFieldSelection(
 									principal,
@@ -161,7 +161,7 @@ public class OBJMirrorRoot extends NATNil {
 			try {
 				jSelector = Reflection.upMagicLevelSelector(atSelector);
 
-				return NATMirrorFactory._INSTANCE_.base_createMirror(
+				return NATMirrorFactory._INSTANCE_.createMirror(
 						Reflection.downObject(
 								Reflection.upMethodSelection(
 										principal, 
@@ -180,25 +180,24 @@ public class OBJMirrorRoot extends NATNil {
 	 * uphold stratification). Otherwise it is possible that a base field of the mirror
 	 * itself is changed.
 	 */
-	// FIXME no receiver for assignField
-//	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
-//		NATMirage principal = (NATMirage)receiver.asMirror().base_getBase();
-//		
-//		String jSelector = Reflection.upMagicFieldMutationSelector(name);
-//		
-//		try{
-//			JavaInterfaceAdaptor.invokeJavaMethod(
-//					principal.getClass(),
-//					principal,
-//					jSelector,
-//					new ATObject[] { value.asMirror().base_getBase() });
-//		} catch (XSelectorNotFound e) {
-//			// Principal does not have a corresponding meta_level method
-//			// OR the passed value is not a mirror object
-//			// try for a base_level method of the mirror itself.
-//			return super.meta_assignField(name, value);
-//		}			
-//		
-//		return NATNil._INSTANCE_;
-//	}
+	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException {
+		NATMirage principal = (NATMirage)receiver.asMirror().base_getBase();
+		
+		String jSelector = Reflection.upMagicFieldMutationSelector(name);
+		
+		try{
+			JavaInterfaceAdaptor.invokeJavaMethod(
+					principal.getClass(),
+					principal,
+					jSelector,
+					new ATObject[] { value.asMirror().base_getBase() });
+		} catch (XSelectorNotFound e) {
+			// Principal does not have a corresponding meta_level method
+			// OR the passed value is not a mirror object
+			// try for a base_level method of the mirror itself.
+			return super.meta_assignField(receiver, name, value);
+		}			
+		
+		return NATNil._INSTANCE_;
+	}
 }

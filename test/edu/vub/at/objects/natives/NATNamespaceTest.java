@@ -133,7 +133,7 @@ public class NATNamespaceTest extends TestCase {
 			// create the namespace 'at' bound to the path /tmp/at
 			NATNamespace atNS = new NATNamespace("/at", at_);
 			// bind the name 'at' to the atNS namespace in the lobby
-			lobby.meta_assignField(AGSymbol.alloc("at"), atNS);
+			lobby.meta_assignField(lobby, AGSymbol.alloc("at"), atNS);
 
 			// select '/.at.test'
 			ATObject test = atNS.meta_select(atNS, AGSymbol.alloc("test"));

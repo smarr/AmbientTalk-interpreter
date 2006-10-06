@@ -181,13 +181,14 @@ public interface ATObject extends ATConversions {
      * Triggers the <tt>fieldAssigned</tt> event on this object's beholders (mirror observers).
      *
      * Field assignment may result in the assignment of a parent's field.
-     *
+     * @param receiver the object which received (and possibly delegated) the request
      * @param name a symbol representing the field to assign.
      * @param value the value to assign to the specified slot.
+     *
      * @return nil
      * @throws ATException if the field to set cannot be found.
      */
-    public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException;
+    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException;
 
     /* ------------------------------------
       * -- Extension and cloning protocol --
@@ -322,16 +323,18 @@ public interface ATObject extends ATConversions {
      * primitives. This getter method allows accessing the parent alongside
      * this dynamic parent chain to be accessed as a field of the object's
      * mirror.
+     * @throws NATException 
      */
-    public ATObject meta_getDynamicParent();
+    public ATObject meta_getDynamicParent() throws NATException;
 
     /**
      * Objects also have a lexical parent which is the scope in which their
      * definitions are nested. This scope is visible using receiverless messages.
      * This getter method allows accessing the parent alongside the lexical nesting
      * chain to be accessed as a field of the object's mirror.
+     * @throws NATException 
      */
-    public ATObject meta_getLexicalParent();
+    public ATObject meta_getLexicalParent() throws NATException;
 
     /* ------------------------------------------
       * -- Abstract Grammar evaluation protocol --

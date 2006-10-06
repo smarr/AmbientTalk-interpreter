@@ -142,7 +142,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 		String jSelector = Reflection.upMetaLevelSelector(atSelector);
 		
 		try {
-			return NATMirrorFactory._INSTANCE_.base_createMirror(
+			return NATMirrorFactory._INSTANCE_.createMirror(
 					Reflection.downObject(
 							Reflection.upInvocation(
 									principal_, // implementor and self
@@ -187,7 +187,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 		
 		try {
 			jSelector = Reflection.upMetaFieldAccessSelector(atSelector);
-			return NATMirrorFactory._INSTANCE_.base_createMirror(
+			return NATMirrorFactory._INSTANCE_.createMirror(
 					Reflection.downObject(
 							Reflection.upFieldSelection(
 									principal_,
@@ -197,7 +197,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 			try {
 				jSelector = Reflection.upMetaLevelSelector(atSelector);
 
-				return NATMirrorFactory._INSTANCE_.base_createMirror(
+				return NATMirrorFactory._INSTANCE_.createMirror(
 						Reflection.downObject(
 								Reflection.upMethodSelection(
 										principal_, 
@@ -217,7 +217,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * uphold stratification). Otherwise it is possible that a base field of the mirror
 	 * itself is changed.
 	 */
-	public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException {
 		String jSelector = null;
 		
 		try{
@@ -227,7 +227,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 			// Principal does not have a corresponding meta_level method
 			// OR the passed value is not a mirror object
 			// try for a base_level method of the mirror itself.
-			return super.meta_assignField(name, value);
+			return super.meta_assignField(receiver, name, value);
 		}			
 		
 		return NATNil._INSTANCE_;
@@ -258,6 +258,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	public ATObject base_init(ATObject[] initargs) throws XArityMismatch {
 		if(initargs.length > 1) {
 			ATObject reflectee = initargs[0];
+			// FIXME as this is a base_method it needs to call base_create
 			return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
 		} else {
 			throw new XArityMismatch("init", 1, 0);

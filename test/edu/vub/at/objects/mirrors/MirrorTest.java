@@ -30,15 +30,17 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.mirrors.NATMirrorFactory;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.grammar.AGMessageSend;
-import edu.vub.at.objects.natives.grammar.AGMethodInvocationCreation;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 public class MirrorTest extends ReflectiveAccessTest {
@@ -53,7 +55,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 	 * into another one. The former does not care for stratified access whereas the
 	 * latter one does. 
 	 */
-	public void testAGMirrorInterface() {
+	public void notestAGMirrorInterface() {
 		System.out.println(" `( def [ mirror, statified ] := [ ]  })");
 	}
 	
@@ -120,9 +122,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 	 * - down(up(o)) == o
 	 */
 	public void testJavaMirrorBaseRelation() {
-		// base_methods are always implicitly downed so the test should do this as well.
-		ATMirror mirror = (ATMirror)Reflection.downObject(NATMirrorFactory._INSTANCE_.
-			base_createMirror(True));
+		ATMirror mirror = NATMirrorFactory._INSTANCE_.createMirror(True);
 		assertEquals(True, mirror.base_getBase());
 	}
 	
@@ -134,6 +134,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 		try {
 			evaluateInput(
 					"def mirror  := at.mirrors.Factory.createMirror(true);" +
+					// "echo: (\"testMirrorBaseRelation mirror is \".+(mirror));" +
 					"(true == mirror.getBase())" +
 					"  .ifTrue: success ifFalse: fail;" +
 					"(true == mirror.base)" +
@@ -147,13 +148,11 @@ public class MirrorTest extends ReflectiveAccessTest {
 	
 	public void testJavaMirrorInvocation() {
 		try {
-			// base_methods are always implicitly downed so the test should do this as well.
-			ATMirror trueMirror = (ATMirror)Reflection.downObject(NATMirrorFactory._INSTANCE_.
-				base_createMirror(True));
-			ATMirror responds = (ATMirror)Reflection.downObject(trueMirror.meta_invoke(
+			ATMirror trueMirror = NATMirrorFactory._INSTANCE_.createMirror(True);
+			ATMirror responds = (ATMirror)trueMirror.meta_invoke(
 					trueMirror,
 					AGSymbol.alloc("respondsTo"),
-					new NATTable(new ATObject[] { AGSymbol.alloc("ifTrue:") })));
+					new NATTable(new ATObject[] { AGSymbol.alloc("ifTrue:") }));
 			responds.base_getBase().asBoolean().base_ifTrue_ifFalse_(success, fail);
 		} catch (NATException e) {
 			e.printStackTrace();
@@ -177,32 +176,49 @@ public class MirrorTest extends ReflectiveAccessTest {
 	
 	public void testJavaMirrorFieldAccess() {
 		try {
-			AGMessageSend msgSend = new AGMessageSend(
-			success,
-			new AGMethodInvocationCreation(
-					AGSymbol.alloc("at"), 
-					new NATTable(new ATObject[] {
-							closures.base_getLength()	
-					})));
-			// base_methods are always implicitly downed so the test should do this as well.
-			ATMirror msgSendMirror = (ATMirror)Reflection.downObject(NATMirrorFactory._INSTANCE_.
-				base_createMirror(msgSend));
+			ATMethod emptyExtension  = 
+				new JavaAnonymousMethod(MirrorTest.class) {
+					public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
+						return NATNil._INSTANCE_;
+					};
+				};
 			
-			ATMirror receiver = (ATMirror)msgSendMirror.meta_select(
-					msgSendMirror,
-					AGSymbol.alloc("receiver"));
+			ATMethod invokeSuccess = 
+				new JavaAnonymousMethod(MirrorTest.class) {
+					public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
+						evaluateInput(
+								"def invoke(@args) { \"ok\" };",
+								ctx);
+						return NATNil._INSTANCE_;
+					};
+				};
+			
+			ATObject extendedSuccess =
+				OBJLexicalRoot._INSTANCE_.base_extend_with_mirroredBy_(
+					success,
+					new JavaClosure(success, emptyExtension),
+					(NATIntercessiveMirror)OBJMirrorRoot._INSTANCE_.meta_extend(
+							new JavaClosure(success, emptyExtension)));
+			
+			
+			ATMirror extendedSuccessMirror = NATMirrorFactory._INSTANCE_.createMirror(extendedSuccess);
+			
+			ATMirror receiver = (ATMirror)extendedSuccessMirror.meta_select(
+					extendedSuccessMirror,
+					AGSymbol.alloc("dynamicParent"));
 			
 			receiver.base_getBase().asClosure().base_apply(NATTable.EMPTY);
 			
-			msgSendMirror.meta_assignField(AGSymbol.alloc("receiver"), 
-					NATMirrorFactory._INSTANCE_.base_createMirror(closures));
+			extendedSuccessMirror.meta_assignField(
+					extendedSuccessMirror,
+					AGSymbol.alloc("mirror"), 
+					extendedSuccessMirror.meta_extend(
+							new JavaClosure(extendedSuccessMirror, invokeSuccess)));
 			
-			ATMirror result = (ATMirror)msgSendMirror.meta_invoke(
-					msgSendMirror,
-					AGSymbol.alloc("eval"),
-					new NATTable(new ATObject[] { new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_) }));
-			
-			result.base_getBase().asClosure().base_apply(NATTable.EMPTY);
+			extendedSuccess.meta_invoke(
+					extendedSuccess,
+					AGSymbol.alloc("whatever"),
+					NATTable.EMPTY);
 			
 		} catch (NATException e) {
 			e.printStackTrace();
@@ -213,10 +229,21 @@ public class MirrorTest extends ReflectiveAccessTest {
 	public void testMirrorFieldAccess() {
 		try {
 			evaluateInput(
-					"def msgSendMirror  := at.mirrors.Factory.createMirror(" +
-					"  `(success.at(3)));" +
-					"def receiver       := msgSendMirror.receiver;" +
-					"msgSendMirror.receiver := at.mirrors.Factory.createMirror(closures);",
+					"def extendedSuccess := \n" +
+					"  extend: success with: { nil } \n" +
+					"  mirroredBy: (mirror: { nil }); \n" +
+					"def extendedSuccessMirror := \n" +
+					"  reflect: extendedSuccess; \n" +
+					"\n" +
+					"extendedSuccessMirror.dynamicParent.base.apply([]); \n" +
+					"extendedSuccessMirror.mirror :=  \n" +
+					"// meta_operations expect to be given a mirror on the actual values \n" +
+					"// hence the at first sight superfluous call to reflect: \n" +
+					"  reflect: (extend: extendedSuccessMirror with: { \n" +
+					"    def invoke(@args) { reflect: \"ok\"}; \n" +
+					"  }); \n" +
+					" \n" +
+					"echo: extendedSuccess.whatever()",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
 		} catch (NATException e) {
 			e.printStackTrace();
@@ -224,4 +251,24 @@ public class MirrorTest extends ReflectiveAccessTest {
 		}		
 	}
 	
+	/* following a bug report by tom */
+	public void testListMethods() {
+		try {
+			evaluateInput(
+					"def test := object: { \n" +
+					"  def hello() { echo: \"hello\"; self }; \n" +
+					"  def world() { echo: \"world\"; self }; \n" +
+					"}; \n" +
+					"echo: (reflect: test).listMethods(); \n" +
+					"def testMirrored := object: { \n" +
+					"  def hello() { echo: \"hello\"; self }; \n" +
+					"  def world() { echo: \"world\"; self }; \n" +
+					"} mirroredBy: (mirror: { nil }); \n" +
+					"echo: (reflect: testMirrored).listMethods();",
+					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+		} catch (NATException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}		
+	}	
 }

@@ -147,7 +147,7 @@ public final class NATNamespace extends NATObject {
 				    // parse and evaluate the code in the proper context and bind its result to the missing slot
 					ATAbstractGrammar source = NATParser.parse(src.getName(), code);
 					ATObject result = source.meta_eval(ctx);
-					this.meta_assignField(selector, result);
+					this.meta_assignField(this, selector, result);
 					
 					return result;
 				} catch (IOException e) {

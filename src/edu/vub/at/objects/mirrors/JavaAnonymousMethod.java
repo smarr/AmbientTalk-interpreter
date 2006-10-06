@@ -55,7 +55,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  *   - applying a nativelambda directly (without going through this JavaClosure)
  *     results in an error
  */
-public final class JavaAnonymousMethod extends NATNil implements ATMethod {
+public class JavaAnonymousMethod extends NATNil implements ATMethod {
 
 	/**
 	 * The name of an anonymous native lambda is always 'nativelambda'

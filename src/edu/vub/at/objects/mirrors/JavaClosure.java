@@ -83,7 +83,7 @@ public class JavaClosure extends NATClosure {
 	 * Create a new JavaClosure where meta_apply will invoke the given Java Method.
 	 * @param scope the object creating this JavaClosure.
 	 */
-	public JavaClosure(ATObject scope, JavaMethod meth) {
+	public JavaClosure(ATObject scope, ATMethod meth) {
 		super(meth, null);
 		scope_ = scope;
 	}
@@ -105,7 +105,7 @@ public class JavaClosure extends NATClosure {
 	 * 
 	 * A 'default' context is lazily constructed and returned.
 	 */
-	public ATContext base_getContext() {
+	public ATContext base_getContext() throws NATException {
 		if (context_ == null)
 			context_ = new NATContext(scope_, scope_, scope_.meta_getDynamicParent());
 		return context_;

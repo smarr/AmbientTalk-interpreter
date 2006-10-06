@@ -275,7 +275,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 */
 	public ATObject base_object_(ATClosure code) throws NATException {
 		NATObject newObject = new NATObject(code.base_getContext().base_getLexicalScope());
-		code.base_getMethod().base_getBodyExpression().meta_eval(new NATContext(newObject, newObject, NATNil._INSTANCE_));
+		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newObject, newObject, NATNil._INSTANCE_));
 		return newObject;
 	}
 	
@@ -333,7 +333,7 @@ public final class OBJLexicalRoot extends NATNil {
 	public ATObject base_mirror_(ATClosure code) throws NATException {
 		// As this is a base_method, its result will be downed. Since we explicitly want to
 		// return the newly created NATIntercessiveMirror, it needs to be upped explicitly.
-		return NATMirrorFactory._INSTANCE_.base_createMirror(OBJMirrorRoot._INSTANCE_.meta_extend(code));
+		return NATMirrorFactory._INSTANCE_.createMirror(OBJMirrorRoot._INSTANCE_.meta_extend(code));
 	}
 	
 	public ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws NATException {
@@ -343,7 +343,7 @@ public final class OBJLexicalRoot extends NATNil {
 		NATMirage newMirage = new NATMirage(code.base_getContext().base_getLexicalScope(), mirrorClone);
 		mirrorClone.setBase(newMirage);
 		
-		code.base_getMethod().base_getBodyExpression().meta_eval(new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
+		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
 		
 		return newMirage;
 
@@ -356,7 +356,7 @@ public final class OBJLexicalRoot extends NATNil {
 		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._IS_A_);
 		mirrorClone.setBase(newMirage);
 		
-		code.base_getMethod().base_getBodyExpression().meta_eval(new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
+		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
 		
 		return newMirage;
 
@@ -369,7 +369,7 @@ public final class OBJLexicalRoot extends NATNil {
 		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._SHARES_A_);
 		mirrorClone.setBase(newMirage);
 		
-		code.base_getMethod().base_getBodyExpression().meta_eval(new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
+		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
 		
 		return newMirage;
 

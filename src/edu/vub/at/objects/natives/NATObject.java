@@ -230,7 +230,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			//  ctx.scope = the implementing scope, being this object
 			//  ctx.self  = the late bound receiver, being the passed receiver
 			//  ctx.super = the parent of the implementor
-			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver, dynamicParent_));
+			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(new NATCallframe(this), receiver, dynamicParent_));
 		} else {
 			return dynamicParent_.meta_invoke(receiver, selector, arguments);
 		}
@@ -346,16 +346,16 @@ public class NATObject extends NATCallframe implements ATObject {
 	 *  - If the field is not found, the search for the slot is carried out recursively in the dynamic parent.
 	 *    As such, field assignment traverses the dynamic parent chain up to a dynamic root.
 	 *    The dynamic root deals with an unbound field by throwing an error.
-	 *    
-	 * @param selector the field to assign
 	 * @param value the value to assign to the field
+	 * @param selector the field to assign
+	 *    
 	 * @return NIL
 	 */
-	public ATNil meta_assignField(ATSymbol selector, ATObject value) throws NATException {
+	public ATNil meta_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws NATException {
 		if (this.setLocalField(selector, value)) {
 			return NATNil._INSTANCE_;
 		} else {
-			return dynamicParent_.meta_assignField(selector, value);
+			return dynamicParent_.meta_assignField(receiver, selector, value);
 		}
 	}
 	
@@ -479,7 +479,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * -- Mirror Fields   --
 	 * --------------------- */
 	
-	public ATObject meta_getDynamicParent() {
+	public ATObject meta_getDynamicParent() throws NATException {
 		return dynamicParent_;
 	};
 	

@@ -60,7 +60,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	 * @param implementor the object in which the definition is nested.
 	 * @param receiver the object where the lookup was initiated.
 	 */
-	public NATClosure(ATMethod method, ATObject implementor, ATObject receiver) {
+	public NATClosure(ATMethod method, ATObject implementor, ATObject receiver) throws NATException {
 		this(method, new NATContext(
 				/* scope = implementor (to be extended with a callframe upon closure application) */
 				implementor, 
@@ -80,7 +80,8 @@ public class NATClosure extends NATNil implements ATClosure {
 	 * rather than the runtime context of the invoker.
 	 */
 	public ATObject base_apply(ATTable arguments) throws NATException {
-		return method_.base_apply(arguments, context_);
+		NATCallframe scope = new NATCallframe(context_.base_getLexicalScope());
+		return method_.base_apply(arguments, context_.base_withLexicalEnvironment(scope));
 	}
 
 	/**
@@ -129,7 +130,7 @@ public class NATClosure extends NATNil implements ATClosure {
 		
 	}
 	
-	public ATContext base_getContext() {
+	public ATContext base_getContext() throws NATException {
 		return context_;
 	}
 

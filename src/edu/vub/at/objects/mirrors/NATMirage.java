@@ -100,8 +100,8 @@ public class NATMirage extends NATObject {
 		return super.meta_addMethod(method);
 	}
 
-	public ATNil magic_assignField(ATSymbol selector, ATObject value) throws NATException {
-		return super.meta_assignField(selector, value);
+	public ATNil magic_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws NATException {
+		return super.meta_assignField(receiver, selector, value);
 	}
 
 	public NATMirage magic_clone() throws NATException {
@@ -219,6 +219,15 @@ public class NATMirage extends NATObject {
 		return super.meta_quote(ctx);
 	}
 	
+	public ATObject magic_getDynamicParent() throws NATException {
+		return super.meta_getDynamicParent();
+	}
+
+	public ATObject magic_getLexicalParent() throws NATException {
+		return super.meta_getLexicalParent();
+	}	
+
+	
 	// META Methods 
 	// Forward to our designated mirror object
 
@@ -233,11 +242,11 @@ public class NATMirage extends NATObject {
 		return NATNil._INSTANCE_;
 	}
 
-	public ATNil meta_assignField(ATSymbol selector, ATObject value) throws NATException {
+	public ATNil meta_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws NATException {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("assignField"),
-				new NATTable(new ATObject[] { selector, value })
+				new NATTable(new ATObject[] { receiver, selector, value })
 				);
 			
 		return NATNil._INSTANCE_;
@@ -423,7 +432,21 @@ public class NATMirage extends NATObject {
 				AGSymbol.alloc("quote"),
 				new NATTable(new ATObject[] { ctx })
 				));
+	}
+
+	public ATObject meta_getDynamicParent() throws NATException {
+		return Reflection.downObject(mirror_.meta_select(
+				mirror_,
+				AGSymbol.alloc("dynamicParent")));
+	}
+
+	public ATObject meta_getLexicalParent() throws NATException {
+		return Reflection.downObject(mirror_.meta_select(
+				mirror_,
+				AGSymbol.alloc("lexicalParent")));
 	}	
-		
+	
+	
+	
 	
 }

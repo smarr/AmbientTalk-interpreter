@@ -107,8 +107,8 @@ public class NATSuperObject extends NATNil implements ATObject {
         return lookupFrame_.meta_assignVariable(name, value);
     }
 
-    public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
-        return lookupFrame_.meta_assignField(name, value);
+    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException {
+        return lookupFrame_.meta_assignField(receiver_, name, value);
     }
 
     /* ------------------------------------
@@ -163,11 +163,11 @@ public class NATSuperObject extends NATNil implements ATObject {
       * -- Mirror Fields   --
       * --------------------- */
 
-    public ATObject meta_getDynamicParent() {
+    public ATObject meta_getDynamicParent() throws NATException {
         return lookupFrame_.meta_getDynamicParent();
     }
 
-    public ATObject meta_getLexicalParent() {
+    public ATObject meta_getLexicalParent() throws NATException {
         return lookupFrame_.meta_getLexicalParent();
     }
 

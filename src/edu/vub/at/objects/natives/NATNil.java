@@ -185,14 +185,14 @@ public class NATNil implements ATNil {
      */
     public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
         try {
-			return this.meta_assignField(name, value);
+			return this.meta_assignField(this, name, value);
 		} catch (XSelectorNotFound e) {
 			// transform selector not found in undefined variable assignment
 			throw new XUndefinedField("variable assignment", name.base_getText().asNativeText().javaValue);
 		}
     }
 
-    public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
+    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException {
     	
         // try to invoke a native base_setName method
         try {
@@ -228,8 +228,7 @@ public class NATNil implements ATNil {
 				/* parent porinter type */
 				parentPointerType);
 			
-		ATAbstractGrammar body = code.base_getMethod().base_getBodyExpression();
-		body.meta_eval(new NATContext(extension, extension, this));
+		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(extension, extension, this));
 			
 		return extension;
 	}
@@ -307,15 +306,16 @@ public class NATNil implements ATNil {
 
     /**
      * Only true extending objects have a dynamic pointer, others return nil
+     * @throws NATException 
      */
-    public ATObject meta_getDynamicParent() {
+    public ATObject meta_getDynamicParent() throws NATException {
         return NATNil._INSTANCE_;
     };
 
     /**
      * By default numbers, tables and so on do not have lexical parents,
      */
-    public ATObject meta_getLexicalParent() {
+    public ATObject meta_getLexicalParent() throws NATException {
         return NATNil._INSTANCE_;
     }
 

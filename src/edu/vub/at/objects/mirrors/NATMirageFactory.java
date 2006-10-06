@@ -98,8 +98,8 @@ class MirageInvocationHandler implements InvocationHandler {
 			
 			else if(name.startsWith(JavaInterfaceAdaptor._MSET_PREFIX_)) {
 				return mirrorRepresentation_.meta_assignField(
-						AGSymbol.alloc(name.replaceFirst(JavaInterfaceAdaptor._MSET_PREFIX_, "")),
-						(ATObject)args[0]);
+						mirrorRepresentation_,
+						AGSymbol.alloc(name.replaceFirst(JavaInterfaceAdaptor._MSET_PREFIX_, "")), (ATObject)args[0]);
 			} 
 			
 			else /* if(name.startsWith("meta_")) */ {

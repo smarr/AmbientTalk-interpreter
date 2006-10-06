@@ -415,7 +415,7 @@ public final class Reflection {
 			if (jArgs.length != 1) {
 				throw new XArityMismatch(downBaseFieldMutationSelector(jSelector).toString(), 1, jArgs.length);
 			}
-			return atRcvr.meta_assignField(downBaseFieldMutationSelector(jSelector), downObject(jArgs[0]));
+			return atRcvr.meta_assignField(atRcvr, downBaseFieldMutationSelector(jSelector), downObject(jArgs[0]));
 		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
 			// obj.base_selector(args) => obj.meta_invoke(obj, selector, args)
 			return atRcvr.meta_invoke(atRcvr, downBaseLevelSelector(jSelector), new NATTable(jArgs));
