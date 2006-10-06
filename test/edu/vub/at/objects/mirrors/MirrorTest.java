@@ -120,8 +120,9 @@ public class MirrorTest extends ReflectiveAccessTest {
 	 * - down(up(o)) == o
 	 */
 	public void testJavaMirrorBaseRelation() {
-		ATMirror mirror = NATMirrorFactory._INSTANCE_.
-			base_createMirror(True);
+		// base_methods are always implicitly downed so the test should do this as well.
+		ATMirror mirror = (ATMirror)Reflection.downObject(NATMirrorFactory._INSTANCE_.
+			base_createMirror(True));
 		assertEquals(True, mirror.base_getBase());
 	}
 	
@@ -146,12 +147,13 @@ public class MirrorTest extends ReflectiveAccessTest {
 	
 	public void testJavaMirrorInvocation() {
 		try {
-			ATObject trueMirror = NATMirrorFactory._INSTANCE_.
-				base_createMirror(True);
-			ATMirror responds = (ATMirror)trueMirror.meta_invoke(
+			// base_methods are always implicitly downed so the test should do this as well.
+			ATMirror trueMirror = (ATMirror)Reflection.downObject(NATMirrorFactory._INSTANCE_.
+				base_createMirror(True));
+			ATMirror responds = (ATMirror)Reflection.downObject(trueMirror.meta_invoke(
 					trueMirror,
 					AGSymbol.alloc("respondsTo"),
-					new NATTable(new ATObject[] { AGSymbol.alloc("ifTrue:") }));
+					new NATTable(new ATObject[] { AGSymbol.alloc("ifTrue:") })));
 			responds.base_getBase().asBoolean().base_ifTrue_ifFalse_(success, fail);
 		} catch (NATException e) {
 			e.printStackTrace();
@@ -182,8 +184,9 @@ public class MirrorTest extends ReflectiveAccessTest {
 					new NATTable(new ATObject[] {
 							closures.base_getLength()	
 					})));
-			ATObject msgSendMirror = NATMirrorFactory._INSTANCE_.
-				base_createMirror(msgSend);
+			// base_methods are always implicitly downed so the test should do this as well.
+			ATMirror msgSendMirror = (ATMirror)Reflection.downObject(NATMirrorFactory._INSTANCE_.
+				base_createMirror(msgSend));
 			
 			ATMirror receiver = (ATMirror)msgSendMirror.meta_select(
 					msgSendMirror,

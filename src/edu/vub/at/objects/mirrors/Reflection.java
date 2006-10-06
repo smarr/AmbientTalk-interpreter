@@ -111,6 +111,15 @@ public final class Reflection {
 			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MASET_PREFIX_));
 		} else if (jSelector.startsWith(JavaInterfaceAdaptor._MAGIC_PREFIX_)) {
 			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._MAGIC_PREFIX_));
+		} else
+		
+		
+		if (jSelector.startsWith(JavaInterfaceAdaptor._MGET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MGET_PREFIX_));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._MSET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MSET_PREFIX_));
+		} else if (jSelector.startsWith(JavaInterfaceAdaptor._META_PREFIX_)) {
+			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._META_PREFIX_));
 		} else {
 			throw new XIllegalArgument("Illegal base level selector to down: " + jSelector);
 		}

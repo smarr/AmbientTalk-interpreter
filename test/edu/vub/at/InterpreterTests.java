@@ -30,6 +30,7 @@ package edu.vub.at;
 
 import edu.vub.at.objects.mirrors.CoercionTest;
 import edu.vub.at.objects.mirrors.InvocationTest;
+import edu.vub.at.objects.mirrors.MirageTest;
 import edu.vub.at.objects.mirrors.MirrorTest;
 import edu.vub.at.objects.mirrors.ReflectionTest;
 import edu.vub.at.objects.natives.LexicalRootTest;
@@ -58,6 +59,7 @@ public class InterpreterTests {
 		//$JUnit-BEGIN$
 		suite.addTestSuite(InvocationTest.class);
 		suite.addTestSuite(MirrorTest.class);
+		suite.addTestSuite(MirageTest.class);
 		suite.addTestSuite(ReflectionTest.class);
 		suite.addTestSuite(NATObjectClosureTest.class);
 		suite.addTestSuite(TestFieldMap.class);

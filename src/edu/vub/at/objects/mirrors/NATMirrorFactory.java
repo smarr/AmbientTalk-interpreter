@@ -44,10 +44,13 @@ public class NATMirrorFactory extends NATNil {
 	public static final NATMirrorFactory _INSTANCE_ = new NATMirrorFactory();
 	
 	public ATMirror base_createMirror(ATObject objectRepresentation) {
+		// As this is a base_method, its result will be downed. Since we explicitly want to
+		// return the newly created NATIntercessiveMirror, it needs to be upped explicitly.
+
 		if(objectRepresentation instanceof NATMirage) {
-			return ((NATMirage)objectRepresentation).getMirror();
+			return new NATIntrospectiveMirror(((NATMirage)objectRepresentation).getMirror());
 		};
-		return new NATIntrospectiveMirror(objectRepresentation);
+		return new NATIntrospectiveMirror(new NATIntrospectiveMirror(objectRepresentation));
 	}
 	
 }
