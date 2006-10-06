@@ -31,7 +31,6 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -268,7 +267,7 @@ public class NATCallframe extends NATNil implements ATObject {
 		return NATTable.EMPTY;
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("<callframe>");
 	}
 	

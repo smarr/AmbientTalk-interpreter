@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.coercion;
 
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -48,6 +49,7 @@ import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATNumeric;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -94,11 +96,13 @@ public interface ATConversions {
 	
 	public boolean isNativeBoolean() throws XTypeMismatch;
 	public boolean isNativeText();
+	public boolean isAmbientTalkObject();
 	
+	public NATObject   asAmbientTalkObject() throws XTypeMismatch;
 	public NATNumber   asNativeNumber() throws XTypeMismatch;
 	public NATFraction asNativeFraction() throws XTypeMismatch;
-	public NATText     asNativeText() throws XTypeMismatch;
+	public NATText     asNativeText() throws NATException;
 	public NATTable    asNativeTable() throws XTypeMismatch;
 	public NATBoolean  asNativeBoolean() throws XTypeMismatch;
-	public NATNumeric   asNativeNumeric() throws XTypeMismatch;
+	public NATNumeric  asNativeNumeric() throws XTypeMismatch;
 }

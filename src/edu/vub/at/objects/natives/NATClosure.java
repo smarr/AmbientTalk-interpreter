@@ -28,7 +28,6 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -146,7 +145,7 @@ public class NATClosure extends NATNil implements ATClosure {
 		return this;
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("<closure:"+method_.base_getName()+">");
 	}
 

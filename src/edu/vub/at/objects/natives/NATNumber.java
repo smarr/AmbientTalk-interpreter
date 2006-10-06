@@ -73,7 +73,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	
 	public NATNumber asNativeNumber() { return this; }
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
         return NATText.atValue(String.valueOf(javaValue));
 	}
 	
@@ -99,6 +99,8 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	/**
 	 * NBR(start).to: NBR(stop) do: { |i| code } => for i = start to stop do code.eval(i) ; nil
 	 * Also works if stop > start, in which case it becomes a downTo.
+	 * 
+	 * If start = stop, the code is not executed.
 	 */
 	public ATNil base_to_do_(ATNumber end, ATClosure code) throws NATException {
 		return this.base_to_step_do_(end, NATNumber.ONE, code);
@@ -106,7 +108,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	
 	/**
 	 * NBR(start).to: NBR(stop) step: NBR(inc) do: { |i| code } =>
-	 *   for i = start <= stop do code.eval(i) ; nil
+	 *   for i = start; i < stop; i++ do code.eval(i) ; nil
 	 * Also works if stop > start, in which case it becomes a downTo.
 	 */
 	public ATNil base_to_step_do_(ATNumber end, ATNumber inc, ATClosure code) throws NATException {
@@ -114,11 +116,11 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 		int step = inc.asNativeNumber().javaValue;
 		int start = javaValue;
 		if (start > stop) {
-			for (int i = start; i >= stop; i -= step) {
+			for (int i = start; i > stop; i -= step) {
 				code.base_apply(new NATTable(new ATObject[] { NATNumber.atValue(i) }));
 			}
 		} else {
-			for (int i = start; i <= stop; i+= step) {
+			for (int i = start; i < stop; i+= step) {
 				code.base_apply(new NATTable(new ATObject[] { NATNumber.atValue(i) }));
 			}
 		}
@@ -132,7 +134,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 *  2 ** 5 => [ 2, 3, 4 ]
 	 *  5 ** 2 => [ 5, 4, 3 ]
 	 */
-	public ATTable base__opmul__opmul_(ATNumber end) throws NATException {
+	public ATTable base__optms__optms_(ATNumber end) throws NATException {
 		int stop = end.asNativeNumber().javaValue;
 		int start = javaValue;
 		if (start < stop) {
@@ -157,14 +159,14 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 *  2 *** 5 => [ 2, 3, 4, 5 ]
 	 *  5 *** 2 => [ 5, 4, 3, 2 ]
 	 */
-	public ATTable base__opmul__opmul__opmul_(ATNumber end) throws NATException {
+	public ATTable base__optms__optms__optms_(ATNumber end) throws NATException {
 		// x *** y == x ** y+1 iff x < y
 		// x *** y == x ** y-1 iff y > x
 		int stop = end.asNativeNumber().javaValue;
 		if (javaValue <= stop)
-		    return this.base__opmul__opmul_(end.base_inc().asNumber());
+		    return this.base__optms__optms_(end.base_inc().asNumber());
 		else
-			return this.base__opmul__opmul_(end.base_dec().asNumber());
+			return this.base__optms__optms_(end.base_dec().asNumber());
 	}
 
 	// Number arithmetic operations

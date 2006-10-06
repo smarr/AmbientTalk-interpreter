@@ -46,8 +46,8 @@ public interface ATNumber extends ATNumeric {
 	public ATNil base_to_do_(ATNumber end, ATClosure code) throws NATException;
 	public ATNil base_to_step_do_(ATNumber end, ATNumber inc, ATClosure code) throws NATException;
 	
-	public ATTable base__opmul__opmul_(ATNumber end) throws NATException;
-	public ATTable base__opmul__opmul__opmul_(ATNumber end) throws NATException;
+	public ATTable base__optms__optms_(ATNumber end) throws NATException;
+	public ATTable base__optms__optms__optms_(ATNumber end) throws NATException;
 	
 	public ATFraction base__opque__opque_(ATNumber nbr) throws NATException;
 	

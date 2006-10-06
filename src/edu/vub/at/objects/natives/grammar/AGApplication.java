@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -80,7 +79,7 @@ public final class AGApplication extends AGExpression implements ATApplication {
 				                arguments_.meta_quote(ctx).asTable());
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue(funExp_.meta_print().javaValue + Evaluator.printAsList(arguments_).javaValue);
 	}
 

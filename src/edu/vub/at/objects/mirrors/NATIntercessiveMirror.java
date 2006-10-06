@@ -36,6 +36,7 @@ import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATText;
 
 import java.util.HashMap;
 import java.util.Vector;
@@ -128,6 +129,14 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 				flags,
 				// correct value for base_ set by NATMirage#createClone
 				principal_); 
+	}
+	
+	/* ---------------------------------
+	 * -- Abstract Grammar Protocol   --
+	 * --------------------------------- */
+		
+	public NATText meta_print() throws NATException {
+		return NATText.atValue("<mirror on:"+principal_.meta_print().javaValue+">");
 	}
 	
 }

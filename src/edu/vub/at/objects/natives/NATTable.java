@@ -30,7 +30,6 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIndexOutOfBounds;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -139,7 +138,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		return new NATTable((ATObject[]) result.toArray(new ATObject[siz]));
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return Evaluator.printElements(this, "[", ", ","]");
 	}
 	

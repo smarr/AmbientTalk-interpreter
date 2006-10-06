@@ -28,7 +28,6 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
@@ -89,7 +88,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		return this;
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return txt_.asNativeText();
 	}
 	
@@ -114,7 +113,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	public String toString() {
 		try {
 			return txt_.asNativeText().javaValue;
-		} catch (XTypeMismatch e) {
+		} catch (NATException e) {
 			return super.toString();
 		}
 	}

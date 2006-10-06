@@ -503,7 +503,7 @@ public final class Reflection {
 	 * exists. 
 	 * 
 	 * @param atOrigRcvr the original AmbientTalk object that received the selection
-	 * @param jSelector the selector of the message to be invoked, converted to a Java selector
+	 * @param jSelector the selector of the message to be invoked, already converted to a Java selector
 	 * @return the return value of the Java getter method invoked via the AmbientTalk selection.
 	 * 
 	 * Example:
@@ -518,6 +518,29 @@ public final class Reflection {
 				atOrigRcvr,
 				jSelector,
 				NATTable.EMPTY.elements_);		
+	}
+	
+	/**
+	 * upFieldAssignment takes an explicit AmbientTalk field assignment and turns it into 
+	 * an implicitly performed Java field assignment by invoking a mutator method, if such a method
+	 * exists. 
+	 * 
+	 * @param atOrigRcvr the original AmbientTalk object that received the assignField request
+	 * @param jSelector the selector of the message to be invoked, already converted to a Java selector
+	 * @return the return value of the Java mutator method invoked via the AmbientTalk assignField request.
+	 * 
+	 * Example:
+	 *  eval "msg.selector := v" where msg is a NATMessage
+	 *  => upFieldAssignment(aNATMessage, "selector", v)
+	 *  => NATMessage must have a one-argument method named base_setSelector
+	 *  
+	 */
+	public static final Object upFieldAssignment(ATObject atOrigRcvr, String jSelector, ATObject value) throws NATException {
+		return JavaInterfaceAdaptor.invokeJavaMethod(
+				atOrigRcvr.getClass(),
+				atOrigRcvr,
+				jSelector,
+				new ATObject[] { value });		
 	}
 	
 	/**

@@ -28,7 +28,6 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -188,7 +187,7 @@ public class NATSuperObject extends NATNil implements ATObject {
       * -- Evaluation Protocol --
       * ------------------------- */
 
-    public NATText meta_print() throws XTypeMismatch {
+    public NATText meta_print() throws NATException {
         return lookupFrame_.meta_print();
     }
 

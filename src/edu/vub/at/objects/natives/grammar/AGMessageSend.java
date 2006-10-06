@@ -28,7 +28,6 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
@@ -84,7 +83,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 				                message_.meta_quote(ctx).asMessageCreation());
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue(rcvExp_.meta_print().javaValue +
 				               ((message_.isMessageCreation()) ? "" : "<+") + message_.meta_print().javaValue);
 	}

@@ -86,7 +86,7 @@ public class NATMethod extends NATNil implements ATMethod {
 		return body_.meta_eval(ctx.base_withLexicalEnvironment(scope));
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("<method:"+name_.meta_print().javaValue+">");
 	}
 

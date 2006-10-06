@@ -28,7 +28,6 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.coercion.ATConversions;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
@@ -359,9 +358,8 @@ public interface ATObject extends ATConversions {
     /**
      * Prints out the object in a human-readable way.
      * @return a native textual representation of the object.
-     * @throws XTypeMismatch if an element does not represent itself using a native text value
      */
-    public NATText meta_print() throws XTypeMismatch;
+    public NATText meta_print() throws NATException;
 
     /* -------------------------------
       * - Base Level Object interface -

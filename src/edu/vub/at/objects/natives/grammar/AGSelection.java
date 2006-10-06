@@ -28,7 +28,6 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -78,7 +77,7 @@ public final class AGSelection extends AGExpression implements ATSelection {
 				              selector_.meta_eval(ctx).asSymbol());
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue(rcvExp_.meta_print().javaValue + "." + selector_.meta_print().javaValue);
 	}
 

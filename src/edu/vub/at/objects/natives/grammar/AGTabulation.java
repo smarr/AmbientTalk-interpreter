@@ -86,7 +86,7 @@ public final class AGTabulation extends AGExpression implements ATTabulation {
 				               idxExp_.meta_quote(ctx).asExpression());
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue(tblExp_.meta_print().javaValue + "[" +
 				              idxExp_.meta_print().javaValue + "]");
 	}

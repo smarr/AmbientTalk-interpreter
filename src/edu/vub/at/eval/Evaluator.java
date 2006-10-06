@@ -29,7 +29,6 @@ package edu.vub.at.eval;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -45,6 +44,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author tvc
@@ -85,7 +86,7 @@ public final class Evaluator {
 	/**
 	 * Auxiliary function used to print the elements of a table using various separators.
 	 */
-	public final static NATText printElements(NATTable tab,String start, String sep, String stop) throws XTypeMismatch {
+	public final static NATText printElements(NATTable tab,String start, String sep, String stop) throws NATException {
 		ATObject[] els = tab.elements_;
 		if (els.length == 0)
 			return NATText.atValue(String.valueOf(start+stop));
@@ -98,11 +99,11 @@ public final class Evaluator {
 	    return NATText.atValue(buff.toString());
 	}
 
-	public static final NATText printAsStatements(ATTable tab) throws XTypeMismatch {
+	public static final NATText printAsStatements(ATTable tab) throws NATException {
 		return printElements(tab.asNativeTable(), "", "; ", "");
 	}
 
-	public static final NATText printAsList(ATTable tab) throws XTypeMismatch {
+	public static final NATText printAsList(ATTable tab) throws NATException {
 		return printElements(tab.asNativeTable(), "(", ", ", ")");
 	}
 
@@ -288,6 +289,43 @@ public final class Evaluator {
      */
 	private static NATObject createLobbyNamespace() {
 		return new NATObject();
+	}
+	
+	public static final String valueNameOf(Class c) {
+		String name = c.getSimpleName();
+		if (name.startsWith("AT")) {
+			return "a" + classnameToValuename(name, "AT");
+		} else if (name.startsWith("NAT")) {
+			return "a native" + classnameToValuename(name, "NAT");
+		} else if (name.startsWith("AG")) {
+			return "a native AST" + classnameToValuename(name, "AG");
+		} else if (name.startsWith("X")) {
+			return "a native exception" + classnameToValuename(name, "X");
+		} else if (name.startsWith("OBJ")) {
+			return "the native object" + classnameToValuename(name, "OBJ");
+		} else {
+			return name;
+		}
+	}
+	
+	public static final String toString(ATObject obj) {
+		try {
+			return obj.meta_print().javaValue;
+		} catch(NATException e) {
+			return "<unprintable: " + e.getMessage() + ">";
+		}
+	}
+	
+	private static final String classnameToValuename(String classname, String prefix) {
+		 // replace all uppercased letters "L" by " l"
+		 Pattern p = Pattern.compile("[A-Z]");
+		 Matcher m = p.matcher(classname.replaceFirst(prefix, ""));
+		 StringBuffer sb = new StringBuffer();
+		 while (m.find()) {
+		     m.appendReplacement(sb, " " + Character.toString(Character.toLowerCase(m.group().charAt(0))));
+		 }
+		 m.appendTail(sb);
+		 return sb.toString();
 	}
 	
 }

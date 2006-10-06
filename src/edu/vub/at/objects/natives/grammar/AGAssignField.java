@@ -28,7 +28,6 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATAssignField;
@@ -83,7 +82,7 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 		return new AGAssignField(rcvExp_.meta_quote(ctx).asExpression(), fieldName_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue(rcvExp_.meta_print().javaValue + "." + fieldName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
 

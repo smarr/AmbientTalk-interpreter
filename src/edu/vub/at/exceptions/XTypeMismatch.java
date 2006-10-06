@@ -27,41 +27,37 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.objects.ATObject;
 
 /**
- * @author smostinc
- *
  * XTypeMismatch instances are thrown when a value conversion failed.
+ * 
+ * @author smostinc
+ * @author tvcutsem
  */
 public class XTypeMismatch extends NATException {
 
 	private ATObject failedObject_;
+    private Class expectedType_;
 
-	public XTypeMismatch(ATObject failedObject) {
-		super();
+	public XTypeMismatch(Class expectedType, ATObject failedObject) {
+		expectedType_ = expectedType;
 		failedObject_ = failedObject;
 	}
 
-	public XTypeMismatch(String message, Throwable cause, ATObject failedObject) {
-		super(message, cause);
-		failedObject_ = failedObject;
-	}
-
-	public XTypeMismatch(String message, ATObject failedObject) {
-		super(message);
-		failedObject_ = failedObject;
-	}
-
-	public XTypeMismatch(Throwable cause, ATObject failedObject) {
-		super(cause);
-		failedObject_ = failedObject;
-	}
-	
 	public ATObject getFailedObject() {
 		return failedObject_;
 	}
 	
+	public Class getExpectedType() {
+		return expectedType_;
+	}
 	
+	public String getMessage() {
+		String obj = Evaluator.toString(failedObject_);
+		return "Type mismatch: expected " + Evaluator.valueNameOf(expectedType_)
+		           + ", given " + obj + " (type: " + Evaluator.valueNameOf(failedObject_.getClass())+ ")";
+	}
 
 }

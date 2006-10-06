@@ -161,7 +161,7 @@ public final class NATNamespace extends NATObject {
 		}
 	}
 
-	public NATText meta_print() {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("<ns:"+name_+">");
 	}
 	

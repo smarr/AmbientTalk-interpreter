@@ -30,7 +30,6 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -165,7 +164,7 @@ public class NATMirage extends NATObject {
 		return super.meta_newInstance(initargs);
 	}
 
-	public NATText magic_print() throws XTypeMismatch {
+	public NATText magic_print() throws NATException {
 		return super.meta_print();
 	}
 
@@ -311,18 +310,12 @@ public class NATMirage extends NATObject {
 				));
 	}
 
-	public NATText meta_print() throws XTypeMismatch {
-		try {
-			return Reflection.downObject(mirror_.meta_invoke(
+	public NATText meta_print() throws NATException {
+		return Reflection.downObject(mirror_.meta_invoke(
 					mirror_,
 					AGSymbol.alloc("print"),
 					NATTable.EMPTY
 					)).asNativeText();
-		} catch (XTypeMismatch e) {
-			throw e;
-		} catch (NATException e) {
-			throw new XTypeMismatch(e, this);
-		}
 	}
 
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {

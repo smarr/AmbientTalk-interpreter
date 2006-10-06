@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -134,8 +135,7 @@ public class NATNil implements ATNil {
         String jSelector = null;
 
         try {
-            jSelector = Reflection.upBaseFieldAccessSelector(selector);
-
+        	   jSelector = Reflection.upBaseFieldAccessSelector(selector);
             return Reflection.downObject(Reflection.upFieldSelection(receiver, jSelector));
         } catch (XSelectorNotFound e) {
             jSelector = Reflection.upBaseLevelSelector(selector);
@@ -193,15 +193,11 @@ public class NATNil implements ATNil {
     }
 
     public ATNil meta_assignField(ATSymbol name, ATObject value) throws NATException {
-        String selector = Reflection.upBaseFieldMutationSelector(name);
-
+    	
         // try to invoke a native base_setName method
         try {
-			JavaInterfaceAdaptor.invokeJavaMethod(
-			    this.getClass(),
-			    this,
-			    selector,
-			    new ATObject[] { value });
+        	   String jSelector = Reflection.upBaseFieldMutationSelector(name);
+        	   Reflection.upFieldAssignment(this, jSelector, value);
 		} catch (XSelectorNotFound e) {
 			// if such a method does not exist, the field assignment has failed
 			throw new XUndefinedField("field assignment", name.base_getText().asNativeText().javaValue);
@@ -301,7 +297,7 @@ public class NATNil implements ATNil {
         return this;
     }
 
-    public NATText meta_print() throws XTypeMismatch {
+    public NATText meta_print() throws NATException {
         return NATText.atValue("nil");
     }
 
@@ -364,6 +360,10 @@ public class NATNil implements ATNil {
     	    return false;
     }
 
+    public boolean isAmbientTalkObject() { 
+    	    return false;
+    }
+    
     public ATBoolean base_isMirror() {
         return NATBoolean._FALSE_;
     }
@@ -377,104 +377,103 @@ public class NATNil implements ATNil {
     }
 
     public ATClosure asClosure() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a closure, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATClosure.class, this);
     }
 
     public ATSymbol asSymbol() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a symbol, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATSymbol.class, this);
     }
 
     public ATTable asTable() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a table, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATTable.class, this);
     }
 
     public ATBoolean asBoolean() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a boolean, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATBoolean.class, this);
     }
 
     public ATNumber asNumber() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a number, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATNumber.class, this);
     }
 
     public ATMessage asMessage() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a first-class message, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATMessage.class, this);
     }
 
     public ATField asField() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a first-class field, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATField.class, this);
     }
 
     public ATMethod asMethod() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a first-class method, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATMethod.class, this);
     }
 
     public ATMirror asMirror() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a mirror object, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATMirror.class, this);
     }
 
     // Conversions for abstract grammar elements
 
     public ATStatement asStatement() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a statement, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATStatement.class, this);
     }
 
     public ATDefinition asDefinition() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a definition, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATDefinition.class, this);
     }
 
     public ATExpression asExpression() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected an expression, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATExpression.class, this);
     }
 
     public ATBegin asBegin() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a begin statement, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATBegin.class, this);
     }
 
     public ATMessageCreation asMessageCreation() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a first-class message creation, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATMessageCreation.class, this);
     }
 
     public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected an unquote-splice abstract grammar, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATUnquoteSplice.class, this);
     }
 
     public ATSplice asSplice() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a splice abstract grammar, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(ATSplice.class, this);
     }
-
+    
     // Conversions for native values
+    public NATObject asAmbientTalkObject() throws XTypeMismatch {
+    	    throw new XTypeMismatch(NATObject.class, this);
+    	}
 
     public NATNumber asNativeNumber() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a native number, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(NATNumber.class, this);
     }
 
     public NATFraction asNativeFraction() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a native fraction, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(NATFraction.class, this);
     }
 
-    public NATText asNativeText() throws XTypeMismatch {
+    public NATText asNativeText() throws NATException {
     		return this.meta_print();
         // throw new XTypeMismatch("Expected a native text, given: " + this.getClass().getName(), this);
     }
 
     public NATTable asNativeTable() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a native table, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(NATTable.class, this);
     }
 
     public NATBoolean asNativeBoolean() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a native boolean, given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(NATBoolean.class, this);
     }
     
     public NATNumeric asNativeNumeric() throws XTypeMismatch {
-        throw new XTypeMismatch("Expected a native numeric (number or fraction), given: " + this.getClass().getName(), this);
+        throw new XTypeMismatch(NATNumeric.class, this);
     }
 
     public String toString() {
-        try {
-            return this.meta_print().javaValue;
-        } catch (XTypeMismatch e) {
-            return "<unprintable "+this.getClass().getSimpleName() + ": " + e.getMessage() + ">";
-        }
+        return Evaluator.toString(this);
     }
 
     public ATBoolean base__opeql__opeql_(ATObject comparand) {

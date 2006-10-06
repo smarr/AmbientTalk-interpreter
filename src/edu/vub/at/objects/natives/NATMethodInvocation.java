@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -58,7 +57,7 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 		return receiver.meta_invoke(receiver, selector_, arguments_);
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("<method invocation:"+selector_+Evaluator.printAsList(arguments_).javaValue+">");
 	}
 

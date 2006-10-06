@@ -51,5 +51,9 @@ public class XReflectionFailure extends NATException {
 	public XReflectionFailure(Throwable cause) {
 		super(cause);
 	}
+	
+	public String getMessage() {
+		return super.getMessage() + ": " + getCause().getMessage();
+	}
 
 }

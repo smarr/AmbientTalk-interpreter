@@ -467,7 +467,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		return new NATTable((ATObject[]) methods.toArray(new ATObject[methods.size()]));
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("<object:"+this.hashCode()+">");
 	}
 	
@@ -530,6 +530,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * -- Conversion and Testing Protocol   --
 	 * --------------------------------------- */
 	
+	public NATObject asAmbientTalkObject() { return this; }
+	
 	// ALL asXXX methods return a coercer object which returns a proxy of the correct interface that will 'down'
 	// subsequent Java base-level invocations to the AmbientTalk level
 	
@@ -552,6 +554,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
+	public boolean isAmbientTalkObject() { return true; }
 	public ATBoolean base_isMirror() { return NATBoolean._TRUE_; }
 	public boolean isBoolean() { return true; }
 	public boolean isClosure() { return true; }

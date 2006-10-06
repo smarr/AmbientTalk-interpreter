@@ -68,7 +68,7 @@ public class AGSplice extends AGExpression implements ATSplice {
 		return new AGSplice(splExp_.meta_quote(ctx).asExpression());
 	}
 
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("@"+ splExp_.meta_print().javaValue);
 	}
 

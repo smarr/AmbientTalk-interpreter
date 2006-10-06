@@ -46,12 +46,12 @@ public interface ATClosure extends ATObject {
 	/**
 	 * Structural access to the encapsulated method. 
 	 */
-	public ATMethod base_getMethod();
+	public ATMethod base_getMethod() throws NATException;
 
 	/**
 	 * Structural access to the scope of the closure.
 	 */
-	public ATContext base_getContext();
+	public ATContext base_getContext() throws NATException;
 	
 	/**
 	 * Applies the closure to the given arguments, already wrapped in a table

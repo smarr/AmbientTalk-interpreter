@@ -163,7 +163,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			});
 			assertEquals("123", buff.toString());
 			
-			// 3.to: 5 do: { |i| buff2 << i; nil } => buff2 = 345
+			// 3.to: 5 do: { |i| buff2 << i; nil } => buff2 = 34
 			final StringBuffer buff2 = new StringBuffer();
 			NATNumber.atValue(3).base_to_do_(NATNumber.atValue(5), new JavaClosure(null) {
 				public ATObject base_apply(ATTable args) throws NATException {
@@ -171,11 +171,11 @@ public class PrimitivesTest extends AmbientTalkTest {
 					return NATNil._INSTANCE_;
 				}
 			});
-			assertEquals("345", buff2.toString());
+			assertEquals("34", buff2.toString());
 			
-			// 50.to: 10 step: 10 do: { |i| buff3 << i; nil } => buff3 = 5040302010
+			// 50.to: 0 step: 10 do: { |i| buff3 << i; nil } => buff3 = 5040302010
 			final StringBuffer buff3 = new StringBuffer();
-			NATNumber.atValue(50).base_to_step_do_(NATNumber.atValue(10), NATNumber.atValue(10), new JavaClosure(null) {
+			NATNumber.atValue(50).base_to_step_do_(NATNumber.atValue(0), NATNumber.atValue(10), new JavaClosure(null) {
 				public ATObject base_apply(ATTable args) throws NATException {
 					buff3.append(getNbr(args, 1));
 					return NATNil._INSTANCE_;
@@ -184,17 +184,17 @@ public class PrimitivesTest extends AmbientTalkTest {
 			assertEquals("5040302010", buff3.toString());
 			
 			// 1 ** 4 => [1, 2, 3]
-			printedEquals(NATNumber.ONE.base__opmul__opmul_(NATNumber.atValue(4)), "[1, 2, 3]");
+			printedEquals(NATNumber.ONE.base__optms__optms_(NATNumber.atValue(4)), "[1, 2, 3]");
 			// 1 *** 4 => [1, 2, 3, 4]
-			printedEquals(NATNumber.ONE.base__opmul__opmul__opmul_(NATNumber.atValue(4)), "[1, 2, 3, 4]");
+			printedEquals(NATNumber.ONE.base__optms__optms__optms_(NATNumber.atValue(4)), "[1, 2, 3, 4]");
 			// 4 ** 1 => [4, 3, 2]
-			printedEquals(NATNumber.atValue(4).base__opmul__opmul_(NATNumber.ONE), "[4, 3, 2]");
+			printedEquals(NATNumber.atValue(4).base__optms__optms_(NATNumber.ONE), "[4, 3, 2]");
 			// 4 *** 1 => [4, 3, 2, 1]
-			printedEquals(NATNumber.atValue(4).base__opmul__opmul__opmul_(NATNumber.ONE), "[4, 3, 2, 1]");
+			printedEquals(NATNumber.atValue(4).base__optms__optms__optms_(NATNumber.ONE), "[4, 3, 2, 1]");
 			// -1 ** -1 => []
-			printedEquals(NATNumber.MONE.base__opmul__opmul_(NATNumber.MONE), "[]");
+			printedEquals(NATNumber.MONE.base__optms__optms_(NATNumber.MONE), "[]");
 			// -1 *** -1 => [-1]
-			printedEquals(NATNumber.MONE.base__opmul__opmul__opmul_(NATNumber.MONE), "[-1]");
+			printedEquals(NATNumber.MONE.base__optms__optms__optms_(NATNumber.MONE), "[-1]");
 			
 			// 1 ?? 5 => [1, 5[
 			double rand = NATNumber.ONE.base__opque__opque_(NATNumber.atValue(5)).asNativeFraction().javaValue;
@@ -276,8 +276,8 @@ public class PrimitivesTest extends AmbientTalkTest {
             // [].join(",") => ""
 			assertEquals("", NATTable.EMPTY.base_join(NATText.atValue(",")).asNativeText().javaValue);
 			
-			// vowels.select(2,4).implode() => "eio"
-			assertEquals("eio", vowels.base_select(NATNumber.atValue(2), NATNumber.atValue(4)).base_implode().asNativeText().javaValue);
+			// vowels.select(2,5).implode() => "eio"
+			assertEquals("eio", vowels.base_select(NATNumber.atValue(2), NATNumber.atValue(5)).base_implode().asNativeText().javaValue);
 		} catch (NATException e) {
 			fail(e.getMessage());
 		}

@@ -31,7 +31,6 @@ import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -223,12 +222,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 		
 		try{
 			jSelector = Reflection.upMetaFieldMutationSelector(name);
-
-			JavaInterfaceAdaptor.invokeJavaMethod(
-					principal_.getClass(),
-					principal_,
-					jSelector,
-					new ATObject[] { value.asMirror().base_getBase() });
+			Reflection.upFieldAssignment(principal_, jSelector, value.asMirror().base_getBase());
 		} catch (XSelectorNotFound e) {
 			// Principal does not have a corresponding meta_level method
 			// OR the passed value is not a mirror object
@@ -275,7 +269,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * -- Abstract Grammar Protocol   --
 	 * --------------------------------- */
 		
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("<mirror on:"+principal_.meta_print().javaValue+">");
 	}
 }

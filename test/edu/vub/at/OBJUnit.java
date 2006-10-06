@@ -29,18 +29,13 @@ package edu.vub.at;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XParseError;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.mirrors.JavaClosure;
-import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.NATParser;
@@ -69,7 +64,7 @@ public class OBJUnit extends NATNil {
 	
 	private OBJUnit() { }
 	
-	public NATNil base_echo_(ATObject message) throws XTypeMismatch {
+	public NATNil base_echo_(ATObject message) throws NATException {
 		System.out.println(message.meta_print().javaValue);
 		return NATNil._INSTANCE_;
 	};
@@ -121,7 +116,7 @@ public class OBJUnit extends NATNil {
 			if(actual != null) {
 				this.base_assert_equals_(expected, actual.meta_print());
 			}
-		} catch (XTypeMismatch e) {
+		} catch (NATException e) {
 			Assert.fail("Value cannot be represented in a textual format : " + e);
 		} 
 		return NATNil._INSTANCE_;

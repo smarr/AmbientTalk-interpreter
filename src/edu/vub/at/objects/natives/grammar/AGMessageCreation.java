@@ -73,7 +73,7 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 				             arguments_.meta_quote(ctx).asTable());
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue(this.getMessageToken() +
 				               selector_.meta_print().javaValue +
 				               Evaluator.printAsList(arguments_).javaValue);

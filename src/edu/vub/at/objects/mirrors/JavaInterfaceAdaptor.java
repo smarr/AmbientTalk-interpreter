@@ -133,7 +133,7 @@ public class JavaInterfaceAdaptor {
 			}
 		} catch (IllegalAccessException e) {
 			// the invoked method is not publicly accessible
-			throw new XReflectionFailure("Native method "+javaMethod.getName() + " not accessible.", e);
+			throw new XReflectionFailure("Native method "+Reflection.downSelector(javaMethod.getName()) + " not accessible.", e);
 		} catch (IllegalArgumentException e) {
 			// illegal argument types were supplied
 			throw new XIllegalArgument("Illegal argument for native method "+Reflection.downSelector(javaMethod.getName()) + ": " + e.getMessage(), e);
@@ -141,8 +141,10 @@ public class JavaInterfaceAdaptor {
 			// the invoked method threw an exception
 			if (e.getCause() instanceof NATException)
 				throw (NATException) e.getCause();
-			else
-				throw new XReflectionFailure("Native method "+Reflection.downSelector(javaMethod.getName())+" threw internal exception", e);
+			else {
+				e.printStackTrace();
+				throw new XReflectionFailure("Native method "+Reflection.downSelector(javaMethod.getName())+" threw internal exception", e.getCause());
+		    }
 		}
 	}
 	

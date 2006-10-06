@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -80,7 +79,7 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 				                   body_.meta_quote(ctx).asBegin());
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		// TODO: use ATBoolean.ifTrueifFalse instead of using a native boolean
 		if (arguments_.base_isEmpty().asNativeBoolean().javaValue) {
 		  return NATText.atValue("{ "+body_.meta_print().javaValue + " }");

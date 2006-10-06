@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalArgument;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
@@ -66,9 +65,9 @@ public final class NATText extends AGExpression implements ATText {
 		}
 
 		public boolean isNativeText() { return true; }
-		public NATText asNativeText() throws XTypeMismatch { return this; }
+		public NATText asNativeText() throws NATException { return this; }
 		
-		public NATText meta_print() throws XTypeMismatch {
+		public NATText meta_print() throws NATException {
 	        return NATText.atValue("\"" + javaValue + "\"");
 		}
 		

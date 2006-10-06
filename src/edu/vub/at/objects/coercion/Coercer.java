@@ -30,6 +30,7 @@ package edu.vub.at.objects.coercion;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.NATObject;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -56,19 +57,19 @@ import java.lang.reflect.Proxy;
  */
 public final class Coercer implements InvocationHandler {
 	
-	private final ATObject principal_;
+	private final NATObject principal_;
 	
-	private Coercer(ATObject principal) {
+	private Coercer(NATObject principal) {
 		principal_ = principal;
 	}
 	
 	public static final Object coerce(ATObject object, Class type) throws XTypeMismatch {
 		if (type.isInstance(object)) { // object instanceof type
 			return object; // no need to coerce
-		} else if (type.isInterface()) {
-			return Proxy.newProxyInstance(type.getClassLoader(), new Class[] { type }, new Coercer(object));
+		} else if (object.isAmbientTalkObject() && type.isInterface()) {
+			return Proxy.newProxyInstance(type.getClassLoader(), new Class[] { type }, new Coercer(object.asAmbientTalkObject()));
 		} else {
-			throw new XTypeMismatch("Expected a " + type.getSimpleName() + ", given: " + object.getClass().getSimpleName(), object);
+			throw new XTypeMismatch(type, object);
 		}
 	}
 
@@ -83,7 +84,7 @@ public final class Coercer implements InvocationHandler {
 			}
 		} else {
 			ATObject result = Reflection.downInvocation(principal_, method.getName(), arguments);
-			// properly 'cast' the returned objet into the appropriate interface
+			// properly 'cast' the returned object into the appropriate interface
 			return coerce(result, method.getReturnType());
 		}
 	}

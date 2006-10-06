@@ -87,7 +87,7 @@ public final class JavaMethod extends NATNil implements ATMethod {
 		return true;
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("<native method:"+base_getName().base_getText().asNativeText().javaValue+">");
 	}
 

@@ -28,7 +28,6 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
@@ -83,7 +82,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		
 		public NATTrue() { super(true); }
 		
-		public NATText meta_print() throws XTypeMismatch { return NATText.atValue("true"); }
+		public NATText meta_print() throws NATException { return NATText.atValue("true"); }
 		
 		// base interface for true
 		
@@ -127,7 +126,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		
 		public NATFalse() { super(false); }
 		
-		public NATText meta_print() throws XTypeMismatch { return NATText.atValue("false"); }
+		public NATText meta_print() throws NATException { return NATText.atValue("false"); }
 
 		// base interface for false
 		

@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalArgument;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATFraction;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATNumeric;
@@ -67,7 +66,7 @@ public final class NATFraction extends NATNumeric implements ATFraction {
 			   (javaValue == ((NATFraction) other).javaValue);
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
         return NATText.atValue(String.valueOf(javaValue));
 	}
 	

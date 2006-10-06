@@ -28,9 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import junit.framework.TestCase;
@@ -48,7 +46,7 @@ public class ReflectionTest extends TestCase {
 	private void compareSymbol(String str, ATSymbol sym) {
 		try {
 			assertEquals(str, sym.base_getText().asNativeText().javaValue);
-		} catch (XTypeMismatch e) {
+		} catch (NATException e) {
 			fail(e.getMessage());
 		}
 	}

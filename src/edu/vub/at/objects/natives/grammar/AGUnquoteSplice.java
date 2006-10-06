@@ -30,7 +30,6 @@ package edu.vub.at.objects.natives.grammar;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalQuote;
 import edu.vub.at.exceptions.XIllegalUnquote;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -74,7 +73,7 @@ public class AGUnquoteSplice extends AGExpression implements ATUnquoteSplice {
 		throw new XIllegalQuote(uqsExp_.meta_print().javaValue);
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("#@("+ uqsExp_.meta_print().javaValue + ")");
 	}
 	

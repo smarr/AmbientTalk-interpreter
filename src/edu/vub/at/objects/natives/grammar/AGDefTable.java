@@ -105,7 +105,7 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 				              initExp_.meta_quote(ctx).asExpression());
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue("def " +
 				tblName_.meta_print().javaValue + "[" +
 				sizExp_.meta_print().javaValue + "] { " +

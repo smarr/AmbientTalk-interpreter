@@ -28,7 +28,6 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATAssignVariable;
@@ -79,7 +78,7 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 		return new AGAssignVariable(variableName_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
-	public NATText meta_print() throws XTypeMismatch {
+	public NATText meta_print() throws NATException {
 		return NATText.atValue(variableName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
 
