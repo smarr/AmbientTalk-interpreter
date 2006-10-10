@@ -27,8 +27,10 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -70,7 +72,17 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	 * @return the value of the invoked method or NIL in the case of an asynchronous message send.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
-		return message_.meta_eval(ctx).asMessage().base_sendTo(rcvExp_.meta_eval(ctx));
+		ATMessage msg = message_.meta_eval(ctx).asMessage();
+		ATObject rcvr = rcvExp_.meta_eval(ctx);
+		ATObject result = null;
+		InvocationStack stack = InvocationStack.getInvocationStack();
+		try {
+			stack.methodInvoked(this, rcvr, msg);
+			result = msg.base_sendTo(rcvr);
+		} finally {
+			stack.methodReturned(result);
+		}
+		return result;
 	}
 
 	/**

@@ -27,9 +27,12 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATBoolean;
+
+import java.io.PrintStream;
 
 /**
  * @author smostinc
@@ -53,20 +56,30 @@ import edu.vub.at.objects.natives.NATBoolean;
  */
 public class NATException extends Exception {
 
+	private final InvocationStack runtimeStack_;
+	
 	public NATException() {
 		super();
+		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 
 	public NATException(String message, Throwable cause) {
 		super(message, cause);
+		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 
 	public NATException(String message) {
 		super(message);
+		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 
 	public NATException(Throwable cause) {
 		super(cause);
+		runtimeStack_ = InvocationStack.captureInvocationStack();
+	}
+	
+	public void printAmbientTalkStackTrace(PrintStream out) {
+		runtimeStack_.printStackTrace(out);
 	}
 	
 //	public ATBoolean base_match(ATObject filter) {

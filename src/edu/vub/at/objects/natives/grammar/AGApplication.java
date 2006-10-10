@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.eval.Evaluator;
+import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -35,6 +36,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATApplication;
 import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -66,7 +68,17 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	 */
 	public ATObject meta_eval(ATContext ctx) throws NATException {
 		ATClosure clo = funExp_.meta_eval(ctx).asClosure();
-		return clo.base_apply(Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx));
+		NATTable args = Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx);
+		ATObject result = null;
+		InvocationStack stack = InvocationStack.getInvocationStack();
+		try {
+			stack.functionCalled(this, clo, args);
+			result = clo.base_apply(args);
+		} finally {
+			stack.funcallReturned(result);
+		}
+		return result;
+		//return clo.base_apply(Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx));
 	}
 
 	/**
