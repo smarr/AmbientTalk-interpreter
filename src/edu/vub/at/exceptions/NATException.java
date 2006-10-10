@@ -29,8 +29,11 @@ package edu.vub.at.exceptions;
 
 import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATTable;
 
 import java.io.PrintStream;
 
@@ -80,6 +83,21 @@ public class NATException extends Exception {
 	
 	public void printAmbientTalkStackTrace(PrintStream out) {
 		runtimeStack_.printStackTrace(out);
+	}
+	
+	public ATObject getAmbientTalkRepresentation() {
+		return NATNil._INSTANCE_;
+	}
+	
+	public ATObject mayBeSignalledFrom(ATClosure tryBlock, ATClosure replacementCode) 
+		throws NATException {
+		
+		try{
+			return tryBlock.base_apply(NATTable.EMPTY);
+		} catch (NATException e) {
+			return replacementCode.base_apply(
+					new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
+		}
 	}
 	
 //	public ATBoolean base_match(ATObject filter) {

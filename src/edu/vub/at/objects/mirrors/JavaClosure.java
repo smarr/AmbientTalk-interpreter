@@ -70,7 +70,7 @@ import edu.vub.at.objects.natives.NATText;
  */
 public class JavaClosure extends NATClosure {
 
-	private final ATObject scope_;
+	protected final ATObject scope_;
 	
 	/**
 	 * Create a new JavaClosure where meta_apply will be overridden by anonymous subclasses.

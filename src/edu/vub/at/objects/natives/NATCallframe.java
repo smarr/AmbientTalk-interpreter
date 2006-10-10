@@ -324,5 +324,21 @@ public class NATCallframe extends NATNil implements ATObject {
 			return false;
 		}
 	}
+
+	public ATBoolean meta_isCloneOf(ATObject original) throws NATException {
+		if(	(original instanceof NATCallframe) &
+			! (original instanceof NATObject)) {
+			FieldMap originalVariables = ((NATCallframe)original).variableMap_;
+			
+			return NATBoolean.atValue(
+					variableMap_.isDerivedFrom(originalVariables));
+		} else {
+			return NATBoolean._FALSE_;
+		}
+	}
+
+	public ATBoolean meta_isRelatedTo(ATObject object) throws NATException {
+		return super.meta_isRelatedTo(object);
+	}
 	
 }

@@ -91,7 +91,9 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		}
 
 		public ATObject base_ifFalse_(ATClosure clo) throws NATException {
-			return NATNil._INSTANCE_;
+			// TODO Changed this 
+			// return NATNil._INSTANCE_;
+			return this;
 		}
 		
 		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws NATException {
@@ -131,7 +133,9 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		// base interface for false
 		
 		public ATObject base_ifTrue_(ATClosure clo) throws NATException {
-			return NATNil._INSTANCE_;
+			// TODO Changed this 
+			// return NATNil._INSTANCE_;
+			return this;
 		}
 
 		public ATObject base_ifFalse_(ATClosure clo) throws NATException {

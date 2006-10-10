@@ -34,7 +34,7 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUndefinedField;
-import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.exceptions.XUserDefined;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -472,6 +472,10 @@ public class NATNil implements ATNil {
         throw new XTypeMismatch(NATNumeric.class, this);
     }
 
+    public NATException asNativeException() throws XTypeMismatch {
+    		return new XUserDefined(this);
+    }
+    
     public String toString() {
         return Evaluator.toString(this);
     }
@@ -487,5 +491,14 @@ public class NATNil implements ATNil {
     public ATObject base_init(ATObject[] initargs) throws NATException {
     	    return NATNil._INSTANCE_;
     }
+
+	public ATBoolean meta_isCloneOf(ATObject original) throws NATException {
+		return NATBoolean.atValue(
+				this.getClass() == original.getClass());
+	}
+
+	public ATBoolean meta_isRelatedTo(ATObject object) throws NATException {
+		return this.meta_isCloneOf(object);
+	}
 
 }

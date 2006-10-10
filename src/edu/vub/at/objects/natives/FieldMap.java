@@ -56,15 +56,22 @@ public final class FieldMap {
 	// next free position in the varNames_ array
 	private int free_;
 	
+	/*
+	 * Set when a fieldmap is extended when it was already shared to be able to 
+	 * track that both objects have a common heritage.
+	 */
+	private FieldMap origin_ = null;
+	
 	public FieldMap() {
 		varNames_ = new ATSymbol[_DEFAULT_SIZE_];
 		free_ = 0;
 	}
 	
 	// used for internal cloning purposes only
-	private FieldMap(ATSymbol[] copiedNames, int copiedFree) {
+	private FieldMap(ATSymbol[] copiedNames, int copiedFree, FieldMap origin) {
 		varNames_ = copiedNames;
 		free_ = copiedFree;
+		origin_ = origin;
 	}
 	
 	/**
@@ -109,14 +116,26 @@ public final class FieldMap {
 	}
 	
 	/**
-	 * Creates a shallow copy of the field map.
+	 * Creates a shallow copy of the field map. This operation is performed when a
+	 * new field is added in one object which shares its field map with others. To
+	 * allow tracking the origins of the new fieldMap, we need to store this as its
+	 * progenitor.
 	 */
-	public FieldMap copy() {
+	FieldMap copy() {
 		// allocate a copy of the names array
 		ATSymbol[] newVarNames = new ATSymbol[varNames_.length];
 		// copy content into new array
 		System.arraycopy(varNames_, 0, newVarNames, 0, varNames_.length);
-		return new FieldMap(newVarNames, free_);
+		return new FieldMap(newVarNames, free_, this);
+	}
+	
+	/**
+	 * Checks whether both FieldMaps are equal or whether the passed object is a
+	 * FieldMap from which this one (indirectly) originates. 
+	 */
+	public boolean isDerivedFrom(FieldMap aFieldMap) {
+		return (this == aFieldMap) ||
+			((origin_ != null) && origin_.isDerivedFrom(aFieldMap));
 	}
 	
 	/**

@@ -364,6 +364,25 @@ public interface ATObject extends ATConversions {
      */
     public NATText meta_print() throws NATException;
 
+    /* ----------------------------------
+     * -- Object Relational Comparison --
+     * ---------------------------------- */
+    
+    /**
+     * Detects whether both objects have a common origin, in other words whether 
+     * they are related through a combination of the cloning and extension operators.
+     * @throws NATException 
+     */
+    public ATBoolean meta_isRelatedTo(ATObject object) throws NATException;
+    
+    /**
+     * Detects whether this object an the passed parameter are the result of cloning 
+     * from a common ancestor (possibly either one of the objects itself).  
+     * @param original - the object of which this object is supposedly a sibling
+     * @return NATBoolean._TRUE_ if both objects are related.
+     */
+    public ATBoolean meta_isCloneOf(ATObject original) throws NATException;
+    
     /* -------------------------------
       * - Base Level Object interface -
       * -------------------------------

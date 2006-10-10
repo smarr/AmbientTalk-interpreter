@@ -40,7 +40,6 @@ import edu.vub.at.parser.NATParser;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Vector;
 
 /**
@@ -96,7 +95,7 @@ public final class NATNamespace extends NATObject {
 	 */
 	private NATNamespace(FieldMap map,
 			  Vector state,
-			  HashMap methodDict,
+			  MethodDictionary methodDict,
 			  ATObject dynamicParent,
 			  ATObject lexicalParent,
 			  byte flags,
@@ -185,7 +184,7 @@ public final class NATNamespace extends NATObject {
 	
 	protected NATObject createClone(FieldMap map,
 			  Vector state,
-			  HashMap methodDict,
+			  MethodDictionary methodDict,
 			  ATObject dynamicParent,
 			  ATObject lexicalParent,
 			  byte flags) {

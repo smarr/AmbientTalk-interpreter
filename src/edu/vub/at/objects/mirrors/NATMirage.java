@@ -40,13 +40,13 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
+import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
-import java.util.HashMap;
 import java.util.Vector;
 
 /**
@@ -79,7 +79,7 @@ public class NATMirage extends NATObject {
 	 */
 	protected NATMirage(FieldMap map,
 			         Vector state,
-			         HashMap methodDict,
+			         MethodDictionary methodDict,
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
@@ -113,7 +113,7 @@ public class NATMirage extends NATObject {
 	// Called by the default NATObject Cloning algorithm
 	protected NATObject createClone(FieldMap map,
 			Vector state,
-			HashMap methodDict,
+			MethodDictionary methodDict,
 			ATObject dynamicParent,
 			ATObject lexicalParent,
 			byte flags) throws NATException {

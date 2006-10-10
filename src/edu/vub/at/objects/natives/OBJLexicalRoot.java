@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -330,6 +331,19 @@ public final class OBJLexicalRoot extends NATNil {
 	}
 	
 	
+	/**
+	 * The mirror: primitive, which allows creating custom mirrors which can be used
+	 * to allow intercessive reflection on objects created from this mirror.
+	 * 
+	 * usage:
+	 *  mirror: { someCode } 
+	 * 
+	 * pseudo-implementation:
+	 *  defaultMirror.extend(somecode)
+	 * 
+	 * @param code a closure containing both the code with which to initialize the mirror and the new mirror's lexical parent
+	 * @return a new mirror containing the specified definitions
+	 */
 	public ATObject base_mirror_(ATClosure code) throws NATException {
 		// As this is a base_method, its result will be downed. Since we explicitly want to
 		// return the newly created NATIntercessiveMirror, it needs to be upped explicitly.
@@ -375,6 +389,29 @@ public final class OBJLexicalRoot extends NATNil {
 
 	}
 	
+	/* -------------------------------
+	 * -- Exception Handling Support -
+	 * ------------------------------- */
+	public ATObject base_try_using_(ATClosure tryBlock, ATHandler exceptionHandler) throws NATException {
+		return base_try_catch_using_(
+				tryBlock, 
+				exceptionHandler.base_getFilter(), 
+				exceptionHandler.base_getHandler());
+	}
+	
+	public ATObject base_try_catch_using_(ATClosure tryBlock, ATObject filter, ATClosure replacementCode) throws NATException {
+		// The following double dispatch allows not catching interpreter-related 
+		// exceptions unless they are explicitly caught.
+		return filter.asNativeException().mayBeSignalledFrom(tryBlock, replacementCode);
+	}
+	
+//	public ATObject base_handle_with_(ATObject filter, ATObject replacementCode) {
+//		return new NATHandler(filter, replacementCode);
+//	}
+	
+	public ATNil base_raise_(ATObject anExceptionObject) throws NATException {
+		throw anExceptionObject.asNativeException();
+	}
 	
 	/* --------------------
 	 * -- Unary Operators -

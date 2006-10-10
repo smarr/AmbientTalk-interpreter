@@ -191,4 +191,12 @@ public class NATSuperObject extends NATNil implements ATObject {
         return lookupFrame_.meta_print();
     }
 
+	public ATBoolean meta_isCloneOf(ATObject original) throws NATException {
+		return lookupFrame_.meta_isCloneOf(original);
+	}
+
+	public ATBoolean meta_isRelatedTo(ATObject object) throws NATException {
+		return lookupFrame_.meta_isRelatedTo(object);
+	}
+
 }

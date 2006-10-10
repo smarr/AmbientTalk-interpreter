@@ -51,9 +51,9 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
+import edu.vub.at.objects.mirrors.JavaClosure;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Vector;
 
 /**
@@ -129,7 +129,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	/**
 	 * The method dictionary of this object. It maps method selectors to ATMethod objects.
 	 */
-	private HashMap methodDictionary_;
+	private MethodDictionary methodDictionary_;
 	
 	/**
 	 * The dynamic parent of this object (i.e. the delegation link).
@@ -176,7 +176,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	public NATObject(ATObject dynamicParent, ATObject lexicalParent, boolean parentType) {
 		super(lexicalParent);
-		methodDictionary_ = new HashMap();
+		methodDictionary_ = new MethodDictionary();
 		dynamicParent_ = dynamicParent;
 		flags_ = 0; // by default, an object has a shares-a parent and does not share its map/dictionary
 		if (parentType) {
@@ -192,7 +192,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	protected NATObject(FieldMap map,
 			         Vector state,
-			         HashMap methodDict,
+			         MethodDictionary methodDict,
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags) {
@@ -445,7 +445,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		} else {
 			// first check whether the method dictionary is shared
 			if (this.isFlagSet(_SHARE_DCT_FLAG_)) {
-				methodDictionary_ = (HashMap) methodDictionary_.clone();
+				methodDictionary_ = (MethodDictionary) methodDictionary_.clone();
 				this.unsetFlag(_SHARE_DCT_FLAG_);
 			}
 			methodDictionary_.put(name, method);
@@ -487,7 +487,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	protected NATObject createClone(FieldMap map,
 	         					  Vector state,
-	         					  HashMap methodDict,
+	         					  MethodDictionary methodDict,
 	         					  ATObject dynamicParent,
 	         					  ATObject lexicalParent,
 	         					  byte flags) throws NATException {
@@ -526,6 +526,32 @@ public class NATObject extends NATCallframe implements ATObject {
 		}
 	}
 	
+    /* ----------------------------------
+     * -- Object Relational Comparison --
+     * ---------------------------------- */
+    
+	public ATBoolean meta_isCloneOf(ATObject original) throws NATException {
+		if(original instanceof NATObject) {
+			MethodDictionary originalMethods = ((NATObject)original).methodDictionary_;
+			FieldMap originalVariables = ((NATObject)original).variableMap_;
+			
+			return NATBoolean.atValue(
+					methodDictionary_.isDerivedFrom(originalMethods) &
+					variableMap_.isDerivedFrom(originalVariables));
+		} else {
+			return NATBoolean._FALSE_;
+		}
+	}
+
+	public ATBoolean meta_isRelatedTo(final ATObject object) throws NATException {
+		return this.meta_isCloneOf(object).base_ifFalse_(
+				new JavaClosure(this) {
+					public ATObject base_apply(ATTable args) throws NATException {
+						return scope_.meta_getDynamicParent().meta_isRelatedTo(object);
+					}
+				}).asBoolean();
+	}
+
 	/* ---------------------------------------
 	 * -- Conversion and Testing Protocol   --
 	 * --------------------------------------- */

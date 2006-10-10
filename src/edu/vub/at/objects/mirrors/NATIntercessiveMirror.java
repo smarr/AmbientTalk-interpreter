@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.FieldMap;
+import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
@@ -41,7 +42,6 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
-import java.util.HashMap;
 import java.util.Vector;
 
 /**
@@ -89,7 +89,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	 */
 	protected NATIntercessiveMirror(FieldMap map,
 			         Vector state,
-			         HashMap methodDict,
+			         MethodDictionary methodDict,
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
@@ -117,6 +117,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	/** @return this */
 	public ATMirror asMirror() { return this; }
 	
+	// TODO Should we return a new empty object
 	public ATObject meta_clone() throws NATException {
 		return principal_.magic_clone().getMirror();
 	}
@@ -132,7 +133,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	// Called by the default NATObject Cloning algorithm
 	protected NATObject createClone(FieldMap map,
 			Vector state,
-			HashMap methodDict,
+			MethodDictionary methodDict,
 			ATObject dynamicParent,
 			ATObject lexicalParent,
 			byte flags) throws NATException {
