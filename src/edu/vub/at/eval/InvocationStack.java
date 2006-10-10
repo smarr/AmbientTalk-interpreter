@@ -34,7 +34,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 
 import java.io.PrintStream;
-import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Stack;
 
 /**
@@ -110,10 +110,15 @@ public final class InvocationStack implements Cloneable {
 	}
 	
 	public void printStackTrace(PrintStream s) {
-		Iterator i = invocationStack_.iterator();
-		while (i.hasNext()) {
-			InvocationFrame frame = (InvocationFrame) i.next();
-			s.println(Evaluator.toString(frame.invocation));
+		if(!invocationStack_.isEmpty()) {
+			s.println("origin:");
+			// iterator loops from bottom to top by default
+			ListIterator i = invocationStack_.listIterator();
+			while (i.hasNext()) { i.next(); } // skip to last element
+			while(i.hasPrevious()) { // traverse stack top to bottom
+				InvocationFrame frame = (InvocationFrame) i.previous();
+				s.println("at "+Evaluator.toString(frame.invocation));
+			}
 		}
 	}
 	
