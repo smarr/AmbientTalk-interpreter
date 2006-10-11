@@ -117,9 +117,11 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	/** @return this */
 	public ATMirror asMirror() { return this; }
 	
-	// TODO Should we return a new empty object
 	public ATObject meta_clone() throws NATException {
-		return principal_.magic_clone().getMirror();
+		NATIntercessiveMirror clone = magic_clone();
+		NATMirage freshObject = new NATMirage(clone);
+		clone.setBase(freshObject);
+		return clone;
 	}
 	
 	// CLONING AUXILIARY METHODS

@@ -29,7 +29,6 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -195,7 +194,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATField magic_getField(ATSymbol selector) throws XSelectorNotFound {
+	public ATField magic_getField(ATSymbol selector) throws NATException {
 		return super.meta_getField(selector);
 	}
 
@@ -383,17 +382,12 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATField meta_getField(ATSymbol selector) throws XSelectorNotFound {
-		try {
-			return Reflection.downObject(mirror_.meta_invoke(
-					mirror_,
-					AGSymbol.alloc("getField"),
-					new NATTable(new ATObject[] { selector })
-					)).asField();
-		} catch (NATException e) {
-			// TODO Exception Type Widening
-			throw new RuntimeException("getField on a custom mirror resulted in an unexpected exception");
-		} 
+	public ATField meta_getField(ATSymbol selector) throws NATException {
+		return Reflection.downObject(mirror_.meta_invoke(
+				mirror_,
+				AGSymbol.alloc("getField"),
+				new NATTable(new ATObject[] { selector })
+		)).asField();
 	}
 
 

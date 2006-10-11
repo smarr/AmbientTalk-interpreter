@@ -254,7 +254,6 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	public ATObject base_init(ATObject[] initargs) throws XArityMismatch {
 		if(initargs.length > 1) {
 			ATObject reflectee = initargs[0];
-			// FIXME as this is a base_method it needs to call base_create
 			return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
 		} else {
 			throw new XArityMismatch("init", 1, 0);

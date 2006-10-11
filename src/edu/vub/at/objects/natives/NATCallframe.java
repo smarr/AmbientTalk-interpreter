@@ -242,7 +242,7 @@ public class NATCallframe extends NATNil implements ATObject {
 				                    " to a call frame. Add it as a closure field instead.");
 	}
 	
-	public ATField meta_getField(ATSymbol selector) throws XSelectorNotFound {
+	public ATField meta_getField(ATSymbol selector) throws NATException {
 		if (this.hasLocalField(selector)) {
 			return new NATField(selector, this);
 		} else {
