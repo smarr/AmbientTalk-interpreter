@@ -43,10 +43,10 @@ import edu.vub.at.objects.natives.grammar.AGBegin;
 import java.lang.reflect.Method;
 
 /**
- * @author smostinc
- *
  * A JavaMethod is a wrapper around Java methods allowing them to be selected 
  * from base-level objects and passed around as ordinary methods.
+ * 
+ * @author smostinc
  */
 public final class JavaMethod extends NATNil implements ATMethod {
 

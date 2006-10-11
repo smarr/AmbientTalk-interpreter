@@ -38,8 +38,6 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author tvc
- *
  * A JavaClosure is a wrapper class for a piece of Java code. The Java code is
  * presented to the AmbientTalk system as a closure. A JavaClosure is represented
  * as follows:
@@ -67,6 +65,8 @@ import edu.vub.at.objects.natives.NATText;
  *     }
  *  2) As a wrapper for an already existing JavaMethod:
  *     new JavaClosure(this, aJavaMethod);
+ * 
+ * @author tvc
  */
 public class JavaClosure extends NATClosure {
 

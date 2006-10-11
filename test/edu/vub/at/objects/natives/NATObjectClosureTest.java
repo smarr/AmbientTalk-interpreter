@@ -42,9 +42,9 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 import junit.framework.TestCase;
 
 /**
- * @author smostinc
- *
  * TODO document the class NATObjectClosureTest
+ * 
+ * @author smostinc
  */
 public class NATObjectClosureTest extends TestCase {
 
@@ -138,10 +138,10 @@ public class NATObjectClosureTest extends TestCase {
 	 * Tests the validity of the various scope pointers in a context object when 
 	 * applying a method defined in and invoked upon an orphan object. 
 	 * 
-	 * @covers meta_invoke & meta_select for method lookup
-	 * @covers closure creation in meta_select
-	 * @covers context initialisation at closure creation
-	 * @covers closure application
+	 * - covers meta_invoke & meta_select for method lookup
+	 * - covers closure creation in meta_select
+	 * - covers context initialisation at closure creation
+	 * - covers closure application
 	 */
 	public void testMethodInvocation() {
 		try {
@@ -166,9 +166,9 @@ public class NATObjectClosureTest extends TestCase {
 	 * Tests the validity of the various scope pointers in a context object when 
 	 * applying a method in a simple hierarchy of objects. 
 	 * 
-	 * @covers meta_invoke & meta_select for method lookup with dynamic chains
-	 * @covers proper self semantics at closure creation 
-	 * @covers super semantics during method application
+	 * - covers meta_invoke & meta_select for method lookup with dynamic chains
+	 * - covers proper self semantics at closure creation 
+	 * - covers super semantics during method application
 	 */
 	public void testDelegatedMethodInvocation() {
 		try {
@@ -212,8 +212,8 @@ public class NATObjectClosureTest extends TestCase {
 	
 	/**
 	 * Makes a simple extension of an orphan object using a closure.
-	 * @covers meta_extend for object extension.
-	 * @covers method definition using AGDefMethod
+	 * - covers meta_extend for object extension.
+	 * - covers method definition using AGDefMethod
 	 */
 	public void testExtend() {
 		try {

@@ -28,11 +28,11 @@
 package edu.vub.at.exceptions;
 
 /**
- * @author smostinc
- *
  * An instance of the class XReflectionFailure is thrown when something goes wrong
  * when dealing with mirror or mirage operations. By extension this also covers 
  * failures when symbiotically accessing Java objects.
+ * 
+ * @author smostinc
  */
 public class XReflectionFailure extends NATException {
 

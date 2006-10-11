@@ -59,9 +59,9 @@ import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
 import edu.vub.at.objects.mirrors.Reflection;
 
 /**
- * @author smostinc
- *
  * NATNil implements default semantics for all test and conversion methods.
+ *
+ * @author smostinc
  */
 public class NATNil implements ATNil {
 
@@ -244,8 +244,6 @@ public class NATNil implements ATNil {
     /* ---------------------------------
       * -- Structural Access Protocol  --
       * --------------------------------- */
-
-    // TODO field access translated into getter/setter method invocations
 
     public ATNil meta_addField(ATField field) throws NATException {
         throw new XIllegalOperation("Cannot add fields to an object of type " + this.getClass().getName());

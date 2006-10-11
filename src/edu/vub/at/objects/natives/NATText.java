@@ -43,10 +43,10 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * @author tvc
- *
  * The native implementation of an AmbientTalk text string.
  * A text string is implemented by a Java String.
+ * 
+ * @author tvc
  */
 public final class NATText extends AGExpression implements ATText {
 		

@@ -49,8 +49,6 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
 
 /**
- * @author smostinc
- * 
  * ReflectiveAccessTest is a superclass to a framework of test cases geared towards
  * exploiting the reflective machinery provided in the mirrors package to explore
  * whether the mechanism works correctly and therefore allows one to access and 
@@ -60,6 +58,8 @@ import edu.vub.at.parser.NATParser;
  * 
  * This file establishes a common vocabulary for these idiosyncratic tests and allows
  * code reuse for commonly used features.
+ * 
+ * @author smostinc
  */
 public class ReflectiveAccessTest extends AmbientTalkTestCase {
 

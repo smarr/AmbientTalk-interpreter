@@ -30,10 +30,10 @@ package edu.vub.at.objects;
 import edu.vub.at.exceptions.NATException;
 
 /**
+ * The ATBoolean interface is the public interface to a boolean object.
+ * 
  * @author smostinc
  * @author tvcutsem
- * 
- * The ATBoolean interface is the public interface to a boolean object.
  */
 public interface ATBoolean extends ATObject {
 

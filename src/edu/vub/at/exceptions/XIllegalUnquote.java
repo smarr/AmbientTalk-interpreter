@@ -30,10 +30,10 @@ package edu.vub.at.exceptions;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * @author tvc
- *
  * An XIllegalUnquote exception is raised when an unquotation is
  * discovered in a non-quoted piece of source code.
+ * 
+ * @author tvc
  */
 public final class XIllegalUnquote extends NATException {
 

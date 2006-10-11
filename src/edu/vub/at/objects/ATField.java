@@ -31,9 +31,9 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
+ * ATFields provide a mapping from an immutable name to a potentially mutable value.
+ * 
  * @author smostinc
- *
- * ATFields is a mapping from an immutable name to a potentially mutable value.
  */
 public interface ATField extends ATObject {
 	

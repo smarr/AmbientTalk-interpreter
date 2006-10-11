@@ -31,10 +31,10 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * @author tvc
- *
  * The public interface to a native AmbientTalk string (a string of characters).
  * Extends the ATExpression interface as a Text can also be output by the parser as a literal.
+ * 
+ * @author tvc
  */
 public interface ATText extends ATExpression {
 

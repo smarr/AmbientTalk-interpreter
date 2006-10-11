@@ -31,10 +31,10 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * @author tvc
- *
  * The public interface to a native AmtientTalk table (an array).
  * Extends the ATExpression interface as a Table may also be output by the parser as a literal.
+ * 
+ * @author tvc
  */
 public interface ATTable extends ATExpression {
 

@@ -36,10 +36,10 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATAsyncMessage;
 
 /**
- * @author smostinc
- *
  * AGAsyncMessageCreation implements the ATAsyncMessageCreation interface natively. It is a container for the
  * message's sender, selector, and optionally a receiver and table of arguments.
+ * 
+ * @author smostinc
  */
 public class AGAsyncMessageCreation extends AGMessageCreation {
 

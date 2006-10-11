@@ -30,10 +30,10 @@ package edu.vub.at.objects;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * @author tvc
- *
  * the native object representing 'nil' implements this interface.
  * The type ATNil is a subtype of ATObject.
+ * 
+ * @author tvc
  */
 public interface ATNil extends ATObject, ATExpression {
 

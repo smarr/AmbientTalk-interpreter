@@ -29,9 +29,9 @@ package edu.vub.at.objects;
 
 
 /**
- * @author tvc
- *
  * The public interface to a native AmbientTalk fraction (a floating point value).
+ * 
+ * @author tvc
  */
 public interface ATFraction extends ATNumeric {
 

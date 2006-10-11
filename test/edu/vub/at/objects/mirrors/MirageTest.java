@@ -28,15 +28,14 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 
 /**
- * @author smostinc
- *
  * TODO document the class MirageTest
+ * 
+ * @author smostinc
  */
 public class MirageTest extends ReflectiveAccessTest {
 

@@ -35,9 +35,9 @@ import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
 /**
- * @author tvc
- *
  * A common superclass of both numbers and fractions to factor out common base-level behaviour.
+ * 
+ * @author tvc
  */
 public abstract class NATNumeric extends AGExpression implements ATNumeric {
 

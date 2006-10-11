@@ -39,10 +39,10 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 
 /**
- * @author tvc
- *
  * The native implementation of an AmbientTalk number.
  * A number is implemented by a Java int.
+ * 
+ * @author smostinc
  */
 public final class NATNumber extends NATNumeric implements ATNumber {
 	

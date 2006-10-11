@@ -28,18 +28,14 @@
 package edu.vub.at.exceptions;
 
 import edu.vub.at.eval.InvocationStack;
-import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 
 import java.io.PrintStream;
 
 /**
- * @author smostinc
- *
  * ATException is the superclass of all exceptions thrown by the AmbientTalk interpreter. 
  * 
  * TODO talk to Tom about maintaining a parallel stack inside the interpreter (vat)
@@ -55,7 +51,7 @@ import java.io.PrintStream;
  * both which expression was evaluated at exception-raising-time and allows him to inspect
  * the context at exception-raising-time.
  * 
- * TODO ATExceptions are ATObjects!!!
+ * @author smostinc
  */
 public class NATException extends Exception {
 
@@ -95,8 +91,7 @@ public class NATException extends Exception {
 		try{
 			return tryBlock.base_apply(NATTable.EMPTY);
 		} catch (NATException e) {
-			return replacementCode.base_apply(
-					new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
+			return replacementCode.base_apply(new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
 		}
 	}
 	

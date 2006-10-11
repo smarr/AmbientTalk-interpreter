@@ -39,11 +39,11 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * @author smostinc
- *
  * NATSuperObject is a decorator class for an ATObject when denoted using the super
  * pseudovariable. It is parameterised by two objects, namely the super object in which
  * method lookup starts (lookupFrame_) and the late-bound receiver.
+ * 
+ * @author smostinc
  */
 public class NATSuperObject extends NATNil implements ATObject {
 

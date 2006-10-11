@@ -30,9 +30,9 @@ package edu.vub.at.exceptions;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * @author tvc
- *
  * TODO document the class XIllegalSplice
+ * 
+ * @author tvc
  */
 public final class XIllegalSplice extends NATException {
 

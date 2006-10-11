@@ -31,10 +31,10 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * @author tvc
- *
  * The common interface to both numbers and fractions.
  * This interface extends ATExpression as a number or fraction can also be output by the parser as a literal.
+ * 
+ * @author tvc
  */
 public interface ATNumeric extends ATExpression {
 

@@ -30,8 +30,6 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * @author tvc
- *
  * Instances of this class implement a so-called 'map' for an AmbientTalk object's fields.
  * The terminology stems from the language Self. A 'map' maps variable names to an integer index.
  * This index can be used to index an object's state vector to retrieve the value of a slot.
@@ -41,6 +39,8 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * 
  * We implement a custom map from symbols to Java ints ourselves, because the java.util.HashMap
  * requires explicit boxing and unboxing of integers as java.lang.Integers, which is wasteful.
+ * 
+ * @author tvc
  */
 public final class FieldMap {
 

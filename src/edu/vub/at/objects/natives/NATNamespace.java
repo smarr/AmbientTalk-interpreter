@@ -43,8 +43,6 @@ import java.io.IOException;
 import java.util.Vector;
 
 /**
- * @author tvc
- *
  * Instances of the class NATNamespace represent namespace objects.
  * 
  * Namespace objects act as regular AmbientTalk objects with the following differences and conventions:
@@ -71,6 +69,8 @@ import java.util.Vector;
  *       The next time the slot is queried for in the namespace, the value is immediately returned. This prevents
  *       files from being loaded twice.
  *  - does not correspond to any file or directory, resulting in a selector not found exception as usual.
+ * 
+ * @author smostinc
  */
 public final class NATNamespace extends NATObject {
 

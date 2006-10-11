@@ -33,10 +33,10 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * @author tvc
- *
  * Instances of the class NATMessage represent first-class messages.
  * A NATMessage is an abstract class, as it can be either a synchronous method invocation or an asynchronous message send.
+ * 
+ * @author tvc
  */
 public abstract class NATMessage extends NATNil implements ATMessage {
 

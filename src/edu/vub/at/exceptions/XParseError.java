@@ -28,9 +28,9 @@
 package edu.vub.at.exceptions;
 
 /**
- * @author tvc
- *
  * XParseError is thrown when illegal input is parsed by the AmbientTalk parser.
+ * 
+ * @author tvc
  */
 public final class XParseError extends NATException {
 

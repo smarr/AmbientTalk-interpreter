@@ -28,11 +28,11 @@
 package edu.vub.at.objects;
 
 /**
- * @author tvc
- *
  * Instances of the class ATMethodInvocation represent first-class method invocations.
  * A method invocation encapsulates a selector and a table of arguments and responds to the meta_sendTo method
  * by invoking the method with its encapsulated selector on the given receiver object.
+ * 
+ * @author tvc
  */
 public interface ATMethodInvocation extends ATMessage {
 

@@ -30,10 +30,10 @@ package edu.vub.at.exceptions;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * @author tvc
- *
  * An XIllegalQuote exception is raised whenever an unquote-splice unquotation is discovered in an AG node where
  * the resulting table cannot be spliced.
+ * 
+ * @author tvc
  */
 public final class XIllegalQuote extends NATException {
 

@@ -31,8 +31,6 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * @author tvc
- *
  * Instances of the class ATMessage represent first-class AmbientTalk asynchronous messages.
  * They may be created explicitly using the <tt><-m(args)</tt> syntax, or implicitly during an
  * asynchronous message send of the form <tt>o<-m(args)</tt>.
@@ -40,6 +38,8 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * This interface is not to be confused with the ATMessageCreation interface in the grammar subpackage.
  * That interface represents an abstract grammar object representing the syntax tree of message creation.
  * This interface is the interface to the actual runtime message object.
+ * 
+ * @author tvc
  */
 public interface ATMessage extends ATObject {
 	

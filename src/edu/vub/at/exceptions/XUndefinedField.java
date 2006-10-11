@@ -28,11 +28,11 @@
 package edu.vub.at.exceptions;
 
 /**
- * @author tvc
- *
  * An XUndefinedField exception is raised whenever a variable reference lookup fails,
  * or a field assignment lookup fails. It generally means a variable was accessed which
  * is not visible in the lexical scope.
+ * 
+ * @author tvc
  */
 public final class XUndefinedField extends NATException {
 

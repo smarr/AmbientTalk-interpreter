@@ -30,9 +30,9 @@ package edu.vub.at.objects;
 import edu.vub.at.exceptions.NATException;
 
 /**
- * @author tvc
- *
  * The public interface to an AmbientTalk native number (an integer value).
+ * 
+ * @author tvc
  */
 public interface ATNumber extends ATNumeric {
 

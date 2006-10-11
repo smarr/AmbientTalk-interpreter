@@ -48,9 +48,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author tvc
- *
  * The Evaluator class serves as a repository for auxiliary evaluation methods.
+ * 
+ * @author tvc
  */
 public final class Evaluator {
 	

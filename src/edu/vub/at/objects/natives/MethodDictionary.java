@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 
  * TODO document the class MethodDictionary
  *
  * @author smostinc

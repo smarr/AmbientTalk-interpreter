@@ -32,11 +32,11 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 
 /**
- * @author smostinc
- *
  * NATContext is a purely functional implementation of the ATContext interface.
  * It allows for storing the context parameters (scope self super) in such a way 
  * that no ill-placed assignment may affect other frames on the stack.
+ * 
+ * @author smostinc
  */
 public class NATContext extends NATNil implements ATContext {
 

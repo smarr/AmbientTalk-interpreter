@@ -248,7 +248,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * This method allows re-initialise a mirror object. However, since the link from a 
 	 * mirror to its base object is immutable, this results in contacting the mirror
 	 * factory, to create a (new) mirror for the requested object.
-	 * @param reflectee - the object that needs to be reflects upon
+	 * @param initargs - an ATObject[] containing as its first element the object that needs to be reflects upon
 	 * @return <b>another</b> (possibly new) mirror object 
 	 */
 	public ATObject base_init(ATObject[] initargs) throws XArityMismatch {

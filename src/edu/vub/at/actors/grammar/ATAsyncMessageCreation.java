@@ -30,14 +30,14 @@ package edu.vub.at.actors.grammar;
 import edu.vub.at.objects.grammar.ATMessageCreation;
 
 /**
- * @author smostinc
- *
  * An ATAsyncMessageCreation instance is created whenever an asynchronous message send 
  * <tt>o <- m()</tt> is performed, or when a first-class async msg is created using
  * code such as <tt><- m()</tt>.
  * 
  * This interface does not describe the interface to the actual first-class message (that is the ATAsyncMessage interface).
  * It only describes the interface to the AG component representing such a message.
+ * 
+ * @author smostinc
  */
 public interface ATAsyncMessageCreation extends ATMessageCreation {
 

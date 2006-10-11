@@ -45,8 +45,6 @@ import edu.vub.at.objects.mirrors.OBJMirrorRoot;
 import edu.vub.at.parser.NATParser;
 
 /**
- * @author tvc
- *
  * An instance of the class OBJLexicalRoot represents the lexical root of an actor.
  * Since a lexical root is sealed (it cannot be modified) and contains no mutable fields,
  * it should be possible to share a singleton instance of this class among all actors.
@@ -64,6 +62,8 @@ import edu.vub.at.parser.NATParser;
  * Note that OBJLexicalRoot is a 'sentinel' class. The actual object bound to the
  * lexical root of an actor will be a normal NATObject which is assumed to be 'nested' in this instance.
  * This empty object is local to each actor and is mutable.
+ * 
+ * @author smostinc
  */
 public final class OBJLexicalRoot extends NATNil {
 	
@@ -212,8 +212,8 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @return the result of invoking body if the condition is true or nil if the condition is false
 	 * @throws NATException if raised inside the body block.
 	 */
-	public ATObject base_do_if_(ATClosure body, ATBoolean bool) throws NATException {
-		return bool.base_ifTrue_(body);
+	public ATObject base_do_if_(ATClosure body, ATBoolean condition) throws NATException {
+		return condition.base_ifTrue_(body);
 	}
 	
 	/**
@@ -230,8 +230,8 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @return the result of invoking body if the condition is false or nil if the condition is true
 	 * @throws NATException if raised inside the body block.
 	 */
-	public ATObject base_do_unless_(ATClosure body, ATBoolean bool) throws NATException {
-		return bool.base_ifFalse_(body);
+	public ATObject base_do_unless_(ATClosure body, ATBoolean condition) throws NATException {
+		return condition.base_ifFalse_(body);
 	}
 	
 	

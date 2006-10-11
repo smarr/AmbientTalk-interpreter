@@ -34,11 +34,11 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * @author smostinc
- *
  * NATField implements a causally connected field of an object. Rather than storing
  * these fields directly in every object, we choose to only make people pay when they
- * choose to reify them.
+ * choose to reify them. 
+ * 
+ * @author smostinc
  */
 public class NATField extends NATNil implements ATField {
 

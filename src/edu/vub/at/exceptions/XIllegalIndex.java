@@ -28,10 +28,10 @@
 package edu.vub.at.exceptions;
 
 /**
- * @author tvc
- *
  * An XIllegalIndex exception is thrown by the evaluator whenever an invalid
  * value is used as the index into a table (e.g. when defining, assigning or referencing it).
+ * 
+ * @author tvc
  */
 public final class XIllegalIndex extends NATException {
 

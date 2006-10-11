@@ -28,9 +28,9 @@
 package edu.vub.at.exceptions;
 
 /**
- * @author tvc
- *
  * TODO document the class XIllegalApplication
+ * 
+ * @author tvc
  */
 public final class XIllegalApplication extends NATException {
 

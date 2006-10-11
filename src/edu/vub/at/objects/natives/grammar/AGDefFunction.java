@@ -41,10 +41,10 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author tvc
- *
  * The native implementation of a function definition abstract grammar element.
  * This AG element covers both method and closure definition.
+ * 
+ * @author tvc
  */
 public final class AGDefFunction extends NATAbstractGrammar implements ATDefMethod {
 

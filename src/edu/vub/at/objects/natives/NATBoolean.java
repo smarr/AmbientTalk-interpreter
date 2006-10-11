@@ -33,11 +33,11 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 
 /**
- * @author smostinc
- *
  * NATBoolean is simply a container class for ambienttalk booleans. The native 
  * implementations of true and false can be accessed using the class's atValue
  * method.
+ * 
+ * @author smostinc
  */
 public abstract class NATBoolean extends NATNil implements ATBoolean {
 	
@@ -91,9 +91,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		}
 
 		public ATObject base_ifFalse_(ATClosure clo) throws NATException {
-			// TODO Changed this 
-			// return NATNil._INSTANCE_;
-			return this;
+			return NATNil._INSTANCE_;
 		}
 		
 		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws NATException {
@@ -133,9 +131,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		// base interface for false
 		
 		public ATObject base_ifTrue_(ATClosure clo) throws NATException {
-			// TODO Changed this 
-			// return NATNil._INSTANCE_;
-			return this;
+			return NATNil._INSTANCE_;
 		}
 
 		public ATObject base_ifFalse_(ATClosure clo) throws NATException {

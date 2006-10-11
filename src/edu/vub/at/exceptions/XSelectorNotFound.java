@@ -31,11 +31,11 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * @author smostinc
- *
  * XSelectorNotFound is thrown during lookup when a particular field cannot be
  * found. It is equipped with a dedicated constructor to allow diagnosing the
  * underlying problem.
+ * 
+ * @author smostinc
  */
 public class XSelectorNotFound extends NATException {
 

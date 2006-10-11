@@ -38,10 +38,10 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author smostinc
- *
- * NATPrimitiveField allows an ambienttalk primitive to have a field if it has a
+ * JavaField allows an ambienttalk primitive type to have a field if it has a
  * corresponding getter and optionally a setter method.
+ * 
+ * @author smostinc
  */
 public class JavaField extends NATNil implements ATField {
 

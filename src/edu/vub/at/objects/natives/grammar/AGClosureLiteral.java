@@ -39,9 +39,9 @@ import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author tvc
- *
  * The native implementation of a literal closure AG element.
+ * 
+ * @author tvc
  */
 public final class AGClosureLiteral extends AGExpression implements ATClosureLiteral {
 

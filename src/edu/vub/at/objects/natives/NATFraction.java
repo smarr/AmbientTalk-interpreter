@@ -34,10 +34,10 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATNumeric;
 
 /**
- * @author tvc
- *
  * The native implementation of an AmbientTalk fraction.
  * A fraction is implemented by a Java double.
+ * 
+ * @author tvc
  */
 public final class NATFraction extends NATNumeric implements ATFraction {
 

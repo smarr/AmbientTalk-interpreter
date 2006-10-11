@@ -39,7 +39,6 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 
 /**
- * 
  * TODO document the class OBJMirrorRoot
  *
  * @author smostinc

@@ -29,12 +29,12 @@ package edu.vub.at.objects;
 
 
 /**
- * @author smostinc
- *
  * ATAbstractGrammar contains all methods to be understood by any parsetree element
  * in the ambienttalk/2 programming language. As the parsetree is a first-class
  * entity (it can be manipulated in the language using the MOP) parsetree elements
  * are also ATObjects.
+ * 
+ * @author smostinc
  */
 public interface ATAbstractGrammar extends ATObject {
 	

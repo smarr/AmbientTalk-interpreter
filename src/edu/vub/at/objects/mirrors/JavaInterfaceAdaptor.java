@@ -42,8 +42,6 @@ import java.lang.reflect.Method;
 import java.util.Vector;
 
 /**
- * @author smostinc
- *
  * JavaInterfaceAdaptor is a class providing several static methods which allow 
  * accessing and invoking Java methods as if they were in fact AmbientTalk value.
  * It is used by the Reflection class to up ambienttalk invocations and field 
@@ -55,6 +53,7 @@ import java.util.Vector;
  * technique to our advantage by using overloading on typically double dispatch 
  * methods such as plus.
  * 
+ * @author smostinc
  */
 public class JavaInterfaceAdaptor {
 		
@@ -75,8 +74,8 @@ public class JavaInterfaceAdaptor {
 	 * Tests given a class, whether the class either declares or inherits a method
 	 * for a given selector. 
 	 * @param jClass - a Java class, representing an AT object.
-	 * @param selector - a selector, describing the method to be searched for.
-	 * @return
+	 * @param jSelector - a selector, describing the method to be searched for.
+	 * @return whether a methods with a matching selector can be found
 	 */
 	public static boolean hasApplicableJavaMethod (
 			Class jClass, 
@@ -217,7 +216,7 @@ public class JavaInterfaceAdaptor {
 	 * only to be performed when more than a single match exists.
 	 * @param jClass - the class from which the methods will be selected.
 	 * @param selector - the name of the requested method.
-	 * @return
+	 * @return an array of applicable methods
 	 */
 	private static Method[] getMethodsForSelector(Class jClass, String selector) {
 		Method[] allMethods = jClass.getMethods();

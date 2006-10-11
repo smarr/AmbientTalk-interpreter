@@ -28,12 +28,12 @@
 package edu.vub.at.exceptions;
 
 /**
- * @author smostinc
- *
  * XIllegalOperation is thrown whenever an operation is requested that is a violation
  * of the expected semantics of the interpreter. When originating from base-level code
  * these exceptions signal a fault in either the interpreter or in the custom meta
  * behaviour.
+ * 
+ * @author smostinc
  */
 public class XIllegalOperation extends NATException {
 

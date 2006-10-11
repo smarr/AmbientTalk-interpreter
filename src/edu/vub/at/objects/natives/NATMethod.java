@@ -38,10 +38,10 @@ import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * @author smostinc
- *
  * NATMethod implements methods as named functions which are in fact simply containers
  * for a name, a table of arguments and a body.
+ * 
+ * @author smostinc
  */
 public class NATMethod extends NATNil implements ATMethod {
 

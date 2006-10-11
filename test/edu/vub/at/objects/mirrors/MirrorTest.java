@@ -30,7 +30,6 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
@@ -110,8 +109,8 @@ public class MirrorTest extends ReflectiveAccessTest {
 				// success
 			}
 		} catch (NATException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			fail("exception: "+ e);
 		}		
 		
 	};

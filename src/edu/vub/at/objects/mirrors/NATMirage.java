@@ -158,7 +158,6 @@ public class NATMirage extends NATObject {
 		return super.meta_lookup(selector);
 	}
 
-	// TODO Do we still need newInstance?
 	public ATObject magic_newInstance(ATTable initargs) throws NATException {
 		return super.meta_newInstance(initargs);
 	}
@@ -309,7 +308,6 @@ public class NATMirage extends NATObject {
 				));
 	}
 
-	// TODO Do we still need newInstance?
 	public ATObject meta_newInstance(ATTable initargs) throws NATException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,

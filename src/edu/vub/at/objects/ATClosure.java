@@ -31,8 +31,6 @@ import edu.vub.at.exceptions.NATException;
 
 
 /**
- * @author smostinc
- *
  * The public interface to a native AmbientTalk closure (a piece of code + enclosing environment).
  * 
  * Since ATMethods are always wrapped either at creation time (blocks) or during 
@@ -40,6 +38,8 @@ import edu.vub.at.exceptions.NATException;
  * can be encountered at the ambienttalk base level. Closures should respond to the
  * meta_apply method, which should trigger the invocation of their encapsulating method in the
  * enclosed closure context.
+ * 
+ * @author smostinc
  */
 public interface ATClosure extends ATObject {
 	

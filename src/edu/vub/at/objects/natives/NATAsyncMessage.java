@@ -35,12 +35,12 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * @author tvc
- *
  * Instances of the class NATAsyncMessage represent first-class asynchronous messages.
  * 
- * TODO: this class should not subclass NATNil but rather a NATExtensibleNative or something.
+ * TODO: Possibly convert this class to a subclass of NATObject to allow adding methods and fields to it without having to make an object extension.
  * It is a primitive object which, for all other purposes, should be extensible like a regular object with extra fields and methods.
+ * 
+ * @author tvc
  */
 public final class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 

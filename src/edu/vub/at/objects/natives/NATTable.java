@@ -45,13 +45,13 @@ import edu.vub.at.objects.natives.grammar.AGExpression;
 import java.util.LinkedList;
 
 /**
- * @author tvc
- *
  * The native implementation of an AmbientTalk table.
  * A table is implemented by a java array.
  * 
  * An important distinction between AT tables and Java arrays is that
  * ATTable objects are indexed from [1..size] rather than [0..size[
+ * 
+ * @author tvc
  */
 public final class NATTable extends AGExpression implements ATTable {
 

@@ -54,10 +54,10 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author smostinc
- *
  * ATConversions is an interface defining all conversion functions between different
  * types of ambienttalk language elements. 
+ * 
+ * @author smostinc
  */
 public interface ATConversions {
 

@@ -31,11 +31,11 @@ import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 
 /**
- * @author tvc
- *
  * Instances of the class ATAsyncMessage represent first-class asynchronous message sends.
  * They encapsulate a sender object, a receiver object, a selector symbol and a table of arguments.
  * Additionally, a message -- being a first-class object, may be extended with extra fields and behaviour (attachments).
+ * 
+ * @author tvc
  */
 public interface ATAsyncMessage extends ATMessage {
 

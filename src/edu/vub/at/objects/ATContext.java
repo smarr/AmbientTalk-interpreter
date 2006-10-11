@@ -29,11 +29,11 @@ package edu.vub.at.objects;
 
 
 /**
- * @author smostinc
- *
  * ATContext describes a triplet of scope pointers used during evaluation, namely
  * one for the lexical scope (where the lookup starts for receiverless messages),
  * one for the late-bound receiver and one for the parent object.
+ * 
+ * @author smostinc
  */
 public interface ATContext extends ATObject {
 	

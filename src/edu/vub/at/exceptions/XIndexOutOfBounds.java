@@ -28,9 +28,9 @@
 package edu.vub.at.exceptions;
 
 /**
- * @author tvc
- *
  * An XIndexOutOfBounds exception is raised when an attempt is made to access or modify an AGTable beyond its capacity.
+ * 
+ * @author tvc
  */
 public final class XIndexOutOfBounds extends NATException {
 

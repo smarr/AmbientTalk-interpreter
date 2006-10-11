@@ -544,7 +544,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 
 	public ATBoolean meta_isRelatedTo(final ATObject object) throws NATException {
-		return this.meta_isCloneOf(object).base_ifFalse_(
+		return this.meta_isCloneOf(object).base_and_(
 				new JavaClosure(this) {
 					public ATObject base_apply(ATTable args) throws NATException {
 						return scope_.meta_getDynamicParent().meta_isRelatedTo(object);
@@ -589,7 +589,5 @@ public class NATObject extends NATCallframe implements ATObject {
 	public boolean isSymbol() { return true; }
 	public boolean isTable() { return true; }
 	public boolean isUnquoteSplice() { return true; }
-
-	// TODO: what about natives?
 	
 }

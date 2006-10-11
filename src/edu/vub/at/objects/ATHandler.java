@@ -37,15 +37,13 @@ package edu.vub.at.objects;
 public interface ATHandler extends ATObject {
 	
 	/**
-	 * The filter object of a handler specifies which exceptions it can handle. The 
-	 * filter object of a handler is passed to every raised object for comparison.
-	 * @return 
+	 * @return the filter object of a handler specifying which exceptions it can handle. 
+	 * The filter object of a handler is used for comparison on raised objects.
 	 */
 	public ATObject base_getFilter();
 	
 	/**
-	 * The closure that can be applied given the raised exception
-	 * @return
+	 * @return the closure that can be applied given the raised exception.
 	 */
 	public ATClosure base_getHandler();
 	

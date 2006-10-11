@@ -37,8 +37,6 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.JavaClosure;
 
 /**
- * @author smostinc
- *
  * A NATClosure instance represents a first-class AmbientTalk closure.
  * A closure is modelled as a pair (method, context), where the method
  * contains the pure function (function name, arguments and body).
@@ -46,6 +44,8 @@ import edu.vub.at.objects.mirrors.JavaClosure;
  * The single most important operation to be performed on a closure is applying it.
  * This will give rise to the application of its underlying method within the context
  * wrapped by the closure.
+ * 
+ * @author smostinc
  */
 public class NATClosure extends NATNil implements ATClosure {
 

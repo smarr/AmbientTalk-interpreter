@@ -30,9 +30,9 @@ package edu.vub.at.exceptions;
 import java.io.IOException;
 
 /**
- * @author tvc
- *
  * The class XIOProblem is mainly a wrapper class for Java IOExceptions.
+ * 
+ * @author tvc
  */
 public class XIOProblem extends NATException {
 

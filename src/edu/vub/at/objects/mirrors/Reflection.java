@@ -48,8 +48,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * @author tvc
- *
  * Reflection is an auxiliary class meant to serve as a repository for methods
  * related to 'up' and 'down' Java values properly into and out of the AmbientTalk base level.
  * 
@@ -67,6 +65,8 @@ import java.util.regex.Pattern;
  *  - methods start with either 'up' or 'down', denoting whether they deify or reify something
  *  - arguments start with either 'j' or 'at', denoting whether they represent Java or AmbientTalk values
  *  With 'java values' is meant 'java objects representing mirrors'
+ * 
+ * @author tvc
  */
 public final class Reflection {
 	

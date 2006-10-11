@@ -28,10 +28,10 @@
 package edu.vub.at.exceptions;
 
 /**
- * @author tvc
- *
  * XArityMismatch is thrown during function application when actual arguments are bound to formal parameters
  * and there are either too many or too few actual arguments supplied.
+ * 
+ * @author tvc
  */
 public final class XArityMismatch extends NATException {
 

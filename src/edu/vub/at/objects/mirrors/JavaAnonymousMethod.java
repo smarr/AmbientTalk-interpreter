@@ -43,8 +43,6 @@ import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
- * @author tvc
- *
  * A JavaAnonymousMethod represents the meta_apply method of an anonymous JavaClosure subclass.
  * 
  * An anonymous native method has the following properties:
@@ -54,6 +52,8 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  *     this closure is natively implemented in the given Java class)
  *   - applying a nativelambda directly (without going through this JavaClosure)
  *     results in an error
+ * 
+ * @author tvc
  */
 public class JavaAnonymousMethod extends NATNil implements ATMethod {
 

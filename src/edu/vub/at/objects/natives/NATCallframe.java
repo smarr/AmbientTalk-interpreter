@@ -44,8 +44,6 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import java.util.Vector;
 
 /**
- * @author smostinc
- *
  * NATCallframe is a native implementation of a callframe. A callframe differs from
  * an ordinary object in the following regards:
  * - it has no dynamic parent
@@ -53,6 +51,8 @@ import java.util.Vector;
  * - it cannot be reified such that send, invoke and select are impossible
  * - it cannot be reified such that it cannot be extended or explicitly shared
  * - since a call frame its lexical parent is shared, cloning it indicates faulty behaviour  
+ * 
+ * @author smostinc
  */
 public class NATCallframe extends NATNil implements ATObject {
 	

@@ -13,9 +13,9 @@ import java.io.IOException;
 import junit.framework.TestCase;
 
 /**
- * @author tvc
- *
  * A unit test for the NATNamespace class.
+ * 
+ * @author tvc
  */
 public class NATNamespaceTest extends TestCase {
 

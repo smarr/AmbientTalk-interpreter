@@ -28,10 +28,10 @@
 package edu.vub.at.exceptions;
 
 /**
- * @author tvc
- *
  * An XIllegalArgument exception is thrown when primitive operations on native types
  * get passed an illegal argument value.
+ * 
+ * @author tvc
  */
 public final class XIllegalArgument extends NATException {
 

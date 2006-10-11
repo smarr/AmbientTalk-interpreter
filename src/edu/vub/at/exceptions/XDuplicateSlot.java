@@ -29,10 +29,10 @@ package edu.vub.at.exceptions;
 
 
 /**
- * @author tvc
- *
  * An XDuplicateSlot exception is raised when a field or a method is added to
  * an object that already contains a field or method with the same name.
+ * 
+ * @author tvc
  */
 public final class XDuplicateSlot extends NATException {
 

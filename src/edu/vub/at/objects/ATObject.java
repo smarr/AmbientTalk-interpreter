@@ -34,8 +34,6 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.actors.ATAsyncMessage;
 
 /**
- * @author tvc
- *
  * ATObject represents the public interface of an AmbientTalk/2 object.
  * Any value representing an ambienttalk object should implement this interface.
  * 
@@ -51,6 +49,7 @@ import edu.vub.at.actors.ATAsyncMessage;
  *  - NATSuperObject acts as a proxy to a NATObject. Therefore, it implements the ATObject interface
  *    by properly forwarding all methods to a wrapped object.
  * 
+ * @author tvc
  */
 public interface ATObject extends ATConversions {
 
@@ -61,7 +60,7 @@ public interface ATObject extends ATConversions {
     /**
      * Sends a newly created message asynchronously to this object.
      * The message may be scheduled in the current actor's outbox if the current ATObject is a remote reference.
-     * @param msg, the asynchronous message (by default created using the actor's ATMessageFactory)
+     * @param message the asynchronous message (by default created using the actor's ATMessageFactory)
      *
      * Triggers the following events on this object's beholders (mirror observers):
      *  - <tt>sentMessage</tt> when the message was sent by the actor.
@@ -80,7 +79,6 @@ public interface ATObject extends ATConversions {
      * @param receiver the original receiver of the invocation
      * @param selector the name of the method to be invoked
      * @param arguments the table of arguments passed to the method
-     * @param receiver the value for self when invoking the method
      * @return return value of the method
      *
      * Triggers the following events on this object's beholders (mirror observers):
