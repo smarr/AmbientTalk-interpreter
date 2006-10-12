@@ -16,7 +16,6 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
 
-import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 

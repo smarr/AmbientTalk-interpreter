@@ -37,6 +37,8 @@ import edu.vub.at.objects.grammar.ATExpression;
  */
 public final class XIllegalUnquote extends NATException {
 
+	private static final long serialVersionUID = -396801039714856213L;
+
 	private static final String _MESSAGE_ = "Unquoted expression in non-quoted expression";
 	
 	private ATExpression unquotation_;

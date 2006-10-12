@@ -55,6 +55,8 @@ import java.io.PrintStream;
  */
 public class NATException extends Exception {
 
+	private static final long serialVersionUID = 511962997881825680L;
+
 	private final InvocationStack runtimeStack_;
 	
 	public NATException() {
@@ -91,7 +93,11 @@ public class NATException extends Exception {
 		try{
 			return tryBlock.base_apply(NATTable.EMPTY);
 		} catch (NATException e) {
-			return replacementCode.base_apply(new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
+			if(this.getClass().isAssignableFrom(e.getClass())) {
+				return replacementCode.base_apply(new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
+			} else {
+				throw e;
+			}
 		}
 	}
 	

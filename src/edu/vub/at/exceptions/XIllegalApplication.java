@@ -28,11 +28,15 @@
 package edu.vub.at.exceptions;
 
 /**
- * TODO document the class XIllegalApplication
+ * XIllegalApplication is thrown when a natively implemented method is applied incorrectly.
+ * This is often the case when an anonymous method (implemented in Java) is applied instead
+ * of its surrounding closure.
  * 
  * @author tvc
  */
 public final class XIllegalApplication extends NATException {
+
+	private static final long serialVersionUID = 1754890282401843233L;
 
 	private final Class nativeImplementor_;
 	

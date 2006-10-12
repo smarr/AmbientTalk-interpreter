@@ -34,6 +34,8 @@ package edu.vub.at.exceptions;
  */
 public final class XIndexOutOfBounds extends NATException {
 
+	private static final long serialVersionUID = 6549583509969990663L;
+
 	public XIndexOutOfBounds(int atIndex, int atLength) {
 		super("Index out of bounds: "+ atIndex + " (size = " + atLength + ")");
 	}

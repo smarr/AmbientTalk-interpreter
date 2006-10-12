@@ -95,31 +95,31 @@ public class NATObjectClosureTest extends TestCase {
 	
 	}
 	
-	private abstract class AGEqualityTest extends NATNil implements ATStatement {
-		
-		public abstract Object getExpectedResult(ATContext ctx);
-		
-		public abstract Object getActualValue(ATContext ctx);
-		
-		public boolean equal(Object expected, Object actual) {
-			return actual == null ? 
-						expected == null:
-						expected.equals(actual);
-		}
-		
-		public ATObject meta_eval(ATContext ctx) throws NATException {
-			if(! equal(getExpectedResult(ctx), getActualValue(ctx)))
-				fail();
-			
-			return this;
-		}
-		
-		public ATStatement asStatement() {
-			return this;
-		}
-
-
-	}
+//	private abstract class AGEqualityTest extends NATNil implements ATStatement {
+//		
+//		public abstract Object getExpectedResult(ATContext ctx);
+//		
+//		public abstract Object getActualValue(ATContext ctx);
+//		
+//		public boolean equal(Object expected, Object actual) {
+//			return actual == null ? 
+//						expected == null:
+//						expected.equals(actual);
+//		}
+//		
+//		public ATObject meta_eval(ATContext ctx) throws NATException {
+//			if(! equal(getExpectedResult(ctx), getActualValue(ctx)))
+//				fail();
+//			
+//			return this;
+//		}
+//		
+//		public ATStatement asStatement() {
+//			return this;
+//		}
+//
+//
+//	}
 
 	private NATObject  lexicalRoot_;
 	

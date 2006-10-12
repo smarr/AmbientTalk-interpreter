@@ -13,6 +13,8 @@ public class NATObjectTest extends AmbientTalkTest {
 	
 	private class TestException extends RuntimeException {
 
+		private static final long serialVersionUID = 7666632653525022022L;
+
 		public int code;
 		
 		public TestException(String message, int code) {

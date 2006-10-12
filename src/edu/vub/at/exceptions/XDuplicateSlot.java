@@ -36,6 +36,8 @@ package edu.vub.at.exceptions;
  */
 public final class XDuplicateSlot extends NATException {
 
+	private static final long serialVersionUID = -1256829498207088803L;
+
 	public XDuplicateSlot(String slotType,  String slotName) {
 		super("Duplicate " + slotType + " definition for " + slotName);
 	}

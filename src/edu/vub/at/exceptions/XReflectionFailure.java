@@ -36,6 +36,8 @@ package edu.vub.at.exceptions;
  */
 public class XReflectionFailure extends NATException {
 
+	private static final long serialVersionUID = 4082945147643295718L;
+
 	public XReflectionFailure() {
 		super();
 	}

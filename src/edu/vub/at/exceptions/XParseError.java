@@ -34,6 +34,8 @@ package edu.vub.at.exceptions;
  */
 public final class XParseError extends NATException {
 
+	private static final long serialVersionUID = 3910243526236096495L;
+
 	private String erroneousCode_;
 	
 	// indicates the position of the parse error

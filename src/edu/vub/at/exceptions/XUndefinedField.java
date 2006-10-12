@@ -36,6 +36,8 @@ package edu.vub.at.exceptions;
  */
 public final class XUndefinedField extends NATException {
 
+	private static final long serialVersionUID = -219804926254934101L;
+
 	public XUndefinedField(String message, String fieldName) {
 		super("Undefined " + message + ": " + fieldName);
 	}

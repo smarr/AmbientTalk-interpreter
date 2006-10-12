@@ -42,6 +42,8 @@ import edu.vub.at.objects.natives.NATTable;
  */
 public class XUserDefined extends NATException {
 
+	private static final long serialVersionUID = -2859841280138142649L;
+
 	public ATObject customException_;
 	
 	public XUserDefined(ATObject customException) {

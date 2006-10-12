@@ -30,11 +30,14 @@ package edu.vub.at.exceptions;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * TODO document the class XIllegalSplice
+ * XIllegalSplice is thrown when an @ token was not encountered in one of its legal
+ * positions namely when unquoting a table or in the argument-list of an application. 
  * 
  * @author tvc
  */
 public final class XIllegalSplice extends NATException {
+
+	private static final long serialVersionUID = -1363939697987417869L;
 
 	private static final String _MESSAGE_ = "Spliced expression in illegal expression";
 	

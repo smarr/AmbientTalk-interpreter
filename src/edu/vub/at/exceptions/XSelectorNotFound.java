@@ -39,6 +39,8 @@ import edu.vub.at.objects.grammar.ATSymbol;
  */
 public class XSelectorNotFound extends NATException {
 
+	private static final long serialVersionUID = -9186247764999498158L;
+	
 	public ATSymbol selector_;
 	public ATObject inObject_;
 	

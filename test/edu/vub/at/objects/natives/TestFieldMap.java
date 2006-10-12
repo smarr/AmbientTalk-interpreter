@@ -1,10 +1,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTestCase;
-import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-
-import junit.framework.TestCase;
 
 /**
  * @author tvc

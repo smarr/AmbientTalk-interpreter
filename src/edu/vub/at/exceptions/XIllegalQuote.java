@@ -27,7 +27,6 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.grammar.ATExpression;
 
 /**
  * An XIllegalQuote exception is raised whenever an unquote-splice unquotation is discovered in an AG node where
@@ -36,6 +35,8 @@ import edu.vub.at.objects.grammar.ATExpression;
  * @author tvc
  */
 public final class XIllegalQuote extends NATException {
+
+	private static final long serialVersionUID = -1407445555815270192L;
 
 	private static final String _MESSAGE_ = "Illegal position for unquote-splice: ";
 

@@ -35,6 +35,8 @@ package edu.vub.at.exceptions;
  */
 public final class XIllegalIndex extends NATException {
 
+	private static final long serialVersionUID = 2358853871410563584L;
+	
 	private static final String _MESSAGE_ = "Illegal index: ";
 
 	public XIllegalIndex(String msg) {

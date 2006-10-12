@@ -35,8 +35,10 @@ package edu.vub.at.exceptions;
  */
 public final class XArityMismatch extends NATException {
 
-    private static final String _TOO_MANY_ = "Too many arguments supplied for ";
-    private static final String _TOO_FEW_ = "Too few arguments supplied for ";
+	private static final long serialVersionUID = 8846227011775592188L;
+	
+	private static final String _TOO_MANY_ = "Too many arguments supplied for ";
+	private static final String _TOO_FEW_ = "Too few arguments supplied for ";
     
 	/**
 	 * @param funnam the name of the function to be invoked (for debugging purposes only)
