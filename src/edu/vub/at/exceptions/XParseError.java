@@ -32,7 +32,7 @@ package edu.vub.at.exceptions;
  * 
  * @author tvc
  */
-public final class XParseError extends NATException {
+public final class XParseError extends InterpreterException {
 
 	private static final long serialVersionUID = 3910243526236096495L;
 

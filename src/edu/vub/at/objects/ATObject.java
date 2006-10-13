@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.coercion.ATConversions;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
@@ -65,7 +65,7 @@ public interface ATObject extends ATConversions {
      * Triggers the following events on this object's beholders (mirror observers):
      *  - <tt>sentMessage</tt> when the message was sent by the actor.
      */
-    public ATNil meta_send(ATAsyncMessage message) throws NATException;
+    public ATNil meta_send(ATAsyncMessage message) throws InterpreterException;
 
     /**
      * Invoke a method corresponding to the selector with the given arguments.
@@ -85,7 +85,7 @@ public interface ATObject extends ATConversions {
      *  - <tt>methodFound</tt> when a method has been found but not yet applied
      *  - <tt>methodInvoked</tt> when the received method has been applied
      */
-    public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException;
+    public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException;
 
     /**
      * Query an object for a given field or method which is visible to the outside world.
@@ -93,7 +93,7 @@ public interface ATObject extends ATConversions {
      * @param selector the name of a field or method
      * @return a boolean denoting whether the object responds to <tt>o.selector</tt>
      */
-    public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException;
+    public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException;
 
     /**
      * Called when a selection fails because the selector was not
@@ -109,7 +109,7 @@ public interface ATObject extends ATConversions {
      * @param selector the selector that could not be found
      * @throws edu.vub.at.exceptions.XSelectorNotFound the default reaction to a failed selection
      */
-    public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException;
+    public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException;
 
     /* ------------------------------------------
       * -- Slot accessing and mutating protocol --
@@ -132,7 +132,7 @@ public interface ATObject extends ATConversions {
      *
      * Triggers the <tt>slotSelected</tt> event on this object's beholders (mirror observers).
      */
-    public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException;
+    public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException;
 
     /**
      * Select a slot (field | method) from an object whose name corresponds to the given
@@ -146,7 +146,7 @@ public interface ATObject extends ATConversions {
      *
      * Triggers the <tt>slotSelected</tt> event on this object's beholders (mirror observers).
      */
-    public ATObject meta_lookup(ATSymbol selector) throws NATException;
+    public ATObject meta_lookup(ATSymbol selector) throws InterpreterException;
 
     /**
      * Defines a new field in an object.
@@ -159,7 +159,7 @@ public interface ATObject extends ATConversions {
      * Triggers the <tt>fieldAdded</tt> event on this object's beholders (mirror observers) if
      * the field is added successfully.
      */
-    public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException;
+    public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException;
 
     /**
      * Sets the value of the variable to the given value.
@@ -172,7 +172,7 @@ public interface ATObject extends ATConversions {
      * @return nil
      * @throws ATException if the field to set cannot be found.
      */
-    public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException;
+    public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException;
 
     /**
      * Sets the value of a field to the given value.
@@ -186,7 +186,7 @@ public interface ATObject extends ATConversions {
      * @return nil
      * @throws ATException if the field to set cannot be found.
      */
-    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException;
+    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException;
 
     /* ------------------------------------
       * -- Extension and cloning protocol --
@@ -206,7 +206,7 @@ public interface ATObject extends ATConversions {
      *
      * Initializing the clone is the responsibility of the method named <init>.
      */
-    public ATObject meta_clone() throws NATException;
+    public ATObject meta_clone() throws InterpreterException;
 
     /**
      * Create a new instance of the receiver object. AmbientTalk mimics the initialization
@@ -219,7 +219,7 @@ public interface ATObject extends ATConversions {
      * @param initargs arguments to the 'init' constructor method
      * @return the new instance
      */
-    public ATObject meta_newInstance(ATTable initargs) throws NATException;
+    public ATObject meta_newInstance(ATTable initargs) throws InterpreterException;
 
     /**
      * Create an is-a extension of the receiver object.
@@ -229,7 +229,7 @@ public interface ATObject extends ATConversions {
      *
      * @return a fresh object whose dynamic parent points to <this> with 'is-a' semantics.
      */
-    public ATObject meta_extend(ATClosure code) throws NATException;
+    public ATObject meta_extend(ATClosure code) throws InterpreterException;
 
     /**
      * Create a shares-a extension of the receiver object.
@@ -240,7 +240,7 @@ public interface ATObject extends ATConversions {
      *
      * @return a fresh object whose dynamic parent points to <this> with 'shares-a' semantics.
      */
-    public ATObject meta_share(ATClosure code) throws NATException;
+    public ATObject meta_share(ATClosure code) throws InterpreterException;
 
     /* ---------------------------------
       * -- Structural Access Protocol  --
@@ -257,7 +257,7 @@ public interface ATObject extends ATConversions {
      *
      * TODO: return value = nil?
      */
-    public ATNil meta_addField(ATField field) throws NATException;
+    public ATNil meta_addField(ATField field) throws InterpreterException;
 
     /**
      * Adds a method slot to an object at runtime.
@@ -270,7 +270,7 @@ public interface ATObject extends ATConversions {
      *
      * TODO: return value = nil? argument = a method mirror or a closure mirror?
      */
-    public ATNil meta_addMethod(ATMethod method) throws NATException;
+    public ATNil meta_addMethod(ATMethod method) throws InterpreterException;
 
     /**
      * Queries an object for one of its field slots.
@@ -280,7 +280,7 @@ public interface ATObject extends ATConversions {
      * @return a mirror on this object's field slot.
      * @throws ATException if the field cannot be found.
      */
-    public ATField meta_getField(ATSymbol selector) throws NATException;
+    public ATField meta_getField(ATSymbol selector) throws InterpreterException;
 
     /**
      * Queries an object for one of its method slots.
@@ -290,27 +290,27 @@ public interface ATObject extends ATConversions {
      * @return a mirror on this object's method slot.
      * @throws ATException if the method cannot be found.
      */
-    public ATMethod meta_getMethod(ATSymbol selector) throws NATException;
+    public ATMethod meta_getMethod(ATSymbol selector) throws InterpreterException;
 
     /**
      * Queries an object for a list of all of its field slots.
-     * TODO: should this method trigger beholders?
+     * TODO(beholders) should this method trigger beholders?
      *   if so, using a single 'fieldsQueried' event or by
      *   invoking 'fieldAccessed' for each field in the list returned?
      *
      * @return a table of ATField mirrors.
      */
-    public ATTable meta_listFields() throws NATException;
+    public ATTable meta_listFields() throws InterpreterException;
 
     /**
      * Queries an object for a list of all of its method slots.
-     * TODO: should this method trigger beholders?
+     * TODO(beholders) should this method trigger beholders?
      *   if so, using a single 'methodsQueried' event or by
      *   invoking 'methodAccessed' for each field in the list returned?
      *
      * @return a table of ATMethod mirrors.
      */
-    public ATTable meta_listMethods() throws NATException;
+    public ATTable meta_listMethods() throws InterpreterException;
 
     /* ---------------------
       * -- Mirror Fields   --
@@ -321,18 +321,18 @@ public interface ATObject extends ATConversions {
      * primitives. This getter method allows accessing the parent alongside
      * this dynamic parent chain to be accessed as a field of the object's
      * mirror.
-     * @throws NATException 
+     * @throws InterpreterException 
      */
-    public ATObject meta_getDynamicParent() throws NATException;
+    public ATObject meta_getDynamicParent() throws InterpreterException;
 
     /**
      * Objects also have a lexical parent which is the scope in which their
      * definitions are nested. This scope is visible using receiverless messages.
      * This getter method allows accessing the parent alongside the lexical nesting
      * chain to be accessed as a field of the object's mirror.
-     * @throws NATException 
+     * @throws InterpreterException 
      */
-    public ATObject meta_getLexicalParent() throws NATException;
+    public ATObject meta_getLexicalParent() throws InterpreterException;
 
     /* ------------------------------------------
       * -- Abstract Grammar evaluation protocol --
@@ -341,9 +341,9 @@ public interface ATObject extends ATConversions {
     /**
      * Evaluates a particular parsetree with respect to a particular context.
      * @param ctx - context (object) to lookup bindings in.
-     * @throws NATException
+     * @throws InterpreterException
      */
-    public ATObject meta_eval(ATContext ctx) throws NATException;
+    public ATObject meta_eval(ATContext ctx) throws InterpreterException;
 
     /**
      * Quotes a parsetree, in other words allows the parsetree to return itself
@@ -352,15 +352,15 @@ public interface ATObject extends ATConversions {
      * parsetree element is found. The context is passed on behalf of these possible
      * future evaluations.
      * @param ctx - context passed on to be used in subsequent evaluations.
-     * @throws NATException upon conversion errors or upon illegal unquoted expressions
+     * @throws InterpreterException upon conversion errors or upon illegal unquoted expressions
      */
-    public ATObject meta_quote(ATContext ctx) throws NATException;
+    public ATObject meta_quote(ATContext ctx) throws InterpreterException;
 
     /**
      * Prints out the object in a human-readable way.
      * @return a native textual representation of the object.
      */
-    public NATText meta_print() throws NATException;
+    public NATText meta_print() throws InterpreterException;
 
     /* ----------------------------------
      * -- Object Relational Comparison --
@@ -369,9 +369,9 @@ public interface ATObject extends ATConversions {
     /**
      * Detects whether both objects have a common origin, in other words whether 
      * they are related through a combination of the cloning and extension operators.
-     * @throws NATException 
+     * @throws InterpreterException 
      */
-    public ATBoolean meta_isRelatedTo(ATObject object) throws NATException;
+    public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException;
     
     /**
      * Detects whether this object an the passed parameter are the result of cloning 
@@ -379,7 +379,7 @@ public interface ATObject extends ATConversions {
      * @param original - the object of which this object is supposedly a sibling
      * @return NATBoolean._TRUE_ if both objects are related.
      */
-    public ATBoolean meta_isCloneOf(ATObject original) throws NATException;
+    public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException;
     
     /* -------------------------------
       * - Base Level Object interface -
@@ -390,18 +390,18 @@ public interface ATObject extends ATConversions {
      * The pointer equality == operator.
      * OBJ(o1) == OBJ(o2) => BLN(o1.equals(o2))
      */
-    public ATBoolean base__opeql__opeql_(ATObject other) throws NATException;
+    public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException;
 
     /**
      * The object instantiation method.
      * obj.new(@args) => (reflect: obj).newInstance(@args)
      */
-    public ATObject base_new(ATObject[] initargs) throws NATException;
+    public ATObject base_new(ATObject[] initargs) throws InterpreterException;
 
     /**
      * The object initialisation method.
      * By default, it does nothing.
      * obj.init(@args) => nil
      */
-    public ATObject base_init(ATObject[] initargs) throws NATException;
+    public ATObject base_init(ATObject[] initargs) throws InterpreterException;
 }

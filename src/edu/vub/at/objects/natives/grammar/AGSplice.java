@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalSplice;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -57,18 +57,18 @@ public class AGSplice extends AGExpression implements ATSplice {
 	 * 
 	 * AGSPL(exp).eval(ctx) = ERROR
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		throw new XIllegalSplice(splExp_);
 	}
 
 	/**
 	 * Quoting a splice means quoting its contained expression, and returning a new splice.
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGSplice(splExp_.meta_quote(ctx).asExpression());
 	}
 
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("@"+ splExp_.meta_print().javaValue);
 	}
 

@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -68,12 +68,12 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 	/**
 	 * Quoting a message creation element returns a new quoted message creation element.
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return this.newQuoted(selector_.meta_quote(ctx).asSymbol(),
 				             arguments_.meta_quote(ctx).asTable());
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(this.getMessageToken() +
 				               selector_.meta_print().javaValue +
 				               Evaluator.printAsList(arguments_).javaValue);

@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -64,7 +64,7 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	 * to the caller until the last expression is also evaluated. Tail-recursion optimalisation
 	 * requires a minimal form of explicit continuations.
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		NATNumber siz = statements_.base_getLength().asNativeNumber();
 		int lastIdx = siz.javaValue;
 		for (int i = 1; i < lastIdx; i++) {
@@ -76,13 +76,13 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	/**
 	 * AGBEGIN(statements*).quote(ctx) = AGBEGIN((statements*).quote(ctx))
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGBegin(statements_.meta_quote(ctx).asTable());
 	}
 	
 	public ATTable base_getStatements() { return statements_; }
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return Evaluator.printAsStatements(statements_);
 	}
 	

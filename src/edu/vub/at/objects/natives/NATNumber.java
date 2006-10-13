@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATClosure;
@@ -73,7 +73,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	
 	public NATNumber asNativeNumber() { return this; }
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
         return NATText.atValue(String.valueOf(javaValue));
 	}
 	
@@ -89,7 +89,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	/**
 	 * NBR(n).doTimes: { |i| code } => for i = 1 to n do code.eval(i) ; nil
 	 */
-	public ATNil base_doTimes_(ATClosure code) throws NATException {
+	public ATNil base_doTimes_(ATClosure code) throws InterpreterException {
 		for (int i = 1; i <= javaValue; i++) {
 			code.base_apply(new NATTable(new ATObject[] { NATNumber.atValue(i) }));
 		}
@@ -102,7 +102,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 * 
 	 * If start = stop, the code is not executed.
 	 */
-	public ATNil base_to_do_(ATNumber end, ATClosure code) throws NATException {
+	public ATNil base_to_do_(ATNumber end, ATClosure code) throws InterpreterException {
 		return this.base_to_step_do_(end, NATNumber.ONE, code);
 	}
 	
@@ -111,7 +111,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 *   for i = start; i < stop; i++ do code.eval(i) ; nil
 	 * Also works if stop > start, in which case it becomes a downTo.
 	 */
-	public ATNil base_to_step_do_(ATNumber end, ATNumber inc, ATClosure code) throws NATException {
+	public ATNil base_to_step_do_(ATNumber end, ATNumber inc, ATClosure code) throws InterpreterException {
 		int stop = end.asNativeNumber().javaValue;
 		int step = inc.asNativeNumber().javaValue;
 		int start = javaValue;
@@ -134,7 +134,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 *  2 ** 5 => [ 2, 3, 4 ]
 	 *  5 ** 2 => [ 5, 4, 3 ]
 	 */
-	public ATTable base__optms__optms_(ATNumber end) throws NATException {
+	public ATTable base__optms__optms_(ATNumber end) throws InterpreterException {
 		int stop = end.asNativeNumber().javaValue;
 		int start = javaValue;
 		if (start < stop) {
@@ -159,7 +159,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 *  2 *** 5 => [ 2, 3, 4, 5 ]
 	 *  5 *** 2 => [ 5, 4, 3, 2 ]
 	 */
-	public ATTable base__optms__optms__optms_(ATNumber end) throws NATException {
+	public ATTable base__optms__optms__optms_(ATNumber end) throws InterpreterException {
 		// x *** y == x ** y+1 iff x < y
 		// x *** y == x ** y-1 iff y > x
 		int stop = end.asNativeNumber().javaValue;
@@ -195,7 +195,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	/**
 	 * NBR(start) ?? NBR(stop) => FRC(n) where n chosen randomly in [ start, stop [
 	 */
-	public ATFraction base__opque__opque_(ATNumber nbr) throws NATException {
+	public ATFraction base__opque__opque_(ATNumber nbr) throws InterpreterException {
 		int stop = nbr.asNativeNumber().javaValue;
 		double rnd = Math.random(); // 0 <= rnd < 1.0
 		double frc = (rnd * (stop - javaValue)) + javaValue;
@@ -205,72 +205,72 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	/**
 	 * NBR(n) % NBR(r) => NBR(n % r)
 	 */
-	public ATNumber base__oprem_(ATNumber n) throws NATException {
+	public ATNumber base__oprem_(ATNumber n) throws InterpreterException {
 		return NATNumber.atValue(javaValue % n.asNativeNumber().javaValue);
 	}
 	
 	/**
 	 * NBR(n) /- NBR(d) => NBR(n / d)
 	 */
-	public ATNumber base__opdiv__opmns_(ATNumber n) throws NATException {
+	public ATNumber base__opdiv__opmns_(ATNumber n) throws InterpreterException {
 		return NATNumber.atValue(javaValue / n.asNativeNumber().javaValue);
 	}
 	
 	// Numeric arithmetic operations
 	
 	// addition +
-	public ATNumeric base__oppls_(ATNumeric other) throws NATException {
+	public ATNumeric base__oppls_(ATNumeric other) throws InterpreterException {
 		return other.base_addNumber(this);
 	}
-	public ATNumeric base_addNumber(ATNumber other) throws NATException {
+	public ATNumeric base_addNumber(ATNumber other) throws InterpreterException {
 		return NATNumber.atValue(other.asNativeNumber().javaValue + javaValue);
 	}
-	public ATNumeric base_addFraction(ATFraction other) throws NATException {
+	public ATNumeric base_addFraction(ATFraction other) throws InterpreterException {
 		return NATFraction.atValue(other.asNativeFraction().javaValue + javaValue);
 	}
 	
 	// subtraction -
-	public ATNumeric base__opmns_(ATNumeric other) throws NATException {
+	public ATNumeric base__opmns_(ATNumeric other) throws InterpreterException {
 		return other.base_subtractNumber(this);
 	}
-	public ATNumeric base_subtractNumber(ATNumber other) throws NATException {
+	public ATNumeric base_subtractNumber(ATNumber other) throws InterpreterException {
 		return NATNumber.atValue(other.asNativeNumber().javaValue - javaValue);
 	}
-	public ATNumeric base_subtractFraction(ATFraction other) throws NATException {
+	public ATNumeric base_subtractFraction(ATFraction other) throws InterpreterException {
 		return NATFraction.atValue(other.asNativeFraction().javaValue - javaValue);
 	}
 	
 	// multiplication *
-	public ATNumeric base__optms_(ATNumeric other) throws NATException {
+	public ATNumeric base__optms_(ATNumeric other) throws InterpreterException {
 		return other.base_timesNumber(this);
 	}
-	public ATNumeric base_timesNumber(ATNumber other) throws NATException {
+	public ATNumeric base_timesNumber(ATNumber other) throws InterpreterException {
 		return NATNumber.atValue(other.asNativeNumber().javaValue * javaValue);
 	}
-	public ATNumeric base_timesFraction(ATFraction other) throws NATException {
+	public ATNumeric base_timesFraction(ATFraction other) throws InterpreterException {
 		return NATFraction.atValue(other.asNativeFraction().javaValue * javaValue);
 	}
 	
 	// division /
-	public ATNumeric base__opdiv_(ATNumeric other) throws NATException {
+	public ATNumeric base__opdiv_(ATNumeric other) throws InterpreterException {
 		return other.base_divideNumber(this);
 	}
-	public ATNumeric base_divideNumber(ATNumber other) throws NATException {
+	public ATNumeric base_divideNumber(ATNumber other) throws InterpreterException {
 		if (javaValue == 0)
 			throw new XIllegalArgument("Division by zero: " + other);
 		return NATFraction.atValue((other.asNativeNumber().javaValue * 1.0) / javaValue);
 	}
-	public ATNumeric base_divideFraction(ATFraction other) throws NATException {
+	public ATNumeric base_divideFraction(ATFraction other) throws InterpreterException {
 		if (javaValue == 0)
 			throw new XIllegalArgument("Division by zero: " + other);
 		return NATFraction.atValue(other.asNativeFraction().javaValue / javaValue);
 	}
 	
 	// comparison: generalized equality <=>
-	public ATNumeric base__opltx__opeql__opgtx_(ATNumeric other) throws NATException {
+	public ATNumeric base__opltx__opeql__opgtx_(ATNumeric other) throws InterpreterException {
 		return other.base_gequalsNumber(this);
 	}
-	public ATNumeric base_gequalsNumber(ATNumber other) throws NATException {
+	public ATNumeric base_gequalsNumber(ATNumber other) throws InterpreterException {
 		int n = other.asNativeNumber().javaValue;
 		if (n < javaValue) {
 			return NATNumber.MONE; // -1
@@ -280,7 +280,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 			return NATNumber.ZERO; // 0
 		}
 	}
-	public ATNumeric base_gequalsFraction(ATFraction other) throws NATException {
+	public ATNumeric base_gequalsFraction(ATFraction other) throws InterpreterException {
 		double n = other.asNativeFraction().javaValue;
 		if (n < javaValue) {
 			return NATNumber.MONE; // -1

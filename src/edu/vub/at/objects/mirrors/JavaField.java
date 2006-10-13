@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -50,7 +50,7 @@ public class JavaField extends NATNil implements ATField {
 	private ATSymbol name_;
 	
 	public static JavaField createPrimitiveField(
-			ATObject receiver, ATSymbol fieldName) throws NATException {
+			ATObject receiver, ATSymbol fieldName) throws InterpreterException {
 
 		String getterSel = Reflection.upBaseFieldAccessSelector(fieldName);
 		String setterSel = Reflection.upBaseFieldMutationSelector(fieldName);
@@ -60,7 +60,7 @@ public class JavaField extends NATNil implements ATField {
 
 		try {
 			setter = JavaInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, setterSel);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			// The lack of a setter method for a field on a primitive can be tolerated
 		}	
 		
@@ -82,20 +82,20 @@ public class JavaField extends NATNil implements ATField {
 	public ATObject base_getValue() {
 		try {
 			return getter_.base_apply(NATTable.EMPTY);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			// the application of the getter should normally not give a problem
 			throw new RuntimeException(e);
 		}
 	}
 
-	public ATObject base_setValue(ATObject newValue) throws NATException {
+	public ATObject base_setValue(ATObject newValue) throws InterpreterException {
 		// certain fields may not have setters
 		if(setter_ != null)
 			return getter_.base_apply(new NATTable(new ATObject[] { newValue }));
 		throw new XIllegalOperation("Field " + name_.base_getText().asNativeText().javaValue + " cannot be set.");
 	}
 
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<native field:"+name_.base_getText().asNativeText().javaValue+">");
 	}
 }

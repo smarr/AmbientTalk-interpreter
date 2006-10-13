@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
@@ -98,7 +99,7 @@ public final class Reflection {
 	/**
 	 * Transforms a Java selector prefixed with base_ into an AmbientTalk selector without the prefix.
 	 */
-	public static final ATSymbol downBaseLevelSelector(String jSelector) throws NATException {
+	public static final ATSymbol downBaseLevelSelector(String jSelector) throws InterpreterException {
 		if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
 			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._BASE_PREFIX_));
 		} else 
@@ -128,7 +129,7 @@ public final class Reflection {
 	/**
 	 * Transforms a Java selector prefixed with meta_ into an AmbientTalk selector without the prefix.
 	 */
-	public static final ATSymbol downMetaLevelSelector(String jSelector) throws NATException {
+	public static final ATSymbol downMetaLevelSelector(String jSelector) throws InterpreterException {
 		if (jSelector.startsWith(JavaInterfaceAdaptor._META_PREFIX_)) {
 			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._META_PREFIX_));
 		} else {
@@ -142,7 +143,7 @@ public final class Reflection {
 	 * Example:
 	 *  downBaseFieldAccessSelector("base_getReceiver") => ATSymbol("receiver")
 	 */
-	public static final ATSymbol downBaseFieldAccessSelector(String jSelector) throws NATException {
+	public static final ATSymbol downBaseFieldAccessSelector(String jSelector) throws InterpreterException {
 		if (jSelector.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
 			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BGET_PREFIX_));
 		} else {
@@ -156,7 +157,7 @@ public final class Reflection {
 	 * Example:
 	 *  downBaseFieldMutationSelector("base_setReceiver") => ATSymbol("receiver")
 	 */
-	public static final ATSymbol downBaseFieldMutationSelector(String jSelector) throws NATException {
+	public static final ATSymbol downBaseFieldMutationSelector(String jSelector) throws InterpreterException {
 		if (jSelector.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
 			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BSET_PREFIX_));
 		} else {
@@ -170,7 +171,7 @@ public final class Reflection {
 	 * Example:
 	 *  downMetaFieldAccessSelector("meta_getReceiver") => ATSymbol("receiver")
 	 */
-	public static final ATSymbol downMetaFieldAccessSelector(String jSelector) throws NATException {
+	public static final ATSymbol downMetaFieldAccessSelector(String jSelector) throws InterpreterException {
 		if (jSelector.startsWith(JavaInterfaceAdaptor._MGET_PREFIX_)) {
 			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MGET_PREFIX_));
 		} else {
@@ -184,7 +185,7 @@ public final class Reflection {
 	 * Example:
 	 *  downMetaFieldMutationSelector("meta_setReceiver") => ATSymbol("receiver")
 	 */
-	public static final ATSymbol downMetaFieldMutationSelector(String jSelector) throws NATException {
+	public static final ATSymbol downMetaFieldMutationSelector(String jSelector) throws InterpreterException {
 		if (jSelector.startsWith(JavaInterfaceAdaptor._MSET_PREFIX_)) {
 			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MSET_PREFIX_));
 		} else {
@@ -199,7 +200,7 @@ public final class Reflection {
 	 *    @see Reflection#downSelector(String)
 	 *  - the first letter is transformed into lower case (as it was uppercased for Java conventions)
 	 */
-	public static final ATSymbol downFieldName(String jName) throws NATException {
+	public static final ATSymbol downFieldName(String jName) throws InterpreterException {
 		char[] charArray = jName.toCharArray();
 		charArray[0] = Character.toLowerCase(charArray[0]);
 		return downSelector(new String(charArray));
@@ -226,7 +227,7 @@ public final class Reflection {
 	 *   ? -> que
 	 *   % -> rem
 	 */
-	public static final String upSelector(ATSymbol atSelector) throws NATException {
+	public static final String upSelector(ATSymbol atSelector) throws InterpreterException {
 		// : -> _
 		String nam = atSelector.base_getText().asNativeText().javaValue;
 		nam = nam.replaceAll(":", "_");
@@ -247,21 +248,21 @@ public final class Reflection {
 	/**
 	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with base_.
 	 */
-	public static final String upBaseLevelSelector(ATSymbol atSelector) throws NATException {
+	public static final String upBaseLevelSelector(ATSymbol atSelector) throws InterpreterException {
 		return JavaInterfaceAdaptor._BASE_PREFIX_ + upSelector(atSelector);
 	}
 
 	/**
 	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with meta_.
 	 */
-	public static final String upMetaLevelSelector(ATSymbol atSelector) throws NATException {
+	public static final String upMetaLevelSelector(ATSymbol atSelector) throws InterpreterException {
 		return JavaInterfaceAdaptor._META_PREFIX_ + upSelector(atSelector);
 	}
 	
 	/**
 	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with magic_.
 	 */
-	public static final String upMagicLevelSelector(ATSymbol atSelector) throws NATException {
+	public static final String upMagicLevelSelector(ATSymbol atSelector) throws InterpreterException {
 		return JavaInterfaceAdaptor._MAGIC_PREFIX_ + upSelector(atSelector);
 	}
 	
@@ -273,7 +274,7 @@ public final class Reflection {
 	 *  - the first letter is transformed into upper case such that it can be accessed using respectively
 	 *    "getField" | "setField" methods at the Java level.  
 	 */
-	public static final String upFieldName(ATSymbol atName) throws NATException {
+	public static final String upFieldName(ATSymbol atName) throws InterpreterException {
 		char[] charArray = upSelector(atName).toCharArray();
 		charArray[0] = Character.toUpperCase(charArray[0]);
 		return new String(charArray);
@@ -285,7 +286,7 @@ public final class Reflection {
 	 * Example:
 	 *  upBaseFieldAccessSelector(ATSymbol('receiver')) => "base_getReceiver"
 	 */
-	public static final String upBaseFieldAccessSelector(ATSymbol atName) throws NATException {
+	public static final String upBaseFieldAccessSelector(ATSymbol atName) throws InterpreterException {
 		return JavaInterfaceAdaptor._BGET_PREFIX_ + upFieldName(atName);
 	}
 
@@ -295,7 +296,7 @@ public final class Reflection {
 	 * Example:
 	 *  upBaseFieldMutationSelector(ATSymbol('receiver')) => "base_setReceiver"
 	 */
-	public static final String upBaseFieldMutationSelector(ATSymbol atName) throws NATException {
+	public static final String upBaseFieldMutationSelector(ATSymbol atName) throws InterpreterException {
 		return JavaInterfaceAdaptor._BSET_PREFIX_ + upFieldName(atName);
 	}
 
@@ -305,7 +306,7 @@ public final class Reflection {
 	 * Example:
 	 *  upMetaFieldAccessSelector(ATSymbol('receiver')) => "meta_getReceiver"
 	 */
-	public static final String upMetaFieldAccessSelector(ATSymbol atName) throws NATException {
+	public static final String upMetaFieldAccessSelector(ATSymbol atName) throws InterpreterException {
 		return JavaInterfaceAdaptor._MGET_PREFIX_ + upFieldName(atName);
 	}
 	
@@ -315,7 +316,7 @@ public final class Reflection {
 	 * Example:
 	 *  upMetaFieldMutationSelector(ATSymbol('receiver')) => "meta_setReceiver"
 	 */
-	public static final String upMetaFieldMutationSelector(ATSymbol atName) throws NATException {
+	public static final String upMetaFieldMutationSelector(ATSymbol atName) throws InterpreterException {
 		return JavaInterfaceAdaptor._MSET_PREFIX_ + upFieldName(atName);
 	}
 	
@@ -325,7 +326,7 @@ public final class Reflection {
 	 * Example:
 	 *  upMetaFieldAccessSelector(ATSymbol('receiver')) => "meta_getReceiver"
 	 */
-	public static final String upMagicFieldAccessSelector(ATSymbol atName) throws NATException {
+	public static final String upMagicFieldAccessSelector(ATSymbol atName) throws InterpreterException {
 		return JavaInterfaceAdaptor._MAGET_PREFIX_ + upFieldName(atName);
 	}
 	
@@ -335,7 +336,7 @@ public final class Reflection {
 	 * Example:
 	 *  upMetaFieldMutationSelector(ATSymbol('receiver')) => "meta_setReceiver"
 	 */
-	public static final String upMagicFieldMutationSelector(ATSymbol atName) throws NATException {
+	public static final String upMagicFieldMutationSelector(ATSymbol atName) throws InterpreterException {
 		return JavaInterfaceAdaptor._MASET_PREFIX_ + upFieldName(atName);
 	}
 	/**
@@ -355,7 +356,7 @@ public final class Reflection {
 	 *  => downField(aNATMessage, "selector")
 	 *  => NATMessage must have a zero-arg method getSelector and optionally setSelector
 	 */
-	public static final ATField downField(ATObject jObject, String jSelector) throws NATException {
+	public static final ATField downField(ATObject jObject, String jSelector) throws InterpreterException {
 		return JavaField.createPrimitiveField(jObject, downSelector(jSelector));
 	}
 	
@@ -374,7 +375,7 @@ public final class Reflection {
 	 *  => downMethod(aNATTable, "at")
 	 *  => NATTable must have a method named base_at
 	 */
-	public static final ATMethod downMethod(ATObject jObject, String jSelector) throws NATException {
+	public static final ATMethod downMethod(ATObject jObject, String jSelector) throws InterpreterException {
 		return JavaInterfaceAdaptor.getMethod(jObject.getClass(), jObject, jSelector);
 	}
 
@@ -401,7 +402,7 @@ public final class Reflection {
 	 *  - obj.meta_selector(args) => obj.meta_selector(args)
 	 *  - obj.meta_set|getSelector(args) => obj.meta_set|getSelector(args)
 	 */
-	public static final ATObject downInvocation(ATObject atRcvr, String jSelector, Object[] jArgs) throws NATException {
+	public static final ATObject downInvocation(ATObject atRcvr, String jSelector, Object[] jArgs) throws InterpreterException {
 		if (jArgs == null) { jArgs = NATTable.EMPTY.elements_; }
 		
 		if (jSelector.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
@@ -450,7 +451,7 @@ public final class Reflection {
 	 *  => upInvocation(aNATTable, "meta_invoke", ATObject[] { aNATTable, ATSymbol('at'), ATTable([ATNumber(1)]) })
 	 *  => NATTable must have a method named meta_invoke
 	 */
-	public static final Object upInvocation(ATObject atOrigRcvr, String jSelector, ATTable atArgs) throws NATException {
+	public static final Object upInvocation(ATObject atOrigRcvr, String jSelector, ATTable atArgs) throws InterpreterException {
 		return JavaInterfaceAdaptor.invokeJavaMethod(
 				    atOrigRcvr.getClass(),
 				    atOrigRcvr,
@@ -472,7 +473,7 @@ public final class Reflection {
 	 *  => upRespondsTo(aNATTable, "at")
 	 *  => NATTable must have a method named base_at
 	 */
-	public static final boolean upRespondsTo(ATObject jRcvr,String jSelector) throws NATException {
+	public static final boolean upRespondsTo(ATObject jRcvr,String jSelector) throws InterpreterException {
 		return JavaInterfaceAdaptor.hasApplicableJavaMethod(
 				jRcvr.getClass(),
 				jSelector);
@@ -512,7 +513,7 @@ public final class Reflection {
 	 *  => NATMessage must have a zero-argument method named getSelector
 	 *  
 	 */
-	public static final Object upFieldSelection(ATObject atOrigRcvr, String jSelector) throws NATException {
+	public static final Object upFieldSelection(ATObject atOrigRcvr, String jSelector) throws InterpreterException {
 		return JavaInterfaceAdaptor.invokeJavaMethod(
 				atOrigRcvr.getClass(),
 				atOrigRcvr,
@@ -535,7 +536,7 @@ public final class Reflection {
 	 *  => NATMessage must have a one-argument method named base_setSelector
 	 *  
 	 */
-	public static final Object upFieldAssignment(ATObject atOrigRcvr, String jSelector, ATObject value) throws NATException {
+	public static final Object upFieldAssignment(ATObject atOrigRcvr, String jSelector, ATObject value) throws InterpreterException {
 		return JavaInterfaceAdaptor.invokeJavaMethod(
 				atOrigRcvr.getClass(),
 				atOrigRcvr,
@@ -557,7 +558,7 @@ public final class Reflection {
 	 *  => upSelection(aNATTable, "at")
 	 *  => either NATTable must have a method base_at, which is then wrapped
 	 */
-	public static final Object upMethodSelection(ATObject atOrigRcvr, String jSelector) throws NATException {
+	public static final Object upMethodSelection(ATObject atOrigRcvr, String jSelector) throws InterpreterException {
 		return JavaInterfaceAdaptor.wrapMethodFor(atOrigRcvr.getClass(), atOrigRcvr, jSelector);
 	}
 	
@@ -569,9 +570,18 @@ public final class Reflection {
 	 * @param jRcvr the Java object having received the call to new
 	 * @param atInitargs the arguments to the constructor
 	 * @return a new instance of a Java class
-	 * @throws NATException
+	 * @throws InterpreterException
 	 */
-	public static final Object upInstanceCreation(ATObject jRcvr, ATTable atInitargs) throws NATException {
+	public static final Object upInstanceCreation(ATObject jRcvr, ATTable atInitargs) throws InterpreterException {
+		ATObject[] args = atInitargs.asNativeTable().elements_;
+		Object[] uppedArgs = new Object[args.length];
+		for (int i = 0; i < uppedArgs.length; i++) {
+			uppedArgs[i] = upObject(args[i]);
+		}
+		return JavaInterfaceAdaptor.createClassInstance(jRcvr.getClass(), uppedArgs);
+	}
+	
+	public static final Object upExceptionCreation(InterpreterException jRcvr, ATTable atInitargs) throws InterpreterException {
 		ATObject[] args = atInitargs.asNativeTable().elements_;
 		Object[] uppedArgs = new Object[args.length];
 		for (int i = 0; i < uppedArgs.length; i++) {
@@ -628,7 +638,10 @@ public final class Reflection {
 				atTable[i] = downObject(jArray[i]);
 			}
 			return new NATTable(atTable);
-	    // null
+	    // exceptions
+		} else if(jObj instanceof InterpreterException) {
+			return new NATException((InterpreterException)jObj);
+		// null
 		} else if (jObj == null) {
 			return NATNil._INSTANCE_;
 		} else {

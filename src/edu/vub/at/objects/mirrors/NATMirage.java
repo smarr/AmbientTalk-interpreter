@@ -28,7 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -95,15 +95,15 @@ public class NATMirage extends NATObject {
 		return NATNil._INSTANCE_;
 	}
 	
-	public ATNil magic_addMethod(ATMethod method) throws NATException {
+	public ATNil magic_addMethod(ATMethod method) throws InterpreterException {
 		return super.meta_addMethod(method);
 	}
 
-	public ATNil magic_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws NATException {
+	public ATNil magic_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws InterpreterException {
 		return super.meta_assignField(receiver, selector, value);
 	}
 
-	public NATMirage magic_clone() throws NATException {
+	public NATMirage magic_clone() throws InterpreterException {
 		return (NATMirage)super.meta_clone();
 	}
 
@@ -115,7 +115,7 @@ public class NATMirage extends NATObject {
 			MethodDictionary methodDict,
 			ATObject dynamicParent,
 			ATObject lexicalParent,
-			byte flags) throws NATException {
+			byte flags) throws InterpreterException {
 		NATMirage clone = new NATMirage(map,
 				state,
 				methodDict,
@@ -134,94 +134,94 @@ public class NATMirage extends NATObject {
 		return mirror_;
 	}
 	
-	public ATNil magic_defineField(ATSymbol name, ATObject value) throws NATException {
+	public ATNil magic_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		return super.meta_defineField(name, value);
 	}
 
-	public ATObject magic_extend(ATClosure code) throws NATException {
+	public ATObject magic_extend(ATClosure code) throws InterpreterException {
 		return super.meta_extend(code);
 	}
 
-	public ATMethod magic_getMethod(ATSymbol selector) throws NATException {
+	public ATMethod magic_getMethod(ATSymbol selector) throws InterpreterException {
 		return super.meta_getMethod(selector);
 	}
 
-	public ATObject magic_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
+	public ATObject magic_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		return super.meta_invoke(receiver, selector, arguments);
 	}
 
-	public ATTable magic_listMethods() throws NATException {
+	public ATTable magic_listMethods() throws InterpreterException {
 		return super.meta_listMethods();
 	}
 
-	public ATObject magic_lookup(ATSymbol selector) throws NATException {
+	public ATObject magic_lookup(ATSymbol selector) throws InterpreterException {
 		return super.meta_lookup(selector);
 	}
 
-	public ATObject magic_newInstance(ATTable initargs) throws NATException {
+	public ATObject magic_newInstance(ATTable initargs) throws InterpreterException {
 		return super.meta_newInstance(initargs);
 	}
 
-	public NATText magic_print() throws NATException {
+	public NATText magic_print() throws InterpreterException {
 		return super.meta_print();
 	}
 
-	public ATBoolean magic_respondsTo(ATSymbol selector) throws NATException {
+	public ATBoolean magic_respondsTo(ATSymbol selector) throws InterpreterException {
 		return super.meta_respondsTo(selector);
 	}
 
-	public ATObject magic_select(ATObject receiver, ATSymbol selector) throws NATException {
+	public ATObject magic_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
 		return super.meta_select(receiver, selector);
 	}
 
-	public ATObject magic_share(ATClosure code) throws NATException {
+	public ATObject magic_share(ATClosure code) throws InterpreterException {
 		return super.meta_share(code);
 	}
 
-	public ATNil magic_addField(ATField field) throws NATException {
+	public ATNil magic_addField(ATField field) throws InterpreterException {
 		return super.meta_addField(field);
 	}
 
 
-	public ATNil magic_assignVariable(ATSymbol name, ATObject value) throws NATException {
+	public ATNil magic_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
 		return super.meta_assignVariable(name, value);
 	}
 
 
-	public ATObject magic_doesNotUnderstand(ATSymbol selector) throws NATException {
+	public ATObject magic_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		return super.meta_doesNotUnderstand(selector);
 	}
 
 
-	public ATField magic_getField(ATSymbol selector) throws NATException {
+	public ATField magic_getField(ATSymbol selector) throws InterpreterException {
 		return super.meta_getField(selector);
 	}
 
 
-	public ATTable magic_listFields() throws NATException {
+	public ATTable magic_listFields() throws InterpreterException {
 		return super.meta_listFields();
 	}
 
 
-	public ATNil magic_send(ATAsyncMessage message) throws NATException {
+	public ATNil magic_send(ATAsyncMessage message) throws InterpreterException {
 		return super.meta_send(message);
 	}
 
 
-	public ATObject magic_eval(ATContext ctx) throws NATException {
+	public ATObject magic_eval(ATContext ctx) throws InterpreterException {
 		return super.meta_eval(ctx);
 	}
 
 
-	public ATObject magic_quote(ATContext ctx) throws NATException {
+	public ATObject magic_quote(ATContext ctx) throws InterpreterException {
 		return super.meta_quote(ctx);
 	}
 	
-	public ATObject magic_getDynamicParent() throws NATException {
+	public ATObject magic_getDynamicParent() throws InterpreterException {
 		return super.meta_getDynamicParent();
 	}
 
-	public ATObject magic_getLexicalParent() throws NATException {
+	public ATObject magic_getLexicalParent() throws InterpreterException {
 		return super.meta_getLexicalParent();
 	}	
 
@@ -230,7 +230,7 @@ public class NATMirage extends NATObject {
 	// Forward to our designated mirror object
 
 
-	public ATNil meta_addMethod(ATMethod method) throws NATException {
+	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("addMethod"),
@@ -240,7 +240,7 @@ public class NATMirage extends NATObject {
 		return NATNil._INSTANCE_;
 	}
 
-	public ATNil meta_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws NATException {
+	public ATNil meta_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws InterpreterException {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("assignField"),
@@ -250,7 +250,7 @@ public class NATMirage extends NATObject {
 		return NATNil._INSTANCE_;
 	}
 
-	public ATObject meta_clone() throws NATException {
+	public ATObject meta_clone() throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("clone"),
@@ -258,7 +258,7 @@ public class NATMirage extends NATObject {
 				));
 	}
 
-	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("defineField"),
@@ -268,7 +268,7 @@ public class NATMirage extends NATObject {
 		return NATNil._INSTANCE_;
 	}
 
-	public ATObject meta_extend(ATClosure code) throws NATException {
+	public ATObject meta_extend(ATClosure code) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("extend"),
@@ -276,7 +276,7 @@ public class NATMirage extends NATObject {
 				));
 	}
 	
-	public ATMethod meta_getMethod(ATSymbol selector) throws NATException {
+	public ATMethod meta_getMethod(ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("getMethod"),
@@ -284,7 +284,7 @@ public class NATMirage extends NATObject {
 				)).asMethod();
 	}
 
-	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
+	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("invoke"),
@@ -292,7 +292,7 @@ public class NATMirage extends NATObject {
 				));
 	}
 
-	public ATTable meta_listMethods() throws NATException {
+	public ATTable meta_listMethods() throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("listMethods"),
@@ -300,7 +300,7 @@ public class NATMirage extends NATObject {
 				)).asTable();
 	}
 
-	public ATObject meta_lookup(ATSymbol selector) throws NATException {
+	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("lookup"),
@@ -308,7 +308,7 @@ public class NATMirage extends NATObject {
 				));
 	}
 
-	public ATObject meta_newInstance(ATTable initargs) throws NATException {
+	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("newInstance"),
@@ -316,7 +316,7 @@ public class NATMirage extends NATObject {
 				));
 	}
 
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 					mirror_,
 					AGSymbol.alloc("print"),
@@ -324,7 +324,7 @@ public class NATMirage extends NATObject {
 					)).asNativeText();
 	}
 
-	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
+	public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("respondsTo"),
@@ -332,7 +332,7 @@ public class NATMirage extends NATObject {
 				)).asBoolean();
 	}
 
-	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
+	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("select"),
@@ -340,7 +340,7 @@ public class NATMirage extends NATObject {
 				));
 	}
 
-	public ATObject meta_share(ATClosure code) throws NATException {
+	public ATObject meta_share(ATClosure code) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("share"),
@@ -349,7 +349,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATNil meta_addField(ATField field) throws NATException {
+	public ATNil meta_addField(ATField field) throws InterpreterException {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("addField"),
@@ -360,7 +360,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("assignVariable"),
@@ -371,7 +371,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
+	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("doesNotUnderstand"),
@@ -380,7 +380,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATField meta_getField(ATSymbol selector) throws NATException {
+	public ATField meta_getField(ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("getField"),
@@ -389,7 +389,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATTable meta_listFields() throws NATException {
+	public ATTable meta_listFields() throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("listFields"),
@@ -398,7 +398,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATNil meta_send(ATAsyncMessage message) throws NATException {
+	public ATNil meta_send(ATAsyncMessage message) throws InterpreterException {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("send"),
@@ -409,7 +409,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("eval"),
@@ -418,7 +418,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("quote"),
@@ -426,13 +426,13 @@ public class NATMirage extends NATObject {
 				));
 	}
 
-	public ATObject meta_getDynamicParent() throws NATException {
+	public ATObject meta_getDynamicParent() throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_select(
 				mirror_,
 				AGSymbol.alloc("dynamicParent")));
 	}
 
-	public ATObject meta_getLexicalParent() throws NATException {
+	public ATObject meta_getLexicalParent() throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_select(
 				mirror_,
 				AGSymbol.alloc("lexicalParent")));

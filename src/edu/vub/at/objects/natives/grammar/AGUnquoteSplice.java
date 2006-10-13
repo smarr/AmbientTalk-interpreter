@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalQuote;
 import edu.vub.at.exceptions.XIllegalUnquote;
 import edu.vub.at.objects.ATContext;
@@ -57,7 +57,7 @@ public class AGUnquoteSplice extends AGExpression implements ATUnquoteSplice {
 	 * 
 	 * AGUQS(exp).eval(ctx) = ERROR
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		throw new XIllegalUnquote(uqsExp_);
 	}
 
@@ -69,11 +69,11 @@ public class AGUnquoteSplice extends AGExpression implements ATUnquoteSplice {
 	 * 
 	 * It is the table's responsibility to query an AGUnquoteSplice element for its expression and deal with the inlining appropriately.
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		throw new XIllegalQuote(uqsExp_.meta_print().javaValue);
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("#@("+ uqsExp_.meta_print().javaValue + ")");
 	}
 	

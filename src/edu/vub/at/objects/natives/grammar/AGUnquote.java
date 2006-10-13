@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalUnquote;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -56,7 +56,7 @@ public final class AGUnquote extends AGExpression implements ATUnquote {
 	 * 
 	 * AGUNQ(exp).eval(ctx) = ERROR
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		throw new XIllegalUnquote(unqExp_);
 	}
 
@@ -64,11 +64,11 @@ public final class AGUnquote extends AGExpression implements ATUnquote {
 	 * Quoting an unquotation means evaluating its contained expression, and returning
 	 * its value as the result of the quote.
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return unqExp_.meta_eval(ctx);
 	}
 
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("#("+ unqExp_.meta_print().javaValue + ")");
 	}
 	

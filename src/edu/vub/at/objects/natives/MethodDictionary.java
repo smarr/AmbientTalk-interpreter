@@ -33,7 +33,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * TODO document the class MethodDictionary
+ * Instances of this class implement a dictionary mapping selectors to AmbientTalk methods.
+ * These method dictionaries are a traditional candidate for being shared among different
+ * clones of an object, improving the space efficiency of the language. 
+ * 
+ * The advantage of maps lies in the fact that they can be used implicitly to keep track
+ * of which objects were cloned from one another. As said above clones share the dictionaries.
+ * To ensure that this relation is upheld when one clone makes an idiosyncratic change, 
+ * we store from which method dictionary the altered copy was created.
  *
  * @author smostinc
  */

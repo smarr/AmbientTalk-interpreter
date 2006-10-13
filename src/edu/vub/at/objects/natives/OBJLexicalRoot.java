@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -137,9 +137,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param cond a boolean object
 	 * @param consequent a closure containing the code to execute if the boolean is true
 	 * @return the result of invoking booleanCondition.ifTrue: { consequent }
-	 * @throws NATException if raised inside the consequent closure.
+	 * @throws InterpreterException if raised inside the consequent closure.
 	 */
-	public ATObject base_if_then_(ATBoolean cond, ATClosure consequent) throws NATException {
+	public ATObject base_if_then_(ATBoolean cond, ATClosure consequent) throws InterpreterException {
 		return cond.base_ifTrue_(consequent);
 	}
 	
@@ -156,9 +156,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param consequent a closure containing the code to execute if the boolean is true
 	 * @param alternative a closure containing the code to execute if the boolean is false
 	 * @return the result of invoking booleanCondition.ifTrue: { consequent }
-	 * @throws NATException if raised inside the consequent or alternative closure.
+	 * @throws InterpreterException if raised inside the consequent or alternative closure.
 	 */
-	public ATObject base_if_then_else_(ATBoolean cond, ATClosure consequent, ATClosure alternative) throws NATException {
+	public ATObject base_if_then_else_(ATBoolean cond, ATClosure consequent, ATClosure alternative) throws InterpreterException {
 		return cond.base_ifTrue_ifFalse_(consequent, alternative);
 	}
 	
@@ -174,9 +174,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param condition a closure expected to return a boolean object
 	 * @param body a closure containing the code to execute as long as the condition closure returns true
 	 * @return the result of invoking { body }.whileTrue: { condition }
-	 * @throws NATException if raised inside the condition or body closures.
+	 * @throws InterpreterException if raised inside the condition or body closures.
 	 */
-	public ATObject base_while_do_(ATClosure condition, ATClosure body) throws NATException {
+	public ATObject base_while_do_(ATClosure condition, ATClosure body) throws InterpreterException {
 		return condition.base_whileTrue_(body);
 	}
 	
@@ -192,9 +192,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param body a closure expected to take one argument to be applied to each element of the table
 	 * @param tab a table to apply the iterator block to
 	 * @return the result of invoking [ table ].each: { |v| body }
-	 * @throws NATException if raised inside the iterator block.
+	 * @throws InterpreterException if raised inside the iterator block.
 	 */
-	public ATObject base_foreach_in_(ATClosure body, ATTable tab) throws NATException {
+	public ATObject base_foreach_in_(ATClosure body, ATTable tab) throws InterpreterException {
 		return tab.base_each_(body);
 	}
 
@@ -210,9 +210,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param body a zero-argument closure to execute if the condition is true
 	 * @param condition a boolean expression
 	 * @return the result of invoking body if the condition is true or nil if the condition is false
-	 * @throws NATException if raised inside the body block.
+	 * @throws InterpreterException if raised inside the body block.
 	 */
-	public ATObject base_do_if_(ATClosure body, ATBoolean condition) throws NATException {
+	public ATObject base_do_if_(ATClosure body, ATBoolean condition) throws InterpreterException {
 		return condition.base_ifTrue_(body);
 	}
 	
@@ -228,9 +228,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param body a zero-argument closure to execute if the condition is false
 	 * @param condition a boolean expression
 	 * @return the result of invoking body if the condition is false or nil if the condition is true
-	 * @throws NATException if raised inside the body block.
+	 * @throws InterpreterException if raised inside the body block.
 	 */
-	public ATObject base_do_unless_(ATClosure body, ATBoolean condition) throws NATException {
+	public ATObject base_do_unless_(ATClosure body, ATBoolean condition) throws InterpreterException {
 		return condition.base_ifFalse_(body);
 	}
 	
@@ -251,9 +251,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param parent the object to extend
 	 * @param code a closure containing the code to extend the parent object with
 	 * @return an object whose dynamic parent is an is-a link to the parent parameter
-	 * @throws NATException if raised inside the code closure.
+	 * @throws InterpreterException if raised inside the code closure.
 	 */
-	public ATObject base_extend_with_(ATObject parent, ATClosure code) throws NATException {
+	public ATObject base_extend_with_(ATObject parent, ATClosure code) throws InterpreterException {
 		return parent.meta_extend(code);
 	}
 	
@@ -272,9 +272,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 *  
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent
 	 * @return a new object whose dynamic parent is NIL, whose lexical parent is the closure's lexical scope, initialized by the closure's code
-	 * @throws NATException if raised inside the code closure.
+	 * @throws InterpreterException if raised inside the code closure.
 	 */
-	public ATObject base_object_(ATClosure code) throws NATException {
+	public ATObject base_object_(ATClosure code) throws InterpreterException {
 		NATObject newObject = new NATObject(code.base_getContext().base_getLexicalScope());
 		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newObject, newObject, NATNil._INSTANCE_));
 		return newObject;
@@ -292,9 +292,9 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param parent the object to extend
 	 * @param code a closure containing the code to extend the parent object with
 	 * @return an object whose dynamic parent is a shares-a link to the parent parameter
-	 * @throws NATException if raised inside the code closure.
+	 * @throws InterpreterException if raised inside the code closure.
 	 */
-	public ATObject base_share_with_(ATObject parent, ATClosure code) throws NATException {
+	public ATObject base_share_with_(ATObject parent, ATClosure code) throws InterpreterException {
 		return parent.meta_share(code);
 	}
 	
@@ -310,7 +310,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param reflectee the object to reflect upon
 	 * @return a mirror reflecting the given object
 	 */
-	public ATObject base_reflect_(ATObject reflectee) throws NATException {
+	public ATObject base_reflect_(ATObject reflectee) throws InterpreterException {
 		return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
 	}
 	
@@ -326,7 +326,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param original the object to copy
 	 * @return a clone of the given object
 	 */
-	public ATObject base_clone_(ATObject original) throws NATException {
+	public ATObject base_clone_(ATObject original) throws InterpreterException {
 		return original.meta_clone();
 	}
 	
@@ -344,13 +344,13 @@ public final class OBJLexicalRoot extends NATNil {
 	 * @param code a closure containing both the code with which to initialize the mirror and the new mirror's lexical parent
 	 * @return a new mirror containing the specified definitions
 	 */
-	public ATObject base_mirror_(ATClosure code) throws NATException {
+	public ATObject base_mirror_(ATClosure code) throws InterpreterException {
 		// As this is a base_method, its result will be downed. Since we explicitly want to
 		// return the newly created NATIntercessiveMirror, it needs to be upped explicitly.
 		return NATMirrorFactory._INSTANCE_.createMirror(OBJMirrorRoot._INSTANCE_.meta_extend(code));
 	}
 	
-	public ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws NATException {
+	public ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
 		
 		// Initialise a new pair of mirror-mirage : note that we don't use clone here
 		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
@@ -363,7 +363,7 @@ public final class OBJLexicalRoot extends NATNil {
 
 	}
 	
-	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws NATException {
+	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
 		
 		// Initialise a new pair of mirror-mirage : note that we don't use clone here
 		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
@@ -376,7 +376,7 @@ public final class OBJLexicalRoot extends NATNil {
 
 	}
 	
-	public ATObject base_share_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws NATException {
+	public ATObject base_share_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
 		
 		// Initialise a new pair of mirror-mirage : note that we don't use clone here
 		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
@@ -392,25 +392,25 @@ public final class OBJLexicalRoot extends NATNil {
 	/* -------------------------------
 	 * -- Exception Handling Support -
 	 * ------------------------------- */
-	public ATObject base_try_using_(ATClosure tryBlock, ATHandler exceptionHandler) throws NATException {
+	public ATObject base_try_using_(ATClosure tryBlock, ATHandler exceptionHandler) throws InterpreterException {
 		return base_try_catch_using_(
 				tryBlock, 
 				exceptionHandler.base_getFilter(), 
 				exceptionHandler.base_getHandler());
 	}
 	
-	public ATObject base_try_catch_using_(ATClosure tryBlock, ATObject filter, ATClosure replacementCode) throws NATException {
+	public ATObject base_try_catch_using_(ATClosure tryBlock, ATObject filter, ATClosure replacementCode) throws InterpreterException {
 		// The following double dispatch allows not catching interpreter-related 
 		// exceptions unless they are explicitly caught.
-		return filter.asNativeException().mayBeSignalledFrom(tryBlock, replacementCode);
+		return filter.asInterpreterException().mayBeSignalledFrom(tryBlock, replacementCode);
 	}
 	
 //	public ATObject base_handle_with_(ATObject filter, ATObject replacementCode) {
 //		return new NATHandler(filter, replacementCode);
 //	}
 	
-	public ATNil base_raise_(ATObject anExceptionObject) throws NATException {
-		throw anExceptionObject.asNativeException();
+	public ATNil base_raise_(ATObject anExceptionObject) throws InterpreterException {
+		throw anExceptionObject.asInterpreterException();
 	}
 	
 	/* --------------------
@@ -421,7 +421,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * The unary ! primitive:
 	 * !b == b.not()
 	 */
-	public ATBoolean base__opnot_(ATBoolean b) throws NATException {
+	public ATBoolean base__opnot_(ATBoolean b) throws InterpreterException {
 		return b.base_not();
 	}
 	
@@ -429,7 +429,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * The unary - primitive:
 	 * -NBR(n) == NBR(-n)
 	 */
-	public ATNumber base__opmns_(ATNumber n) throws NATException {
+	public ATNumber base__opmns_(ATNumber n) throws InterpreterException {
 		return NATNumber.atValue(- n.asNativeNumber().javaValue);
 	}
 	
@@ -437,7 +437,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * The unary + primitive:
 	 * +NBR(n) == NBR(n)
 	 */
-	public ATNumber base__oppls_(ATNumber n) throws NATException {
+	public ATNumber base__oppls_(ATNumber n) throws InterpreterException {
 		return n;
 	}
 	
@@ -448,21 +448,21 @@ public final class OBJLexicalRoot extends NATNil {
 	/**
 	 * read: "text" => parses the given string into an AST
 	 */
-	public ATAbstractGrammar base_read_(ATText source) throws NATException {
+	public ATAbstractGrammar base_read_(ATText source) throws InterpreterException {
 		return NATParser._INSTANCE_.base_parse(source);
 	}
 	
 	/**
 	 * eval: ast in: obj => evaluates the given AST in the context of the given object, returning its value
 	 */
-	public ATObject base_eval_in_(ATAbstractGrammar ast, ATObject obj) throws NATException {
+	public ATObject base_eval_in_(ATAbstractGrammar ast, ATObject obj) throws InterpreterException {
 		return ast.meta_eval(new NATContext(obj, obj, obj.meta_getDynamicParent()));
 	}
 
 	/**
 	 * print: expression => string representing the expression
 	 */
-	public ATText base_print_(ATObject obj) throws NATException {
+	public ATText base_print_(ATObject obj) throws InterpreterException {
 		return obj.meta_print();
 	}
 	
@@ -488,7 +488,7 @@ public final class OBJLexicalRoot extends NATNil {
      * To catch such bugs quickly, root.new throws an exception rather than
      * silently returning the root itself.
      */
-    public ATObject base_new(ATObject[] initargs) throws NATException {
+    public ATObject base_new(ATObject[] initargs) throws InterpreterException {
     	    // root.new(@initargs)
 	    return Evaluator.getGlobalLexicalScope().base_new(initargs);
     }

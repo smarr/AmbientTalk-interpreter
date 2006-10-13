@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 
 
 /**
@@ -46,25 +46,25 @@ public interface ATClosure extends ATObject {
 	/**
 	 * Structural access to the encapsulated method. 
 	 */
-	public ATMethod base_getMethod() throws NATException;
+	public ATMethod base_getMethod() throws InterpreterException;
 
 	/**
 	 * Structural access to the scope of the closure.
 	 */
-	public ATContext base_getContext() throws NATException;
+	public ATContext base_getContext() throws InterpreterException;
 	
 	/**
 	 * Applies the closure to the given arguments, already wrapped in a table
 	 * @param args the already evaluated arguments, wrapped in a table
 	 * @return the value of evaluating the method body in the context of the closure
 	 */
-	public ATObject base_apply(ATTable args) throws NATException;
+	public ATObject base_apply(ATTable args) throws InterpreterException;
 	
 	/**
 	 * Allows AmbientTalk programmers to write
 	 * { body }.whileTrue: { boolean }
 	 * which will execute body as long as the boolean condition evaluates to true.
 	 */
-	public ATObject base_whileTrue_(ATClosure condition) throws NATException;
+	public ATObject base_whileTrue_(ATClosure condition) throws InterpreterException;
 	
 }

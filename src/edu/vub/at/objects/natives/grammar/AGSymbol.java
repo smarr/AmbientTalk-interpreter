@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
@@ -75,7 +75,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	 * 
 	 * @return the value bound to this symbol in the lexical environment
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		return ctx.base_getLexicalScope().meta_lookup(this);
 	}
 
@@ -84,11 +84,11 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	 * 
 	 * sym.quote(ctx) = sym
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return this;
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return txt_.asNativeText();
 	}
 	
@@ -113,7 +113,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	public String toString() {
 		try {
 			return txt_.asNativeText().javaValue;
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			return super.toString();
 		}
 	}

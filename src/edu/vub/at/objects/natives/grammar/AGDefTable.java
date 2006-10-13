@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -76,7 +76,7 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 	 *   ctx.scope.defineField(nam, AGTABLE(t))
 	 *   nil
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		int siz = 0;
 		try {
 			siz = sizExp_.meta_eval(ctx).asNativeNumber().javaValue;
@@ -99,13 +99,13 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 	 * 
 	 * AGDEFTABLE(nam,siz,ini).quote(ctx) = AGDEFTABLE(nam.quote(ctx), siz.quote(ctx), ini.quote(ctx))
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGDefTable(tblName_.meta_quote(ctx).asSymbol(),
 				              sizExp_.meta_quote(ctx).asExpression(),
 				              initExp_.meta_quote(ctx).asExpression());
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("def " +
 				tblName_.meta_print().javaValue + "[" +
 				sizExp_.meta_print().javaValue + "] { " +

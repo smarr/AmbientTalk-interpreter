@@ -38,10 +38,6 @@ import java.io.PrintStream;
 /**
  * ATException is the superclass of all exceptions thrown by the AmbientTalk interpreter. 
  * 
- * TODO talk to Tom about maintaining a parallel stack inside the interpreter (vat)
- * and attaching this information to certain 'runtime' exceptions (e.g. those not raised
- * while parsing).
- * 
  * TODO tvcutsem Should NATException not implement the interface ATException, such
  * that all of our code can be typed by 'throws ATException' clauses instead of
  * 'throws NATException' clauses. The latter will cause problems with reflection.
@@ -53,28 +49,28 @@ import java.io.PrintStream;
  * 
  * @author smostinc
  */
-public class NATException extends Exception {
+public class InterpreterException extends Exception {
 
 	private static final long serialVersionUID = 511962997881825680L;
 
 	private final InvocationStack runtimeStack_;
 	
-	public NATException() {
+	public InterpreterException() {
 		super();
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 
-	public NATException(String message, Throwable cause) {
+	public InterpreterException(String message, Throwable cause) {
 		super(message, cause);
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 
-	public NATException(String message) {
+	public InterpreterException(String message) {
 		super(message);
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 
-	public NATException(Throwable cause) {
+	public InterpreterException(Throwable cause) {
 		super(cause);
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
@@ -88,11 +84,11 @@ public class NATException extends Exception {
 	}
 	
 	public ATObject mayBeSignalledFrom(ATClosure tryBlock, ATClosure replacementCode) 
-		throws NATException {
+		throws InterpreterException {
 		
 		try{
 			return tryBlock.base_apply(NATTable.EMPTY);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			if(this.getClass().isAssignableFrom(e.getClass())) {
 				return replacementCode.base_apply(new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
 			} else {

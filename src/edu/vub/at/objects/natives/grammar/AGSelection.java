@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -62,7 +62,7 @@ public final class AGSelection extends AGExpression implements ATSelection {
 	 * 
 	 * @return the value of the selected slot.
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject receiver = rcvExp_.meta_eval(ctx);
 		return receiver.meta_select(receiver, selector_);
 	}
@@ -72,12 +72,12 @@ public final class AGSelection extends AGExpression implements ATSelection {
 	 * 
 	 * AGSEL(rcv,sel).quote(ctx) = AGSEL(rcv.quote(ctx), sel.quote(ctx))
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGSelection(rcvExp_.meta_eval(ctx).asExpression(),
 				              selector_.meta_eval(ctx).asSymbol());
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(rcvExp_.meta_print().javaValue + "." + selector_.meta_print().javaValue);
 	}
 

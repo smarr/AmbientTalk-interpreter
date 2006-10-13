@@ -27,7 +27,7 @@
  */
 package edu.vub.at.eval;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -86,7 +86,7 @@ public final class Evaluator {
 	/**
 	 * Auxiliary function used to print the elements of a table using various separators.
 	 */
-	public final static NATText printElements(NATTable tab,String start, String sep, String stop) throws NATException {
+	public final static NATText printElements(NATTable tab,String start, String sep, String stop) throws InterpreterException {
 		ATObject[] els = tab.elements_;
 		if (els.length == 0)
 			return NATText.atValue(String.valueOf(start+stop));
@@ -99,19 +99,19 @@ public final class Evaluator {
 	    return NATText.atValue(buff.toString());
 	}
 
-	public static final NATText printAsStatements(ATTable tab) throws NATException {
+	public static final NATText printAsStatements(ATTable tab) throws InterpreterException {
 		return printElements(tab.asNativeTable(), "", "; ", "");
 	}
 
-	public static final NATText printAsList(ATTable tab) throws NATException {
+	public static final NATText printAsList(ATTable tab) throws InterpreterException {
 		return printElements(tab.asNativeTable(), "(", ", ", ")");
 	}
 
 	/**
 	 * This function is called whenever arguments to a function, message, method need to be evaluated.
-	 * TODO: currently does not work for user-defined tables
+	 * TODO(coercers) currently does not work for user-defined tables
 	 */
-	public static final NATTable evaluateArguments(NATTable args, ATContext ctx) throws NATException {
+	public static final NATTable evaluateArguments(NATTable args, ATContext ctx) throws InterpreterException {
 		if (args == NATTable.EMPTY) return NATTable.EMPTY;
 		
 		ATObject[] els = args.elements_;
@@ -134,12 +134,12 @@ public final class Evaluator {
 
 	// auxiliary interface to support functor objects
 	private interface BindClosure {
-		public void bindParamToArg(ATObject inScope, ATSymbol param, ATObject arg) throws NATException;
+		public void bindParamToArg(ATObject inScope, ATSymbol param, ATObject arg) throws InterpreterException;
 	}
 	
 	/**
 	 * Auxiliary function to bind formal parameters to actual arguments within a certain scope.
-	 * TODO: currently does not work for user-defined ATTables
+	 * TODO(coercers) currently does not work for user-defined ATTables
 	 * 
 	 * @param funnam the name of the function for which to bind these elements, for debugging purposes only
 	 * @param scope the frame in which to store the bindings
@@ -148,7 +148,7 @@ public final class Evaluator {
 	 * @param binder a functor object describing the strategy to bind an argument to a parameter (assign or define the parameter)
 	 * @throws XArityMismatch when the formals don't match the actuals
 	 */
-	private static final void bindArguments(String funnam, ATObject scope, ATTable parameters, ATTable arguments, BindClosure binder) throws NATException {
+	private static final void bindArguments(String funnam, ATObject scope, ATTable parameters, ATTable arguments, BindClosure binder) throws InterpreterException {
 		if (parameters == NATTable.EMPTY) {
 			if (arguments == NATTable.EMPTY)
 				return; // no need to bind any arguments
@@ -195,9 +195,9 @@ public final class Evaluator {
 	/**
 	 * Bind all of the given parameters as newly defined slots in the given scope to the given arguments
 	 */
-	public static final void defineParamsForArgs(String funnam, ATObject scope, ATTable parameters, ATTable arguments) throws NATException {
+	public static final void defineParamsForArgs(String funnam, ATObject scope, ATTable parameters, ATTable arguments) throws InterpreterException {
 		bindArguments(funnam, scope, parameters, arguments, new BindClosure() {
-			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws NATException {
+			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws InterpreterException {
 				scope.meta_defineField(param, arg);
 			}
 		});
@@ -206,9 +206,9 @@ public final class Evaluator {
 	/**
 	 * Assign all of the formal parameter names in the scope object to the given arguments
 	 */
-	public static final void assignArgsToParams(String funnam, ATObject scope, ATTable parameters, ATTable arguments) throws NATException {
+	public static final void assignArgsToParams(String funnam, ATObject scope, ATTable parameters, ATTable arguments) throws InterpreterException {
 		bindArguments(funnam, scope, parameters, arguments, new BindClosure() {
-			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws NATException {
+			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws InterpreterException {
 				scope.meta_assignVariable(param, arg);
 			}
 		});
@@ -311,7 +311,7 @@ public final class Evaluator {
 	public static final String toString(ATObject obj) {
 		try {
 			return obj.meta_print().javaValue;
-		} catch(NATException e) {
+		} catch(InterpreterException e) {
 			return "<unprintable: " + e.getMessage() + ">";
 		}
 	}

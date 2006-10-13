@@ -35,7 +35,7 @@ import edu.vub.at.objects.grammar.ATExpression;
  * 
  * @author tvc
  */
-public final class XIllegalUnquote extends NATException {
+public final class XIllegalUnquote extends InterpreterException {
 
 	private static final long serialVersionUID = -396801039714856213L;
 

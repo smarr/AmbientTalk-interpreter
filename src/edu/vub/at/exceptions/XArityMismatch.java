@@ -33,7 +33,7 @@ package edu.vub.at.exceptions;
  * 
  * @author tvc
  */
-public final class XArityMismatch extends NATException {
+public final class XArityMismatch extends InterpreterException {
 
 	private static final long serialVersionUID = 8846227011775592188L;
 	

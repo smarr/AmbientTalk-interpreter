@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIndexOutOfBounds;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -64,15 +64,15 @@ public final class NATTable extends AGExpression implements ATTable {
 			return NATTable.EMPTY;
 		else
 			return new NATTable(array);
-	}
+	}	
 	
-	// TODO: make these constructors private to ensure singleton EMPTY
-	
+	// TODO: make this constructors private to ensure singleton EMPTY
 	public NATTable(ATObject[] elements) {
 		// assert elements.length > 0
 		elements_ = elements;
 	}
 	
+	// TODO: make this constructors private to ensure singleton EMPTY
 	public NATTable(Object[] javaArray) {
 		elements_ = new ATObject[javaArray.length];
 		
@@ -94,7 +94,7 @@ public final class NATTable extends AGExpression implements ATTable {
 	 * 
 	 * @return a table of evaluated arguments
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		if (this == EMPTY) return EMPTY;
 		
 		LinkedList result = new LinkedList();
@@ -119,7 +119,7 @@ public final class NATTable extends AGExpression implements ATTable {
 	 * When one of the direct elements of the table is an unquote-splice element, the resulting
 	 * unquotation must result in a table whose elements are directly added to this table's elements.
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		if (this == EMPTY) return EMPTY;
 		
 		LinkedList result = new LinkedList();
@@ -138,17 +138,17 @@ public final class NATTable extends AGExpression implements ATTable {
 		return new NATTable((ATObject[]) result.toArray(new ATObject[siz]));
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return Evaluator.printElements(this, "[", ", ","]");
 	}
 	
 	public ATNumber base_getLength() { return NATNumber.atValue(elements_.length); }
 
-	public ATObject base_at(ATNumber index) throws NATException {
+	public ATObject base_at(ATNumber index) throws InterpreterException {
 		return elements_[extractIndex(index)];
 	}
 
-	public ATObject base_atPut(ATNumber index, ATObject value) throws NATException {
+	public ATObject base_atPut(ATNumber index, ATObject value) throws InterpreterException {
 		elements_[extractIndex(index)] = value;
 		return value;
 	}
@@ -157,14 +157,14 @@ public final class NATTable extends AGExpression implements ATTable {
 		return NATBoolean.atValue(elements_.length == 0);
 	}
 	
-	public ATNil base_each_(ATClosure clo) throws NATException {
+	public ATNil base_each_(ATClosure clo) throws InterpreterException {
 		for (int i = 0; i < elements_.length; i++) {
 			clo.base_apply(new NATTable(new ATObject[] { elements_[i] }));
 		}
 		return NATNil._INSTANCE_;
 	}
 
-	public ATObject base_map_(ATClosure clo) throws NATException {
+	public ATObject base_map_(ATClosure clo) throws InterpreterException {
 		if (this == EMPTY) return EMPTY;
 		
 		ATObject[] result = new ATObject[elements_.length];
@@ -174,7 +174,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		return new NATTable(result);
 	}
 	
-	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws NATException {
+	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws InterpreterException {
 		ATObject total = init;
 		for (int i = 0; i < elements_.length; i++) {
 			total = clo.base_apply(new NATTable(new ATObject[] { total, elements_[i] }));
@@ -182,7 +182,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		return total;
 	}
 	
-	public ATText base_implode() throws NATException {
+	public ATText base_implode() throws InterpreterException {
 		StringBuffer buff = new StringBuffer("");
 		for (int i = 0; i < elements_.length; i++) {
 			buff.append(elements_[i].asNativeText().javaValue);
@@ -190,7 +190,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		return NATText.atValue(buff.toString());
 	}
 
-	public ATText base_join(ATText sep) throws NATException {
+	public ATText base_join(ATText sep) throws InterpreterException {
 		String separator = sep.asNativeText().javaValue;
 		StringBuffer buff = new StringBuffer("");
 		for (int i = 0; i < elements_.length-1; i++) {
@@ -205,10 +205,10 @@ public final class NATTable extends AGExpression implements ATTable {
 	/**
 	 * tab.select(start, stop) == els = [ ] ; start.to: stop do: { |i| els << tab[i] } ; els
 	 */
-	public ATTable base_select(ATNumber first, ATNumber last) throws NATException {
+	public ATTable base_select(ATNumber first, ATNumber last) throws InterpreterException {
 		final LinkedList selection = new LinkedList();
 		first.base_to_do_(last, new JavaClosure(this) {
-			public ATObject base_apply(ATTable args) throws NATException {
+			public ATObject base_apply(ATTable args) throws InterpreterException {
 			    selection.add(base_at(args.base_at(NATNumber.ONE).asNumber()));
 			    return NATNil._INSTANCE_;
 			}
@@ -216,7 +216,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		return NATTable.atValue((ATObject[]) selection.toArray(new ATObject[selection.size()]));
 	}
 	
-	protected int extractIndex(ATNumber atIndex) throws NATException {
+	protected int extractIndex(ATNumber atIndex) throws InterpreterException {
 		int javaIndex = atIndex.asNativeNumber().javaValue - 1;
 		if ((javaIndex < 0) || (javaIndex >= elements_.length))
 			throw new XIndexOutOfBounds(javaIndex + 1, elements_.length);

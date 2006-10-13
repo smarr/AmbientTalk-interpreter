@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -110,7 +110,7 @@ public final class NATNamespace extends NATObject {
 	 * For a namespace object, doesNotUnderstand triggers the querying of the local file system
 	 * to load files corresponding to the missing selector.
 	 */
-	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
+	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		// first, convert the AmbientTalk name to a Java selector. Java selectors are always valid filenames because
 		// they do not contain special operator characters
 		String javaSelector = Reflection.upSelector(selector);
@@ -160,7 +160,7 @@ public final class NATNamespace extends NATObject {
 		}
 	}
 
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<ns:"+name_+">");
 	}
 	
@@ -175,7 +175,7 @@ public final class NATNamespace extends NATObject {
 		} catch (XTypeMismatch e) {
 			// impossible: the given selector is native
 			e.printStackTrace();
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			// impossible : call cannot be intercepted : namespaces are not mirages
 			e.printStackTrace();			
 		}

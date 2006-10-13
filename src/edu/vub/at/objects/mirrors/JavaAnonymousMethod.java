@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalApplication;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
@@ -81,7 +81,7 @@ public class JavaAnonymousMethod extends NATNil implements ATMethod {
 	 * It is an error to directly apply an anonymous method. The closure must be applied instead.
 	 * @throws XIllegalApplication because an anonymous method must be applied through its wrapping closure.
 	 */
-	public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
+	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 		throw new XIllegalApplication("Cannot apply an anonymous native method. Apply the closure instead.", creatorClass_);
 	}
 
@@ -94,7 +94,7 @@ public class JavaAnonymousMethod extends NATNil implements ATMethod {
 				AGSymbol.alloc("Native anonymous implementation in " + creatorClass_.getName())}));
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<anonymous java method in "+creatorClass_.getName()+">");
 	}
 

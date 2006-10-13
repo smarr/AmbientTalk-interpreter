@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATMirror;
@@ -117,7 +117,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	/** @return this */
 	public ATMirror asMirror() { return this; }
 	
-	public ATObject meta_clone() throws NATException {
+	public ATObject meta_clone() throws InterpreterException {
 		NATIntercessiveMirror clone = magic_clone();
 		NATMirage freshObject = new NATMirage(clone);
 		clone.setBase(freshObject);
@@ -128,7 +128,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	
 	// Perform the actual cloning of this mirror object alone
 	// Cut-off for ping-pong of messages sent between mirror and mirage.
-	public NATIntercessiveMirror magic_clone() throws NATException {
+	public NATIntercessiveMirror magic_clone() throws InterpreterException {
 		return (NATIntercessiveMirror)super.meta_clone();
 	}
 
@@ -138,7 +138,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 			MethodDictionary methodDict,
 			ATObject dynamicParent,
 			ATObject lexicalParent,
-			byte flags) throws NATException {
+			byte flags) throws InterpreterException {
 		return new NATIntercessiveMirror(map,
 				state,
 				methodDict,
@@ -150,7 +150,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	}
 	
 	// Called by the default NATObject Extension algorithm
-	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws NATException {
+	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws InterpreterException {
 
 		NATIntercessiveMirror extension = new NATIntercessiveMirror(
 				/* dynamic parent */
@@ -169,7 +169,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	 * -- Abstract Grammar Protocol   --
 	 * --------------------------------- */
 		
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<mirror on:"+principal_.meta_print().javaValue+">");
 	}
 	

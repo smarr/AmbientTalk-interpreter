@@ -34,7 +34,7 @@ package edu.vub.at.exceptions;
  * 
  * @author tvc
  */
-public final class XUndefinedField extends NATException {
+public final class XUndefinedField extends InterpreterException {
 
 	private static final long serialVersionUID = -219804926254934101L;
 

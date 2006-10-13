@@ -32,7 +32,7 @@ package edu.vub.at.exceptions;
  * 
  * @author tvc
  */
-public final class XIndexOutOfBounds extends NATException {
+public final class XIndexOutOfBounds extends InterpreterException {
 
 	private static final long serialVersionUID = 6549583509969990663L;
 

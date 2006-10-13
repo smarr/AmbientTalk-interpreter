@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -105,7 +105,7 @@ public class JavaClosure extends NATClosure {
 	 * 
 	 * A 'default' context is lazily constructed and returned.
 	 */
-	public ATContext base_getContext() throws NATException {
+	public ATContext base_getContext() throws InterpreterException {
 		if (context_ == null)
 			context_ = new NATContext(scope_, scope_, scope_.meta_getDynamicParent());
 		return context_;
@@ -115,7 +115,7 @@ public class JavaClosure extends NATClosure {
 	 * Apply the JavaClosure, which either gives rise to executing a native piece of
 	 * code supplied by an anonymous subclass, or executes the wrapped JavaMethod.
 	 */
-	public ATObject base_apply(ATTable arguments) throws NATException {
+	public ATObject base_apply(ATTable arguments) throws InterpreterException {
 		if (method_ == null) {
 			// this method is supposed to be overridden by an anonymous subclass
 			throw new RuntimeException("JavaClosure's meta_apply not properly overridden by " + scope_.getClass());
@@ -124,34 +124,34 @@ public class JavaClosure extends NATClosure {
 		}
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<native closure:"+base_getMethod().base_getName().base_getText().asNativeText().javaValue+">");
 	}
 	
 	/**
 	 * Auxiliary method to more easily extract arguments from an ATTable
 	 */
-	public ATObject get(ATTable args, int n) throws NATException {
+	public ATObject get(ATTable args, int n) throws InterpreterException {
 		return args.base_at(NATNumber.atValue(n));
 	}
 
-	public int getNbr(ATTable args, int n) throws NATException {
+	public int getNbr(ATTable args, int n) throws InterpreterException {
 		return args.base_at(NATNumber.atValue(n)).asNativeNumber().javaValue;
 	}
 	
-	public double getFrc(ATTable args, int n) throws NATException {
+	public double getFrc(ATTable args, int n) throws InterpreterException {
 		return args.base_at(NATNumber.atValue(n)).asNativeFraction().javaValue;
 	}
 	
-	public String getTxt(ATTable args, int n) throws NATException {
+	public String getTxt(ATTable args, int n) throws InterpreterException {
 		return args.base_at(NATNumber.atValue(n)).asNativeText().javaValue;
 	}
 	
-	public boolean getBln(ATTable args, int n) throws NATException {
+	public boolean getBln(ATTable args, int n) throws InterpreterException {
 		return args.base_at(NATNumber.atValue(n)).asNativeBoolean().javaValue;
 	}
 	
-	public Object[] getTab(ATTable args, int n) throws NATException {
+	public Object[] getTab(ATTable args, int n) throws InterpreterException {
 		return args.base_at(NATNumber.atValue(n)).asNativeTable().elements_;
 	}
 }

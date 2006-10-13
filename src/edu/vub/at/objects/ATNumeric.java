@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
@@ -46,39 +46,39 @@ public interface ATNumeric extends ATExpression {
 	
 	public ATFraction base_log();
 	public ATFraction base_sqrt();
-	public ATFraction base_expt(ATNumeric pow) throws NATException;	
+	public ATFraction base_expt(ATNumeric pow) throws InterpreterException;	
 	
 	// addition +
-	public ATNumeric base__oppls_(ATNumeric other) throws NATException;
-	public ATNumeric base_addNumber(ATNumber other) throws NATException;
-	public ATNumeric base_addFraction(ATFraction other) throws NATException;
+	public ATNumeric base__oppls_(ATNumeric other) throws InterpreterException;
+	public ATNumeric base_addNumber(ATNumber other) throws InterpreterException;
+	public ATNumeric base_addFraction(ATFraction other) throws InterpreterException;
 	
 	// subtraction -
-	public ATNumeric base__opmns_(ATNumeric other) throws NATException;
-	public ATNumeric base_subtractNumber(ATNumber other) throws NATException;
-	public ATNumeric base_subtractFraction(ATFraction other) throws NATException;
+	public ATNumeric base__opmns_(ATNumeric other) throws InterpreterException;
+	public ATNumeric base_subtractNumber(ATNumber other) throws InterpreterException;
+	public ATNumeric base_subtractFraction(ATFraction other) throws InterpreterException;
 	
 	// multiplication *
-	public ATNumeric base__optms_(ATNumeric other) throws NATException;
-	public ATNumeric base_timesNumber(ATNumber other) throws NATException;
-	public ATNumeric base_timesFraction(ATFraction other) throws NATException;
+	public ATNumeric base__optms_(ATNumeric other) throws InterpreterException;
+	public ATNumeric base_timesNumber(ATNumber other) throws InterpreterException;
+	public ATNumeric base_timesFraction(ATFraction other) throws InterpreterException;
 	
 	// division /
-	public ATNumeric base__opdiv_(ATNumeric other) throws NATException;
-	public ATNumeric base_divideNumber(ATNumber other) throws NATException;
-	public ATNumeric base_divideFraction(ATFraction other) throws NATException;
+	public ATNumeric base__opdiv_(ATNumeric other) throws InterpreterException;
+	public ATNumeric base_divideNumber(ATNumber other) throws InterpreterException;
+	public ATNumeric base_divideFraction(ATFraction other) throws InterpreterException;
 	
 	// comparison: generalized equality <=>
-	public ATNumeric base__opltx__opeql__opgtx_(ATNumeric other) throws NATException;
-	public ATNumeric base_gequalsNumber(ATNumber other) throws NATException;
-	public ATNumeric base_gequalsFraction(ATFraction other) throws NATException;
+	public ATNumeric base__opltx__opeql__opgtx_(ATNumeric other) throws InterpreterException;
+	public ATNumeric base_gequalsNumber(ATNumber other) throws InterpreterException;
+	public ATNumeric base_gequalsFraction(ATFraction other) throws InterpreterException;
 	
 	// Comparable mixin based on <=>
 	
-	public ATBoolean base__opltx_(ATNumeric other) throws NATException; // <
-	public ATBoolean base__opgtx_(ATNumeric other) throws NATException; // >
-	public ATBoolean base__opltx__opeql_(ATNumeric other) throws NATException; // <=
-	public ATBoolean base__opgtx__opeql_(ATNumeric other) throws NATException; // >=
-	public ATBoolean base__opeql_(ATNumeric other) throws NATException; // =
-	public ATBoolean base__opnot__opeql_(ATNumeric other) throws NATException; // !=
+	public ATBoolean base__opltx_(ATNumeric other) throws InterpreterException; // <
+	public ATBoolean base__opgtx_(ATNumeric other) throws InterpreterException; // >
+	public ATBoolean base__opltx__opeql_(ATNumeric other) throws InterpreterException; // <=
+	public ATBoolean base__opgtx__opeql_(ATNumeric other) throws InterpreterException; // >=
+	public ATBoolean base__opeql_(ATNumeric other) throws InterpreterException; // =
+	public ATBoolean base__opnot__opeql_(ATNumeric other) throws InterpreterException; // !=
 }

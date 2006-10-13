@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
@@ -41,8 +41,8 @@ public interface ATTable extends ATExpression {
 	// base-level interface
 	
 	public ATNumber base_getLength();
-	public ATObject base_at(ATNumber index) throws NATException;
-	public ATObject base_atPut(ATNumber index, ATObject value) throws NATException;
+	public ATObject base_at(ATNumber index) throws InterpreterException;
+	public ATObject base_atPut(ATNumber index, ATObject value) throws InterpreterException;
 	public ATBoolean base_isEmpty();
 	
 	/**
@@ -51,37 +51,37 @@ public interface ATTable extends ATExpression {
 	 * 
 	 * @return nil, always
 	 */
-	public ATNil base_each_(ATClosure clo) throws NATException;
+	public ATNil base_each_(ATClosure clo) throws InterpreterException;
 	
 	/**
 	 * Map a closure over each element of the table, resulting in a new table.
 	 * result := [ tab ].map: { |v| ... }
 	 */
-	public ATObject base_map_(ATClosure clo) throws NATException;
+	public ATObject base_map_(ATClosure clo) throws InterpreterException;
 
 	/**
 	 * Collect all elements of the table by combining them using the given closure.
 	 * The first time closure is called, the initialization element is passed as first argument.
 	 * result := [ tab ].with: 0 collect: { |total, next| total + next }
 	 */
-	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws NATException;
+	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws InterpreterException;
 	
 	/**
 	 * Implode the receiver table of characters into a text string
 	 */
-	public ATText base_implode() throws NATException;
+	public ATText base_implode() throws InterpreterException;
 	
 	/**
 	 * Join all the text elements of the receiver table into a text string
 	 * where the argument is used as a separator
 	 */
-	public ATText base_join(ATText txt) throws NATException;
+	public ATText base_join(ATText txt) throws InterpreterException;
 	
 	/**
 	 * Select a subrange of the table:
 	 * idx: 1  2  3  4  5
 	 *     [a, b, c, d, e].select(2,4) => [b, c, d]
 	 */
-	public ATTable base_select(ATNumber start, ATNumber stop) throws NATException;
+	public ATTable base_select(ATNumber start, ATNumber stop) throws InterpreterException;
 	
 }

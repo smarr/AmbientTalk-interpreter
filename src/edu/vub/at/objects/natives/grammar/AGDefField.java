@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATDefField;
@@ -63,7 +63,7 @@ public final class AGDefField extends NATAbstractGrammar implements ATDefField {
 	 * AGDEFFIELD(nam,val).eval(ctx) =
 	 *   ctx.scope.addField(nam, val.eval(ctx))
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ctx.base_getLexicalScope().meta_defineField(name_, valueExp_.meta_eval(ctx));
 		return NATNil._INSTANCE_;
 	}
@@ -73,11 +73,11 @@ public final class AGDefField extends NATAbstractGrammar implements ATDefField {
 	 * 
 	 * AGDEFFIELD(nam,val).quote(ctx) = AGDEFFIELD(nam.quote(ctx), val.quote(ctx))
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGDefField(name_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("def " + name_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
 	

@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -65,9 +65,9 @@ public final class NATText extends AGExpression implements ATText {
 		}
 
 		public boolean isNativeText() { return true; }
-		public NATText asNativeText() throws NATException { return this; }
+		public NATText asNativeText() throws InterpreterException { return this; }
 		
-		public NATText meta_print() throws NATException {
+		public NATText meta_print() throws InterpreterException {
 	        return NATText.atValue("\"" + javaValue + "\"");
 		}
 		
@@ -87,7 +87,7 @@ public final class NATText extends AGExpression implements ATText {
 		/**
 		 * Explodes a text string into a table of constinuent characters
 		 */
-		public ATTable base_explode() throws NATException {
+		public ATTable base_explode() throws InterpreterException {
 			ATObject[] chars = new ATObject[javaValue.length()];
 			char[] rawchars = javaValue.toCharArray();
 			for (int i = 0; i < chars.length; i++) {
@@ -100,7 +100,7 @@ public final class NATText extends AGExpression implements ATText {
 		 * Split the string according to the given regular expression.
 		 * For regular expression syntax, see the Java API.
 		 */
-		public ATTable base_split(ATText regexp) throws NATException {
+		public ATTable base_split(ATText regexp) throws InterpreterException {
 			String[] elements = null;
 			 try {
 				 elements = javaValue.split(regexp.asNativeText().javaValue);
@@ -115,7 +115,7 @@ public final class NATText extends AGExpression implements ATText {
 			return NATTable.atValue(tbl);
 		}
 		
-		public ATNil base_find_do_(ATText regexp, ATClosure consumer) throws NATException {
+		public ATNil base_find_do_(ATText regexp, ATClosure consumer) throws InterpreterException {
 			 Pattern p = null;
 			 
 			 try {
@@ -131,7 +131,7 @@ public final class NATText extends AGExpression implements ATText {
 			 return NATNil._INSTANCE_;
 		}
 		
-		public ATText base_replace_by_(ATText regexp, ATClosure transformer) throws NATException {
+		public ATText base_replace_by_(ATText regexp, ATClosure transformer) throws InterpreterException {
 			 Pattern p = null;
 			 
 			 try {
@@ -162,11 +162,11 @@ public final class NATText extends AGExpression implements ATText {
 			return NATNumber.atValue(javaValue.length());
 		}
 		
-		public ATText base__oppls_(ATObject other) throws NATException {
+		public ATText base__oppls_(ATObject other) throws InterpreterException {
 			return NATText.atValue(javaValue + other.asNativeText().javaValue);
 		}
 		
-		public ATNumber base__opltx__opeql__opgtx_(ATText other) throws NATException {
+		public ATNumber base__opltx__opeql__opgtx_(ATText other) throws InterpreterException {
 			int cmp = javaValue.compareTo(other.asNativeText().javaValue);
 			if (cmp > 0)
 			    return NATNumber.ONE;
@@ -176,7 +176,7 @@ public final class NATText extends AGExpression implements ATText {
 				return NATNumber.ZERO;
 		}
 		
-		public ATBoolean base__optil__opeql_(ATText other) throws NATException {
+		public ATBoolean base__optil__opeql_(ATText other) throws InterpreterException {
 			try {
 				return NATBoolean.atValue(javaValue.matches(other.asNativeText().javaValue));
 			} catch (PatternSyntaxException e) {

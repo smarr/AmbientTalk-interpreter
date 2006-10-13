@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
@@ -40,16 +40,16 @@ public interface ATText extends ATExpression {
 
 	// base-level interface
 	
-	public ATTable base_explode() throws NATException;
-	public ATTable base_split(ATText separator) throws NATException;
-	public ATNil base_find_do_(ATText regexp, ATClosure consumer) throws NATException;
-	public ATText base_replace_by_(ATText regexp, ATClosure transformer) throws NATException;
+	public ATTable base_explode() throws InterpreterException;
+	public ATTable base_split(ATText separator) throws InterpreterException;
+	public ATNil base_find_do_(ATText regexp, ATClosure consumer) throws InterpreterException;
+	public ATText base_replace_by_(ATText regexp, ATClosure transformer) throws InterpreterException;
 	
 	public ATText base_toUpperCase();
 	public ATText base_toLowerCase();
 	public ATNumber base_length();
 	
-	public ATText base__oppls_(ATObject other) throws NATException;
-	public ATNumber base__opltx__opeql__opgtx_(ATText other) throws NATException;
-	public ATBoolean base__optil__opeql_(ATText other) throws NATException;
+	public ATText base__oppls_(ATObject other) throws InterpreterException;
+	public ATNumber base__opltx__opeql__opgtx_(ATText other) throws InterpreterException;
+	public ATBoolean base__optil__opeql_(ATText other) throws InterpreterException;
 }

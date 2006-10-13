@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
@@ -73,7 +73,7 @@ public final class JavaMethod extends NATNil implements ATMethod {
 				NATText.atValue("Native implementation of " + javaMethod_.toString())}));
 	}
 	
-	public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
+	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 		return Reflection.downObject(
 				JavaInterfaceAdaptor.invokeJavaMethod(javaMethod_, ctx.base_getLexicalScope(),
 						                              arguments.asNativeTable().elements_));
@@ -87,7 +87,7 @@ public final class JavaMethod extends NATNil implements ATMethod {
 		return true;
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<native method:"+base_getName().base_getText().asNativeText().javaValue+">");
 	}
 

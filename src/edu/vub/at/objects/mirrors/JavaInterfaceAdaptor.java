@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XReflectionFailure;
@@ -94,7 +94,7 @@ public class JavaInterfaceAdaptor {
 	 * @return the return value of the reflectively invoked method
 	 */	
 	public static Object invokeJavaMethod(Class jClass, Object jReceiver,
-										String jSelector, Object[] jArguments) throws NATException {
+										String jSelector, Object[] jArguments) throws InterpreterException {
 		Method[] applicable = getMethodsForSelector(jClass, jSelector);
 		switch(applicable.length) {
 		  case 0:
@@ -117,7 +117,7 @@ public class JavaInterfaceAdaptor {
 	 * @param jArguments the AT arguments to pass
 	 * @return the return value of the reflectively invoked method
 	 */
-	public static Object invokeJavaMethod(Method javaMethod, Object jReceiver, Object[] jArguments) throws NATException {
+	public static Object invokeJavaMethod(Method javaMethod, Object jReceiver, Object[] jArguments) throws InterpreterException {
 		try {
 			// if the native method takes an array as its sole parameter, it is interpreted as taking
 			// a variable number of ambienttalk arguments
@@ -138,8 +138,8 @@ public class JavaInterfaceAdaptor {
 			throw new XIllegalArgument("Illegal argument for native method "+Reflection.downSelector(javaMethod.getName()) + ": " + e.getMessage(), e);
 		} catch (InvocationTargetException e) {
 			// the invoked method threw an exception
-			if (e.getCause() instanceof NATException)
-				throw (NATException) e.getCause();
+			if (e.getCause() instanceof InterpreterException)
+				throw (InterpreterException) e.getCause();
 			else {
 				e.printStackTrace();
 				throw new XReflectionFailure("Native method "+Reflection.downSelector(javaMethod.getName())+" threw internal exception", e.getCause());
@@ -153,7 +153,7 @@ public class JavaInterfaceAdaptor {
 	 * class are traversed until one is found that can create new instances given the current
 	 * initargs.
 	 */
-	public static Object createClassInstance(Class jClass, Object[] jInitArgs) throws NATException {
+	public static Object createClassInstance(Class jClass, Object[] jInitArgs) throws InterpreterException {
 		Constructor[] ctors = jClass.getConstructors();
 		for (int i = 0; i < ctors.length; i++) {
 			Constructor ctor = ctors[i];
@@ -170,8 +170,8 @@ public class JavaInterfaceAdaptor {
 					continue; // private or protected constructor, may find another one
 				} catch (InvocationTargetException e) {
 					// an exception was raised by the constructor
-					if (e.getCause() instanceof NATException)
-						throw ((NATException) e.getCause());
+					if (e.getCause() instanceof InterpreterException)
+						throw ((InterpreterException) e.getCause());
 					else // fatal exception
 						throw new XIllegalOperation("Instance creation of type " + jClass.getName() + " failed: " + e.getMessage());
 				}
@@ -187,7 +187,7 @@ public class JavaInterfaceAdaptor {
 	public static JavaClosure wrapMethodFor(
 			Class baseInterface, 
 			ATObject receiver,
-			String methodName) throws NATException {
+			String methodName) throws InterpreterException {
 		JavaMethod method = getMethod(baseInterface, receiver, methodName);
 	    return new JavaClosure(receiver, method);
 	}
@@ -195,7 +195,7 @@ public class JavaInterfaceAdaptor {
 	public static JavaMethod getMethod(
 			Class baseInterface, 
 			ATObject receiver,
-			String methodName) throws NATException {
+			String methodName) throws InterpreterException {
 		Method[] applicable = getMethodsForSelector(baseInterface, methodName);
 		switch (applicable.length) {
 			case 0:
@@ -203,7 +203,7 @@ public class JavaInterfaceAdaptor {
 			case 1:
 				return new JavaMethod(applicable[0]);
 			default:
-				// TODO return new JavaMethod.Dispatched(receiver, applicable);
+				// TODO LATER(overloading support) return new JavaMethod.Dispatched(receiver, applicable);
 				throw new XIllegalOperation("A native method uses overloading!");
 		}
 	}

@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
@@ -80,7 +80,7 @@ public class NATMethod extends NATNil implements ATMethod {
 	 * @param ctx the context in which to evaluate the method body
 	 * @return the value of evaluating the function body
 	 */
-	public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
+	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 		Evaluator.defineParamsForArgs(
 				name_.base_getText().asNativeText().javaValue, 
 				ctx.base_getLexicalScope(), 
@@ -88,7 +88,7 @@ public class NATMethod extends NATNil implements ATMethod {
 		return body_.meta_eval(ctx);
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<method:"+name_.meta_print().javaValue+">");
 	}
 

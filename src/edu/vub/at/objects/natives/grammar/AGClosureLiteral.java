@@ -28,12 +28,13 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATClosureLiteral;
+import edu.vub.at.objects.mirrors.JavaClosure;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATText;
@@ -45,8 +46,8 @@ import edu.vub.at.objects.natives.NATText;
  */
 public final class AGClosureLiteral extends AGExpression implements ATClosureLiteral {
 
-	private final ATTable arguments_;
-	private final ATBegin body_;
+	protected final ATTable arguments_;
+	protected final ATBegin body_;
 	
 	public AGClosureLiteral(ATTable args, ATBegin body) {
 		arguments_ = args;
@@ -74,18 +75,23 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 	 * 
 	 * AGCLOLIT(arg,bdy).quote(ctx) = AGCLOLIT(arg.quote(ctx), bdy.quote(ctx))
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGClosureLiteral(arguments_.meta_quote(ctx).asTable(),
 				                   body_.meta_quote(ctx).asBegin());
 	}
 	
-	public NATText meta_print() throws NATException {
-		// TODO: use ATBoolean.ifTrueifFalse instead of using a native boolean
-		if (arguments_.base_isEmpty().asNativeBoolean().javaValue) {
-		  return NATText.atValue("{ "+body_.meta_print().javaValue + " }");
-		} else
-		  return NATText.atValue(Evaluator.printElements(arguments_.asNativeTable(), "{ |", ", ", " | ").javaValue +
-		                       body_.meta_print().javaValue+"}");
+	public NATText meta_print() throws InterpreterException {
+		return arguments_.base_isEmpty().base_ifTrue_ifFalse_(
+				new JavaClosure(this) {
+					public ATObject base_apply(ATTable args) throws InterpreterException {
+						return NATText.atValue("{ "+ body_.meta_print().javaValue + " }");
+					}
+				},
+				new JavaClosure(this) {
+					public ATObject base_apply(ATTable args) throws InterpreterException {
+						  return NATText.atValue(Evaluator.printElements(arguments_.asNativeTable(), "{ |", ", ", " | ").javaValue +
+			                       body_.meta_print().javaValue+"}");
+					}
+				}).asNativeText();
 	}
-
 }

@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -59,7 +59,7 @@ public class NATSuperObject extends NATNil implements ATObject {
       * -- Message Sending Protocol --
       * ------------------------------ */
 
-    public ATNil meta_send(ATAsyncMessage msg) throws NATException {
+    public ATNil meta_send(ATAsyncMessage msg) throws InterpreterException {
         return lookupFrame_.meta_send(msg);
     }
 
@@ -69,15 +69,15 @@ public class NATSuperObject extends NATNil implements ATObject {
      * to 'lookupFrame_', as would normally be the case, but to receiver_, implementing
      * 'late binding of self'.
      */
-    public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
+    public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
         return lookupFrame_.meta_invoke(receiver_, selector, arguments);
     }
 
-    public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
+    public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
         return lookupFrame_.meta_respondsTo(selector);
     }
 
-    public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
+    public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
         return lookupFrame_.meta_doesNotUnderstand(selector);
     }
 
@@ -91,23 +91,23 @@ public class NATSuperObject extends NATNil implements ATObject {
      * to 'lookupFrame_', as would normally be the case, but to receiver_, implementing
      * 'late binding of self'.
      */
-    public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
+    public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
         return lookupFrame_.meta_select(receiver_, selector);
     }
 
-    public ATObject meta_lookup(ATSymbol selector) throws NATException {
+    public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
         return lookupFrame_.meta_lookup(selector);
     }
 
-    public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+    public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
         return lookupFrame_.meta_defineField(name, value);
     }
 
-    public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
+    public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
         return lookupFrame_.meta_assignVariable(name, value);
     }
 
-    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException {
+    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
         return lookupFrame_.meta_assignField(receiver_, name, value);
     }
 
@@ -115,19 +115,19 @@ public class NATSuperObject extends NATNil implements ATObject {
       * -- Extension and cloning protocol --
       * ------------------------------------ */
 
-    public ATObject meta_clone() throws NATException {
+    public ATObject meta_clone() throws InterpreterException {
         return lookupFrame_.meta_clone();
     }
 
-    public ATObject meta_newInstance(ATTable initargs) throws NATException {
+    public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
         return lookupFrame_.meta_newInstance(initargs);
     }
 
-    public ATObject meta_extend(ATClosure code) throws NATException {
+    public ATObject meta_extend(ATClosure code) throws InterpreterException {
         return lookupFrame_.meta_extend(code);
     }
 
-    public ATObject meta_share(ATClosure code) throws NATException {
+    public ATObject meta_share(ATClosure code) throws InterpreterException {
         return lookupFrame_.meta_share(code);
     }
 
@@ -135,27 +135,27 @@ public class NATSuperObject extends NATNil implements ATObject {
       * -- Structural Access Protocol  --
       * --------------------------------- */
 
-    public ATNil meta_addField(ATField field) throws NATException {
+    public ATNil meta_addField(ATField field) throws InterpreterException {
         return lookupFrame_.meta_addField(field);
     }
 
-    public ATNil meta_addMethod(ATMethod method) throws NATException {
+    public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
         return lookupFrame_.meta_addMethod(method);
     }
 
-    public ATField meta_getField(ATSymbol selector) throws NATException {
+    public ATField meta_getField(ATSymbol selector) throws InterpreterException {
         return lookupFrame_.meta_getField(selector);
     }
 
-    public ATMethod meta_getMethod(ATSymbol selector) throws NATException {
+    public ATMethod meta_getMethod(ATSymbol selector) throws InterpreterException {
         return lookupFrame_.meta_getMethod(selector);
     }
 
-    public ATTable meta_listFields() throws NATException {
+    public ATTable meta_listFields() throws InterpreterException {
         return lookupFrame_.meta_listFields();
     }
 
-    public ATTable meta_listMethods() throws NATException {
+    public ATTable meta_listMethods() throws InterpreterException {
         return lookupFrame_.meta_listMethods();
     }
 
@@ -163,11 +163,11 @@ public class NATSuperObject extends NATNil implements ATObject {
       * -- Mirror Fields   --
       * --------------------- */
 
-    public ATObject meta_getDynamicParent() throws NATException {
+    public ATObject meta_getDynamicParent() throws InterpreterException {
         return lookupFrame_.meta_getDynamicParent();
     }
 
-    public ATObject meta_getLexicalParent() throws NATException {
+    public ATObject meta_getLexicalParent() throws InterpreterException {
         return lookupFrame_.meta_getLexicalParent();
     }
 
@@ -187,15 +187,15 @@ public class NATSuperObject extends NATNil implements ATObject {
       * -- Evaluation Protocol --
       * ------------------------- */
 
-    public NATText meta_print() throws NATException {
+    public NATText meta_print() throws InterpreterException {
         return lookupFrame_.meta_print();
     }
 
-	public ATBoolean meta_isCloneOf(ATObject original) throws NATException {
+	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
 		return lookupFrame_.meta_isCloneOf(original);
 	}
 
-	public ATBoolean meta_isRelatedTo(ATObject object) throws NATException {
+	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
 		return lookupFrame_.meta_isRelatedTo(object);
 	}
 

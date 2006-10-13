@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 
@@ -52,7 +52,7 @@ public interface ATMethod extends ATObject {
 	 * @param ctx the context in which to evaluate the method body
 	 * @return the value of evaluating the method body in the given context
 	 */
-	public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException;
+	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException;
 	
 	/**
 	 * Structural access to the name of the method. Note that all methods (defined

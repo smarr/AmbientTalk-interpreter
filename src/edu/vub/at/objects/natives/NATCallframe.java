@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -85,7 +85,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * allowing intercepting of asynchronous message sends at the granularity of an object, 
 	 * rather than at the level of an actor.
 	 */
-	public ATNil meta_send(ATAsyncMessage message) throws NATException {
+	public ATNil meta_send(ATAsyncMessage message) throws InterpreterException {
 		// assert(this == message.getReceiver());
 //		 TODO Implement the ATActor interface     
 //				ATActor actor = NATActor.currentActor();
@@ -104,7 +104,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * 
 	 * The 'receiver' argument should always equal 'this' because call frames do not delegate!
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
+	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		// assert(this == receiver)
 		return this.getLocalField(selector).asClosure().base_apply(arguments);
 	}
@@ -117,7 +117,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * A call frame does not delegate to other objects to check
 	 * whether it can respond to a certain selector.
 	 */
-	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
+	public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
 		return NATBoolean.atValue(this.hasLocalField(selector));
 	}
 
@@ -128,7 +128,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * This is done for purposes of clarity, by making NATCallframe implement all ATObject methods directly,
 	 * even if NATNil already provides a suitable implementation for these.
 	 */
-	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
+	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		throw new XSelectorNotFound(selector, this);
 	}
 	
@@ -141,7 +141,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * When o is a call frame, the call frame is searched for a field 'm'.
 	 * If it is not found, a call frame does not delegate to any dynamic parent, and yields an error.
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
+	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
 		if (this.hasLocalField(selector)) {
 			return this.getLocalField(selector);
 		} else {
@@ -156,7 +156,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * returned. If it does not, the search continues recursively in the call frame's
 	 * lexical parent.
 	 */
-	public ATObject meta_lookup(ATSymbol selector) throws NATException {
+	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
 		if (this.hasLocalField(selector)) {
 			return this.getLocalField(selector);
 		} else {
@@ -168,9 +168,9 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * A field can be added to either a call frame or an object.
 	 * In both cases, it is checked whether the field does not already exist.
 	 * If it does not, a new field is created and its value set to the given initial value.
-	 * @throws NATException 
+	 * @throws InterpreterException 
 	 */
-	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		boolean fieldAdded = variableMap_.put(name);
 		if (!fieldAdded) {
 			// field already exists...
@@ -187,7 +187,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * In both cases, if the field exists locally, it is set to the new value.
 	 * If it does not exist locally, the assignment is performed on the lexical parent.
 	 */
-	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
 		if (this.setLocalField(name, value)) {
 			// field found and set locally
 			return NATNil._INSTANCE_;
@@ -204,7 +204,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * then <tt>o.m := x</tt> follows the same evaluation semantics as those of
 	 * <tt>m := x</tt> when performed in the scope of <tt>o</tt>.
 	 */
-	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
 		return this.meta_assignVariable(name, value);
 	}
 
@@ -212,19 +212,19 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * -- Extension and cloning protocol --
 	 * ------------------------------------ */
 
-	public ATObject meta_clone() throws NATException {
+	public ATObject meta_clone() throws InterpreterException {
 		throw new XIllegalOperation("Cannot clone a call frame, clone its owning object instead.");
 	}
 
-	public ATObject meta_newInstance(ATTable initargs) throws NATException {
+	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
 		throw new XIllegalOperation("Cannot create a new instance of a call frame, new its owning object instead.");
 	}
 	
-	public ATObject meta_extend(ATClosure code) throws NATException {
+	public ATObject meta_extend(ATClosure code) throws InterpreterException {
 		throw new XIllegalOperation("Cannot extend a call frame, extend its owning object instead.");
 	}
 
-	public ATObject meta_share(ATClosure code) throws NATException {
+	public ATObject meta_share(ATClosure code) throws InterpreterException {
 		throw new XIllegalOperation("Cannot share a call frame, share its owning object instead.");
 	}
 
@@ -232,17 +232,17 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * -- Structural Access Protocol  --
 	 * --------------------------------- */
 	
-	public ATNil meta_addField(ATField field) throws NATException {
+	public ATNil meta_addField(ATField field) throws InterpreterException {
 		return this.meta_defineField(field.base_getName(), field.base_getValue());
 	}
 	
-	public ATNil meta_addMethod(ATMethod method) throws NATException {
+	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
 		throw new XIllegalOperation("Cannot add method "+
 								   method.base_getName().base_getText().asNativeText().javaValue +
 				                    " to a call frame. Add it as a closure field instead.");
 	}
 	
-	public ATField meta_getField(ATSymbol selector) throws NATException {
+	public ATField meta_getField(ATSymbol selector) throws InterpreterException {
 		if (this.hasLocalField(selector)) {
 			return new NATField(selector, this);
 		} else {
@@ -250,11 +250,11 @@ public class NATCallframe extends NATNil implements ATObject {
 		}
 	}
 
-	public ATMethod meta_getMethod(ATSymbol selector) throws NATException {
+	public ATMethod meta_getMethod(ATSymbol selector) throws InterpreterException {
 		throw new XSelectorNotFound(selector, this);
 	}
 
-	public ATTable meta_listFields() throws NATException {
+	public ATTable meta_listFields() throws InterpreterException {
 		ATObject[] fields = new ATObject[stateVector_.size()];
 		ATSymbol[] fieldNames = variableMap_.listFields();
 		for (int i = 0; i < fieldNames.length; i++) {
@@ -263,11 +263,11 @@ public class NATCallframe extends NATNil implements ATObject {
 		return new NATTable(fields);
 	}
 
-	public ATTable meta_listMethods() throws NATException {
+	public ATTable meta_listMethods() throws InterpreterException {
 		return NATTable.EMPTY;
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<callframe>");
 	}
 	
@@ -275,11 +275,11 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * -- Mirror Fields   --
 	 * --------------------- */
 	
-	public ATObject meta_getDynamicParent() throws NATException {
+	public ATObject meta_getDynamicParent() throws InterpreterException {
 		return NATNil._INSTANCE_;
 	};
 	
-	public ATObject meta_getLexicalParent() throws NATException {
+	public ATObject meta_getLexicalParent() throws InterpreterException {
 		return lexicalParent_;
 	}
 
@@ -325,7 +325,7 @@ public class NATCallframe extends NATNil implements ATObject {
 		}
 	}
 
-	public ATBoolean meta_isCloneOf(ATObject original) throws NATException {
+	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
 		if(	(original instanceof NATCallframe) &
 			! (original instanceof NATObject)) {
 			FieldMap originalVariables = ((NATCallframe)original).variableMap_;
@@ -337,7 +337,7 @@ public class NATCallframe extends NATNil implements ATObject {
 		}
 	}
 
-	public ATBoolean meta_isRelatedTo(ATObject object) throws NATException {
+	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
 		return super.meta_isRelatedTo(object);
 	}
 	

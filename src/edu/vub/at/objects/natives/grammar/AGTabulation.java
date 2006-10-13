@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -65,7 +65,7 @@ public final class AGTabulation extends AGExpression implements ATTabulation {
 	 * 
 	 * @return the value of the indexed table slot.
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATTable tab = tblExp_.meta_eval(ctx).asTable();
 		ATNumber idx = null;
 		try {
@@ -81,12 +81,12 @@ public final class AGTabulation extends AGExpression implements ATTabulation {
 	 * 
 	 * AGTBL(tbl,idx).quote(ctx) = AGTBL(tbl.quote(ctx),idx.quote(ctx))
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGTabulation(tblExp_.meta_quote(ctx).asExpression(),
 				               idxExp_.meta_quote(ctx).asExpression());
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(tblExp_.meta_print().javaValue + "[" +
 				              idxExp_.meta_print().javaValue + "]");
 	}

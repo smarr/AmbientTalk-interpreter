@@ -27,7 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATObject;
@@ -54,23 +55,22 @@ public class NATField extends NATNil implements ATField {
 		return name_;
 	}
 
-	public ATObject base_getValue() {
+	public ATObject base_getValue() throws InterpreterException {
 		try {
 			return frame_.getLocalField(name_);
-		} catch (NATException e) {
-			// TODO XIllegalOperation should be an unchecked exception (maybe two variants)
+		} catch (InterpreterException e) {
 			// Since the field was selected from the receiver, it should always be found
-			throw new RuntimeException("Incorrectly initialised field accessed", e);
+			throw new XIllegalOperation("Incorrectly initialised field accessed", e);
 		}
 	}
 
-	public ATObject base_setValue(ATObject newValue) throws NATException {
+	public ATObject base_setValue(ATObject newValue) throws InterpreterException {
 		ATObject result = base_getValue();
 		frame_.meta_assignField(frame_, name_, newValue);
 		return result;
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<field:"+name_.meta_print().javaValue+">");
 	}
 

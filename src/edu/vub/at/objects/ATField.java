@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
@@ -44,15 +44,16 @@ public interface ATField extends ATObject {
 	
 	/**
 	 * @return the current value of the field.
+	 * @throws InterpreterException 
 	 */
-	public ATObject base_getValue();
+	public ATObject base_getValue() throws InterpreterException;
 	
 	/**
 	 * Sets the value of the field if possible
 	 * @param newValue - the value the field should hold.
 	 * @return - the value the field had before.
-	 * @throws NATException - if the field cannot be modified.
+	 * @throws InterpreterException - if the field cannot be modified.
 	 */
-	public ATObject base_setValue(ATObject newValue) throws NATException;
+	public ATObject base_setValue(ATObject newValue) throws InterpreterException;
 
 }

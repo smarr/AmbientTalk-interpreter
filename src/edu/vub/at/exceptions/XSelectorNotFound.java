@@ -37,7 +37,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * 
  * @author smostinc
  */
-public class XSelectorNotFound extends NATException {
+public class XSelectorNotFound extends InterpreterException {
 
 	private static final long serialVersionUID = -9186247764999498158L;
 	
@@ -53,7 +53,7 @@ public class XSelectorNotFound extends NATException {
 		String obj;
 		try {
 			obj = inObject_.meta_print().javaValue;
-		} catch(NATException e) {
+		} catch(InterpreterException e) {
 			obj = "<unprintable object: "+e.getMessage()+">";
 		}
 		return "Lookup failure : selector " + selector_ + " could not be found in "+ obj;

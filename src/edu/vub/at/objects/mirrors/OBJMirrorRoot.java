@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
@@ -39,7 +39,10 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 
 /**
- * TODO document the class OBJMirrorRoot
+ * OBJMirrorRoot is a singleton which is shared by as a parent by all NATIntercessiveMirrors,
+ * It encodes the default behaviour to deal with invocation, selection and field assignment
+ * along the dynamic parent chain. This behaviour can be extracted, since these operations 
+ * are always parameterised by a receiver object, namely the intercessive mirror in question.
  *
  * @author smostinc
  */
@@ -58,7 +61,7 @@ public class OBJMirrorRoot extends NATNil {
 	 * to have a method for the given selector albeit prefixed with 'magic_'.</p>
 	 *  
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws NATException {
+	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
 		
 		NATMirage principal = (NATMirage)receiver.asMirror().base_getBase();
 		
@@ -78,7 +81,6 @@ public class OBJMirrorRoot extends NATNil {
 									jSelector,
 									arguments)));
 		} catch (XSelectorNotFound e) {
-			e.printStackTrace();
 			// Principal does not have a corresponding meta_level method
 			// try for a base_level method of the mirror itself. This 
 			// functionality is accessible using the super class.
@@ -94,12 +96,12 @@ public class OBJMirrorRoot extends NATNil {
 	/**
 	 * OBJMirrorRoot is a singleton object.
 	 */
-	public ATObject meta_clone() throws NATException {
+	public ATObject meta_clone() throws InterpreterException {
 		return this;
 	}
 
 	
-	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws NATException {
+	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws InterpreterException {
 		ATObject extension = new NATIntercessiveMirror(
 				/* lexical parent */
 				code.base_getContext().base_getLexicalScope(),
@@ -138,7 +140,7 @@ public class OBJMirrorRoot extends NATNil {
 	 * advantage of this technique is that it permits a mirror to have a field 
 	 * referring to its principal.</p>
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol atSelector) throws NATException {
+	public ATObject meta_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
 		NATMirage principal = (NATMirage)receiver.asMirror().base_getBase();
 		
 		// Same as upMetaLevelSelector but with magic_ instead of meta_
@@ -179,7 +181,7 @@ public class OBJMirrorRoot extends NATNil {
 	 * uphold stratification). Otherwise it is possible that a base field of the mirror
 	 * itself is changed.
 	 */
-	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
 		NATMirage principal = (NATMirage)receiver.asMirror().base_getBase();
 		
 		String jSelector = Reflection.upMagicFieldMutationSelector(name);

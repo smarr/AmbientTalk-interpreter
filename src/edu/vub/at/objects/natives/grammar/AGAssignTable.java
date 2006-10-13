@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -72,7 +72,7 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 	 * 
 	 * @return NIL (table assignment is not an expression)
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATTable tab = tblExp_.meta_eval(ctx).asTable();
 		ATNumber idx = null;
 		try {
@@ -89,13 +89,13 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 	 * 
 	 * AGASSTABLE(tbl,idx,val).quote(ctx) = AGASSTABLE(tbl.quote(ctx),idx.quote(ctx),val.quote(ctx))
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGAssignTable(tblExp_.meta_quote(ctx).asExpression(),
 				                 idxExp_.meta_quote(ctx).asExpression(),
 				                 valExp_.meta_quote(ctx).asExpression());
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(tblExp_.meta_print().javaValue + "[" +
 				idxExp_.meta_print().javaValue + "] := " +
 				valExp_.meta_print().javaValue);

@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
@@ -82,35 +82,35 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		
 		public NATTrue() { super(true); }
 		
-		public NATText meta_print() throws NATException { return NATText.atValue("true"); }
+		public NATText meta_print() throws InterpreterException { return NATText.atValue("true"); }
 		
 		// base interface for true
 		
-		public ATObject base_ifTrue_(ATClosure clo) throws NATException {
+		public ATObject base_ifTrue_(ATClosure clo) throws InterpreterException {
 			return clo.base_apply(NATTable.EMPTY);
 		}
 
-		public ATObject base_ifFalse_(ATClosure clo) throws NATException {
+		public ATObject base_ifFalse_(ATClosure clo) throws InterpreterException {
 			return NATNil._INSTANCE_;
 		}
 		
-		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws NATException {
+		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws InterpreterException {
 			return consequent.asClosure().base_apply(NATTable.EMPTY);
 		}
 		
-		public ATBoolean base__opamp_(ATBoolean other) throws NATException {
+		public ATBoolean base__opamp_(ATBoolean other) throws InterpreterException {
 			return other; // true & something = something
 		}
 
-		public ATBoolean base__oppls_(ATBoolean other) throws NATException {
+		public ATBoolean base__oppls_(ATBoolean other) throws InterpreterException {
 			return this; // true | something = true
 		}
 		
-		public ATBoolean base_and_(ATClosure other) throws NATException {
+		public ATBoolean base_and_(ATClosure other) throws InterpreterException {
 			return other.base_apply(NATTable.EMPTY).asBoolean();
 		}
 		
-		public ATBoolean base_or_(ATClosure other) throws NATException {
+		public ATBoolean base_or_(ATClosure other) throws InterpreterException {
 			return this;
 		}
 		
@@ -126,35 +126,35 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		
 		public NATFalse() { super(false); }
 		
-		public NATText meta_print() throws NATException { return NATText.atValue("false"); }
+		public NATText meta_print() throws InterpreterException { return NATText.atValue("false"); }
 
 		// base interface for false
 		
-		public ATObject base_ifTrue_(ATClosure clo) throws NATException {
+		public ATObject base_ifTrue_(ATClosure clo) throws InterpreterException {
 			return NATNil._INSTANCE_;
 		}
 
-		public ATObject base_ifFalse_(ATClosure clo) throws NATException {
+		public ATObject base_ifFalse_(ATClosure clo) throws InterpreterException {
 			return clo.base_apply(NATTable.EMPTY);
 		}
 		
-		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws NATException {
+		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws InterpreterException {
 			return alternative.asClosure().base_apply(NATTable.EMPTY);
 		}
 		
-		public ATBoolean base__opamp_(ATBoolean other) throws NATException {
+		public ATBoolean base__opamp_(ATBoolean other) throws InterpreterException {
 			return this; // false & something = false
 		}
 
-		public ATBoolean base__oppls_(ATBoolean other) throws NATException {
+		public ATBoolean base__oppls_(ATBoolean other) throws InterpreterException {
 			return other; // false | something = something
 		}
 		
-		public ATBoolean base_and_(ATClosure other) throws NATException {
+		public ATBoolean base_and_(ATClosure other) throws InterpreterException {
 			return this;
 		}
 		
-		public ATBoolean base_or_(ATClosure other) throws NATException {
+		public ATBoolean base_or_(ATClosure other) throws InterpreterException {
 			return other.base_apply(NATTable.EMPTY).asBoolean();
 		}
 		

@@ -34,7 +34,7 @@ package edu.vub.at.exceptions;
  * 
  * @author tvc
  */
-public final class XDuplicateSlot extends NATException {
+public final class XDuplicateSlot extends InterpreterException {
 
 	private static final long serialVersionUID = -1256829498207088803L;
 

@@ -35,7 +35,7 @@ import edu.vub.at.objects.grammar.ATExpression;
  * 
  * @author tvc
  */
-public final class XIllegalSplice extends NATException {
+public final class XIllegalSplice extends InterpreterException {
 
 	private static final long serialVersionUID = -1363939697987417869L;
 

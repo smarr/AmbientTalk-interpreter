@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATQuote;
@@ -57,18 +57,18 @@ public final class AGQuote extends AGExpression implements ATQuote {
 	 * 
 	 * @return the quoted statement
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		return stmt_.meta_quote(ctx);
 	}
 
 	/**
 	 * Quoting a quotation results in a bare quotation, where quotations and unquotations are left unexpanded.
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return this;
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("`("+ stmt_.meta_print().javaValue + ")");
 	}
 

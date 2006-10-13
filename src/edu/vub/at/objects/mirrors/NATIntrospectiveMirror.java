@@ -28,7 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATBoolean;
@@ -110,7 +110,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * Asynchronous messages sent to an object ( o<-m( args )) are handled by the 
 	 * actor in which the object is contained.
 	 */
-	public ATNil meta_send(ATAsyncMessage message) throws NATException {
+	public ATNil meta_send(ATAsyncMessage message) throws InterpreterException {
          // TODO: nil <- m() => also do invoke-like deification?
 		throw new RuntimeException("Not yet implemented: async message sends to mirrors");
 	}
@@ -134,7 +134,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * mirror. An added advantage of this technique is that it permits a mirror to 
 	 * give out a reference to its principal.</p>
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws NATException {
+	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
 		String jSelector = Reflection.upMetaLevelSelector(atSelector);
 		
 		try {
@@ -178,7 +178,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * advantage of this technique is that it permits a mirror to have a field 
 	 * referring to its principal.</p>
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol atSelector) throws NATException {
+	public ATObject meta_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
 		String jSelector = null;
 		
 		try {
@@ -213,7 +213,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * uphold stratification). Otherwise it is possible that a base field of the mirror
 	 * itself is changed.
 	 */
-	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
 		String jSelector = null;
 		
 		try{
@@ -240,7 +240,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * be properly initialised using base_init. The implementation of this method 
 	 * contacts the factory in order to create a new mirror.
 	 */
-	public ATObject meta_clone() throws NATException {
+	public ATObject meta_clone() throws InterpreterException {
 		return this;
 	}
 
@@ -265,7 +265,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * -- Abstract Grammar Protocol   --
 	 * --------------------------------- */
 		
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<mirror on:"+principal_.meta_print().javaValue+">");
 	}
 }

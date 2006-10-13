@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATAssignField;
@@ -70,7 +70,7 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 	 * 
 	 * @return NIL
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject receiver = rcvExp_.meta_eval(ctx);
 		receiver.meta_assignField(receiver, fieldName_, valueExp_.meta_eval(ctx));
 		return NATNil._INSTANCE_;
@@ -79,11 +79,11 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 	/**
 	 * AGASSFIELD(rcv,nam,val).quote(ctx) = AGASSFIELD(rcv.quote(ctx), nam.quote(ctx), val.quote(ctx))
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGAssignField(rcvExp_.meta_quote(ctx).asExpression(), fieldName_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(rcvExp_.meta_print().javaValue + "." + fieldName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
 

@@ -34,7 +34,7 @@ import java.io.IOException;
  * 
  * @author tvc
  */
-public class XIOProblem extends NATException {
+public class XIOProblem extends InterpreterException {
 
 	private static final long serialVersionUID = -2356169455943359670L;
 

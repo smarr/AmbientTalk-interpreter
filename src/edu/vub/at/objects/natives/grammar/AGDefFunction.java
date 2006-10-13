@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -85,9 +85,9 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 *   else
 	 *      ctx.scope.addMethod(nam, AGMTH(nam,par,bdy))
 	 *      
-	 * TODO: closure definition: should they really be fields? fields are mutable?
+	 * TODO LATER(final fields) closure definition: should they really be fields? fields are mutable?
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		if (ctx.base_getLexicalScope().isCallFrame()) {
 			ctx.base_getLexicalScope().meta_defineField(
 					selectorExp_,
@@ -104,13 +104,13 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 * 
 	 * AGDEFFUN(nam,par,bdy).quote(ctx) = AGDEFFUN(nam.quote(ctx), par.quote(ctx), bdy.quote(ctx))
 	 */
-	public ATObject meta_quote(ATContext ctx) throws NATException {
+	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGDefFunction(selectorExp_.meta_quote(ctx).asSymbol(),
 				              argumentExps_.meta_quote(ctx).asTable(),
 				              bodyStmts_.meta_quote(ctx).asBegin());
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("def " +
 				selectorExp_.meta_print().javaValue +
 				Evaluator.printAsList(argumentExps_).javaValue +

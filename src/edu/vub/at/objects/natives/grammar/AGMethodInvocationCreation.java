@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -55,7 +55,7 @@ public final class AGMethodInvocationCreation extends AGMessageCreation {
 	 * 
 	 * @return a first-class method invocation
 	 */
-	public ATObject meta_eval(ATContext ctx) throws NATException {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		return new NATMethodInvocation(this.base_getSelector(),
 				                      Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
 	}

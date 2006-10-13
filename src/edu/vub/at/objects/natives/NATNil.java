@@ -29,7 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -77,7 +77,7 @@ public class NATNil implements ATNil {
      * Asynchronous messages sent to an object ( o<-m( args )) are handled by the
      * actor in which the object is contained.
      */
-    public ATNil meta_send(ATAsyncMessage message) throws NATException {
+    public ATNil meta_send(ATAsyncMessage message) throws InterpreterException {
          // TODO: nil <- m() => also do invoke-like deification?
         throw new RuntimeException("Not yet implemented: async message sends to native values");
     }
@@ -91,7 +91,7 @@ public class NATNil implements ATNil {
      * Java method invocation, the invocation must be deified ('upped'). The result of the
      * upped invocation is a Java object, which must subsequently be 'downed' again.
      */
-    public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws NATException {
+    public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
         try {
 			String jSelector = Reflection.upBaseLevelSelector(atSelector);
 			return Reflection.downObject(Reflection.upInvocation(receiver, jSelector, arguments));
@@ -104,7 +104,7 @@ public class NATNil implements ATNil {
      * An ambienttalk language value can respond to a message if it implements
      * a native Java method corresponding to the selector prefixed by 'base_'.
      */
-    public ATBoolean meta_respondsTo(ATSymbol atSelector) throws NATException {
+    public ATBoolean meta_respondsTo(ATSymbol atSelector) throws InterpreterException {
         String jSelector = Reflection.upBaseLevelSelector(atSelector);
 
         return NATBoolean.atValue(Reflection.upRespondsTo(this, jSelector));
@@ -113,7 +113,7 @@ public class NATNil implements ATNil {
     /**
      * By default, when a selection is not understood by a primitive object, an error is raised.
      */
-    public ATObject meta_doesNotUnderstand(ATSymbol selector) throws NATException {
+    public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
         throw new XSelectorNotFound(selector, this);
     }
 
@@ -131,7 +131,7 @@ public class NATNil implements ATNil {
      *  base_getM which means m is represented as a readable field, or
      *  base_m which means m is represented as a method
      */
-    public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
+    public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
         String jSelector = null;
 
         try {
@@ -160,7 +160,7 @@ public class NATNil implements ATNil {
      * In such cases a lookup is treated exactly like a selection, where the 'original receiver'
      * of the selection equals the primitive object.
      */
-    public ATObject meta_lookup(ATSymbol selector) throws NATException {
+    public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
         try {
         	  return this.meta_select(this, selector);
         } catch(XSelectorNotFound e) {
@@ -169,7 +169,7 @@ public class NATNil implements ATNil {
         }
     }
 
-    public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+    public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
         throw new XIllegalOperation("Cannot add fields to a sealed " + this.getClass().getName());
     }
 
@@ -183,7 +183,7 @@ public class NATNil implements ATNil {
      * One particular case where this method will often be called is when a variable assignment reaches
      * the lexical root, OBJLexicalRoot, which inherits this implementation.
      */
-    public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws NATException {
+    public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
         try {
 			return this.meta_assignField(this, name, value);
 		} catch (XSelectorNotFound e) {
@@ -192,7 +192,7 @@ public class NATNil implements ATNil {
 		}
     }
 
-    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws NATException {
+    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
     	
         // try to invoke a native base_setName method
         try {
@@ -210,15 +210,15 @@ public class NATNil implements ATNil {
       * -- Extension and cloning protocol --
       * ------------------------------------ */
 
-    public ATObject meta_clone() throws NATException {
+    public ATObject meta_clone() throws InterpreterException {
         throw new XIllegalOperation("Cannot clone a native object of type " + this.getClass().getName());
     }
 
-    public ATObject meta_newInstance(ATTable initargs) throws NATException {
+    public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
         return Reflection.downObject(Reflection.upInstanceCreation(this, initargs));
     }
 
-	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws NATException {
+	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws InterpreterException {
 
 		NATObject extension = new NATObject(
 				/* dynamic parent */
@@ -233,11 +233,11 @@ public class NATNil implements ATNil {
 		return extension;
 	}
 	
-	public ATObject meta_extend(ATClosure code) throws NATException {
+	public ATObject meta_extend(ATClosure code) throws InterpreterException {
 		return createChild(code, NATObject._IS_A_);
 	}
 
-	public ATObject meta_share(ATClosure code) throws NATException {
+	public ATObject meta_share(ATClosure code) throws InterpreterException {
 		return createChild(code, NATObject._SHARES_A_);
 	}
     
@@ -245,19 +245,19 @@ public class NATNil implements ATNil {
       * -- Structural Access Protocol  --
       * --------------------------------- */
 
-    public ATNil meta_addField(ATField field) throws NATException {
+    public ATNil meta_addField(ATField field) throws InterpreterException {
         throw new XIllegalOperation("Cannot add fields to an object of type " + this.getClass().getName());
     }
 
-    public ATNil meta_addMethod(ATMethod method) throws NATException {
+    public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
         throw new XIllegalOperation("Cannot add methods to an object of type " + this.getClass().getName());
     }
 
-    public ATField meta_getField(ATSymbol fieldName) throws NATException {
+    public ATField meta_getField(ATSymbol fieldName) throws InterpreterException {
         return JavaField.createPrimitiveField(this, fieldName);
     }
 
-    public ATMethod meta_getMethod(ATSymbol methodName) throws NATException {
+    public ATMethod meta_getMethod(ATSymbol methodName) throws InterpreterException {
         String selector = Reflection.upBaseLevelSelector(methodName);
 
         return JavaInterfaceAdaptor.wrapMethodFor(
@@ -266,13 +266,13 @@ public class NATNil implements ATNil {
                 selector).base_getMethod();
     }
 
-    public ATTable meta_listFields() throws NATException {
-        // TODO do we show all base_get methods here?
+    public ATTable meta_listFields() throws InterpreterException {
+        // TODO LATER(reflective clean-up) do we show all base_get methods here?
         return NATTable.EMPTY;
     }
 
-    public ATTable meta_listMethods() throws NATException {
-        // TODO filter out all base_get and show all base_?
+    public ATTable meta_listMethods() throws InterpreterException {
+        // TODO LATER(reflective clean-up) filter out all base_get and show all base_?
         return NATTable.EMPTY;
     }
 
@@ -283,18 +283,18 @@ public class NATNil implements ATNil {
     /**
      * All NATObjects which are not Abstract Grammar elements are self-evaluating.
      */
-    public ATObject meta_eval(ATContext ctx) throws NATException {
+    public ATObject meta_eval(ATContext ctx) throws InterpreterException {
         return this;
     }
 
     /**
      * Quoting a native object returns itself, except for pure AG elements.
      */
-    public ATObject meta_quote(ATContext ctx) throws NATException {
+    public ATObject meta_quote(ATContext ctx) throws InterpreterException {
         return this;
     }
 
-    public NATText meta_print() throws NATException {
+    public NATText meta_print() throws InterpreterException {
         return NATText.atValue("nil");
     }
 
@@ -304,16 +304,16 @@ public class NATNil implements ATNil {
 
     /**
      * Only true extending objects have a dynamic pointer, others return nil
-     * @throws NATException 
+     * @throws InterpreterException 
      */
-    public ATObject meta_getDynamicParent() throws NATException {
+    public ATObject meta_getDynamicParent() throws InterpreterException {
         return NATNil._INSTANCE_;
     };
 
     /**
      * By default numbers, tables and so on do not have lexical parents,
      */
-    public ATObject meta_getLexicalParent() throws NATException {
+    public ATObject meta_getLexicalParent() throws InterpreterException {
         return NATNil._INSTANCE_;
     }
 
@@ -453,7 +453,7 @@ public class NATNil implements ATNil {
         throw new XTypeMismatch(NATFraction.class, this);
     }
 
-    public NATText asNativeText() throws NATException {
+    public NATText asNativeText() throws InterpreterException {
     		return this.meta_print();
         // throw new XTypeMismatch("Expected a native text, given: " + this.getClass().getName(), this);
     }
@@ -470,7 +470,7 @@ public class NATNil implements ATNil {
         throw new XTypeMismatch(NATNumeric.class, this);
     }
 
-    public NATException asNativeException() throws XTypeMismatch {
+    public InterpreterException asInterpreterException() throws XTypeMismatch {
     		return new XUserDefined(this);
     }
     
@@ -482,20 +482,20 @@ public class NATNil implements ATNil {
         return NATBoolean.atValue(this.equals(comparand));
     }
     
-    public ATObject base_new(ATObject[] initargs) throws NATException {
+    public ATObject base_new(ATObject[] initargs) throws InterpreterException {
     	    return this.meta_newInstance(NATTable.atValue(initargs));
     }
     
-    public ATObject base_init(ATObject[] initargs) throws NATException {
+    public ATObject base_init(ATObject[] initargs) throws InterpreterException {
     	    return NATNil._INSTANCE_;
     }
 
-	public ATBoolean meta_isCloneOf(ATObject original) throws NATException {
+	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
 		return NATBoolean.atValue(
 				this.getClass() == original.getClass());
 	}
 
-	public ATBoolean meta_isRelatedTo(ATObject object) throws NATException {
+	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
 		return this.meta_isCloneOf(object);
 	}
 

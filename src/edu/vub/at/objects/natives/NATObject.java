@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -222,7 +222,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * <code>return this.meta_select(receiver, selector).asClosure().meta_apply(arguments);</code>
 	 * but has a specialized implementation for performance reasons (no unnecessary closure is created)
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws NATException {
+	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		if (this.hasLocalField(selector)) {
 			return this.getLocalField(selector).asClosure().base_apply(arguments);
 		} else if (this.hasLocalMethod(selector)) {
@@ -240,7 +240,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * An ambienttalk object can respond to a message if a corresponding field or method exists
 	 * either in the receiver object locally, or in one of its dynamic parents.
 	 */
-	public ATBoolean meta_respondsTo(ATSymbol selector) throws NATException {
+	public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
 		if (this.hasLocalField(selector) || this.hasLocalMethod(selector))
 			return NATBoolean._TRUE_;
 		else
@@ -271,7 +271,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * @param selector the selector to look up
 	 * @return the value of the found field, or a closure wrapping a found method
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws NATException {
+	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
 		if (this.hasLocalField(selector)) {
 			return this.getLocalField(selector);
 		} else if (this.hasLocalMethod(selector)) {
@@ -307,7 +307,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 *    
 	 *  - Otherwise, the search continues recursively in the object's lexical parent.
 	 */
-	public ATObject meta_lookup(ATSymbol selector) throws NATException {
+	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
 		if (this.hasLocalField(selector)) {
 			return this.getLocalField(selector);
 		} else if (this.hasLocalMethod(selector)) {
@@ -325,9 +325,9 @@ public class NATObject extends NATCallframe implements ATObject {
 	/**
 	 * When a new field is defined in an object, it is important to check whether or not
 	 * the field map is shared between clones or not. If it is shared, the map must be cloned first.
-	 * @throws NATException 
+	 * @throws InterpreterException 
 	 */
-	public ATNil meta_defineField(ATSymbol name, ATObject value) throws NATException {
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		if (this.isFlagSet(_SHARE_MAP_FLAG_)) {
 			// copy the variable map
 			variableMap_ = variableMap_.copy();
@@ -351,7 +351,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 *    
 	 * @return NIL
 	 */
-	public ATNil meta_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws NATException {
+	public ATNil meta_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws InterpreterException {
 		if (this.setLocalField(selector, value)) {
 			return NATNil._INSTANCE_;
 		} else {
@@ -378,7 +378,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * sharing between clones is an implementation-level optimization: clones
 	 * are completely self-sufficient and do not influence one another by meta-level operations.
 	 */
-	public ATObject meta_clone() throws NATException {
+	public ATObject meta_clone() throws InterpreterException {
 		ATObject dynamicParent;
 		if(this.isFlagSet(_ISAPARENT_FLAG_)) {
 			// IS-A Relation : clone the dynamic parent.
@@ -413,17 +413,17 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * possible that a shared parent is accidentally re-initialized because a
 	 * sharing child is cloned via new.
 	 */
-	public ATObject meta_newInstance(ATTable initargs) throws NATException {
+	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
 		ATObject clone = this.meta_clone();
 		clone.meta_invoke(clone, Evaluator._INIT_, initargs);
 		return clone;
 	}
 	
-	public ATObject meta_extend(ATClosure code) throws NATException {
+	public ATObject meta_extend(ATClosure code) throws InterpreterException {
 		return createChild(code, _IS_A_);
 	}
 
-	public ATObject meta_share(ATClosure code) throws NATException {
+	public ATObject meta_share(ATClosure code) throws InterpreterException {
 		return createChild(code, _SHARES_A_);
 	}
 
@@ -438,7 +438,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * does not affect clones. Therefore, if the method dictionary is shared, a copy
 	 * of the dictionary is taken before adding the method.
 	 */
-	public ATNil meta_addMethod(ATMethod method) throws NATException {
+	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
 		ATSymbol name = method.base_getName();
 		if (methodDictionary_.containsKey(name)) {
 			throw new XDuplicateSlot("method", name.base_getText().asNativeText().javaValue);			
@@ -453,7 +453,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		return NATNil._INSTANCE_;
 	}
 
-	public ATMethod meta_getMethod(ATSymbol selector) throws NATException {
+	public ATMethod meta_getMethod(ATSymbol selector) throws InterpreterException {
 		ATMethod result = (ATMethod)methodDictionary_.get(selector);
 		if(result == null) {
 			throw new XSelectorNotFound(selector, this);
@@ -462,12 +462,12 @@ public class NATObject extends NATCallframe implements ATObject {
 		}
 	}
 
-	public ATTable meta_listMethods() throws NATException {
+	public ATTable meta_listMethods() throws InterpreterException {
 		Collection methods = methodDictionary_.values();
 		return new NATTable((ATObject[]) methods.toArray(new ATObject[methods.size()]));
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<object:"+this.hashCode()+">");
 	}
 	
@@ -479,7 +479,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * -- Mirror Fields   --
 	 * --------------------- */
 	
-	public ATObject meta_getDynamicParent() throws NATException {
+	public ATObject meta_getDynamicParent() throws InterpreterException {
 		return dynamicParent_;
 	};
 	
@@ -490,7 +490,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	         					  MethodDictionary methodDict,
 	         					  ATObject dynamicParent,
 	         					  ATObject lexicalParent,
-	         					  byte flags) throws NATException {
+	         					  byte flags) throws InterpreterException {
 		return new NATObject(map,
 	            state,
 	            methodDict,
@@ -530,7 +530,7 @@ public class NATObject extends NATCallframe implements ATObject {
      * -- Object Relational Comparison --
      * ---------------------------------- */
     
-	public ATBoolean meta_isCloneOf(ATObject original) throws NATException {
+	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
 		if(original instanceof NATObject) {
 			MethodDictionary originalMethods = ((NATObject)original).methodDictionary_;
 			FieldMap originalVariables = ((NATObject)original).variableMap_;
@@ -543,10 +543,10 @@ public class NATObject extends NATCallframe implements ATObject {
 		}
 	}
 
-	public ATBoolean meta_isRelatedTo(final ATObject object) throws NATException {
-		return this.meta_isCloneOf(object).base_and_(
+	public ATBoolean meta_isRelatedTo(final ATObject object) throws InterpreterException {
+		return this.meta_isCloneOf(object).base_or_(
 				new JavaClosure(this) {
-					public ATObject base_apply(ATTable args) throws NATException {
+					public ATObject base_apply(ATTable args) throws InterpreterException {
 						return scope_.meta_getDynamicParent().meta_isRelatedTo(object);
 					}
 				}).asBoolean();

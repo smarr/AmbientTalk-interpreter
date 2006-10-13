@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.coercion;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -101,9 +101,12 @@ public interface ATConversions {
 	public NATObject   asAmbientTalkObject() throws XTypeMismatch;
 	public NATNumber   asNativeNumber() throws XTypeMismatch;
 	public NATFraction asNativeFraction() throws XTypeMismatch;
-	public NATText     asNativeText() throws NATException;
+	public NATText     asNativeText() throws InterpreterException;
 	public NATTable    asNativeTable() throws XTypeMismatch;
 	public NATBoolean  asNativeBoolean() throws XTypeMismatch;
 	public NATNumeric  asNativeNumeric() throws XTypeMismatch;
-	public NATException asNativeException() throws XTypeMismatch;
+	
+	// Allows reusing Java throw and try-catch
+	
+	public InterpreterException asInterpreterException() throws XTypeMismatch;
 }

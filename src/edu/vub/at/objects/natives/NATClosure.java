@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -60,7 +60,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	 * @param implementor the object in which the definition is nested.
 	 * @param receiver the object where the lookup was initiated.
 	 */
-	public NATClosure(ATMethod method, ATObject implementor, ATObject receiver) throws NATException {
+	public NATClosure(ATMethod method, ATObject implementor, ATObject receiver) throws InterpreterException {
 		this(method, new NATContext(
 				/* scope = implementor (to be extended with a callframe upon closure application) */
 				implementor, 
@@ -79,7 +79,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	 * To apply a closure, apply its underlying method with the context of the closure,
 	 * rather than the runtime context of the invoker.
 	 */
-	public ATObject base_apply(ATTable arguments) throws NATException {
+	public ATObject base_apply(ATTable arguments) throws InterpreterException {
 		NATCallframe scope = new NATCallframe(context_.base_getLexicalScope());
 		return method_.base_apply(arguments, context_.base_withLexicalEnvironment(scope));
 	}
@@ -95,7 +95,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	 *   }
 	 * }
 	 */
-	public ATObject base_whileTrue_(final ATClosure body) throws NATException {
+	public ATObject base_whileTrue_(final ATClosure body) throws InterpreterException {
 		/* ATObject result = NATNil._INSTANCE_;
 		while (this.meta_apply(NATTable.EMPTY).asNativeBoolean().javaValue) {
 			result = body.meta_apply(NATTable.EMPTY);
@@ -119,7 +119,7 @@ public class NATClosure extends NATNil implements ATClosure {
 			} else {
 				// cond is a user-defined boolean, do a recursive send
 				return cond.base_ifTrue_(new JavaClosure(this) {
-					public ATObject base_apply(ATTable args) throws NATException {
+					public ATObject base_apply(ATTable args) throws InterpreterException {
 						// if user-defined bool is true, execute body and recurse
 						body.base_apply(NATTable.EMPTY);
 						return base_whileTrue_(body);
@@ -130,7 +130,7 @@ public class NATClosure extends NATNil implements ATClosure {
 		
 	}
 	
-	public ATContext base_getContext() throws NATException {
+	public ATContext base_getContext() throws InterpreterException {
 		return context_;
 	}
 
@@ -146,7 +146,7 @@ public class NATClosure extends NATNil implements ATClosure {
 		return this;
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<closure:"+method_.base_getName()+">");
 	}
 

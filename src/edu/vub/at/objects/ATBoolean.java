@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 
 /**
  * The ATBoolean interface is the public interface to a boolean object.
@@ -37,15 +37,15 @@ import edu.vub.at.exceptions.NATException;
  */
 public interface ATBoolean extends ATObject {
 
-	public ATObject base_ifTrue_(ATClosure cons) throws NATException;
-	public ATObject base_ifFalse_(ATClosure alt) throws NATException;
-	public ATObject base_ifTrue_ifFalse_(ATClosure cons, ATClosure alt) throws NATException;
+	public ATObject base_ifTrue_(ATClosure cons) throws InterpreterException;
+	public ATObject base_ifFalse_(ATClosure alt) throws InterpreterException;
+	public ATObject base_ifTrue_ifFalse_(ATClosure cons, ATClosure alt) throws InterpreterException;
 	
-	public ATBoolean base__opamp_(ATBoolean other) throws NATException;
-	public ATBoolean base__oppls_(ATBoolean other) throws NATException;
+	public ATBoolean base__opamp_(ATBoolean other) throws InterpreterException;
+	public ATBoolean base__oppls_(ATBoolean other) throws InterpreterException;
 	
-	public ATBoolean base_and_(ATClosure other) throws NATException;
-	public ATBoolean base_or_(ATClosure other) throws NATException;
+	public ATBoolean base_and_(ATClosure other) throws InterpreterException;
+	public ATBoolean base_or_(ATClosure other) throws InterpreterException;
 	
 	public ATBoolean base_not();
 	

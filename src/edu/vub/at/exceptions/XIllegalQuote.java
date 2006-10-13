@@ -34,7 +34,7 @@ package edu.vub.at.exceptions;
  * 
  * @author tvc
  */
-public final class XIllegalQuote extends NATException {
+public final class XIllegalQuote extends InterpreterException {
 
 	private static final long serialVersionUID = -1407445555815270192L;
 

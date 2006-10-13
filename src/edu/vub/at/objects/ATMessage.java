@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
@@ -68,8 +68,8 @@ public interface ATMessage extends ATObject {
 	 * 
 	 * @param receiver the object receiving the message.
 	 * @return the value of the method invocation or message send.
-	 * @throws NATException if the method is not found or an error occurs while processing the method.
+	 * @throws InterpreterException if the method is not found or an error occurs while processing the method.
 	 */
-	public ATObject base_sendTo(ATObject receiver) throws NATException;
+	public ATObject base_sendTo(ATObject receiver) throws InterpreterException;
 
 }

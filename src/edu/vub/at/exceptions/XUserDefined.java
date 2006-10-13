@@ -40,7 +40,7 @@ import edu.vub.at.objects.natives.NATTable;
  *
  * @author smostinc
  */
-public class XUserDefined extends NATException {
+public class XUserDefined extends InterpreterException {
 
 	private static final long serialVersionUID = -2859841280138142649L;
 
@@ -55,19 +55,19 @@ public class XUserDefined extends NATException {
 		return customException_;
 	}
 
-	public ATObject mayBeSignalledFrom(final ATClosure tryBlock, final ATClosure replacementCode) throws NATException {
+	public ATObject mayBeSignalledFrom(final ATClosure tryBlock, final ATClosure replacementCode) throws InterpreterException {
 		try {
 			return tryBlock.base_apply(NATTable.EMPTY);
 		} catch (final XUserDefined e) {
 			return e.getAmbientTalkRepresentation().meta_isRelatedTo(customException_).
 				base_ifTrue_ifFalse_(
 						new JavaClosure(customException_) {
-							public ATObject base_apply(ATTable args) throws NATException {
+							public ATObject base_apply(ATTable args) throws InterpreterException {
 								return replacementCode.base_apply(new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
 							}
 						},
 						new JavaClosure(customException_) {
-							public ATObject base_apply(ATTable args) throws NATException {
+							public ATObject base_apply(ATTable args) throws InterpreterException {
 								throw e;
 							}
 						}); 

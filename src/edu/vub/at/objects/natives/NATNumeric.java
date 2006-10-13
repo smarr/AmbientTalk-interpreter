@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATFraction;
@@ -90,7 +90,7 @@ public abstract class NATNumeric extends AGExpression implements ATNumeric {
 	/**
 	 * NUM(n).expt(NUM(e)) => FRC(Math.pow(n,e))
 	 */
-	public ATFraction base_expt(ATNumeric pow) throws NATException {
+	public ATFraction base_expt(ATNumeric pow) throws InterpreterException {
 		return NATFraction.atValue(Math.pow(getJavaValue(), pow.asNativeNumeric().getJavaValue()));
 	}
 	
@@ -99,37 +99,37 @@ public abstract class NATNumeric extends AGExpression implements ATNumeric {
 	/**
 	 * a < b iff (a <=> b) == -1
 	 */
-	public ATBoolean base__opltx_(ATNumeric other) throws NATException {
+	public ATBoolean base__opltx_(ATNumeric other) throws InterpreterException {
 		return NATBoolean.atValue(this.base__opltx__opeql__opgtx_(other).equals(NATNumber.MONE));
 	}
 	/**
 	 * a > b iff (a <=> b) == +1
 	 */
-	public ATBoolean base__opgtx_(ATNumeric other) throws NATException {
+	public ATBoolean base__opgtx_(ATNumeric other) throws InterpreterException {
 		return NATBoolean.atValue(this.base__opltx__opeql__opgtx_(other).equals(NATNumber.ONE));
 	}
 	/**
 	 * a <= b iff (a <=> b) != +1
 	 */
-	public ATBoolean base__opltx__opeql_(ATNumeric other) throws NATException {
+	public ATBoolean base__opltx__opeql_(ATNumeric other) throws InterpreterException {
 		return NATBoolean.atValue(! this.base__opltx__opeql__opgtx_(other).equals(NATNumber.ONE));
 	}
 	/**
 	 * a >= b iff (a <=> b) != -1
 	 */
-	public ATBoolean base__opgtx__opeql_(ATNumeric other) throws NATException {
+	public ATBoolean base__opgtx__opeql_(ATNumeric other) throws InterpreterException {
 		return NATBoolean.atValue(! this.base__opltx__opeql__opgtx_(other).equals(NATNumber.MONE));
 	}
 	/**
 	 * a = b iff (a <=> b) == 0
 	 */
-	public ATBoolean base__opeql_(ATNumeric other) throws NATException {
+	public ATBoolean base__opeql_(ATNumeric other) throws InterpreterException {
 		return NATBoolean.atValue(this.base__opltx__opeql__opgtx_(other).equals(NATNumber.ZERO));
 	}
 	/**
 	 * a != b iff (a <=> b) != 0
 	 */
-	public ATBoolean base__opnot__opeql_(ATNumeric other) throws NATException {
+	public ATBoolean base__opnot__opeql_(ATNumeric other) throws InterpreterException {
 		return NATBoolean.atValue(! this.base__opltx__opeql__opgtx_(other).equals(NATNumber.ZERO));
 	}
 

@@ -36,7 +36,7 @@ import edu.vub.at.objects.ATObject;
  * @author smostinc
  * @author tvcutsem
  */
-public class XTypeMismatch extends NATException {
+public class XTypeMismatch extends InterpreterException {
 
 	private static final long serialVersionUID = -3135452124227872807L;
 	

@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -53,11 +53,11 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	 * 
 	 * @return the return value of the invoked method.
 	 */
-	public ATObject base_sendTo(ATObject receiver) throws NATException {
+	public ATObject base_sendTo(ATObject receiver) throws InterpreterException {
 		return receiver.meta_invoke(receiver, selector_, arguments_);
 	}
 	
-	public NATText meta_print() throws NATException {
+	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<method invocation:"+selector_+Evaluator.printAsList(arguments_).javaValue+">");
 	}
 

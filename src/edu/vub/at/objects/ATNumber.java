@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 
 /**
  * The public interface to an AmbientTalk native number (an integer value).
@@ -42,16 +42,16 @@ public interface ATNumber extends ATNumeric {
 	public ATNumeric base_dec();
 	public ATNumeric base_abs();
 	
-	public ATNil base_doTimes_(ATClosure code) throws NATException;
-	public ATNil base_to_do_(ATNumber end, ATClosure code) throws NATException;
-	public ATNil base_to_step_do_(ATNumber end, ATNumber inc, ATClosure code) throws NATException;
+	public ATNil base_doTimes_(ATClosure code) throws InterpreterException;
+	public ATNil base_to_do_(ATNumber end, ATClosure code) throws InterpreterException;
+	public ATNil base_to_step_do_(ATNumber end, ATNumber inc, ATClosure code) throws InterpreterException;
 	
-	public ATTable base__optms__optms_(ATNumber end) throws NATException;
-	public ATTable base__optms__optms__optms_(ATNumber end) throws NATException;
+	public ATTable base__optms__optms_(ATNumber end) throws InterpreterException;
+	public ATTable base__optms__optms__optms_(ATNumber end) throws InterpreterException;
 	
-	public ATFraction base__opque__opque_(ATNumber nbr) throws NATException;
+	public ATFraction base__opque__opque_(ATNumber nbr) throws InterpreterException;
 	
-	public ATNumber base__oprem_(ATNumber n) throws NATException;
-	public ATNumber base__opdiv__opmns_(ATNumber n) throws NATException;
+	public ATNumber base__oprem_(ATNumber n) throws InterpreterException;
+	public ATNumber base__opdiv__opmns_(ATNumber n) throws InterpreterException;
 	
 }
