@@ -27,7 +27,7 @@
  */
 package edu.vub.at;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
@@ -65,7 +65,7 @@ public class OBJUnit extends NATNil {
 	
 	private OBJUnit() { }
 	
-	public NATNil base_echo_(ATObject message) throws NATException {
+	public NATNil base_echo_(ATObject message) throws InterpreterException {
 		System.out.println(message.meta_print().javaValue);
 		return NATNil._INSTANCE_;
 	};
@@ -97,7 +97,7 @@ public class OBJUnit extends NATNil {
 			return ast.meta_eval(ctx_);
 		} catch (XParseError e) {
 			Assert.fail("Parse error: "+e.getMessage());
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			Assert.fail("Eval error: "+e.getMessage());
 		}
 		return null;
@@ -117,7 +117,7 @@ public class OBJUnit extends NATNil {
 			if(actual != null) {
 				this.base_assert_equals_(expected, actual.meta_print());
 			}
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			Assert.fail("Value cannot be represented in a textual format : " + e);
 		} 
 		return NATNil._INSTANCE_;
@@ -137,9 +137,9 @@ public class OBJUnit extends NATNil {
 	 *  
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent
 	 * @return a new object whose dynamic parent is NIL, whose lexical parent is the closure's lexical scope, initialized by the closure's code
-	 * @throws NATException if raised inside the code closure.
+	 * @throws InterpreterException if raised inside the code closure.
 	 */
-	public ATObject base_unittest_(ATClosure code) throws NATException {
+	public ATObject base_unittest_(ATClosure code) throws InterpreterException {
 		OBJUnit clone = new OBJUnit();
 		NATObject extension = new NATObject(
 				/* dynamic parent */

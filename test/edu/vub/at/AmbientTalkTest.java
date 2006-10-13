@@ -1,6 +1,6 @@
 package edu.vub.at;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
@@ -31,7 +31,7 @@ public abstract class AmbientTalkTest extends TestCase {
 			return ptree.meta_eval(ctx_);
 		} catch (XParseError e) {
 			fail("Parse error: "+e.getMessage());
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("Eval error: "+e.getMessage());
 		}
@@ -51,7 +51,7 @@ public abstract class AmbientTalkTest extends TestCase {
 			if (result != null) {
 				assertEquals(output, result.meta_print().javaValue);
 			}
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -59,7 +59,7 @@ public abstract class AmbientTalkTest extends TestCase {
 	public void printedEquals(ATObject input, String expected) {
 		try {
 			assertEquals(expected, input.meta_print().javaValue);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}

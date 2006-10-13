@@ -27,13 +27,14 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 
 /**
- * TODO document the class MirageTest
+ * MirageTest tests the creation of Mirages (objects with custom meta-behaviour) given
+ * a NATIntercessiveMirror instance.
  * 
  * @author smostinc
  */
@@ -74,7 +75,7 @@ public class MirageTest extends ReflectiveAccessTest {
 					"echo: clone.nonSharedField;"
 					, new NATContext(new NATCallframe(lexicalRoot), lexicalRoot, NATNil._INSTANCE_)
 					);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception : " + e);
 		}
@@ -136,7 +137,7 @@ public class MirageTest extends ReflectiveAccessTest {
 					"mirroredChild.m();"
 					, new NATContext(new NATCallframe(lexicalRoot), lexicalRoot, NATNil._INSTANCE_)
 					);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception : " + e);
 		}		

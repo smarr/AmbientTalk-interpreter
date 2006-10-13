@@ -30,7 +30,7 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.AmbientTalkTestCase;
 import edu.vub.at.OBJUnit;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
@@ -68,26 +68,26 @@ public class ReflectiveAccessTest extends AmbientTalkTestCase {
 	 * --------------------------- */	
 	
 	protected final NATClosure fail = new JavaClosure(NATNil._INSTANCE_)  {
-		public ATObject base_apply(ATTable arguments) throws NATException {
+		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			fail();
 			return NATNil._INSTANCE_;
 		}
 	};
 	
 	protected final NATClosure success = new JavaClosure(NATNil._INSTANCE_) {
-		public ATObject base_apply(ATTable arguments) throws NATException {
+		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			return NATNil._INSTANCE_;
 		}		
 	};
 	
 	protected final NATClosure symbol = new JavaClosure(NATNil._INSTANCE_) {
-		public ATObject base_apply(ATTable arguments) throws NATException {
+		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			return AGSymbol.alloc(arguments.base_at(NATNumber.ONE).asNativeText());
 		}				
 	};
 	
 	protected final NATClosure echo_ = new JavaClosure(NATNil._INSTANCE_) {
-		public ATObject base_apply(ATTable arguments) throws NATException {
+		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
 			return NATNil._INSTANCE_;
 		}						
@@ -101,7 +101,7 @@ public class ReflectiveAccessTest extends AmbientTalkTestCase {
 	protected ATTable closures 			= new NATTable(
 			new ATObject[] { fail, fail, success });
 	
-	protected void evaluateInput(String input, ATContext ctx) throws NATException {
+	protected void evaluateInput(String input, ATContext ctx) throws InterpreterException {
 		try {
 			ATAbstractGrammar ag = NATParser._INSTANCE_.base_parse(NATText.atValue(input));
 			

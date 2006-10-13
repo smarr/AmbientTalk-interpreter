@@ -1,7 +1,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -118,7 +118,7 @@ public class NATNamespaceTest extends TestCase {
 			
 			// test.file2.y should equal nil
 			assertEquals(NATNil._INSTANCE_, fileScope.meta_select(fileScope, AGSymbol.alloc("y")));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -152,7 +152,7 @@ public class NATNamespaceTest extends TestCase {
 				} else
 					throw e;
 			}
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}

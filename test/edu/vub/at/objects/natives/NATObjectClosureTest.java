@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -42,7 +42,8 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 import junit.framework.TestCase;
 
 /**
- * TODO document the class NATObjectClosureTest
+ * NATObjectClosureTest tests the semantics of self & super inside methods and nested
+ * closures.
  * 
  * @author smostinc
  */
@@ -60,7 +61,7 @@ public class NATObjectClosureTest extends TestCase {
 			super_ = zuper;
 		}
 
-		public ATObject meta_eval(ATContext ctx) throws NATException {
+		public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 			// SCOPE-test
 			// Is the current callframe lexically connected to the expected scope
 			ATObject lexEnv = ctx.base_getLexicalScope();
@@ -156,7 +157,7 @@ public class NATObjectClosureTest extends TestCase {
 			object.meta_addMethod(scopeTestMethod);
 			
 			object.meta_invoke(object, scopeTest, NATTable.EMPTY);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail();
 		}
@@ -204,7 +205,7 @@ public class NATObjectClosureTest extends TestCase {
 			
 			child.meta_invoke(child, lateBoundSelf, NATTable.EMPTY);
 			child.meta_invoke(child, superSemantics, NATTable.EMPTY);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail();
 		}
@@ -248,7 +249,7 @@ public class NATObjectClosureTest extends TestCase {
 			
 			child.meta_invoke(child, lateBoundSelf, NATTable.EMPTY);
 			child.meta_invoke(child, superSemantics, NATTable.EMPTY);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail();
 		}

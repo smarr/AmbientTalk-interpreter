@@ -28,7 +28,7 @@
 
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
@@ -70,7 +70,7 @@ public class CoercionTest extends TestCase {
 		try {
 			customClosure_ = new NATObject();
 			customClosure_.meta_defineField(AGSymbol.alloc("apply"), new JavaClosure(customClosure_) {
-				public ATObject base_apply(ATTable args) throws NATException {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
 					ATTable apply_args = get(args, 1).asTable();
 					assertEquals(42, getNbr(apply_args, 1));
 					return NATNil._INSTANCE_;
@@ -80,7 +80,7 @@ public class CoercionTest extends TestCase {
 			customContext_ = new NATObject();
 			customContext_.meta_defineField(AGSymbol.alloc("self"), NATNumber.atValue(24));
 			customClosure_.meta_defineField(AGSymbol.alloc("context"), customContext_);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -89,7 +89,7 @@ public class CoercionTest extends TestCase {
 		try {
 			ATClosure coercedObject = customClosure_.asClosure();
 			coercedObject.base_apply(new NATTable(new ATObject[] { NATNumber.atValue(42) }));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -98,7 +98,7 @@ public class CoercionTest extends TestCase {
 		try {
 			ATClosure coercedObject = customClosure_.asClosure();
 			assertTrue(coercedObject.meta_respondsTo(AGSymbol.alloc("apply")).asNativeBoolean().javaValue);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -107,7 +107,7 @@ public class CoercionTest extends TestCase {
 		try {
 			ATClosure coercedObject = customClosure_.asClosure();
 			assertEquals(customClosure_.hashCode(), coercedObject.hashCode());
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -117,7 +117,7 @@ public class CoercionTest extends TestCase {
 			ATClosure coercedObject = customClosure_.asClosure();
 			ATMethod m = coercedObject.base_getMethod();
 			assertEquals("foo", m.base_getName().base_getText().asNativeText().javaValue);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -127,7 +127,7 @@ public class CoercionTest extends TestCase {
 			ATClosure coercedObject = customClosure_.asClosure();
 			ATContext coercedContext = coercedObject.base_getContext();
 			assertEquals(24, coercedContext.base_getSelf().asNativeNumber().javaValue);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}

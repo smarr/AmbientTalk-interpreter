@@ -28,7 +28,7 @@
 
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATContext;
@@ -67,7 +67,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 			False.base_ifTrue_(fail);
 			False.base_ifFalse_(success);
 			False.base_ifTrue_ifFalse_(fail, success);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+e);
 		}
@@ -100,7 +100,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 			False.meta_invoke(
 					False, AGSymbol.alloc("ifTrue:ifFalse:"),
 					new NATTable(new ATObject[] { fail, success }));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+e);
 		}
@@ -122,7 +122,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					"false.ifFalse: success;" +
 					"false.ifTrue: fail ifFalse: success",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}
@@ -137,7 +137,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 		try {
 			ATObject element = closures.base_at(closures.base_getLength());
 			element.asClosure().base_apply(NATTable.EMPTY);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+e);
 		}
@@ -156,7 +156,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					new NATTable(new ATObject[] {
 							closures.meta_select(closures, AGSymbol.alloc("length"))}));
 			element.asClosure().base_apply(NATTable.EMPTY);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+e);
 		}
@@ -176,7 +176,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					"expanded();" +
 					"coated()",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}
@@ -186,7 +186,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					"closures.at(closures.length)();" +
 					"closures[closures.length]()",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}
@@ -213,7 +213,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 			
 			element.asClosure().base_apply(NATTable.EMPTY);
 
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+e);
 		}
@@ -241,7 +241,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 			ATObject element = message.base_sendTo(closures);
 			
 			element.asClosure().base_apply(NATTable.EMPTY);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+e);
 		}
@@ -260,7 +260,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					"def result        := closures <+ message;" +
 					"result()",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}

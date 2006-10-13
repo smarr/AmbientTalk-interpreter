@@ -1,7 +1,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTest;
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -36,7 +36,7 @@ public class NATObjectTest extends AmbientTalkTest {
 		
 		original.meta_addMethod(
 				new NATMethod(AGSymbol.alloc("defaultMethod"), NATTable.EMPTY, null) {
-					public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
+					public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 						throw new TestException("Application of this method is expected to fail", 0);
 					}
 				});
@@ -50,7 +50,7 @@ public class NATObjectTest extends AmbientTalkTest {
 		
 		original.meta_isCloneOf(clone).base_ifFalse_(
 				new JavaClosure(clone) {
-					public ATObject base_apply(ATTable arguments) throws NATException {
+					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Cloning is not properly defined under the isCloneOf test.");
 						return NATNil._INSTANCE_;
 					}					
@@ -58,7 +58,7 @@ public class NATObjectTest extends AmbientTalkTest {
 			
 		clone.meta_addMethod(
 				new NATMethod(AGSymbol.alloc("addedMethod"), NATTable.EMPTY, null) {
-					public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
+					public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 						throw new TestException("This method needs to be visible in the clone", 1);
 					}
 				});
@@ -74,7 +74,7 @@ public class NATObjectTest extends AmbientTalkTest {
 		
 		original.meta_isCloneOf(clone).base_ifTrue_(
 				new JavaClosure(clone) {
-					public ATObject base_apply(ATTable arguments) throws NATException {
+					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Adding fields to a clone should disrupt the isCloneOf test when comparing the original to the extended object.");
 						return NATNil._INSTANCE_;
 					}					
@@ -82,7 +82,7 @@ public class NATObjectTest extends AmbientTalkTest {
 		
 		clone.meta_isCloneOf(original).base_ifFalse_(
 				new JavaClosure(original) {
-					public ATObject base_apply(ATTable arguments) throws NATException {
+					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Adding fields to a clone should NOT disrupt the isCloneOf test when comparing the extended object to the original.");
 						return NATNil._INSTANCE_;
 					}					
@@ -90,7 +90,7 @@ public class NATObjectTest extends AmbientTalkTest {
 		
 		extension.meta_isCloneOf(original).base_ifTrue_(
 				new JavaClosure(original) {
-					public ATObject base_apply(ATTable arguments) throws NATException {
+					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Extensions should not return true to the isCloneOf test.");
 						return NATNil._INSTANCE_;
 					}					
@@ -98,7 +98,7 @@ public class NATObjectTest extends AmbientTalkTest {
 		
 		extension.meta_isCloneOf(clone).base_ifTrue_(
 				new JavaClosure(clone) {
-					public ATObject base_apply(ATTable arguments) throws NATException {
+					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Extensions should not return true to the isCloneOf test.");
 						return NATNil._INSTANCE_;
 					}					

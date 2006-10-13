@@ -29,7 +29,9 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTestCase;
 import edu.vub.at.eval.Evaluator;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -44,8 +46,155 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  */
 public class ExceptionHandlingTest extends AmbientTalkTestCase {
 		
+	private ATObject globalLexScope;
+	private ATObject testScope;
+	private ATContext testCtx;
+
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(ExceptionHandlingTest.class);
+	}
+	
+	public void setUp() throws Exception {
+		globalLexScope = Evaluator.getGlobalLexicalScope();
+		testScope = new NATCallframe(globalLexScope);
+		
+		final NATClosure symbol = new JavaClosure(NATNil._INSTANCE_) {
+			public ATObject base_apply(ATTable arguments) throws InterpreterException {
+				return AGSymbol.alloc(arguments.base_at(NATNumber.ONE).asNativeText());
+			}				
+		};
+		
+		testScope.meta_defineField(AGSymbol.alloc("symbol"), symbol);
+
+		testScope.meta_defineField(
+				AGSymbol.alloc("echo:"),
+				new JavaClosure(NATNil._INSTANCE_) {
+					public ATObject base_apply(ATTable arguments) throws InterpreterException {
+						System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
+						return NATNil._INSTANCE_;
+					}						
+				});
+		
+		testScope.meta_defineField(
+				AGSymbol.alloc("doesNotUnderstandX"),
+				new NATException(new XSelectorNotFound(
+						AGSymbol.alloc("nativeException"),
+						globalLexScope)));
+		
+		testCtx = new NATContext(
+				testScope, globalLexScope, globalLexScope.meta_getDynamicParent());
+	}
+	
+	/**
+	 * Tests AT Code raising an interpreter exception
+	 */
+	public void testRaiseInterpreterException() throws InterpreterException {
+		try {
+			evaluateInput("raise: doesNotUnderstandX; \n", testCtx);
+		} catch (XSelectorNotFound e) {
+			// 1. Raising a Java Exception Successfull
+		}
+	}
+	
+	/**
+	 * Tests AT Code raising an newly create (cloned) interpreter exception
+	 */
+	public void testRaiseNewInterpreterException() throws InterpreterException {
+		try {			
+			evaluateInput(
+					"raise: doesNotUnderstandX.new(symbol(\"at\") , object: { nil }); \n" +
+					"fail()", testCtx);
+		} catch (XSelectorNotFound e) {
+			// 1b. Raising a Java Exception Successfull
+		}
+	}
+	
+	/**
+	 * Tests AT Code catching an interpreter exception. It implements a sketchy 
+	 * object model where fields can be removed as well.
+	 *
+	 */
+	public void testInterpreterExceptionThrowing() {
+		try {						
+			
+			//1. (REMOVABLE_FIELDS) AT Code throwing an interpreter exception
+			evaluateInput(
+					"def removableFieldsMirror := \n" +
+					"  mirror: { \n" +
+					"    // vectors are not loaded with these unit tests \n" +
+					"    def removedField := nil;" +
+					"    def removeField( symbol ) { \n" +
+					"      removedField := symbol; \n" +
+					"    }; \n" +
+					"    def select( receiver, symbol ) { \n" +
+					"      if: (symbol == removedField) then: { \n" +
+					"        raise: doesNotUnderstandX.new(symbol , self); \n" +
+					"      } else: { \n" +
+					"        super.select( receiver, symbol ); \n" +
+					"      } \n" +
+					"    } \n" +
+					"  }; \n" +
+					"def test := object: { \n" +
+					"  def visible := nil \n" +
+					"} mirroredBy: removableFieldsMirror; \n" +
+					"\n" +
+					"(reflect: test).removeField(symbol(\"visible\")); \n" +
+					"(test.visible == nil).ifTrue: { fail(); };",
+					testCtx);			
+		} catch (XSelectorNotFound e) {
+			// 1. Raising a Java Exception Successfull
+		} catch (InterpreterException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}
+	}	
+	
+	/**
+	 * Tests AT Code catching an interpreter exception. It implements a sketchy python
+	 * object model where unfound fields are silently added to AT object.
+	 *
+	 */
+	public void testInterpreterExceptionHandling() {
+		try {
+			ATObject globalLexScope = Evaluator.getGlobalLexicalScope();
+			ATObject testScope = new NATCallframe(globalLexScope);
+			
+			testScope.meta_defineField(
+					AGSymbol.alloc("echo:"),
+					new JavaClosure(NATNil._INSTANCE_) {
+						public ATObject base_apply(ATTable arguments) throws InterpreterException {
+							System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
+							return NATNil._INSTANCE_;
+						}						
+					});			testScope.meta_defineField(
+					AGSymbol.alloc("doesNotUnderstandX"),
+					new NATException(new XSelectorNotFound(
+							AGSymbol.alloc("nativeException"),
+							globalLexScope)));
+			
+			ATContext testCtx = new NATContext(
+					testScope, globalLexScope, globalLexScope.meta_getDynamicParent());
+			
+			//3. (PYTHON_OBJECT) AT Code catching an interpreter exception
+			evaluateInput(
+					"def pythonObjectMirror := \n" +
+					"  mirror: { \n" +
+					"    def select( receiver, symbol ) { \n" +
+					"      try: { \n" +
+					"        super.select( receiver, symbol ); \n" +
+					"      } catch: doesNotUnderstandX using: { | e | \n" +
+					"        super.defineField( symbol, nil ); \n" +
+					"      } \n" +
+					"    } \n" +
+					"  }; \n" +
+					"def test := object: { nil } \n" +
+					"  mirroredBy: pythonObjectMirror; \n" +
+					"(test.x == nil).ifFalse: { fail(); };",
+					testCtx);			
+		} catch (InterpreterException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}
 	}
 	
 	public void testCustomObjectHandling() {
@@ -56,7 +205,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 			testScope.meta_defineField(
 					AGSymbol.alloc("echo:"),
 					new JavaClosure(NATNil._INSTANCE_) {
-						public ATObject base_apply(ATTable arguments) throws NATException {
+						public ATObject base_apply(ATTable arguments) throws InterpreterException {
 							System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
 							return NATNil._INSTANCE_;
 						}						
@@ -85,7 +234,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 					"tryTest(XNotFound, clone: XNotFound, { echo: \"3. Can catch with a cloned exception\"}); \n" +
 					"tryTest(extend: XNotFound with: { nil }, XNotFound, { echo: \"4. Can catch extensions\"}); \n",
 					testCtx);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}

@@ -28,7 +28,7 @@
 
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
@@ -79,7 +79,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 				evaluateInput(
 						"def mirror  := at.mirrors.Factory.createMirror(true);",
 						new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
-			} catch (NATException e) {
+			} catch (InterpreterException e) {
 				fail("exception : could not create a mirror : " + e);
 			}
 			
@@ -108,7 +108,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 				// base_ifTrue_ifFalse_ is not a method of NATMirror
 				// success
 			}
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}		
@@ -139,7 +139,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 					"(true == mirror.base)" +
 					"  .ifTrue: success ifFalse: fail",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}		
@@ -153,7 +153,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 					AGSymbol.alloc("respondsTo"),
 					new NATTable(new ATObject[] { AGSymbol.alloc("ifTrue:") }));
 			responds.base_getBase().asBoolean().base_ifTrue_ifFalse_(success, fail);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}
@@ -167,7 +167,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 					"def base        := responds.base;" +
 					"base.ifTrue: success ifFalse: fail",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}		
@@ -177,14 +177,14 @@ public class MirrorTest extends ReflectiveAccessTest {
 		try {
 			ATMethod emptyExtension  = 
 				new JavaAnonymousMethod(MirrorTest.class) {
-					public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
+					public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 						return NATNil._INSTANCE_;
 					};
 				};
 			
 			ATMethod invokeSuccess = 
 				new JavaAnonymousMethod(MirrorTest.class) {
-					public ATObject base_apply(ATTable arguments, ATContext ctx) throws NATException {
+					public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 						evaluateInput(
 								"def invoke(@args) { \"ok\" };",
 								ctx);
@@ -219,7 +219,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 					AGSymbol.alloc("whatever"),
 					NATTable.EMPTY);
 			
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}
@@ -244,7 +244,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 					" \n" +
 					"echo: extendedSuccess.whatever()",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}		
@@ -265,7 +265,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 					"} mirroredBy: (mirror: { nil }); \n" +
 					"echo: (reflect: testMirrored).listMethods();",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}		

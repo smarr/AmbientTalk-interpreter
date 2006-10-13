@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -46,7 +46,7 @@ public class ReflectionTest extends TestCase {
 	private void compareSymbol(String str, ATSymbol sym) {
 		try {
 			assertEquals(str, sym.base_getText().asNativeText().javaValue);
-		} catch (NATException e) {
+		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -60,7 +60,7 @@ public class ReflectionTest extends TestCase {
 		compareSymbol(":opbla:", Reflection.downSelector("_opbla_"));
 	}
 	
-	public void testUpSelector() throws NATException {
+	public void testUpSelector() throws InterpreterException {
 		assertEquals("foo_", Reflection.upSelector(AGSymbol.alloc("foo:")));
 		assertEquals("foo_bar_", Reflection.upSelector(AGSymbol.alloc("foo:bar:")));
 		assertEquals("_oppls_", Reflection.upSelector(AGSymbol.alloc("+")));

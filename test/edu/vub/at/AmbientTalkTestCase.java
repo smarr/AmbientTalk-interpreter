@@ -1,6 +1,6 @@
 package edu.vub.at;
 
-import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
@@ -24,13 +24,13 @@ public class AmbientTalkTestCase extends TestCase {
 	protected ATContext ctx_ = null; 
 	
 	protected ATClosure unittest_ = new JavaClosure(null) {
-		public ATObject base_apply(ATTable arguments) throws NATException {
+		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			ATClosure body = arguments.base_at(NATNumber.ONE).asClosure();
 			return OBJUnit._INSTANCE_.base_unittest_(body);
 		};
 	};
 	
-	protected void evaluateInput(String input, ATContext ctx) throws NATException {
+	protected void evaluateInput(String input, ATContext ctx) throws InterpreterException {
 		try {
 			ATAbstractGrammar ag = NATParser._INSTANCE_.base_parse(NATText.atValue(input));
 			
