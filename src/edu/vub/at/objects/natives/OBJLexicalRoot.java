@@ -393,21 +393,18 @@ public final class OBJLexicalRoot extends NATNil {
 	 * -- Exception Handling Support -
 	 * ------------------------------- */
 	public ATObject base_try_using_(ATClosure tryBlock, ATHandler exceptionHandler) throws InterpreterException {
-		return base_try_catch_using_(
-				tryBlock, 
-				exceptionHandler.base_getFilter(), 
-				exceptionHandler.base_getHandler());
+		return tryBlock.base_withHandler_(exceptionHandler).base_apply(NATTable.EMPTY);
 	}
 	
 	public ATObject base_try_catch_using_(ATClosure tryBlock, ATObject filter, ATClosure replacementCode) throws InterpreterException {
-		// The following double dispatch allows not catching interpreter-related 
-		// exceptions unless they are explicitly caught.
-		return filter.asInterpreterException().mayBeSignalledFrom(tryBlock, replacementCode);
+		return base_try_using_(
+				tryBlock, 
+				new NATHandler(filter, replacementCode));
 	}
 	
-//	public ATObject base_handle_with_(ATObject filter, ATObject replacementCode) {
-//		return new NATHandler(filter, replacementCode);
-//	}
+	public ATObject base_handle_with_(ATObject filter, ATClosure replacementCode) {
+		return new NATHandler(filter, replacementCode);
+	}
 	
 	public ATNil base_raise_(ATObject anExceptionObject) throws InterpreterException {
 		throw anExceptionObject.asInterpreterException();

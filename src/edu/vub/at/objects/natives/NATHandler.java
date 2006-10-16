@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * XUserDefined.java created on Oct 10, 2006 at 9:31:40 PM
+ * NATHandler.java created on Oct 14, 2006 at 8:06:53 AM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,29 +25,42 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.exceptions;
+package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATObject;
 
 /**
- * Instances of the XUserDefined act as wrappers for ATObjects which are thrown at the
- * ambienttalk level using the raise: primitive. Since we reuse the Java exception 
- * propagation, we need to wrap these in a custom class which extends the proper class.
+ * 
+ * TODO document the class NATHandler
  *
  * @author smostinc
  */
-public class XUserDefined extends InterpreterException {
+public class NATHandler extends NATNil implements ATHandler {
 
-	private static final long serialVersionUID = -2859841280138142649L;
-
-	public ATObject customException_;
+	private ATObject filter_;
+	private ATClosure handler_;
 	
-	public XUserDefined(ATObject customException) {
-		super("A custom exception object was thrown");
-		customException_ = customException;
+	public NATHandler(ATObject filter, ATClosure handler) {
+		this.filter_ = filter;
+		this.handler_ = handler;
 	}
 
-	public ATObject getAmbientTalkRepresentation() {
-		return customException_;
+	public ATObject base_getFilter() {
+		return filter_;
 	}
+
+	public ATClosure base_getHandler() {
+		return handler_;
+	}
+
+	public ATBoolean base_canHandle(ATObject anException) throws InterpreterException {
+		return anException.meta_isRelatedTo(filter_);
+	}
+	
+	
+
 }

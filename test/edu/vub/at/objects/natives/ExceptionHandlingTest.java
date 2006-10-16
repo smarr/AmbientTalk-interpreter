@@ -198,22 +198,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	}
 	
 	public void testCustomObjectHandling() {
-		try {
-			ATObject globalLexScope = Evaluator.getGlobalLexicalScope();
-			ATObject testScope = new NATCallframe(globalLexScope);
-			
-			testScope.meta_defineField(
-					AGSymbol.alloc("echo:"),
-					new JavaClosure(NATNil._INSTANCE_) {
-						public ATObject base_apply(ATTable arguments) throws InterpreterException {
-							System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
-							return NATNil._INSTANCE_;
-						}						
-					});
-			
-			ATContext testCtx = new NATContext(
-					testScope, globalLexScope, globalLexScope.meta_getDynamicParent());
-			
+		try {			
 			evaluateInput(
 					"def exception: code { object: code }; \n" +
 					"def XNotFound := \n" +
@@ -233,11 +218,82 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 					"tryTest(clone: XNotFound, XNotFound, { echo: \"2. Can raise a cloned exception\"}); \n" +
 					"tryTest(XNotFound, clone: XNotFound, { echo: \"3. Can catch with a cloned exception\"}); \n" +
 					"tryTest(extend: XNotFound with: { nil }, XNotFound, { echo: \"4. Can catch extensions\"}); \n",
+					
+					 // + "tryTest(XNotFound, extend: XNotFound with: { nil }, { fail() });",
 					testCtx);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}
 	}
-
+	
+	public void testRethrownExceptions() {
+		try {
+			evaluateInput(
+					"def closure := { | e | \n" +
+					"  raise: e; \n" +
+					"}; \n" +
+					"\n" +
+					"def exception: code { object: code }; \n" +
+					"def XNotFound := \n" +
+					"  exception: { \n" +
+					"    def test := 0; \n" +
+					"  }; \n" +
+					"\n" +
+					"closure.withHandler: ( handle: XNotFound with: { | e |" +
+					"    echo: \"5a. Rethrown exceptions should not be catched in the same handler block\";" +
+					// TODO(wtf?) if the following line is commented out the program prints the above string twice  
+					"    raise: e; \n" +
+					"} ); \n" +
+					"closure.withHandler: ( handle: XNotFound with: { | e | fail() } );" +
+					"\n" +
+					"try: { \n" +
+					"  closure(XNotFound); \n" +
+					"} catch: XNotFound using: { | e | \n" +
+					"  echo: \"5b. Rethrown exceptions are not catched in the same handler block\" \n" +
+					"}; \n" +
+					"\n",					
+					 // + "tryTest(XNotFound, extend: XNotFound with: { nil }, { fail() });",
+					testCtx);
+		} catch (InterpreterException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}		
+	}
+	
+	public void testHandlerSelection() {
+		try {
+			evaluateInput(
+					"def closure := { | e | \n" +
+					"  raise: e; \n" +
+					"}; \n" +
+					"\n" +
+					"def exception: code { object: code }; \n" +
+					"def XNotFound := \n" +
+					"  exception: { \n" +
+					"    def test := 0; \n" +
+					"  }; \n" +
+					"\n" +
+					"def XSelectorNotFound := \n" +
+					"  extend: XNotFound with: { \n" +
+					"    def selector := \"\"; \n" +
+					"    def init(s) { \n" +
+					"      selector := s; \n" +
+					"    }; \n" +
+					"  }; \n" +
+					"\n" +
+					"closure.withHandler: ( handle: XSelectorNotFound with: { | e |" +
+					"    fail(); \n" +
+					"} ); \n" +
+					"closure.withHandler: ( handle: XNotFound with: { | e | \n" +
+					"    echo: \"6. Handler Selection Correct.\" \n } );" +
+					"\n" +
+					"closure(XNotFound); \n" +
+					"\n",					
+					testCtx);
+		} catch (InterpreterException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}		
+	}
 }

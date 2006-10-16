@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.InterpreterException;
+
 /**
  * Instances of the class ATHandler represent first-class exception handlers which 
  * have a filter object, describing the kind of exceptions caught by the handler and
@@ -47,4 +49,14 @@ public interface ATHandler extends ATObject {
 	 */
 	public ATClosure base_getHandler();
 	
+	/**
+	 * Used to determine whether a handler will be triggered when an exception is raised.
+	 * Its primary use is to provide a hook to deviate from the default semantics, which is:
+	 * 
+	 * def canHandle(anException) {
+	 *   (reflect: anException).isCloneOf(filter);
+	 * };
+	 * 
+	 */
+	public ATBoolean base_canHandle(ATObject anException) throws InterpreterException;
 }
