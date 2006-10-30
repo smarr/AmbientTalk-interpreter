@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.AmbientTalkTestCase;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -91,6 +92,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	public void testRaiseInterpreterException() throws InterpreterException {
 		try {
 			evaluateInput("raise: doesNotUnderstandX; \n", testCtx);
+			fail();
 		} catch (XSelectorNotFound e) {
 			// 1. Raising a Java Exception Successfull
 		}
@@ -115,32 +117,9 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	 *
 	 */
 	public void testInterpreterExceptionThrowing() {
-		try {						
-			
+		try {
 			//1. (REMOVABLE_FIELDS) AT Code throwing an interpreter exception
-			evaluateInput(
-					"def removableFieldsMirror := \n" +
-					"  mirror: { \n" +
-					"    // vectors are not loaded with these unit tests \n" +
-					"    def removedField := nil;" +
-					"    def removeField( symbol ) { \n" +
-					"      removedField := symbol; \n" +
-					"    }; \n" +
-					"    def select( receiver, symbol ) { \n" +
-					"      if: (symbol == removedField) then: { \n" +
-					"        raise: doesNotUnderstandX.new(symbol , self); \n" +
-					"      } else: { \n" +
-					"        super.select( receiver, symbol ); \n" +
-					"      } \n" +
-					"    } \n" +
-					"  }; \n" +
-					"def test := object: { \n" +
-					"  def visible := nil \n" +
-					"} mirroredBy: removableFieldsMirror; \n" +
-					"\n" +
-					"(reflect: test).removeField(symbol(\"visible\")); \n" +
-					"(test.visible == nil).ifTrue: { fail(); };",
-					testCtx);			
+			AmbientTalkTest.evalSnippet(ExceptionHandlingTest.class, "snippet1", testCtx);	
 		} catch (XSelectorNotFound e) {
 			// 1. Raising a Java Exception Successfull
 		} catch (InterpreterException e) {
@@ -240,15 +219,16 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 					"    def test := 0; \n" +
 					"  }; \n" +
 					"\n" +
-					"closure.withHandler: ( handle: XNotFound with: { | e |" +
-					"    echo: \"5a. Rethrown exceptions should not be catched in the same handler block\";" +
-					// TODO(wtf?) if the following line is commented out the program prints the above string twice  
-					"    raise: e; \n" +
-					"} ); \n" +
-					"closure.withHandler: ( handle: XNotFound with: { | e | fail() } );" +
-					"\n" +
 					"try: { \n" +
-					"  closure(XNotFound); \n" +
+					"  try: {" +
+					"    closure(XNotFound);" +
+					"  } catch: XNotFound using: { |e|" +
+					"      echo: \"5a. Rethrown exceptions should not be catched in the same handler block\";" +
+					// TODO(wtf?) if the following line is commented out the program prints the above string twice  
+					"      raise: e; \n" +
+					"  } catch: XNotFound using: { |e|" +
+					"      fail()" +
+					"  }" +
 					"} catch: XNotFound using: { | e | \n" +
 					"  echo: \"5b. Rethrown exceptions are not catched in the same handler block\" \n" +
 					"}; \n" +
@@ -282,18 +262,17 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 					"    }; \n" +
 					"  }; \n" +
 					"\n" +
-					"closure.withHandler: ( handle: XSelectorNotFound with: { | e |" +
-					"    fail(); \n" +
-					"} ); \n" +
-					"closure.withHandler: ( handle: XNotFound with: { | e | \n" +
-					"    echo: \"6. Handler Selection Correct.\" \n } );" +
-					"\n" +
-					"closure(XNotFound); \n" +
-					"\n",					
+					"try: {" +
+					"  closure(XNotFound);" +
+					"} catch: XSelectorNotFound using: { |e|" +
+					"  fail();" +
+					"} catch: XNotFound using: { |e|" +
+					"    echo: \"6. Handler Selection Correct.\";" +
+					"}",					
 					testCtx);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
-		}		
+		}
 	}
 }

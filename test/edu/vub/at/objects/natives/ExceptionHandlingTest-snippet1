@@ -1,0 +1,22 @@
+def removableFieldsMirror :=
+  mirror: {
+    // vectors are not loaded with these unit tests
+    def removedField := nil;
+    def removeField( symbol ) {
+      removedField := symbol;
+    };
+    def select( receiver, symbol ) {
+      if: (symbol == removedField) then: {
+        raise: doesNotUnderstandX.new(symbol , self);
+      } else: {
+        super.select( receiver, symbol );
+      }
+    }
+  };
+  
+def test := object: {
+  def visible := nil
+} mirroredBy: removableFieldsMirror;
+
+(reflect: test).removeField(symbol("visible"));
+(test.visible == nil).ifTrue: { fail(); };
