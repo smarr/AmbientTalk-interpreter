@@ -1,6 +1,8 @@
 package edu.vub.at;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
@@ -9,6 +11,10 @@ import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.NATParser;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 import junit.framework.TestCase;
 
@@ -24,6 +30,28 @@ public abstract class AmbientTalkTest extends TestCase {
 		ctx_ = new NATContext(scope, self, supr);
 	}
 
+	/**
+	 * Loads and evaluates the content of a code snippet file and returns the resulting AmbientTalk ATObject.
+	 * Given a class Foo and the name "snippet", the code file consulted is the file named "Foo-snippet" which
+	 * should be located in the same directory as the Foo.class file.
+	 */
+	public static final ATObject evalSnippet(Class forTestClass, String name, ATContext inContext) throws InterpreterException {
+		try {
+			File inFile = new File(forTestClass.getResource(forTestClass.getSimpleName() + "-" + name).toURI());
+            // load the code from the file
+			String code = Evaluator.loadContentOfFile(inFile);
+		    
+		    // parse and evaluate the code in the proper context and return its result
+			ATAbstractGrammar source = NATParser.parse(inFile.getName(), code);
+			return source.meta_eval(inContext);
+		} catch (IOException e) {
+			throw new XIOProblem(e);
+		} catch (URISyntaxException e) {
+			fail(e.getMessage());
+			return null;
+		}
+	}
+	
 	public ATObject evalAndReturn(String input) {
         try {
 			ATAbstractGrammar ptree = 

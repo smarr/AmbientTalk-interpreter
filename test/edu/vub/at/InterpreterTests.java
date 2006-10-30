@@ -33,9 +33,11 @@ import edu.vub.at.objects.mirrors.InvocationTest;
 import edu.vub.at.objects.mirrors.MirageTest;
 import edu.vub.at.objects.mirrors.MirrorTest;
 import edu.vub.at.objects.mirrors.ReflectionTest;
+import edu.vub.at.objects.natives.ExceptionHandlingTest;
 import edu.vub.at.objects.natives.LexicalRootTest;
 import edu.vub.at.objects.natives.NATNamespaceTest;
 import edu.vub.at.objects.natives.NATObjectClosureTest;
+import edu.vub.at.objects.natives.NATObjectTest;
 import edu.vub.at.objects.natives.PrimitivesTest;
 import edu.vub.at.objects.natives.TestFieldMap;
 import edu.vub.at.objects.natives.grammar.TestEval;
@@ -62,12 +64,14 @@ public class InterpreterTests {
 		suite.addTestSuite(MirageTest.class);
 		suite.addTestSuite(ReflectionTest.class);
 		suite.addTestSuite(NATObjectClosureTest.class);
+		suite.addTestSuite(NATObjectTest.class);
 		suite.addTestSuite(TestFieldMap.class);
 		suite.addTestSuite(TestEval.class);
 		suite.addTestSuite(PrimitivesTest.class);
 		suite.addTestSuite(LexicalRootTest.class);
 		suite.addTestSuite(NATNamespaceTest.class);
 		suite.addTestSuite(CoercionTest.class);
+		suite.addTestSuite(ExceptionHandlingTest.class);
 		//$JUnit-END$
 		return suite;
 	}
