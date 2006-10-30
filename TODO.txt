@@ -1,17 +1,14 @@
 === TODO ===
 
 checklist:
-Stijn:
-- exception handling
-- afwerken mirages
+- nadenken over modulair uitbreiden van de code met standard libraries (bvb. at.exceptions.interpreter)
+=> zoveel mogelijk in AT zelf schrijven => symbiose mogelijke uitweg voor de nodige native code snippets?
 
-Tom:
-- collections
+- NATNil moet createChild oproepen.
 
 - zorgen dat alle AT interfaces alleen nog base_ / meta_ methoden hebben? Vooral ATConversions, AGxxx
 
 - mirages + unit tests
-- exception handling: handlers (own stack) + throw -> .raise conversion
 - write AmbientTalk code: at.collections, at.unit, at.init, at.mirrors
 - use AspectJ introduction to separate passive obj model from active obj model
 - concurrency: add actors(vats) + message queues + threading/concurrency control + async msg passing
@@ -34,6 +31,10 @@ For symbiosis, reuse coercers to make NATObjects implement arbitrary Java interf
 * remove as much .asNative...() casts from the code as possible. Each such cast precludes use of custom AT objects.
 
 * introduce a native method 'return:'
+or as in Self: a Block::exit method which provides the block with a function that when invoked exits the block
+{ |quit| ... quit(val) }.exit()
+actually, longjmp would be a better name for this :)
+it's a non-local return
 
 * find a suitable semantics for object 'instantiation'.
 problem: 'init' is not a 'normal' method, if it would be, and you would invoke obj.clone.init, you might

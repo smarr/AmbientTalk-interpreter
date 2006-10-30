@@ -35,6 +35,7 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
@@ -571,6 +572,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public ATMessageCreation asMessageCreation() throws XTypeMismatch { return (ATMessageCreation) Coercer.coerce(this, ATMessageCreation.class); }
 	public ATMethod asMethod() throws XTypeMismatch { return (ATMethod) Coercer.coerce(this, ATMethod.class); }
 	public ATMirror asMirror() throws XTypeMismatch { return (ATMirror) Coercer.coerce(this, ATMirror.class); }
+	public ATHandler asHandler() throws XTypeMismatch { return (ATHandler) Coercer.coerce(this, ATHandler.class); }
 	public ATNumber asNumber() throws XTypeMismatch { return (ATNumber) Coercer.coerce(this, ATNumber.class); }
 	public ATSplice asSplice() throws XTypeMismatch { return (ATSplice) Coercer.coerce(this, ATSplice.class); }
 	public ATStatement asStatement() throws XTypeMismatch { return (ATStatement) Coercer.coerce(this, ATStatement.class); }
