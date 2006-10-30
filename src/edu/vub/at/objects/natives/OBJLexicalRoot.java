@@ -392,20 +392,134 @@ public final class OBJLexicalRoot extends NATNil {
 	/* -------------------------------
 	 * -- Exception Handling Support -
 	 * ------------------------------- */
-	public ATObject base_try_using_(ATClosure tryBlock, ATHandler exceptionHandler) throws InterpreterException {
-		return tryBlock.base_withHandler_(exceptionHandler).base_apply(NATTable.EMPTY);
+	
+	/**
+	 * try: { tryBlock } usingHandlers: [ handler1, handler2, ... ]
+	 * 
+	 * Applies the given closure (to []) and handles exceptions using the given exception handlers.
+	 * This is the most general means of doing exception handling in AmbientTalk/2.
+	 * 
+	 * The handlers given in the handler table represent first-class handler objects, which should respond to the 'canHandle' message.
+	 */
+	public ATObject base_try_usingHandlers_(ATClosure tryBlock, ATTable exceptionHandlers) throws InterpreterException {
+		try {
+			return tryBlock.base_apply(NATTable.EMPTY);
+		} catch(InterpreterException e) {
+			ATClosure replacementCode = null;
+			ATObject[] handlers = exceptionHandlers.asNativeTable().elements_;
+			
+			// find the appropriate handler
+			for (int i = 0; i < handlers.length; i++) {
+				ATHandler handler = handlers[i].asHandler();
+				if (handler.base_canHandle(e.getAmbientTalkRepresentation()).asNativeBoolean().javaValue) {
+					replacementCode = handler.base_getHandler();
+					break;
+				};			
+			}
+			
+			if (replacementCode != null) {
+				return replacementCode.base_apply(new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
+			} else {
+				throw e;
+			}
+		}
 	}
 	
+	/**
+	 * try: { tryBlock} using: handler
+	 * 
+	 * Ad-hoc code for one exception handler
+	 */
+	public ATObject base_try_using_(ATClosure tryBlock, ATHandler handler) throws InterpreterException {
+		try {
+			return tryBlock.base_apply(NATTable.EMPTY);
+		} catch(InterpreterException e) {
+			if (handler.base_canHandle(e.getAmbientTalkRepresentation()).asNativeBoolean().javaValue) {
+				return handler.base_getHandler().base_apply(new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
+			} else {
+				throw e;
+			}
+		}
+	}
+	
+	/**
+	 * try: { tryBlock} using: handler1 using: handler2
+	 * 
+	 * Ad-hoc code for two exception handlers
+	 */
+	public ATObject base_try_using_using_(ATClosure tryBlock, ATHandler hdl1, ATHandler hdl2) throws InterpreterException {
+		return base_try_usingHandlers_(tryBlock, new NATTable(new ATObject[] { hdl1, hdl2 }));
+	}
+	
+	/**
+	 * try: { tryBlock} using: hdl1 using: hdl2 using: hdl3
+	 * 
+	 * Ad-hoc code for three exception handlers
+	 */
+	public ATObject base_try_using_using_using_(ATClosure tryBlock, ATHandler hdl1, ATHandler hdl2, ATHandler hdl3) throws InterpreterException {
+		return base_try_usingHandlers_(tryBlock, new NATTable(new ATObject[] { hdl1, hdl2, hdl3 }));
+	}
+	
+	/**
+	 * try: { tryBlock} catch: prototype using: { |e| replacementCode }
+	 * 
+	 * 'Syntactic sugar' for one in-line handler
+	 */
 	public ATObject base_try_catch_using_(ATClosure tryBlock, ATObject filter, ATClosure replacementCode) throws InterpreterException {
-		return base_try_using_(
-				tryBlock, 
-				new NATHandler(filter, replacementCode));
+		return base_try_using_(tryBlock, new NATHandler(filter, replacementCode));
 	}
 	
+	/**
+	 * try: {
+	 *   tryBlock
+	 * } catch: prototype using: { |e|
+	 *   replacementCode
+	 * } catch: prototype2 using: { |e|
+	 *   replacementCode2
+	 * }
+	 * 
+	 * 'Syntactic sugar' for two in-line handlers
+	 */
+	public ATObject base_try_catch_using_catch_using_(ATClosure tryBlock,
+			                						   ATObject filter1, ATClosure hdl1,
+			                						   ATObject filter2, ATClosure hdl2) throws InterpreterException {
+		return base_try_using_using_(tryBlock, new NATHandler(filter1, hdl1), new NATHandler(filter2, hdl2));
+	}
+	
+	/**
+	 * try: {
+	 *   tryBlock
+	 * } catch: prototype using: { |e|
+	 *   replacementCode
+	 * } catch: prototype2 using: { |e|
+	 *   replacementCode2
+	 * } catch: prototype3 using: { |e|
+	 *   replacementCode3
+	 * }
+	 * 
+	 * 'Syntactic sugar' for three in-line handlers
+	 */
+	public ATObject base_try_catch_using_catch_using_catch_using_(ATClosure tryBlock,
+															   ATObject filter1, ATClosure hdl1,
+															   ATObject filter2, ATClosure hdl2,
+															   ATObject filter3, ATClosure hdl3) throws InterpreterException {
+		return base_try_using_using_using_(tryBlock, new NATHandler(filter1, hdl1), new NATHandler(filter2, hdl2), new NATHandler(filter3, hdl3));
+	}
+	
+	/**
+	 * handle: prototype with: { |e| replacementCode }
+	 * 
+	 * Creates a first-class handler from a filter prototype and some handler code.
+	 */
 	public ATObject base_handle_with_(ATObject filter, ATClosure replacementCode) {
 		return new NATHandler(filter, replacementCode);
 	}
 	
+	/**
+	 * raise: exception
+	 * 
+	 * Raises an exception which can be caught by dynamically installed try-catch-using blocks.
+	 */
 	public ATNil base_raise_(ATObject anExceptionObject) throws InterpreterException {
 		throw anExceptionObject.asInterpreterException();
 	}

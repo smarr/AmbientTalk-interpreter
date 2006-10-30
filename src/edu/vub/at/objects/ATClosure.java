@@ -68,15 +68,4 @@ public interface ATClosure extends ATObject {
 	 */
 	public ATObject base_whileTrue_(ATClosure condition) throws InterpreterException;
 	
-	/**
-	 * Installs a handler on the closure to filter and possibly absorb the exceptions 
-	 * specified by the handler's filter object. It will be added after any previously
-	 * installed handlers, such that it will only trigger when the previous handlers
-	 * did not match. As expected rethrows from such handlers will not match with
-	 * subsequent handlers.
-	 * @param handler The handler to be installed
-	 * @return The closure itself to allow concatenation of various withHandler: calls 
-	 * @throws InterpreterException can be raised when overridden at the base-level 
-	 */
-	public ATClosure base_withHandler_(ATHandler handler) throws InterpreterException; 
 }

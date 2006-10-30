@@ -39,6 +39,7 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
@@ -408,6 +409,10 @@ public class NATNil implements ATNil {
 
     public ATMirror asMirror() throws XTypeMismatch {
         throw new XTypeMismatch(ATMirror.class, this);
+    }
+    
+    public ATHandler asHandler() throws XTypeMismatch {
+    	    throw new XTypeMismatch(ATHandler.class, this);
     }
 
     // Conversions for abstract grammar elements

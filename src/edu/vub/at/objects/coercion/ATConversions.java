@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
@@ -81,6 +82,7 @@ public interface ATConversions {
 	public ATField     asField() throws XTypeMismatch;
 	public ATMethod    asMethod() throws XTypeMismatch;
 	public ATMirror    asMirror() throws XTypeMismatch;
+	public ATHandler   asHandler() throws XTypeMismatch;
 	
 	// Abstract Grammar Elements
 	
