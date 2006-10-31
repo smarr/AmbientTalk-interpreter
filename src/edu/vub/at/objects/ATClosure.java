@@ -61,11 +61,27 @@ public interface ATClosure extends ATObject {
 	public ATObject base_apply(ATTable args) throws InterpreterException;
 	
 	/**
-	 * TODO Check semantics (doc inconsistent between interface and implementation)
 	 * Allows AmbientTalk programmers to write
-	 * { body }.whileTrue: { boolean }
+	 * { boolean }.whileTrue: { body }
 	 * which will execute body as long as the boolean condition evaluates to true.
 	 */
-	public ATObject base_whileTrue_(ATClosure condition) throws InterpreterException;
+	public ATObject base_whileTrue_(ATClosure body) throws InterpreterException;
+	
+	/**
+	 * { |quit| ... quit(val) ... }.escape()
+	 * 
+	 * The escape control construct passes to its receiver block a function which
+	 * when invoked, immediately transfers control back to the caller of escape,
+	 * returning the value passed to quit.
+	 * 
+	 * If no value is passed to quit, nil is returned instead.
+	 * 
+	 * If quit is not invoked during the execution of the receiver block,
+	 * the block terminates normally, with its normal return value.
+	 *   
+	 * If quit is invoked at the point where the call to escape has already returned normally,
+	 * invoking quit will raise an XIllegalOperation exception.
+	 */
+	public ATObject base_escape() throws InterpreterException;
 	
 }

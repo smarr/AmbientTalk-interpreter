@@ -66,6 +66,20 @@ public abstract class AmbientTalkTest extends TestCase {
 		return null;
 	}
 	
+	public void evalAndTestException(String input, Class interpreterExceptionClass) {
+        try {
+			ATAbstractGrammar ptree = 
+				NATParser._INSTANCE_.base_parse(NATText.atValue(input));
+			ptree.meta_eval(ctx_);
+			fail("Expected an exception of type " + interpreterExceptionClass.getSimpleName()); // test should throw an exception
+		} catch (InterpreterException ex) {
+			if (!interpreterExceptionClass.isInstance(ex)) {
+				ex.printStackTrace();
+				fail("Unexpected exception: "+ex.getMessage());
+			}
+		}
+	}
+	
 	public void evalAndCompareTo(String input, ATObject output) {
 		ATObject result = evalAndReturn(input);
 		if (result != null) {

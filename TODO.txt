@@ -30,12 +30,6 @@ For symbiosis, reuse coercers to make NATObjects implement arbitrary Java interf
 - Core language evaluator
 * remove as much .asNative...() casts from the code as possible. Each such cast precludes use of custom AT objects.
 
-* introduce a native method 'return:'
-or as in Self: a Block::exit method which provides the block with a function that when invoked exits the block
-{ |quit| ... quit(val) }.exit()
-actually, longjmp would be a better name for this :)
-it's a non-local return
-
 * find a suitable semantics for object 'instantiation'.
 problem: 'init' is not a 'normal' method, if it would be, and you would invoke obj.clone.init, you might
 invoke the 'init' method of a 'shares-a' parent object that did not get cloned!

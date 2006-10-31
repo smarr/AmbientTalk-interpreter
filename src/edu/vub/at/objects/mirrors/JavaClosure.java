@@ -154,4 +154,5 @@ public class JavaClosure extends NATClosure {
 	public Object[] getTab(ATTable args, int n) throws InterpreterException {
 		return args.base_at(NATNumber.atValue(n)).asNativeTable().elements_;
 	}
+	
 }

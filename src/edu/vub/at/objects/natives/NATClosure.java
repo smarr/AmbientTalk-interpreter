@@ -28,6 +28,8 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.signals.SignalEscape;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -128,6 +130,72 @@ public class NATClosure extends NATNil implements ATClosure {
 			}
 		}
 		
+	}
+	
+	/**
+	 * The following is a pseudo-code implementation of escape. The important difference
+	 * between the native implementation and this pseudo-code is that the 'escaping exception'
+	 * can *not* be caught at the AmbientTalk level. The XEscape is a truly native exception.
+	 * 
+	 * def block.escape() {
+	 *   def returned := false;
+	 *   def quit(@args) {
+	 *     if: (returned) then: {
+	 *       raise: XIllegalOperation.new("Cannot quit, escape activation already returned")
+	 *     } else: {
+	 *       raise: XEscape.new(block, if: (args.isEmpty()) then: nil else: args[1])
+	 *     }
+	 *   }
+	 *   
+	 *   try: {
+	 *    block(quit);
+	 *   } catch: XEscape using: {|e|
+	 *     if: (e.block == block) then: {
+	 *       e.val
+	 *     } else: {
+	 *       raise: e
+	 *     }
+	 *   } finally: { // doesn't yet exist in AT/2
+	 *     returned := true;
+	 *   }
+	 * }
+	 */
+	public ATObject base_escape() throws InterpreterException {		
+		final QuitClosureFrame f = new QuitClosureFrame();
+		JavaClosure quit = new JavaClosure(this) {
+			public ATObject base_apply(ATTable args) throws InterpreterException {
+				if (f.alreadyReturned) {
+					throw new XIllegalOperation("Cannot quit, escape activation already returned");
+				} else {
+					ATObject val;
+					if (args.base_isEmpty().asNativeBoolean().javaValue) {
+						val = NATNil._INSTANCE_; 
+					} else {
+						val = get(args, 1);
+					}
+					throw new SignalEscape(this.scope_.asClosure(), val);
+				}
+			}
+		};
+		
+		try {
+			return this.base_apply(new NATTable(new ATObject[] { quit }));
+		} catch(SignalEscape e) {
+			if (e.originatingBlock == this) {
+				return e.returnedValue;
+			} else {
+				// propagate the signal, it did not originate from this block
+				throw e;
+			}
+		} finally {
+			f.alreadyReturned = true;
+		}
+	}
+	
+	// helper class to get around the fact that Java has no true closures and hence
+	// does not allow access to mutable lexically scoped free variables
+	static private class QuitClosureFrame {
+		public boolean alreadyReturned = false;
 	}
 
 	public ATContext base_getContext() throws InterpreterException {

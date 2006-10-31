@@ -33,6 +33,7 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XReflectionFailure;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.signals.Signal;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.coercion.Coercer;
 
@@ -140,7 +141,9 @@ public class JavaInterfaceAdaptor {
 			// the invoked method threw an exception
 			if (e.getCause() instanceof InterpreterException)
 				throw (InterpreterException) e.getCause();
-			else {
+			else if (e.getCause() instanceof Signal) {
+			    throw (Signal) e.getCause();	
+			} else {
 				e.printStackTrace();
 				throw new XReflectionFailure("Native method "+Reflection.downSelector(javaMethod.getName())+" threw internal exception", e.getCause());
 		    }
@@ -172,7 +175,9 @@ public class JavaInterfaceAdaptor {
 					// an exception was raised by the constructor
 					if (e.getCause() instanceof InterpreterException)
 						throw ((InterpreterException) e.getCause());
-					else // fatal exception
+					else if (e.getCause() instanceof Signal) {
+					    throw (Signal) e.getCause();	
+					} else // fatal exception
 						throw new XIllegalOperation("Instance creation of type " + jClass.getName() + " failed: " + e.getMessage());
 				}
 			} else {
