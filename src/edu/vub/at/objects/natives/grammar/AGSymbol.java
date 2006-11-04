@@ -92,7 +92,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		return txt_.asNativeText();
 	}
 	
-	public ATSymbol asSymbol() {
+	public ATSymbol base_asSymbol() {
 		return this;
 	}
 	

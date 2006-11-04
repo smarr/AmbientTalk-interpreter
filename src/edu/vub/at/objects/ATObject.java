@@ -280,7 +280,7 @@ public interface ATObject extends ATConversions {
      * @return a mirror on this object's field slot.
      * @throws ATException if the field cannot be found.
      */
-    public ATField meta_getField(ATSymbol selector) throws InterpreterException;
+    public ATField meta_grabField(ATSymbol selector) throws InterpreterException;
 
     /**
      * Queries an object for one of its method slots.
@@ -290,7 +290,7 @@ public interface ATObject extends ATConversions {
      * @return a mirror on this object's method slot.
      * @throws ATException if the method cannot be found.
      */
-    public ATMethod meta_getMethod(ATSymbol selector) throws InterpreterException;
+    public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException;
 
     /**
      * Queries an object for a list of all of its field slots.

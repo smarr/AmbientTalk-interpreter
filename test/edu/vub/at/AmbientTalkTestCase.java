@@ -7,7 +7,7 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
@@ -23,9 +23,9 @@ public class AmbientTalkTestCase extends TestCase {
 
 	protected ATContext ctx_ = null; 
 	
-	protected ATClosure unittest_ = new JavaClosure(null) {
+	protected ATClosure unittest_ = new NativeClosure(null) {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
-			ATClosure body = arguments.base_at(NATNumber.ONE).asClosure();
+			ATClosure body = arguments.base_at(NATNumber.ONE).base_asClosure();
 			return OBJUnit._INSTANCE_.base_unittest_(body);
 		};
 	};

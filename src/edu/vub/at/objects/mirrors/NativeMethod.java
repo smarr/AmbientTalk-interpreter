@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * JavaMethod.java created on Jul 27, 2006 at 1:35:19 AM
+ * NativeMethod.java created on Jul 27, 2006 at 1:35:19 AM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -39,33 +40,51 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.lang.reflect.Method;
 
 /**
- * A JavaMethod is a wrapper around Java methods allowing them to be selected 
- * from base-level objects and passed around as ordinary methods.
+ * A NativeMethod is a wrapper around a Java method allowing it to be selected 
+ * from native base-level objects and passed around as an ordinary object.
  * 
+ * @author tvcutsem
  * @author smostinc
  */
-public final class JavaMethod extends NATNil implements ATMethod {
+public final class NativeMethod extends NATNil implements ATMethod {
 
 	private final Method javaMethod_;
+	private final ATSymbol name_;
 	
-	public JavaMethod(Method javaMethod) {
+	/**
+	 * Construct a new wrapper object from a Java method.
+	 * @param javaMethod the java method to be wrapped.
+	 * @param isMeta signifies whether or not the wrapped method signifies an AmbientTalk meta-level method
+	 */
+	public NativeMethod(Method javaMethod, ATSymbol name) {
 		javaMethod_ = javaMethod;
+		name_ = name;
 	}
 
 	/**
 	 * The name of a wrapped Java method is the name of the Java method, converted to an
 	 * AmbientTalk selector name.
 	 */
-	public ATSymbol base_getName() {
-		return Reflection.downSelector(javaMethod_.getName());
+	public ATSymbol base_getName() throws InterpreterException {
+		return name_;
 	}
 	
-	public ATTable base_getArguments() {
-		return new NATTable(javaMethod_.getParameterTypes());
+	/**
+	 * The parameters of a wrapped method are represented as symbols
+	 * representing the class name of the parameter type.
+	 */
+	public ATTable base_getParameters() throws InterpreterException {
+		Class[] paramTypes = javaMethod_.getParameterTypes();
+		AGSymbol[] paramNames = new AGSymbol[paramTypes.length];
+		for (int i = 0; i < paramTypes.length; i++) {
+			paramNames[i] = AGSymbol.alloc(Evaluator.valueNameOf(paramTypes[i]));
+		}
+		return new NATTable(paramNames);
 	}
 
 	public ATBegin base_getBodyExpression() {
@@ -79,16 +98,16 @@ public final class JavaMethod extends NATNil implements ATMethod {
 						                              arguments.asNativeTable().elements_));
 	}
 
-	public ATMethod asMethod() throws XTypeMismatch {
+	public ATMethod base_asMethod() throws XTypeMismatch {
 		return this;
 	}
 
-	public boolean isMethod() {
+	public boolean base_isMethod() {
 		return true;
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<native method:"+base_getName().base_getText().asNativeText().javaValue+">");
+		return NATText.atValue("<native method:"+name_+">");
 	}
 
 }

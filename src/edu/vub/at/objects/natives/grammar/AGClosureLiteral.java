@@ -34,7 +34,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATClosureLiteral;
-import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATText;
@@ -76,18 +76,18 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 	 * AGCLOLIT(arg,bdy).quote(ctx) = AGCLOLIT(arg.quote(ctx), bdy.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGClosureLiteral(arguments_.meta_quote(ctx).asTable(),
-				                   body_.meta_quote(ctx).asBegin());
+		return new AGClosureLiteral(arguments_.meta_quote(ctx).base_asTable(),
+				                   body_.meta_quote(ctx).base_asBegin());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
 		return arguments_.base_isEmpty().base_ifTrue_ifFalse_(
-				new JavaClosure(this) {
+				new NativeClosure(this) {
 					public ATObject base_apply(ATTable args) throws InterpreterException {
 						return NATText.atValue("{ "+ body_.meta_print().javaValue + " }");
 					}
 				},
-				new JavaClosure(this) {
+				new NativeClosure(this) {
 					public ATObject base_apply(ATTable args) throws InterpreterException {
 						  return NATText.atValue(Evaluator.printElements(arguments_.asNativeTable(), "{ |", ", ", " | ").javaValue +
 			                       body_.meta_print().javaValue+"}");

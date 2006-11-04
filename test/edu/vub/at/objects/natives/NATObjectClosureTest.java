@@ -88,7 +88,7 @@ public class NATObjectClosureTest extends TestCase {
 			return this;
 		}
 		
-		public ATStatement asStatement() {
+		public ATStatement base_asStatement() {
 			return this;
 		}
 

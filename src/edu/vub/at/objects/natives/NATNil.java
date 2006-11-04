@@ -55,9 +55,8 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
-import edu.vub.at.objects.mirrors.JavaField;
-import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.symbiosis.JavaObject;
 
 /**
  * NATNil implements default semantics for all test and conversion methods.
@@ -91,13 +90,16 @@ public class NATNil implements ATNil {
      * Because an explicit AmbientTalk method invocation must be converted into an implicit
      * Java method invocation, the invocation must be deified ('upped'). The result of the
      * upped invocation is a Java object, which must subsequently be 'downed' again.
+     * 
+     * If no method to invoke is found, doesNotUnderstand is invoked which should
+     * return a closure to be invoked with the appropriate arguments.
      */
     public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
         try {
 			String jSelector = Reflection.upBaseLevelSelector(atSelector);
 			return Reflection.downObject(Reflection.upInvocation(receiver, jSelector, arguments));
 		} catch (XSelectorNotFound e) {
-			return receiver.meta_doesNotUnderstand(atSelector);
+			return receiver.meta_doesNotUnderstand(atSelector).base_asClosure().base_apply(arguments);
 		}
     }
 
@@ -107,7 +109,6 @@ public class NATNil implements ATNil {
      */
     public ATBoolean meta_respondsTo(ATSymbol atSelector) throws InterpreterException {
         String jSelector = Reflection.upBaseLevelSelector(atSelector);
-
         return NATBoolean.atValue(Reflection.upRespondsTo(this, jSelector));
     }
 
@@ -124,7 +125,7 @@ public class NATNil implements ATNil {
 
     /**
      * It is possible to select a method from any ambienttalk value provided that it
-     * offers the method in its provided interface. The result is a JavaMethod wrapper
+     * offers the method in its provided interface. The result is a NativeMethod wrapper
      * which encapsulates the reflective Method object as well as the receiver.
      * 
      * There exists a certain ambiguity in field selection on AmbientTalk implementation-level objects.
@@ -142,7 +143,7 @@ public class NATNil implements ATNil {
             jSelector = Reflection.upBaseLevelSelector(selector);
 
             try {
-				return Reflection.downObject(Reflection.upMethodSelection(receiver, jSelector));
+				return Reflection.downObject(Reflection.upMethodSelection(receiver, jSelector, selector));
 			} catch (XSelectorNotFound e2) {
 				return receiver.meta_doesNotUnderstand(selector);
 			}
@@ -187,7 +188,7 @@ public class NATNil implements ATNil {
     public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
         try {
 			return this.meta_assignField(this, name, value);
-		} catch (XSelectorNotFound e) {
+		} catch (XUndefinedField e) {
 			// transform selector not found in undefined variable assignment
 			throw new XUndefinedField("variable assignment", name.base_getText().asNativeText().javaValue);
 		}
@@ -198,7 +199,7 @@ public class NATNil implements ATNil {
         // try to invoke a native base_setName method
         try {
         	   String jSelector = Reflection.upBaseFieldMutationSelector(name);
-        	   Reflection.upFieldAssignment(this, jSelector, value);
+        	   Reflection.upFieldAssignment(receiver, jSelector, value);
 		} catch (XSelectorNotFound e) {
 			// if such a method does not exist, the field assignment has failed
 			throw new XUndefinedField("field assignment", name.base_getText().asNativeText().javaValue);
@@ -254,27 +255,20 @@ public class NATNil implements ATNil {
         throw new XIllegalOperation("Cannot add methods to an object of type " + this.getClass().getName());
     }
 
-    public ATField meta_getField(ATSymbol fieldName) throws InterpreterException {
-        return JavaField.createPrimitiveField(this, fieldName);
+    public ATField meta_grabField(ATSymbol fieldName) throws InterpreterException {
+        return Reflection.downBaseLevelField(this, fieldName);
     }
 
-    public ATMethod meta_getMethod(ATSymbol methodName) throws InterpreterException {
-        String selector = Reflection.upBaseLevelSelector(methodName);
-
-        return JavaInterfaceAdaptor.wrapMethodFor(
-                this.getClass(),
-                this,
-                selector).base_getMethod();
+    public ATMethod meta_grabMethod(ATSymbol methodName) throws InterpreterException {
+        return Reflection.downBaseLevelMethod(this, methodName);
     }
 
     public ATTable meta_listFields() throws InterpreterException {
-        // TODO LATER(reflective clean-up) do we show all base_get methods here?
-        return NATTable.EMPTY;
+        return new NATTable(Reflection.downBaseLevelFields(this));
     }
 
     public ATTable meta_listMethods() throws InterpreterException {
-        // TODO LATER(reflective clean-up) filter out all base_get and show all base_?
-        return NATTable.EMPTY;
+    	    return new NATTable(Reflection.downBaseLevelMethods(this));
     }
 
     /* ---------------------------------
@@ -323,39 +317,39 @@ public class NATNil implements ATNil {
       * -- Value Conversion Protocol   --
       * --------------------------------- */
 
-    public boolean isClosure() {
+    public boolean base_isClosure() {
         return false;
     }
 
-    public boolean isSymbol() {
+    public boolean base_isSymbol() {
         return false;
     }
 
-    public boolean isBoolean() {
+    public boolean base_isBoolean() {
         return false;
     }
 
-    public boolean isTable() {
+    public boolean base_isTable() {
         return false;
     }
 
-    public boolean isCallFrame() {
+    public boolean base_isCallFrame() {
         return false;
     }
 
-    public boolean isUnquoteSplice() {
+    public boolean base_isUnquoteSplice() {
         return false;
     }
 
-    public boolean isSplice() {
+    public boolean base_isSplice() {
         return false;
     }
 
-    public boolean isMethod() {
+    public boolean base_isMethod() {
         return false;
     }
     
-    public boolean isMessageCreation() {
+    public boolean base_isMessageCreation() {
     	    return false;
     }
 
@@ -363,8 +357,12 @@ public class NATNil implements ATNil {
     	    return false;
     }
     
-    public ATBoolean base_isMirror() {
-        return NATBoolean._FALSE_;
+    public boolean isJavaObjectUnderSymbiosis() {
+    	    return false;
+    }
+    
+    public boolean base_isMirror() {
+        return false;
     }
 
     public boolean isNativeBoolean() {
@@ -375,73 +373,73 @@ public class NATNil implements ATNil {
         return false;
     }
 
-    public ATClosure asClosure() throws XTypeMismatch {
+    public ATClosure base_asClosure() throws XTypeMismatch {
         throw new XTypeMismatch(ATClosure.class, this);
     }
 
-    public ATSymbol asSymbol() throws XTypeMismatch {
+    public ATSymbol base_asSymbol() throws XTypeMismatch {
         throw new XTypeMismatch(ATSymbol.class, this);
     }
 
-    public ATTable asTable() throws XTypeMismatch {
+    public ATTable base_asTable() throws XTypeMismatch {
         throw new XTypeMismatch(ATTable.class, this);
     }
 
-    public ATBoolean asBoolean() throws XTypeMismatch {
+    public ATBoolean base_asBoolean() throws XTypeMismatch {
         throw new XTypeMismatch(ATBoolean.class, this);
     }
 
-    public ATNumber asNumber() throws XTypeMismatch {
+    public ATNumber base_asNumber() throws XTypeMismatch {
         throw new XTypeMismatch(ATNumber.class, this);
     }
 
-    public ATMessage asMessage() throws XTypeMismatch {
+    public ATMessage base_asMessage() throws XTypeMismatch {
         throw new XTypeMismatch(ATMessage.class, this);
     }
 
-    public ATField asField() throws XTypeMismatch {
+    public ATField base_asField() throws XTypeMismatch {
         throw new XTypeMismatch(ATField.class, this);
     }
 
-    public ATMethod asMethod() throws XTypeMismatch {
+    public ATMethod base_asMethod() throws XTypeMismatch {
         throw new XTypeMismatch(ATMethod.class, this);
     }
 
-    public ATMirror asMirror() throws XTypeMismatch {
+    public ATMirror base_asMirror() throws XTypeMismatch {
         throw new XTypeMismatch(ATMirror.class, this);
     }
     
-    public ATHandler asHandler() throws XTypeMismatch {
+    public ATHandler base_asHandler() throws XTypeMismatch {
     	    throw new XTypeMismatch(ATHandler.class, this);
     }
 
     // Conversions for abstract grammar elements
 
-    public ATStatement asStatement() throws XTypeMismatch {
+    public ATStatement base_asStatement() throws XTypeMismatch {
         throw new XTypeMismatch(ATStatement.class, this);
     }
 
-    public ATDefinition asDefinition() throws XTypeMismatch {
+    public ATDefinition base_asDefinition() throws XTypeMismatch {
         throw new XTypeMismatch(ATDefinition.class, this);
     }
 
-    public ATExpression asExpression() throws XTypeMismatch {
+    public ATExpression base_asExpression() throws XTypeMismatch {
         throw new XTypeMismatch(ATExpression.class, this);
     }
 
-    public ATBegin asBegin() throws XTypeMismatch {
+    public ATBegin base_asBegin() throws XTypeMismatch {
         throw new XTypeMismatch(ATBegin.class, this);
     }
 
-    public ATMessageCreation asMessageCreation() throws XTypeMismatch {
+    public ATMessageCreation base_asMessageCreation() throws XTypeMismatch {
         throw new XTypeMismatch(ATMessageCreation.class, this);
     }
 
-    public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch {
+    public ATUnquoteSplice base_asUnquoteSplice() throws XTypeMismatch {
         throw new XTypeMismatch(ATUnquoteSplice.class, this);
     }
 
-    public ATSplice asSplice() throws XTypeMismatch {
+    public ATSplice base_asSplice() throws XTypeMismatch {
         throw new XTypeMismatch(ATSplice.class, this);
     }
     
@@ -475,6 +473,10 @@ public class NATNil implements ATNil {
         throw new XTypeMismatch(NATNumeric.class, this);
     }
 
+    public JavaObject asJavaObjectUnderSymbiosis() throws XTypeMismatch {
+    	    throw new XTypeMismatch(JavaObject.class, this);
+    }
+    
     public InterpreterException asInterpreterException() throws XTypeMismatch {
     		return new XUserDefined(this);
     }

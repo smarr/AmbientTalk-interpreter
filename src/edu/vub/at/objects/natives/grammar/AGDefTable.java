@@ -100,9 +100,9 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 	 * AGDEFTABLE(nam,siz,ini).quote(ctx) = AGDEFTABLE(nam.quote(ctx), siz.quote(ctx), ini.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGDefTable(tblName_.meta_quote(ctx).asSymbol(),
-				              sizExp_.meta_quote(ctx).asExpression(),
-				              initExp_.meta_quote(ctx).asExpression());
+		return new AGDefTable(tblName_.meta_quote(ctx).base_asSymbol(),
+				              sizExp_.meta_quote(ctx).base_asExpression(),
+				              initExp_.meta_quote(ctx).base_asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

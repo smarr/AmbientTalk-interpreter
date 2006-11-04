@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * JavaClosure.java created on 10-aug-2006 at 8:30:08
+ * NativeClosure.java created on 10-aug-2006 at 8:30:08
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -38,52 +39,52 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * A JavaClosure is a wrapper class for a piece of Java code. The Java code is
- * presented to the AmbientTalk system as a closure. A JavaClosure is represented
+ * A NativeClosure is a wrapper class for a piece of Java code. The Java code is
+ * presented to the AmbientTalk system as a closure. A NativeClosure is represented
  * as follows:
  * 
- * - Its encapsulating method is a 'dummy' JavaMethod ATMethod, with the following properties:
+ * - Its encapsulating method is a 'dummy' NativeMethod ATMethod, with the following properties:
  *   - name = "nativelambda" (to distinguish it from 'ordinary' lambdas)
  *   - arguments = [ \@args ] (it takes an arbitrary number of arguments)
  *   - body = "Native implementation in {class}" (a string telling an inspector that
  *     this closure is natively implemented in the given Java class)
- *   - applying a nativelambda directly (without going through this JavaClosure)
+ *   - applying a nativelambda directly (without going through this NativeClosure)
  *     results in an error
  * - Its enclosed context consists of a triple (obj, obj, obj.super), where 'obj'
- *   is the Java object (implementing ATObject) that created this JavaClosure.
+ *   is the Java object (implementing ATObject) that created this NativeClosure.
  *   
- * The method and context fields of a JavaClosure are lazily generated on demand
- * for efficiency reasons. Most of the time, a JavaClosure will not be introspected,
+ * The method and context fields of a NativeClosure are lazily generated on demand
+ * for efficiency reasons. Most of the time, a NativeClosure will not be introspected,
  * but only applied.
  * 
- * A JavaClosure can be used in two ways by Java code:
+ * A NativeClosure can be used in two ways by Java code:
  *  1) As a generator for anonymous classes to generate 'anonymous lambdas':
- *     new JavaClosure(this) {
+ *     new NativeClosure(this) {
  *       public ATObject meta_apply(ATTable args) throws NATException {
  *         ...
  *       }
  *     }
- *  2) As a wrapper for an already existing JavaMethod:
- *     new JavaClosure(this, aJavaMethod);
+ *  2) As a wrapper for an already existing NativeMethod:
+ *     new NativeClosure(this, aJavaMethod);
  * 
  * @author tvc
  */
-public class JavaClosure extends NATClosure {
+public class NativeClosure extends NATClosure {
 
 	protected final ATObject scope_;
 	
 	/**
-	 * Create a new JavaClosure where meta_apply will be overridden by anonymous subclasses.
+	 * Create a new NativeClosure where meta_apply will be overridden by anonymous subclasses.
 	 */
-	public JavaClosure(ATObject scope) {
+	public NativeClosure(ATObject scope) {
 		this(scope, null);
 	}
 	
 	/**
-	 * Create a new JavaClosure where meta_apply will invoke the given Java Method.
-	 * @param scope the object creating this JavaClosure.
+	 * Create a new NativeClosure where meta_apply will invoke the given Java Method.
+	 * @param scope the object creating this NativeClosure.
 	 */
-	public JavaClosure(ATObject scope, ATMethod meth) {
+	public NativeClosure(ATObject scope, ATMethod meth) {
 		super(meth, null);
 		scope_ = scope;
 	}
@@ -91,12 +92,12 @@ public class JavaClosure extends NATClosure {
 	/**
 	 * Overridden to allow for lazy instantiation of the method.
 	 * 
-	 * If receiver is an anonymous JavaClosure, an 'anonymous' JavaMethod is returned.
-	 * @return a JavaMethod wrapped by this JavaClosure.
+	 * If receiver is an anonymous NativeClosure, an 'anonymous' NativeMethod is returned.
+	 * @return a NativeMethod wrapped by this NativeClosure.
 	 */
 	public ATMethod base_getMethod() {
 		if (method_ == null)
-			method_ = new JavaAnonymousMethod(scope_.getClass());
+			method_ = new NativeAnonymousMethod(scope_.getClass());
 		return method_;
 	}
 
@@ -112,13 +113,13 @@ public class JavaClosure extends NATClosure {
 	}
 
 	/**
-	 * Apply the JavaClosure, which either gives rise to executing a native piece of
-	 * code supplied by an anonymous subclass, or executes the wrapped JavaMethod.
+	 * Apply the NativeClosure, which either gives rise to executing a native piece of
+	 * code supplied by an anonymous subclass, or executes the wrapped NativeMethod.
 	 */
 	public ATObject base_apply(ATTable arguments) throws InterpreterException {
 		if (method_ == null) {
 			// this method is supposed to be overridden by an anonymous subclass
-			throw new RuntimeException("JavaClosure's meta_apply not properly overridden by " + scope_.getClass());
+			throw new RuntimeException("NativeClosure's meta_apply not properly overridden by " + scope_.getClass());
 		} else {
 			return method_.base_apply(arguments, this.base_getContext());
 		}
@@ -153,6 +154,13 @@ public class JavaClosure extends NATClosure {
 	
 	public Object[] getTab(ATTable args, int n) throws InterpreterException {
 		return args.base_at(NATNumber.atValue(n)).asNativeTable().elements_;
+	}
+	
+	public void checkArity(ATTable args, int required) throws InterpreterException {
+		int provided = args.base_getLength().asNativeNumber().javaValue;
+		if (provided != required) {
+			throw new XArityMismatch(NativeAnonymousMethod._ANON_MTH_NAM_.toString(), required, provided);
+		}
 	}
 	
 }

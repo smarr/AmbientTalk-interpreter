@@ -36,7 +36,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.mirrors.NativeClosure;
 
 /**
  * A NATClosure instance represents a first-class AmbientTalk closure.
@@ -51,7 +51,7 @@ import edu.vub.at.objects.mirrors.JavaClosure;
  */
 public class NATClosure extends NATNil implements ATClosure {
 	
-	// these instance variables are inherited and used by a JavaClosure as well.
+	// these instance variables are inherited and used by a NativeClosure as well.
 	protected ATMethod 	method_;
 	protected ATContext	context_;
 	
@@ -107,7 +107,7 @@ public class NATClosure extends NATNil implements ATClosure {
 		ATBoolean cond;
 		while (true) {
 			// cond = self.apply()
-			cond = this.base_apply(NATTable.EMPTY).asBoolean();
+			cond = this.base_apply(NATTable.EMPTY).base_asBoolean();
 			if(cond.isNativeBoolean()) {
 				// cond is a native boolean, perform the conditional ifTrue: test natively
 				if (cond.asNativeBoolean().javaValue) {
@@ -120,7 +120,7 @@ public class NATClosure extends NATNil implements ATClosure {
 				}
 			} else {
 				// cond is a user-defined boolean, do a recursive send
-				return cond.base_ifTrue_(new JavaClosure(this) {
+				return cond.base_ifTrue_(new NativeClosure(this) {
 					public ATObject base_apply(ATTable args) throws InterpreterException {
 						// if user-defined bool is true, execute body and recurse
 						body.base_apply(NATTable.EMPTY);
@@ -162,7 +162,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	 */
 	public ATObject base_escape() throws InterpreterException {		
 		final QuitClosureFrame f = new QuitClosureFrame();
-		JavaClosure quit = new JavaClosure(this) {
+		NativeClosure quit = new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
 				if (f.alreadyReturned) {
 					throw new XIllegalOperation("Cannot quit, escape activation already returned");
@@ -173,7 +173,7 @@ public class NATClosure extends NATNil implements ATClosure {
 					} else {
 						val = get(args, 1);
 					}
-					throw new SignalEscape(this.scope_.asClosure(), val);
+					throw new SignalEscape(this.scope_.base_asClosure(), val);
 				}
 			}
 		};
@@ -206,11 +206,11 @@ public class NATClosure extends NATNil implements ATClosure {
 		return method_;
 	}
 
-	public boolean isClosure() {
+	public boolean base_isClosure() {
 		return true;
 	}
 
-	public ATClosure asClosure() {
+	public ATClosure base_asClosure() {
 		return this;
 	}
 	

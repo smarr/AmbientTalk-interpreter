@@ -60,7 +60,7 @@ public class NATMethod extends NATNil implements ATMethod {
 		return name_;
 	}
 
-	public ATTable base_getArguments() {
+	public ATTable base_getParameters() {
 		return parameters_;
 	}
 
@@ -92,11 +92,11 @@ public class NATMethod extends NATNil implements ATMethod {
 		return NATText.atValue("<method:"+name_.meta_print().javaValue+">");
 	}
 
-	public ATMethod asMethod() throws XTypeMismatch {
+	public ATMethod base_asMethod() throws XTypeMismatch {
 		return this;
 	}
 
-	public boolean isMethod() {
+	public boolean base_isMethod() {
 		return true;
 	}
 

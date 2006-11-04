@@ -40,7 +40,7 @@ public interface ATField extends ATObject {
 	/**
 	 * @return a string by which the slot can be identified.
 	 */
-	public ATSymbol base_getName();
+	public ATSymbol base_getName() throws InterpreterException;
 	
 	/**
 	 * @return the current value of the field.

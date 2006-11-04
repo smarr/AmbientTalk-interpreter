@@ -74,7 +74,7 @@ public class NATField extends NATNil implements ATField {
 		return NATText.atValue("<field:"+name_.meta_print().javaValue+">");
 	}
 
-	public ATField asField() throws XTypeMismatch {
+	public ATField base_asField() throws XTypeMismatch {
 		return this;
 	}
 	

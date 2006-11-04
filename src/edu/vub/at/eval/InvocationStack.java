@@ -27,6 +27,7 @@
  */
 package edu.vub.at.eval;
 
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
@@ -87,7 +88,7 @@ public final class InvocationStack implements Cloneable {
 		invocationStack_ = initstack;
 	}
 	
-	public void methodInvoked(ATExpression methodInvocation, ATObject receiver, ATMessage message) {
+	public void methodInvoked(ATExpression methodInvocation, ATObject receiver, ATMessage message) throws InterpreterException {
 		invocationStack_.push(new InvocationFrame(methodInvocation, receiver, message.base_getArguments()));
 	}
 	

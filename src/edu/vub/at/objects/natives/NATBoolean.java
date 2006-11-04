@@ -60,7 +60,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		javaValue = b;
 	}
 	
-	public boolean isBoolean() {
+	public boolean base_isBoolean() {
 		return true;
 	}
 	
@@ -68,7 +68,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		return true;
 	}
 
-	public ATBoolean asBoolean() {
+	public ATBoolean base_asBoolean() {
 		return this;
 	}
 	
@@ -95,7 +95,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		}
 		
 		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws InterpreterException {
-			return consequent.asClosure().base_apply(NATTable.EMPTY);
+			return consequent.base_asClosure().base_apply(NATTable.EMPTY);
 		}
 		
 		public ATBoolean base__opamp_(ATBoolean other) throws InterpreterException {
@@ -107,7 +107,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		}
 		
 		public ATBoolean base_and_(ATClosure other) throws InterpreterException {
-			return other.base_apply(NATTable.EMPTY).asBoolean();
+			return other.base_apply(NATTable.EMPTY).base_asBoolean();
 		}
 		
 		public ATBoolean base_or_(ATClosure other) throws InterpreterException {
@@ -139,7 +139,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		}
 		
 		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws InterpreterException {
-			return alternative.asClosure().base_apply(NATTable.EMPTY);
+			return alternative.base_asClosure().base_apply(NATTable.EMPTY);
 		}
 		
 		public ATBoolean base__opamp_(ATBoolean other) throws InterpreterException {
@@ -155,7 +155,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 		}
 		
 		public ATBoolean base_or_(ATClosure other) throws InterpreterException {
-			return other.base_apply(NATTable.EMPTY).asBoolean();
+			return other.base_apply(NATTable.EMPTY).base_asBoolean();
 		}
 		
 		public ATBoolean base_not() {

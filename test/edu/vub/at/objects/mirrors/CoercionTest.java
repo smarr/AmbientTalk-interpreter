@@ -69,9 +69,9 @@ public class CoercionTest extends TestCase {
 	public void setUp() {
 		try {
 			customClosure_ = new NATObject();
-			customClosure_.meta_defineField(AGSymbol.alloc("apply"), new JavaClosure(customClosure_) {
+			customClosure_.meta_defineField(AGSymbol.alloc("apply"), new NativeClosure(customClosure_) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					ATTable apply_args = get(args, 1).asTable();
+					ATTable apply_args = get(args, 1).base_asTable();
 					assertEquals(42, getNbr(apply_args, 1));
 					return NATNil._INSTANCE_;
 				}
@@ -87,7 +87,7 @@ public class CoercionTest extends TestCase {
 	
 	public void testCoercedBaselevelInvocation() {
 		try {
-			ATClosure coercedObject = customClosure_.asClosure();
+			ATClosure coercedObject = customClosure_.base_asClosure();
 			coercedObject.base_apply(new NATTable(new ATObject[] { NATNumber.atValue(42) }));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -96,7 +96,7 @@ public class CoercionTest extends TestCase {
 	
 	public void testCoercedMetalevelInvocation() {
 		try {
-			ATClosure coercedObject = customClosure_.asClosure();
+			ATClosure coercedObject = customClosure_.base_asClosure();
 			assertTrue(coercedObject.meta_respondsTo(AGSymbol.alloc("apply")).asNativeBoolean().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -105,7 +105,7 @@ public class CoercionTest extends TestCase {
 	
 	public void testCoercedPrimitiveInvocation() {
 		try {
-			ATClosure coercedObject = customClosure_.asClosure();
+			ATClosure coercedObject = customClosure_.base_asClosure();
 			assertEquals(customClosure_.hashCode(), coercedObject.hashCode());
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -114,7 +114,7 @@ public class CoercionTest extends TestCase {
 	
 	public void testCoercedBaselevelFieldAccess() {
 		try {
-			ATClosure coercedObject = customClosure_.asClosure();
+			ATClosure coercedObject = customClosure_.base_asClosure();
 			ATMethod m = coercedObject.base_getMethod();
 			assertEquals("foo", m.base_getName().base_getText().asNativeText().javaValue);
 		} catch (InterpreterException e) {
@@ -124,7 +124,7 @@ public class CoercionTest extends TestCase {
 
 	public void testCoercedReturnValue() {
 		try {
-			ATClosure coercedObject = customClosure_.asClosure();
+			ATClosure coercedObject = customClosure_.base_asClosure();
 			ATContext coercedContext = coercedObject.base_getContext();
 			assertEquals(24, coercedContext.base_getSelf().asNativeNumber().javaValue);
 		} catch (InterpreterException e) {

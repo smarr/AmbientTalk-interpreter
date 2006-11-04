@@ -28,49 +28,35 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XReflectionFailure;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.exceptions.signals.Signal;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.coercion.Coercer;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Vector;
 
 /**
  * JavaInterfaceAdaptor is a class providing several static methods which allow 
- * accessing and invoking Java methods as if they were in fact AmbientTalk value.
+ * accessing and invoking Java methods which represent native AmbientTalk methods.
  * It is used by the Reflection class to up ambienttalk invocations and field 
  * accesses and translate them using java reflection. 
  * 
- * This class also encapsulates static methods for manually implementing dynamic 
- * dispatch over Java types. This is needed since whenever an invocation is made on
- * an ambienttalk object we cannot foresee the expected java types. We can use this 
- * technique to our advantage by using overloading on typically double dispatch 
- * methods such as plus.
- * 
+ * @author tvcutsem
  * @author smostinc
  */
 public class JavaInterfaceAdaptor {
 		
-	public static final String _BASE_PREFIX_ = "base_";
-	public static final String _BGET_PREFIX_ = "base_get";
-	public static final String _BSET_PREFIX_ = "base_set";
-	
-	public static final String _META_PREFIX_ = "meta_";
-	public static final String _MGET_PREFIX_ = "meta_get";
-	public static final String _MSET_PREFIX_ = "meta_set";
-	
-	public static final String _MAGIC_PREFIX_ = "magic_";
-	public static final String _MAGET_PREFIX_ = "magic_get";
-	public static final String _MASET_PREFIX_ = "magic_set";
-	
-	
 	/**
 	 * Tests given a class, whether the class either declares or inherits a method
 	 * for a given selector. 
@@ -78,10 +64,7 @@ public class JavaInterfaceAdaptor {
 	 * @param jSelector - a selector, describing the method to be searched for.
 	 * @return whether a methods with a matching selector can be found
 	 */
-	public static boolean hasApplicableJavaMethod (
-			Class jClass, 
-			String jSelector) {
-
+	public static boolean hasApplicableJavaMethod(Class jClass, String jSelector) {
 		return (getMethodsForSelector(jClass, jSelector).length != 0);
 	}
 	
@@ -89,22 +72,14 @@ public class JavaInterfaceAdaptor {
 	 * Invokes a method on a Java object identified by a selector.
 	 * 
 	 * @param jClass the class of the receiver object
-	 * @param jReceiver the receiver (normally an object from the AT hierarchy)
+	 * @param natReceiver the receiver (a native AmbientTalk object)
 	 * @param jSelector the java-level selector identifying the method to invoke
 	 * @param jArguments parameters, normally AT objects
 	 * @return the return value of the reflectively invoked method
 	 */	
-	public static Object invokeJavaMethod(Class jClass, Object jReceiver,
+	public static Object invokeJavaMethod(Class jClass, ATObject natReceiver,
 										String jSelector, Object[] jArguments) throws InterpreterException {
-		Method[] applicable = getMethodsForSelector(jClass, jSelector);
-		switch(applicable.length) {
-		  case 0:
-		  	throw new XSelectorNotFound(Reflection.downBaseLevelSelector(jSelector), (ATObject)jReceiver);
-		  case 1:
-			return invokeJavaMethod(applicable[0], jReceiver, jArguments);
-		  default:
-			throw new XIllegalOperation("Dynamic dispatching on overloaded methods not yet implemented");
-		}
+		return invokeJavaMethod(getMethod(jClass, natReceiver, jSelector), natReceiver, jArguments);
 	}
 	
 	/**
@@ -127,8 +102,11 @@ public class JavaInterfaceAdaptor {
 			if ((params.length == 1) && params[0].equals(ATObject[].class)) {
 				return javaMethod.invoke(jReceiver, new Object[] { (ATObject[]) jArguments });
 			} else {
+				if (params.length != jArguments.length) {
+					throw new XArityMismatch("native method "+Reflection.downSelector(javaMethod.getName()), params.length, jArguments.length);
+				}
 				// make sure to properly 'coerce' each argument into the proper AT interface type
-				Object[] coercedArgs = coerceArguments(jArguments, javaMethod.getParameterTypes());
+				Object[] coercedArgs = coerceArguments(jArguments, params);
 				return javaMethod.invoke(jReceiver, coercedArgs);
 			}
 		} catch (IllegalAccessException e) {
@@ -188,16 +166,8 @@ public class JavaInterfaceAdaptor {
 		// no matching constructors were found
 		throw new XIllegalOperation("Unable to create a new instance of type " + jClass.getName());
 	}
-
-	public static JavaClosure wrapMethodFor(
-			Class baseInterface, 
-			ATObject receiver,
-			String methodName) throws InterpreterException {
-		JavaMethod method = getMethod(baseInterface, receiver, methodName);
-	    return new JavaClosure(receiver, method);
-	}
 	
-	public static JavaMethod getMethod(
+	public static Method getMethod(
 			Class baseInterface, 
 			ATObject receiver,
 			String methodName) throws InterpreterException {
@@ -206,11 +176,83 @@ public class JavaInterfaceAdaptor {
 			case 0:
 				throw new XSelectorNotFound(Reflection.downBaseLevelSelector(methodName), receiver);
 			case 1:
-				return new JavaMethod(applicable[0]);
+				return applicable[0];
 			default:
-				// TODO LATER(overloading support) return new JavaMethod.Dispatched(receiver, applicable);
-				throw new XIllegalOperation("A native method uses overloading!");
+				throw new XIllegalOperation("Native method uses overloading: " + methodName + " in " + baseInterface);
 		}
+	}
+	
+	/**
+	 * Read a field from the given Java object reflectively.
+	 */
+	public static Object readField(Object fromObject, String fieldName, boolean isStatic)
+	                     throws XUndefinedField, XReflectionFailure {
+		try {
+			Field f = getField(fromObject, fieldName, isStatic);
+			return f.get(fromObject);
+		} catch (IllegalArgumentException e) {
+			// the given object is of the wrong class, should not happen!
+			throw new XReflectionFailure("Illegal class for field access of "+fieldName + ": " + e.getMessage());
+		} catch (IllegalAccessException e) {
+             // the read field is not publicly accessible
+			throw new XReflectionFailure("field access of " + fieldName + " not accessible.");
+		}
+	}
+	
+	/**
+	 * Write a field in the given Java object reflectively.
+	 */
+	public static void writeField(Object toObject, String fieldName, Object value, boolean isStatic)
+	                              throws XUndefinedField, XReflectionFailure {
+		try {
+			Field f = getField(toObject, fieldName, isStatic);
+			f.set(toObject, value);
+		} catch (IllegalArgumentException e) {
+			// the given value is of the wrong type
+			throw new XReflectionFailure("Illegal value for field "+fieldName + ": " + e.getMessage());
+		} catch (IllegalAccessException e) {
+             // the read field is not publicly accessible
+			throw new XReflectionFailure("field assignment of " + fieldName + " not accessible.");
+		}
+	}
+	
+	/**
+	 * Query a field from a Java object.
+	 * @throws XUndefinedField if the field does not exist or its static property does not match
+	 */
+	public static Field getField(Object fromObject, String fieldName, boolean isStatic) throws XUndefinedField {
+		try {
+			Field f = fromObject.getClass().getField(fieldName);
+			if ((Modifier.isStatic(f.getModifiers())) == isStatic) {
+				return f;
+			} else {
+				throw new XUndefinedField("field access ", fieldName + " not accessible.");
+			}
+		} catch (NoSuchFieldException e) {
+			// the field does not exist
+			throw new XUndefinedField("field access ", fieldName + " not accessible.");
+		}
+	}
+	
+	/**
+	 * Returns all public methods from the given class parameter whose name starts with the
+	 * given prefix. Moreover, the boolean parameter isStatic determines whether
+	 * to consider only static or only non-static methods.
+	 */
+	public static Method[] allMethodsMatching(Class fromClass, String prefix, boolean isStatic) {
+		// all public methods defined in the class
+		Method[] allPublicMethods = fromClass.getMethods();
+		
+		Vector matchingMethods = new Vector(allPublicMethods.length);
+		for (int i = 0; i < allPublicMethods.length; i++) {
+			Method m = allPublicMethods[i];
+			if (Modifier.isStatic(m.getModifiers()) == isStatic) {
+				if (m.getName().startsWith(prefix)) {
+					matchingMethods.add(m);
+				}
+			}
+		}
+		return (Method[]) matchingMethods.toArray(new Method[matchingMethods.size()]);
 	}
 	
 	/**

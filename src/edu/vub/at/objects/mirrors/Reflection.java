@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
@@ -45,6 +46,8 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
+import java.lang.reflect.Method;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,6 +73,18 @@ import java.util.regex.Pattern;
  * @author tvc
  */
 public final class Reflection {
+	
+	public static final String _BASE_PREFIX_ = "base_";
+	public static final String _BGET_PREFIX_ = "base_get";
+	public static final String _BSET_PREFIX_ = "base_set";
+	
+	public static final String _META_PREFIX_ = "meta_";
+	public static final String _MGET_PREFIX_ = "meta_get";
+	public static final String _MSET_PREFIX_ = "meta_set";
+	
+	public static final String _MAGIC_PREFIX_ = "magic_";
+	public static final String _MAGET_PREFIX_ = "magic_get";
+	public static final String _MASET_PREFIX_ = "magic_set";
 	
 	/**
 	 * A selector passed from the Java to the AmbientTalk level undergoes the following transformations:
@@ -100,27 +115,27 @@ public final class Reflection {
 	 * Transforms a Java selector prefixed with base_ into an AmbientTalk selector without the prefix.
 	 */
 	public static final ATSymbol downBaseLevelSelector(String jSelector) throws InterpreterException {
-		if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
-			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._BASE_PREFIX_));
+		if (jSelector.startsWith(Reflection._BASE_PREFIX_)) {
+			return downSelector(stripPrefix(jSelector, Reflection._BASE_PREFIX_));
 		} else 
 			
 		// In Exceptional Cases magic_ may be used to invoke special primitives, so this method needs to support them
 		// since they are in all other regards equal to base_ methods
-		if (jSelector.startsWith(JavaInterfaceAdaptor._MAGET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MAGET_PREFIX_));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._MASET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MASET_PREFIX_));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._MAGIC_PREFIX_)) {
-			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._MAGIC_PREFIX_));
+		if (jSelector.startsWith(Reflection._MAGET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, Reflection._MAGET_PREFIX_));
+		} else if (jSelector.startsWith(Reflection._MASET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, Reflection._MASET_PREFIX_));
+		} else if (jSelector.startsWith(Reflection._MAGIC_PREFIX_)) {
+			return downSelector(stripPrefix(jSelector, Reflection._MAGIC_PREFIX_));
 		} else
 		
 		
-		if (jSelector.startsWith(JavaInterfaceAdaptor._MGET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MGET_PREFIX_));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._MSET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MSET_PREFIX_));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._META_PREFIX_)) {
-			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._META_PREFIX_));
+		if (jSelector.startsWith(Reflection._MGET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, Reflection._MGET_PREFIX_));
+		} else if (jSelector.startsWith(Reflection._MSET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, Reflection._MSET_PREFIX_));
+		} else if (jSelector.startsWith(Reflection._META_PREFIX_)) {
+			return downSelector(stripPrefix(jSelector, Reflection._META_PREFIX_));
 		} else {
 			throw new XIllegalArgument("Illegal base level selector to down: " + jSelector);
 		}
@@ -130,8 +145,8 @@ public final class Reflection {
 	 * Transforms a Java selector prefixed with meta_ into an AmbientTalk selector without the prefix.
 	 */
 	public static final ATSymbol downMetaLevelSelector(String jSelector) throws InterpreterException {
-		if (jSelector.startsWith(JavaInterfaceAdaptor._META_PREFIX_)) {
-			return downSelector(stripPrefix(jSelector, JavaInterfaceAdaptor._META_PREFIX_));
+		if (jSelector.startsWith(Reflection._META_PREFIX_)) {
+			return downSelector(stripPrefix(jSelector, Reflection._META_PREFIX_));
 		} else {
 			throw new XIllegalArgument("Illegal meta level selector to down: " + jSelector);
 		}
@@ -144,8 +159,8 @@ public final class Reflection {
 	 *  downBaseFieldAccessSelector("base_getReceiver") => ATSymbol("receiver")
 	 */
 	public static final ATSymbol downBaseFieldAccessSelector(String jSelector) throws InterpreterException {
-		if (jSelector.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BGET_PREFIX_));
+		if (jSelector.startsWith(Reflection._BGET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, Reflection._BGET_PREFIX_));
 		} else {
 			throw new XIllegalArgument("Illegal base level accessor to down: " + jSelector);
 		}
@@ -158,8 +173,8 @@ public final class Reflection {
 	 *  downBaseFieldMutationSelector("base_setReceiver") => ATSymbol("receiver")
 	 */
 	public static final ATSymbol downBaseFieldMutationSelector(String jSelector) throws InterpreterException {
-		if (jSelector.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._BSET_PREFIX_));
+		if (jSelector.startsWith(Reflection._BSET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, Reflection._BSET_PREFIX_));
 		} else {
 			throw new XIllegalArgument("Illegal base level mutator to down: " + jSelector);
 		}
@@ -172,8 +187,8 @@ public final class Reflection {
 	 *  downMetaFieldAccessSelector("meta_getReceiver") => ATSymbol("receiver")
 	 */
 	public static final ATSymbol downMetaFieldAccessSelector(String jSelector) throws InterpreterException {
-		if (jSelector.startsWith(JavaInterfaceAdaptor._MGET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MGET_PREFIX_));
+		if (jSelector.startsWith(Reflection._MGET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, Reflection._MGET_PREFIX_));
 		} else {
 			throw new XIllegalArgument("Illegal meta level accessor to down: " + jSelector);
 		}
@@ -186,8 +201,8 @@ public final class Reflection {
 	 *  downMetaFieldMutationSelector("meta_setReceiver") => ATSymbol("receiver")
 	 */
 	public static final ATSymbol downMetaFieldMutationSelector(String jSelector) throws InterpreterException {
-		if (jSelector.startsWith(JavaInterfaceAdaptor._MSET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, JavaInterfaceAdaptor._MSET_PREFIX_));
+		if (jSelector.startsWith(Reflection._MSET_PREFIX_)) {
+			return downFieldName(stripPrefix(jSelector, Reflection._MSET_PREFIX_));
 		} else {
 			throw new XIllegalArgument("Illegal meta level mutator to down: " + jSelector);
 		}
@@ -249,21 +264,21 @@ public final class Reflection {
 	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with base_.
 	 */
 	public static final String upBaseLevelSelector(ATSymbol atSelector) throws InterpreterException {
-		return JavaInterfaceAdaptor._BASE_PREFIX_ + upSelector(atSelector);
+		return Reflection._BASE_PREFIX_ + upSelector(atSelector);
 	}
 
 	/**
 	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with meta_.
 	 */
 	public static final String upMetaLevelSelector(ATSymbol atSelector) throws InterpreterException {
-		return JavaInterfaceAdaptor._META_PREFIX_ + upSelector(atSelector);
+		return Reflection._META_PREFIX_ + upSelector(atSelector);
 	}
 	
 	/**
 	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with magic_.
 	 */
 	public static final String upMagicLevelSelector(ATSymbol atSelector) throws InterpreterException {
-		return JavaInterfaceAdaptor._MAGIC_PREFIX_ + upSelector(atSelector);
+		return Reflection._MAGIC_PREFIX_ + upSelector(atSelector);
 	}
 	
 	/**
@@ -287,7 +302,7 @@ public final class Reflection {
 	 *  upBaseFieldAccessSelector(ATSymbol('receiver')) => "base_getReceiver"
 	 */
 	public static final String upBaseFieldAccessSelector(ATSymbol atName) throws InterpreterException {
-		return JavaInterfaceAdaptor._BGET_PREFIX_ + upFieldName(atName);
+		return Reflection._BGET_PREFIX_ + upFieldName(atName);
 	}
 
 	/**
@@ -297,7 +312,7 @@ public final class Reflection {
 	 *  upBaseFieldMutationSelector(ATSymbol('receiver')) => "base_setReceiver"
 	 */
 	public static final String upBaseFieldMutationSelector(ATSymbol atName) throws InterpreterException {
-		return JavaInterfaceAdaptor._BSET_PREFIX_ + upFieldName(atName);
+		return Reflection._BSET_PREFIX_ + upFieldName(atName);
 	}
 
 	/**
@@ -307,7 +322,7 @@ public final class Reflection {
 	 *  upMetaFieldAccessSelector(ATSymbol('receiver')) => "meta_getReceiver"
 	 */
 	public static final String upMetaFieldAccessSelector(ATSymbol atName) throws InterpreterException {
-		return JavaInterfaceAdaptor._MGET_PREFIX_ + upFieldName(atName);
+		return Reflection._MGET_PREFIX_ + upFieldName(atName);
 	}
 	
 	/**
@@ -317,7 +332,7 @@ public final class Reflection {
 	 *  upMetaFieldMutationSelector(ATSymbol('receiver')) => "meta_setReceiver"
 	 */
 	public static final String upMetaFieldMutationSelector(ATSymbol atName) throws InterpreterException {
-		return JavaInterfaceAdaptor._MSET_PREFIX_ + upFieldName(atName);
+		return Reflection._MSET_PREFIX_ + upFieldName(atName);
 	}
 	
 	/**
@@ -327,7 +342,7 @@ public final class Reflection {
 	 *  upMetaFieldAccessSelector(ATSymbol('receiver')) => "meta_getReceiver"
 	 */
 	public static final String upMagicFieldAccessSelector(ATSymbol atName) throws InterpreterException {
-		return JavaInterfaceAdaptor._MAGET_PREFIX_ + upFieldName(atName);
+		return Reflection._MAGET_PREFIX_ + upFieldName(atName);
 	}
 	
 	/**
@@ -337,46 +352,76 @@ public final class Reflection {
 	 *  upMetaFieldMutationSelector(ATSymbol('receiver')) => "meta_setReceiver"
 	 */
 	public static final String upMagicFieldMutationSelector(ATSymbol atName) throws InterpreterException {
-		return JavaInterfaceAdaptor._MASET_PREFIX_ + upFieldName(atName);
+		return Reflection._MASET_PREFIX_ + upFieldName(atName);
 	}
+	
 	/**
-	 * Constructs an AmbientTalk ATField from a pair of getter/setter methods of
+	 * Constructs an AmbientTalk ATField from a pair of accessor/mutator methods of
 	 * a Java object. Given an object obj and a String sel, it is checked whether
-	 *  a) obj has a method named 'get' + Sel, if so, a field can be created
-	 *  b) obj has a method named 'set' + Sel, if so, the field is mutable, otherwise it is read-only
+	 *  a) obj has a method named getPrefix + Sel, if so, a field can be created
+	 *  b) obj has a method named setPrefix + Sel, if so, the field is mutable, otherwise it is read-only
 	 *
-	 * The getter method cannot take any arguments, the setter method must have a unary arity.
+	 * The accessor method cannot take any arguments, the mutator method must have a unary arity.
 	 *
-	 * @param jObject the Java object in which the getter/setter methods should be found
-	 * @param jSelector a selector which, when prefixed with 'get' or 'set' should yield a method in jObject
+	 * @param natObject the native AT object in whose class the accessor/mutator methods should be found
+	 * @param atSelector the AmbientTalk name of the field
 	 * @return a reified field, which may either be read-only or mutable depending on available methods
 	 * 
 	 * Example:
 	 *  eval "(reflect: msg).getField('selector')" where msg is a NATMessage
-	 *  => downField(aNATMessage, "selector")
-	 *  => NATMessage must have a zero-arg method getSelector and optionally setSelector
+	 *  => downField(aNATMessage, "selector", "base_get", "base_set")
+	 *  => NATMessage must have a zero-arg method base_getSelector and optionally base_setSelector
 	 */
-	public static final ATField downField(ATObject jObject, String jSelector) throws InterpreterException {
-		return JavaField.createPrimitiveField(jObject, downSelector(jSelector));
+	public static final ATField downField(ATObject natObject, ATSymbol atSelector,
+			                              String getPrefix, String setPrefix) throws InterpreterException {
+		String fieldName = upFieldName(atSelector);
+		Method accessorMethod = JavaInterfaceAdaptor.getMethod(natObject.getClass(), natObject, getPrefix + fieldName);
+		Method mutatorMethod;
+		try {
+			mutatorMethod = JavaInterfaceAdaptor.getMethod(natObject.getClass(), natObject, setPrefix + fieldName);
+		} catch (XSelectorNotFound e) {
+			mutatorMethod = null;
+		}
+		return new NativeField(natObject, atSelector, accessorMethod, mutatorMethod);
+	}
+	
+	public static final ATField downBaseLevelField(ATObject natObject, ATSymbol atSelector) throws InterpreterException {
+		return downField(natObject, atSelector, Reflection._BGET_PREFIX_, Reflection._BSET_PREFIX_);
+	}
+	
+	public static final ATField downMetaLevelField(ATObject natObject, ATSymbol atSelector) throws InterpreterException {
+		return downField(natObject, atSelector, Reflection._MGET_PREFIX_, Reflection._MSET_PREFIX_);
 	}
 	
 	/**
-	 * Constructs an AmbientTalk ATClosure from a Java method.
+	 * Constructs an AmbientTalk ATMethod from a Java method.
 	 * Given an object obj and a String sel, it is checked whether obj has a method
-	 * named 'base_' + sel. If so, the corresponding Java method is wrapped in a JavaClosure.
+	 * named sel. If so, the corresponding Java method is wrapped in a NativeMethod.
 	 * If not, the downing fails.
 	 *
-	 * @param jObject the Java object in which the method should be found
-	 * @param jSelector a selector which, when prefixed with 'base_' should yield a method in jObject
-	 * @return a reified closure wrapping the Java method
+	 * @param natObject the native AmbientTalk object in whose class the method should be found
+	 * @param jSelector a selector which should yield a method in natObject
+	 * @param origName the original AmbientTalk name of the method
+	 * @return a reified method wrapping the Java method
 	 * 
 	 * Example:
 	 *  eval "(reflect: tbl).getMethod('at')" where tbl is a NATTable
-	 *  => downMethod(aNATTable, "at")
+	 *  => downMethod(aNATTable, "base_at")
 	 *  => NATTable must have a method named base_at
+	 *  
+	 * Callers should use the more specialised 'downBaseLevelMethod' and 'downMetaLevelMethod'
+	 * methods to specify the prefix of the method to be found
 	 */
-	public static final ATMethod downMethod(ATObject jObject, String jSelector) throws InterpreterException {
-		return JavaInterfaceAdaptor.getMethod(jObject.getClass(), jObject, jSelector);
+	public static final ATMethod downMethod(ATObject natObject, String jSelector, ATSymbol origName) throws InterpreterException {
+		return new NativeMethod(JavaInterfaceAdaptor.getMethod(natObject.getClass(), natObject, jSelector), origName);
+	}
+	
+	public static final ATMethod downBaseLevelMethod(ATObject natObject, ATSymbol atSelector) throws InterpreterException {
+		return downMethod(natObject, upBaseLevelSelector(atSelector), atSelector);
+	}
+	
+	public static final ATMethod downMetaLevelMethod(ATObject natObject, ATSymbol atSelector) throws InterpreterException {
+		return downMethod(natObject, upMetaLevelSelector(atSelector), atSelector);
 	}
 
 	/**
@@ -405,22 +450,22 @@ public final class Reflection {
 	public static final ATObject downInvocation(ATObject atRcvr, String jSelector, Object[] jArgs) throws InterpreterException {
 		if (jArgs == null) { jArgs = NATTable.EMPTY.elements_; }
 		
-		if (jSelector.startsWith(JavaInterfaceAdaptor._BGET_PREFIX_)) {
+		if (jSelector.startsWith(Reflection._BGET_PREFIX_)) {
 			// obj.base_getSelector() => obj.meta_select(obj, selector)
 			if (jArgs.length != 0) {
 				throw new XArityMismatch(downBaseFieldAccessSelector(jSelector).toString(), 0, jArgs.length);
 			}
 			return atRcvr.meta_select(atRcvr, downBaseFieldAccessSelector(jSelector));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BSET_PREFIX_)) {
+		} else if (jSelector.startsWith(Reflection._BSET_PREFIX_)) {
 			// obj.base_setSelector(x) => obj.meta_assignField(selector, x)
 			if (jArgs.length != 1) {
 				throw new XArityMismatch(downBaseFieldMutationSelector(jSelector).toString(), 1, jArgs.length);
 			}
 			return atRcvr.meta_assignField(atRcvr, downBaseFieldMutationSelector(jSelector), downObject(jArgs[0]));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._BASE_PREFIX_)) {
+		} else if (jSelector.startsWith(Reflection._BASE_PREFIX_)) {
 			// obj.base_selector(args) => obj.meta_invoke(obj, selector, args)
 			return atRcvr.meta_invoke(atRcvr, downBaseLevelSelector(jSelector), new NATTable(jArgs));
-		} else if (jSelector.startsWith(JavaInterfaceAdaptor._META_PREFIX_)) {
+		} else if (jSelector.startsWith(Reflection._META_PREFIX_)) {
 			// obj.meta_selector(args) => obj.meta_selector(args)
 			return downObject(JavaInterfaceAdaptor.invokeJavaMethod(atRcvr.getClass(), atRcvr, jSelector, jArgs));
 		} else {
@@ -547,7 +592,7 @@ public final class Reflection {
 	/**
 	 * upMethodSelection takes an explicit AmbientTalk field selection and checks whether 
 	 * a Java method exists that matches the selector. If so, this method is wrapped in a 
-	 * JavaClosure and returned.
+	 * NativeClosure and returned.
 	 * 
 	 * @param atOrigRcvr the original AmbientTalk object that received the selection
 	 * @param jSelector the selector of the message to be invoked, converted to a Java selector
@@ -558,8 +603,9 @@ public final class Reflection {
 	 *  => upSelection(aNATTable, "at")
 	 *  => either NATTable must have a method base_at, which is then wrapped
 	 */
-	public static final Object upMethodSelection(ATObject atOrigRcvr, String jSelector) throws InterpreterException {
-		return JavaInterfaceAdaptor.wrapMethodFor(atOrigRcvr.getClass(), atOrigRcvr, jSelector);
+	public static final NativeClosure upMethodSelection(ATObject atOrigRcvr, String jSelector, ATSymbol origSelector) throws InterpreterException {
+		Method m = JavaInterfaceAdaptor.getMethod(atOrigRcvr.getClass(), atOrigRcvr, jSelector);
+		return new NativeClosure(atOrigRcvr, new NativeMethod(m, origSelector));
 	}
 	
 	/**
@@ -598,7 +644,7 @@ public final class Reflection {
 	 * @param jObj the Java object representing a mirror or a native type
 	 * @return the same object if it implements the ATObject interface
 	 */
-	public static final ATObject downObject(Object jObj) {
+	public static final ATObject downObject(Object jObj) throws InterpreterException {
 		// Our own "dynamic dispatch"
 		// mirror
 		if(jObj instanceof ATMirror) {
@@ -668,9 +714,9 @@ public final class Reflection {
 			return ((NATText) atObj).javaValue;
 		// booleans
 		} else if (atObj == NATBoolean._TRUE_) {
-			return new Boolean(true);
+			return Boolean.TRUE;
 		} else if (atObj == NATBoolean._FALSE_) {
-			return new Boolean(false);
+			return Boolean.FALSE;
 	    // nil
 		} else if (atObj == NATNil._INSTANCE_) {
 			return null;
@@ -687,6 +733,79 @@ public final class Reflection {
 		}
 	}
 	
+	/**
+	 * Returns, for a given AmbientTalk object atObj, an array of NativeField objects corresponding
+	 * to all non-static methods of that object's Java class, where each method's name is prefixed with 'base_get'
+	 */
+	public static final ATField[] downBaseLevelFields(ATObject atObj) throws InterpreterException {
+		Method[] allBaseGetMethods =
+			JavaInterfaceAdaptor.allMethodsMatching(atObj.getClass(), Reflection._BGET_PREFIX_, false);
+		ATField[] fields = new ATField[allBaseGetMethods.length];
+		for (int i = 0; i < allBaseGetMethods.length; i++) {
+			Method m = allBaseGetMethods[i];
+			fields[i] = downBaseLevelField(atObj, downBaseFieldAccessSelector(m.getName()));
+		}
+		return fields;
+	}
+	
+	/**
+	 * Returns, for a given AmbientTalk object atObj, an array of NativeField objects corresponding
+	 * to all non-static methods of that object's Java class, where each method's name is prefixed with 'meta_get'
+	 */
+	public static final ATField[] downMetaLevelFields(ATObject atObj) throws InterpreterException {
+		Method[] allMetaGetMethods =
+			JavaInterfaceAdaptor.allMethodsMatching(atObj.getClass(), Reflection._MGET_PREFIX_, false);
+		ATField[] fields = new ATField[allMetaGetMethods.length];
+		for (int i = 0; i < allMetaGetMethods.length; i++) {
+			Method m = allMetaGetMethods[i];
+			fields[i] = downMetaLevelField(atObj, downMetaFieldAccessSelector(m.getName()));
+		}
+		return fields;
+	}
+	
+	/**
+	 * Returns, for a given AmbientTalk object atObj, an array of NativeMethod objects corresponding
+	 * to all non-static methods of that object's class, where each method's name:
+	 *  - is prefixed with 'base_'
+	 *  - is not prefixed with 'base_get'
+	 *  - is not prefixed with 'base_set'
+	 */
+	public static final ATMethod[] downBaseLevelMethods(ATObject atObj) throws InterpreterException {
+		Method[] allBaseMethods =
+			JavaInterfaceAdaptor.allMethodsMatching(atObj.getClass(), Reflection._BASE_PREFIX_, false);
+		Vector allNonFieldBaseMethods = new Vector();
+		for (int i = 0; i < allBaseMethods.length; i++) {
+			Method m = allBaseMethods[i];
+			String nam = m.getName();
+			if (!((nam.startsWith(Reflection._BGET_PREFIX_)) ||
+			      (nam.startsWith(Reflection._BSET_PREFIX_)))) {
+				allNonFieldBaseMethods.add(new NativeMethod(m, downBaseLevelSelector(nam)));
+			}
+		}
+		return (ATMethod[]) allNonFieldBaseMethods.toArray(new ATMethod[allNonFieldBaseMethods.size()]);
+	}
+	
+	/**
+	 * Returns, for a given AmbientTalk object natObj, an array of NativeMethod objects corresponding
+	 * to all non-static methods of that object's class, where each method's name:
+	 *  - is prefixed with 'meta_'
+	 *  - is not prefixed with 'meta_get'
+	 *  - is not prefixed with 'meta_set'
+	 */
+	public static final ATMethod[] downMetaLevelMethods(ATObject natObj) throws InterpreterException {
+		Method[] allMetaMethods =
+			JavaInterfaceAdaptor.allMethodsMatching(natObj.getClass(), Reflection._META_PREFIX_, false);
+		Vector allNonFieldMetaMethods = new Vector();
+		for (int i = 0; i < allMetaMethods.length; i++) {
+			Method m = allMetaMethods[i];
+			String nam = m.getName();
+			if (!((nam.startsWith(Reflection._MGET_PREFIX_)) ||
+			      (nam.startsWith(Reflection._MSET_PREFIX_)))) {
+				allNonFieldMetaMethods.add(new NativeMethod(m, downMetaLevelSelector(nam)));
+			}
+		}
+		return (ATMethod[]) allNonFieldMetaMethods.toArray(new ATMethod[allNonFieldMetaMethods.size()]);
+	}
 	
 	private static final Pattern oprCode = Pattern.compile("_op(\\w\\w\\w)_"); //'_op', 3 chars, '_'
 	private static final Pattern symbol = Pattern.compile("\\W"); //any non-word character

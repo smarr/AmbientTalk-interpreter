@@ -77,11 +77,11 @@ public class AGUnquoteSplice extends AGExpression implements ATUnquoteSplice {
 		return NATText.atValue("#@("+ uqsExp_.meta_print().javaValue + ")");
 	}
 	
-	public boolean isUnquoteSplice() {
+	public boolean base_isUnquoteSplice() {
 		return true;
 	}
 	
-	public ATUnquoteSplice asUnquoteSplice() {
+	public ATUnquoteSplice base_asUnquoteSplice() {
 		return this;
 	}
 

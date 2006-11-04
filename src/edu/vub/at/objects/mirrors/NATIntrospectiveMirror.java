@@ -28,10 +28,14 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
@@ -39,6 +43,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -97,10 +102,10 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	public ATObject base_getBase() { return principal_; }
 
 	/** @return true */
-	public ATBoolean base_isMirror() { return NATBoolean._TRUE_; }
+	public boolean base_isMirror() { return true; }
 	
 	/** @return this */
-	public ATMirror asMirror() { return this; }
+	public ATMirror base_asMirror() { return this; }
 	
 	/* ------------------------------
 	 * -- Message Sending Protocol --
@@ -197,7 +202,8 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 						Reflection.downObject(
 								Reflection.upMethodSelection(
 										principal_, 
-										jSelector)));
+										jSelector,
+										atSelector)));
 			} catch (XSelectorNotFound e2) {
 				// Principal does not have a corresponding meta_level field nor
 				// method try for a base_level field or method of the mirror itself.
@@ -206,6 +212,20 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 		}			
 	}
 	
+    /**
+     * A mirror responds to a message m if and only if:
+     *  - either its principal has a method named meta_m
+     *  - or the mirror itself implements a method named base_m
+     */
+    public ATBoolean meta_respondsTo(ATSymbol atSelector) throws InterpreterException {
+        String jSelector = Reflection.upMetaLevelSelector(atSelector);
+        boolean metaResponds = Reflection.upRespondsTo(principal_, jSelector);
+        if (metaResponds) {
+          return NATBoolean._TRUE_;
+        } else {
+          return super.meta_respondsTo(atSelector);
+        }
+    }
 	
 	/**
 	 * The effect of assigning a field on a mirror can be twofold. Either a meta_field
@@ -218,7 +238,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 		
 		try{
 			jSelector = Reflection.upMetaFieldMutationSelector(name);
-			Reflection.upFieldAssignment(principal_, jSelector, value.asMirror().base_getBase());
+			Reflection.upFieldAssignment(principal_, jSelector, value.base_asMirror().base_getBase());
 		} catch (XSelectorNotFound e) {
 			// Principal does not have a corresponding meta_level method
 			// OR the passed value is not a mirror object
@@ -228,7 +248,48 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 		
 		return NATNil._INSTANCE_;
 	}
+	
+    public ATField meta_grabField(ATSymbol fieldName) throws InterpreterException {
+        try {
+        	    // try to find a meta_get / meta_set field in the principal_
+			return Reflection.downMetaLevelField(principal_, fieldName);
+		} catch (XSelectorNotFound e) {
+			// try to find a base_get / base_set field in the mirror
+			return super.meta_grabField(fieldName);
+		}
+    }
+    
+    public ATMethod meta_grabMethod(ATSymbol methodName) throws InterpreterException {
+        try {
+        	    // try to find a meta_ method in the principal
+			return Reflection.downMetaLevelMethod(principal_, methodName);
+		} catch (XSelectorNotFound e) {
+			// try to find a base_ method in the mirror
+			return super.meta_grabMethod(methodName);
+		}
+    }
+    
+	/**
+	 * Listing the fields of a mirror requires us to list all of the meta_get methods
+	 * of the principal + all of the base_get methods of the mirror itself
+	 */
+	public ATTable meta_listFields() throws InterpreterException {
+    	    ATField[] principalMetaFields = Reflection.downMetaLevelFields(principal_);
+    	    ATField[] mirrorBaseFields = Reflection.downBaseLevelFields(this);
+        return new NATTable(Evaluator.collate(principalMetaFields, mirrorBaseFields));
+    }
 
+	/**
+	 * Listing the methods of a mirror requires us to list all of the meta_ methods
+	 * of the principal (excluding meta_get/set methods) + all of the base_ methods
+	 * (excluding base_get/set methods) of the mirror itself
+	 */
+    public ATTable meta_listMethods() throws InterpreterException {
+   	    ATMethod[] principalMetaMethods = Reflection.downMetaLevelMethods(principal_);
+   	    ATMethod[] mirrorBaseMethods = Reflection.downBaseLevelMethods(this);
+        return new NATTable(Evaluator.collate(principalMetaMethods, mirrorBaseMethods));
+    }
+	
 	/* ------------------------------------
 	 * -- Extension and cloning protocol --
 	 * ------------------------------------ */
@@ -251,12 +312,13 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * @param initargs - an ATObject[] containing as its first element the object that needs to be reflects upon
 	 * @return <b>another</b> (possibly new) mirror object 
 	 */
-	public ATObject base_init(ATObject[] initargs) throws XArityMismatch {
-		if(initargs.length > 1) {
+	public ATObject meta_newInstance(ATTable init) throws XArityMismatch, XTypeMismatch {
+		ATObject[] initargs = init.asNativeTable().elements_;
+		if(initargs.length != 1) {
 			ATObject reflectee = initargs[0];
 			return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
 		} else {
-			throw new XArityMismatch("init", 1, 0);
+			throw new XArityMismatch("init", 1, initargs.length);
 		}
 		
 	}

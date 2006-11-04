@@ -4,13 +4,13 @@ checklist:
 - nadenken over modulair uitbreiden van de code met standard libraries (bvb. at.exceptions.interpreter)
 => zoveel mogelijk in AT zelf schrijven => symbiose mogelijke uitweg voor de nodige native code snippets?
 
-- NATNil moet createChild oproepen.
-
-- zorgen dat alle AT interfaces alleen nog base_ / meta_ methoden hebben? Vooral ATConversions, AGxxx
+- zorgen dat alle AT interfaces alleen nog base_ / meta_ methoden hebben die InterpreterException throwen
+en die alleen AT args of convertible args returnen / nemen
 
 - mirages + unit tests
+
 - write AmbientTalk code: at.collections, at.unit, at.init, at.mirrors
-- use AspectJ introduction to separate passive obj model from active obj model
+
 - concurrency: add actors(vats) + message queues + threading/concurrency control + async msg passing
 - distribution: add comm protocol, discovery protocol, remote actors (what about using a lightweight lib?)
 

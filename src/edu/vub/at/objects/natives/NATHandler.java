@@ -61,7 +61,7 @@ public class NATHandler extends NATNil implements ATHandler {
 		return anException.meta_isRelatedTo(filter_);
 	}
 	
-	public ATHandler asHandler() {
+	public ATHandler base_asHandler() {
 		return this;
 	}
 

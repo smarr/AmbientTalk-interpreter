@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.InterpreterException;
+
 /**
  * ATMirror is an interface describing the additional behaviour exhibited by mirrors
  * with respect to ordinary objects. Mirrors are AmbientTalk's way of reifying the 
@@ -41,5 +43,5 @@ public interface ATMirror extends ATObject {
 	 * Provides access to the AmbientTalk language value this mirror reflects upon. 
 	 * @return a base-level AmbientTalk object. 
 	 */
-	public ATObject base_getBase();
+	public ATObject base_getBase() throws InterpreterException;
 }

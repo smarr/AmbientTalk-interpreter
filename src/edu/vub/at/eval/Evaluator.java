@@ -119,8 +119,8 @@ public final class Evaluator {
 		LinkedList result = new LinkedList();
 		int siz = els.length;
 		for (int i = 0; i < els.length; i++) {
-			if (els[i].isSplice()) {
-				ATObject[] tbl = els[i].asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
+			if (els[i].base_isSplice()) {
+				ATObject[] tbl = els[i].base_asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -161,7 +161,7 @@ public final class Evaluator {
 		
 		// check to see whether the last argument is a spliced parameters, which
 		// indicates a variable parameter list
-		if (pars[pars.length - 1].isSplice()) {
+		if (pars[pars.length - 1].base_isSplice()) {
 			int numMandatoryPars = (pars.length - 1);
 			// if so, check whether at least all mandatory parameters are matched
 			if (args.length < numMandatoryPars)
@@ -169,7 +169,7 @@ public final class Evaluator {
 			
 			// bind all parameters except for the last one
 			for (int i = 0; i < numMandatoryPars; i++) {
-				binder.bindParamToArg(scope, pars[i].asSymbol(), args[i]);
+				binder.bindParamToArg(scope, pars[i].base_asSymbol(), args[i]);
 			}
 			
 			// bind the last parameter to the remaining arguments
@@ -178,7 +178,7 @@ public final class Evaluator {
 			for (int i = 0; i < numRemainingArgs; i++) {
 				restArgs[i] = args[i + numMandatoryPars];
 			}
-			ATSymbol restArgsName = pars[numMandatoryPars].asSplice().base_getExpression().asSymbol();
+			ATSymbol restArgsName = pars[numMandatoryPars].base_asSplice().base_getExpression().base_asSymbol();
 			binder.bindParamToArg(scope, restArgsName, new NATTable(restArgs));
 			
 		} else {
@@ -187,7 +187,7 @@ public final class Evaluator {
 				throw new XArityMismatch(funnam, pars.length, args.length);	
 		
 			for (int i = 0; i < pars.length; i++) {
-			     binder.bindParamToArg(scope, pars[i].asSymbol(), args[i]);	
+			     binder.bindParamToArg(scope, pars[i].base_asSymbol(), args[i]);	
 		    }
 		}
 	}
@@ -327,5 +327,18 @@ public final class Evaluator {
 		 m.appendTail(sb);
 		 return sb.toString();
 	}
+	
+    /**
+     * Auxiliary method to collate two Java arrays
+     * @return an array containing first the elements of ary1, then the elements of ary2
+     */
+    public static final Object[] collate(Object[] ary1, Object[] ary2) {
+	    int siz1 = ary1.length;
+	    int siz2 = ary2.length;
+	    Object[] union = new Object[siz1 + siz2];
+	    System.arraycopy(ary1, 0, union, 0, siz1);
+	    System.arraycopy(ary2, 0, union, siz1, siz2);
+	    return union;
+    }
 	
 }

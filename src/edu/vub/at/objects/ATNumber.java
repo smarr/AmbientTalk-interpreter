@@ -38,9 +38,9 @@ public interface ATNumber extends ATNumeric {
 
 	// base-level interface
 	
-	public ATNumeric base_inc();
-	public ATNumeric base_dec();
-	public ATNumeric base_abs();
+	public ATNumeric base_inc() throws InterpreterException;
+	public ATNumeric base_dec() throws InterpreterException;
+	public ATNumeric base_abs() throws InterpreterException;
 	
 	public ATNil base_doTimes_(ATClosure code) throws InterpreterException;
 	public ATNil base_to_do_(ATNumber end, ATClosure code) throws InterpreterException;

@@ -28,14 +28,12 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
-import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
@@ -112,10 +110,10 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	} 
 	
 	/** @return true */
-	public ATBoolean base_isMirror() { return NATBoolean._TRUE_; }
+	public boolean base_isMirror() { return true; }
 	
 	/** @return this */
-	public ATMirror asMirror() { return this; }
+	public ATMirror base_asMirror() { return this; }
 	
 	public ATObject meta_clone() throws InterpreterException {
 		NATIntercessiveMirror clone = magic_clone();

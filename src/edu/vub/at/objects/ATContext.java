@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.InterpreterException;
+
 
 /**
  * ATContext describes a triplet of scope pointers used during evaluation, namely
@@ -40,26 +42,26 @@ public interface ATContext extends ATObject {
 	/**
 	 * Structural access to the lexical environment of the current context.
 	 */
-	public ATObject base_getLexicalScope();
+	public ATObject base_getLexicalScope() throws InterpreterException;
 	
 	/**
 	 * Structural access to the receiver (self pseudovariable) in the current context.
 	 */
-	public ATObject base_getSelf();
+	public ATObject base_getSelf() throws InterpreterException;
 	
 	/**
 	 * Structural access to the parent (super pseudovariable) in the current context.
 	 */
-	public ATObject base_getSuper();
+	public ATObject base_getSuper() throws InterpreterException;
 	
 	/*
 	 * Factory methods for creating new context objects as a delta w.r.t. the receiver context object.
 	 */
 	
-	public ATContext base_withLexicalEnvironment(ATObject scope);
+	public ATContext base_withLexicalEnvironment(ATObject scope) throws InterpreterException;
 	
-	public ATContext base_withParentObject(ATObject zuper);
+	public ATContext base_withParentObject(ATObject zuper) throws InterpreterException;
 	
-	public ATContext base_withDynamicReceiver(ATObject self, ATObject zuper);
+	public ATContext base_withDynamicReceiver(ATObject self, ATObject zuper) throws InterpreterException;
 
 }

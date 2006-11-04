@@ -357,7 +357,7 @@ public final class OBJLexicalRoot extends NATNil {
 		NATMirage newMirage = new NATMirage(code.base_getContext().base_getLexicalScope(), mirrorClone);
 		mirrorClone.setBase(newMirage);
 		
-		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
+		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newMirage, newMirage, newMirage.dynamicParent_));
 		
 		return newMirage;
 
@@ -410,7 +410,7 @@ public final class OBJLexicalRoot extends NATNil {
 			
 			// find the appropriate handler
 			for (int i = 0; i < handlers.length; i++) {
-				ATHandler handler = handlers[i].asHandler();
+				ATHandler handler = handlers[i].base_asHandler();
 				if (handler.base_canHandle(e.getAmbientTalkRepresentation()).asNativeBoolean().javaValue) {
 					replacementCode = handler.base_getHandler();
 					break;

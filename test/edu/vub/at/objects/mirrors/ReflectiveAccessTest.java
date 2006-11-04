@@ -67,26 +67,26 @@ public class ReflectiveAccessTest extends AmbientTalkTestCase {
 	 * -- Auxiliary definitions --
 	 * --------------------------- */	
 	
-	protected final NATClosure fail = new JavaClosure(NATNil._INSTANCE_)  {
+	protected final NATClosure fail = new NativeClosure(NATNil._INSTANCE_)  {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			fail();
 			return NATNil._INSTANCE_;
 		}
 	};
 	
-	protected final NATClosure success = new JavaClosure(NATNil._INSTANCE_) {
+	protected final NATClosure success = new NativeClosure(NATNil._INSTANCE_) {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			return NATNil._INSTANCE_;
 		}		
 	};
 	
-	protected final NATClosure symbol = new JavaClosure(NATNil._INSTANCE_) {
+	protected final NATClosure symbol = new NativeClosure(NATNil._INSTANCE_) {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			return AGSymbol.alloc(arguments.base_at(NATNumber.ONE).asNativeText());
 		}				
 	};
 	
-	protected final NATClosure echo_ = new JavaClosure(NATNil._INSTANCE_) {
+	protected final NATClosure echo_ = new NativeClosure(NATNil._INSTANCE_) {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
 			return NATNil._INSTANCE_;

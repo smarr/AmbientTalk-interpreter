@@ -106,7 +106,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		// assert(this == receiver)
-		return this.getLocalField(selector).asClosure().base_apply(arguments);
+		return this.getLocalField(selector).base_asClosure().base_apply(arguments);
 	}
 	
 	/**
@@ -242,7 +242,7 @@ public class NATCallframe extends NATNil implements ATObject {
 				                    " to a call frame. Add it as a closure field instead.");
 	}
 	
-	public ATField meta_getField(ATSymbol selector) throws InterpreterException {
+	public ATField meta_grabField(ATSymbol selector) throws InterpreterException {
 		if (this.hasLocalField(selector)) {
 			return new NATField(selector, this);
 		} else {
@@ -250,7 +250,7 @@ public class NATCallframe extends NATNil implements ATObject {
 		}
 	}
 
-	public ATMethod meta_getMethod(ATSymbol selector) throws InterpreterException {
+	public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException {
 		throw new XSelectorNotFound(selector, this);
 	}
 
@@ -287,7 +287,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * -- Conversion Protocol  --
 	 * -------------------------- */
 	
-	public boolean isCallFrame() {
+	public boolean base_isCallFrame() {
 		return true;
 	}
 	

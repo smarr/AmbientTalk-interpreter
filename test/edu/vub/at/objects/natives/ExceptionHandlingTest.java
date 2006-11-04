@@ -36,7 +36,7 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -59,7 +59,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 		globalLexScope = Evaluator.getGlobalLexicalScope();
 		testScope = new NATCallframe(globalLexScope);
 		
-		final NATClosure symbol = new JavaClosure(NATNil._INSTANCE_) {
+		final NATClosure symbol = new NativeClosure(NATNil._INSTANCE_) {
 			public ATObject base_apply(ATTable arguments) throws InterpreterException {
 				return AGSymbol.alloc(arguments.base_at(NATNumber.ONE).asNativeText());
 			}				
@@ -69,7 +69,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 
 		testScope.meta_defineField(
 				AGSymbol.alloc("echo:"),
-				new JavaClosure(NATNil._INSTANCE_) {
+				new NativeClosure(NATNil._INSTANCE_) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
 						return NATNil._INSTANCE_;
@@ -140,7 +140,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 			
 			testScope.meta_defineField(
 					AGSymbol.alloc("echo:"),
-					new JavaClosure(NATNil._INSTANCE_) {
+					new NativeClosure(NATNil._INSTANCE_) {
 						public ATObject base_apply(ATTable arguments) throws InterpreterException {
 							System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
 							return NATNil._INSTANCE_;

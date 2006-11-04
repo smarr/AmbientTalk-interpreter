@@ -73,10 +73,10 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 	 * @return NIL (table assignment is not an expression)
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATTable tab = tblExp_.meta_eval(ctx).asTable();
+		ATTable tab = tblExp_.meta_eval(ctx).base_asTable();
 		ATNumber idx = null;
 		try {
-			idx = idxExp_.meta_eval(ctx).asNumber();
+			idx = idxExp_.meta_eval(ctx).base_asNumber();
 		} catch (XTypeMismatch e) {
 			throw new XIllegalIndex(e.getMessage());
 		}
@@ -90,9 +90,9 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 	 * AGASSTABLE(tbl,idx,val).quote(ctx) = AGASSTABLE(tbl.quote(ctx),idx.quote(ctx),val.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGAssignTable(tblExp_.meta_quote(ctx).asExpression(),
-				                 idxExp_.meta_quote(ctx).asExpression(),
-				                 valExp_.meta_quote(ctx).asExpression());
+		return new AGAssignTable(tblExp_.meta_quote(ctx).base_asExpression(),
+				                 idxExp_.meta_quote(ctx).base_asExpression(),
+				                 valExp_.meta_quote(ctx).base_asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * JavaAnonymousMethod.java created on 10-aug-2006 at 10:03:55
+ * NativeAnonymousMethod.java created on 10-aug-2006 at 10:03:55
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -43,24 +43,24 @@ import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
- * A JavaAnonymousMethod represents the meta_apply method of an anonymous JavaClosure subclass.
+ * A NativeAnonymousMethod represents the meta_apply method of an anonymous NativeClosure subclass.
  * 
  * An anonymous native method has the following properties:
  *   - name = "nativelambda" (to distinguish it from 'ordinary' lambdas)
  *   - arguments = [ \@args ] (it takes an arbitrary number of arguments)
  *   - body = "Native implementation in {class}" (a string telling an inspector that
  *     this closure is natively implemented in the given Java class)
- *   - applying a nativelambda directly (without going through this JavaClosure)
+ *   - applying a nativelambda directly (without going through this NativeClosure)
  *     results in an error
  * 
  * @author tvc
  */
-public class JavaAnonymousMethod extends NATNil implements ATMethod {
+public class NativeAnonymousMethod extends NATNil implements ATMethod {
 
 	/**
 	 * The name of an anonymous native lambda is always 'nativelambda'
 	 */
-	private static final AGSymbol _ANON_MTH_NAM_ = AGSymbol.alloc("nativelambda");
+	protected static final AGSymbol _ANON_MTH_NAM_ = AGSymbol.alloc("nativelambda");
 	
 	/**
 	 * The argument list of an anonymous native lambda is [ \@args ]
@@ -71,9 +71,9 @@ public class JavaAnonymousMethod extends NATNil implements ATMethod {
 	private final Class creatorClass_;
 	
 	/**
-	 * @param creatorClass class of the object that has created the JavaClosure that will wrap <tt>this</tt>
+	 * @param creatorClass class of the object that has created the NativeClosure that will wrap <tt>this</tt>
 	 */
-	public JavaAnonymousMethod(Class creatorClass) {
+	public NativeAnonymousMethod(Class creatorClass) {
 		creatorClass_ = creatorClass;
 	}
 
@@ -87,7 +87,7 @@ public class JavaAnonymousMethod extends NATNil implements ATMethod {
 
 	public ATSymbol base_getName() { return _ANON_MTH_NAM_; }
 
-	public ATTable base_getArguments() { return _ANON_MTH_ARGS_; }
+	public ATTable base_getParameters() { return _ANON_MTH_ARGS_; }
 
 	public ATBegin base_getBodyExpression() {
 		return new AGBegin(new NATTable(new ATObject[] {

@@ -38,7 +38,7 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
@@ -66,14 +66,14 @@ public final class NATTable extends AGExpression implements ATTable {
 			return new NATTable(array);
 	}	
 	
-	// TODO: make this constructors private to ensure singleton EMPTY
+	// TODO: make this constructor private to ensure singleton EMPTY
 	public NATTable(ATObject[] elements) {
 		// assert elements.length > 0
 		elements_ = elements;
 	}
 	
-	// TODO: make this constructors private to ensure singleton EMPTY
-	public NATTable(Object[] javaArray) {
+	// TODO: make this constructor private to ensure singleton EMPTY
+	public NATTable(Object[] javaArray) throws InterpreterException {
 		elements_ = new ATObject[javaArray.length];
 		
 		for(int i = 0; i < javaArray.length; i++) {
@@ -82,7 +82,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		}
 	}
 	
-    public ATTable asTable() { return this; }
+    public ATTable base_asTable() { return this; }
 	
 	public NATTable asNativeTable() { return this; }
 	
@@ -100,8 +100,8 @@ public final class NATTable extends AGExpression implements ATTable {
 		LinkedList result = new LinkedList();
 		int siz = elements_.length;
 		for (int i = 0; i < elements_.length; i++) {
-			if (elements_[i].isSplice()) {
-				ATObject[] tbl = elements_[i].asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
+			if (elements_[i].base_isSplice()) {
+				ATObject[] tbl = elements_[i].base_asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -125,8 +125,8 @@ public final class NATTable extends AGExpression implements ATTable {
 		LinkedList result = new LinkedList();
 		int siz = elements_.length;
 		for (int i = 0; i < elements_.length; i++) {
-			if (elements_[i].isUnquoteSplice()) {
-				ATObject[] tbl = elements_[i].asUnquoteSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
+			if (elements_[i].base_isUnquoteSplice()) {
+				ATObject[] tbl = elements_[i].base_asUnquoteSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -207,9 +207,9 @@ public final class NATTable extends AGExpression implements ATTable {
 	 */
 	public ATTable base_select(ATNumber first, ATNumber last) throws InterpreterException {
 		final LinkedList selection = new LinkedList();
-		first.base_to_do_(last, new JavaClosure(this) {
+		first.base_to_do_(last, new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
-			    selection.add(base_at(args.base_at(NATNumber.ONE).asNumber()));
+			    selection.add(base_at(args.base_at(NATNumber.ONE).base_asNumber()));
 			    return NATNil._INSTANCE_;
 			}
 		});

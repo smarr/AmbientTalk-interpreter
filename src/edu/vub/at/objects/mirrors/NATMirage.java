@@ -143,7 +143,7 @@ public class NATMirage extends NATObject {
 	}
 
 	public ATMethod magic_getMethod(ATSymbol selector) throws InterpreterException {
-		return super.meta_getMethod(selector);
+		return super.meta_grabMethod(selector);
 	}
 
 	public ATObject magic_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
@@ -194,7 +194,7 @@ public class NATMirage extends NATObject {
 
 
 	public ATField magic_getField(ATSymbol selector) throws InterpreterException {
-		return super.meta_getField(selector);
+		return super.meta_grabField(selector);
 	}
 
 
@@ -276,12 +276,12 @@ public class NATMirage extends NATObject {
 				));
 	}
 	
-	public ATMethod meta_getMethod(ATSymbol selector) throws InterpreterException {
+	public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("getMethod"),
 				new NATTable(new ATObject[] { selector })
-				)).asMethod();
+				)).base_asMethod();
 	}
 
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
@@ -297,7 +297,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.alloc("listMethods"),
 				NATTable.EMPTY
-				)).asTable();
+				)).base_asTable();
 	}
 
 	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
@@ -329,7 +329,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.alloc("respondsTo"),
 				new NATTable(new ATObject[] { selector })
-				)).asBoolean();
+				)).base_asBoolean();
 	}
 
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
@@ -380,12 +380,12 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATField meta_getField(ATSymbol selector) throws InterpreterException {
+	public ATField meta_grabField(ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.alloc("getField"),
 				new NATTable(new ATObject[] { selector })
-		)).asField();
+		)).base_asField();
 	}
 
 
@@ -394,7 +394,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.alloc("listFields"),
 				NATTable.EMPTY
-				)).asTable();
+				)).base_asTable();
 	}
 
 

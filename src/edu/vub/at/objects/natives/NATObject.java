@@ -52,7 +52,7 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
-import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.mirrors.NativeClosure;
 
 import java.util.Collection;
 import java.util.Vector;
@@ -225,7 +225,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		if (this.hasLocalField(selector)) {
-			return this.getLocalField(selector).asClosure().base_apply(arguments);
+			return this.getLocalField(selector).base_asClosure().base_apply(arguments);
 		} else if (this.hasLocalMethod(selector)) {
 			// immediately execute the method in the context ctx where
 			//  ctx.scope = the implementing scope, being this object
@@ -454,7 +454,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		return NATNil._INSTANCE_;
 	}
 
-	public ATMethod meta_getMethod(ATSymbol selector) throws InterpreterException {
+	public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException {
 		ATMethod result = (ATMethod)methodDictionary_.get(selector);
 		if(result == null) {
 			throw new XSelectorNotFound(selector, this);
@@ -472,7 +472,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		return NATText.atValue("<object:"+this.hashCode()+">");
 	}
 	
-	public boolean isCallFrame() {
+	public boolean base_isCallFrame() {
 		return false;
 	}
 	
@@ -546,11 +546,11 @@ public class NATObject extends NATCallframe implements ATObject {
 
 	public ATBoolean meta_isRelatedTo(final ATObject object) throws InterpreterException {
 		return this.meta_isCloneOf(object).base_or_(
-				new JavaClosure(this) {
+				new NativeClosure(this) {
 					public ATObject base_apply(ATTable args) throws InterpreterException {
 						return scope_.meta_getDynamicParent().meta_isRelatedTo(object);
 					}
-				}).asBoolean();
+				}).base_asBoolean();
 	}
 
 	/* ---------------------------------------
@@ -562,34 +562,34 @@ public class NATObject extends NATCallframe implements ATObject {
 	// ALL asXXX methods return a coercer object which returns a proxy of the correct interface that will 'down'
 	// subsequent Java base-level invocations to the AmbientTalk level
 	
-	public ATBegin asBegin() throws XTypeMismatch { return (ATBegin) Coercer.coerce(this, ATBegin.class); }
-	public ATBoolean asBoolean() throws XTypeMismatch { return (ATBoolean) Coercer.coerce(this, ATBoolean.class); }
-	public ATClosure asClosure() throws XTypeMismatch { return (ATClosure) Coercer.coerce(this, ATClosure.class); }
-	public ATDefinition asDefinition() throws XTypeMismatch { return (ATDefinition) Coercer.coerce(this, ATDefinition.class); }
-	public ATExpression asExpression() throws XTypeMismatch { return (ATExpression) Coercer.coerce(this, ATExpression.class); }
-	public ATField asField() throws XTypeMismatch { return (ATField) Coercer.coerce(this, ATField.class); }
-	public ATMessage asMessage() throws XTypeMismatch { return (ATMessage) Coercer.coerce(this, ATMessage.class); }
-	public ATMessageCreation asMessageCreation() throws XTypeMismatch { return (ATMessageCreation) Coercer.coerce(this, ATMessageCreation.class); }
-	public ATMethod asMethod() throws XTypeMismatch { return (ATMethod) Coercer.coerce(this, ATMethod.class); }
-	public ATMirror asMirror() throws XTypeMismatch { return (ATMirror) Coercer.coerce(this, ATMirror.class); }
-	public ATHandler asHandler() throws XTypeMismatch { return (ATHandler) Coercer.coerce(this, ATHandler.class); }
-	public ATNumber asNumber() throws XTypeMismatch { return (ATNumber) Coercer.coerce(this, ATNumber.class); }
-	public ATSplice asSplice() throws XTypeMismatch { return (ATSplice) Coercer.coerce(this, ATSplice.class); }
-	public ATStatement asStatement() throws XTypeMismatch { return (ATStatement) Coercer.coerce(this, ATStatement.class); }
-	public ATSymbol asSymbol() throws XTypeMismatch { return (ATSymbol) Coercer.coerce(this, ATSymbol.class); }
-	public ATTable asTable() throws XTypeMismatch { return (ATTable) Coercer.coerce(this, ATTable.class); }
-	public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch { return (ATUnquoteSplice) Coercer.coerce(this, ATUnquoteSplice.class); }
+	public ATBegin base_asBegin() throws XTypeMismatch { return (ATBegin) Coercer.coerce(this, ATBegin.class); }
+	public ATBoolean base_asBoolean() throws XTypeMismatch { return (ATBoolean) Coercer.coerce(this, ATBoolean.class); }
+	public ATClosure base_asClosure() throws XTypeMismatch { return (ATClosure) Coercer.coerce(this, ATClosure.class); }
+	public ATDefinition base_asDefinition() throws XTypeMismatch { return (ATDefinition) Coercer.coerce(this, ATDefinition.class); }
+	public ATExpression base_asExpression() throws XTypeMismatch { return (ATExpression) Coercer.coerce(this, ATExpression.class); }
+	public ATField base_asField() throws XTypeMismatch { return (ATField) Coercer.coerce(this, ATField.class); }
+	public ATMessage base_asMessage() throws XTypeMismatch { return (ATMessage) Coercer.coerce(this, ATMessage.class); }
+	public ATMessageCreation base_asMessageCreation() throws XTypeMismatch { return (ATMessageCreation) Coercer.coerce(this, ATMessageCreation.class); }
+	public ATMethod base_asMethod() throws XTypeMismatch { return (ATMethod) Coercer.coerce(this, ATMethod.class); }
+	public ATMirror base_asMirror() throws XTypeMismatch { return (ATMirror) Coercer.coerce(this, ATMirror.class); }
+	public ATHandler base_asHandler() throws XTypeMismatch { return (ATHandler) Coercer.coerce(this, ATHandler.class); }
+	public ATNumber base_asNumber() throws XTypeMismatch { return (ATNumber) Coercer.coerce(this, ATNumber.class); }
+	public ATSplice base_asSplice() throws XTypeMismatch { return (ATSplice) Coercer.coerce(this, ATSplice.class); }
+	public ATStatement base_asStatement() throws XTypeMismatch { return (ATStatement) Coercer.coerce(this, ATStatement.class); }
+	public ATSymbol base_asSymbol() throws XTypeMismatch { return (ATSymbol) Coercer.coerce(this, ATSymbol.class); }
+	public ATTable base_asTable() throws XTypeMismatch { return (ATTable) Coercer.coerce(this, ATTable.class); }
+	public ATUnquoteSplice base_asUnquoteSplice() throws XTypeMismatch { return (ATUnquoteSplice) Coercer.coerce(this, ATUnquoteSplice.class); }
 	
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
 	public boolean isAmbientTalkObject() { return true; }
-	public ATBoolean base_isMirror() { return NATBoolean._TRUE_; }
-	public boolean isBoolean() { return true; }
-	public boolean isClosure() { return true; }
-	public boolean isMethod() { return true; }
-	public boolean isSplice() { return true; }
-	public boolean isSymbol() { return true; }
-	public boolean isTable() { return true; }
-	public boolean isUnquoteSplice() { return true; }
+	public boolean base_isMirror() { return true; }
+	public boolean base_isBoolean() { return true; }
+	public boolean base_isClosure() { return true; }
+	public boolean base_isMethod() { return true; }
+	public boolean base_isSplice() { return true; }
+	public boolean base_isSymbol() { return true; }
+	public boolean base_isTable() { return true; }
+	public boolean base_isUnquoteSplice() { return true; }
 	
 }

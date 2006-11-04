@@ -29,7 +29,6 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -37,65 +36,65 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.lang.reflect.Method;
+
 /**
- * JavaField allows an ambienttalk primitive type to have a field if it has a
- * corresponding getter and optionally a setter method.
+ * Native Fields are represented in our reflective implementation as a pair
+ * of accessor and mutator methods in the class of the native AmbientTalk object.
+ * For instance, a native AmbientTalk object of class C has a field 'f' if the
+ * class C implements a method 'getF()'. If the class also implements 'setF(v)'
+ * the field is assignable.
  * 
+ * @author tvcutsem
  * @author smostinc
  */
-public class JavaField extends NATNil implements ATField {
-
-	private ATClosure getter_;
-	private ATClosure setter_;
-	private ATSymbol name_;
+public class NativeField extends NATNil implements ATField {
 	
-	public static JavaField createPrimitiveField(
-			ATObject receiver, ATSymbol fieldName) throws InterpreterException {
-
-		String getterSel = Reflection.upBaseFieldAccessSelector(fieldName);
-		String setterSel = Reflection.upBaseFieldMutationSelector(fieldName);
-
-		JavaClosure getter = JavaInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, getterSel);
-		JavaClosure setter = null;
-
-		try {
-			setter = JavaInterfaceAdaptor.wrapMethodFor(receiver.getClass(), receiver, setterSel);
-		} catch (InterpreterException e) {
-			// The lack of a setter method for a field on a primitive can be tolerated
-		}	
-		
-		return new JavaField(fieldName, getter, setter);
-	}
+	/**
+	 * The AmbientTalk name of the field
+	 */
+	private final ATSymbol name_;
 	
+	/**
+	 * The AmbientTalk native object to which this field belongs
+	 */
+	private ATObject host_;
 	
-	private JavaField(ATSymbol name, ATClosure getter, ATClosure setter) {
+	/**
+	 * The native Java accessor method to be called when accessing the field
+	 */
+	private final Method accessor_;
+	
+	/**
+	 * The native Java mutator method to be called when assigning to the field.
+	 * This field may be null which indicates a read-only field
+	 */
+	private final Method mutator_;
+
+	public NativeField(ATObject host, ATSymbol name, Method accessor, Method mutator) {
+		host_ = host;
 		name_ = name;
-		getter_ = getter;
-		setter_ = setter;
+		accessor_ = accessor;
+		mutator_ = mutator;
 	}
-
 
 	public ATSymbol base_getName() {
 		return name_;
 	}
 
-	public ATObject base_getValue() {
-		try {
-			return getter_.base_apply(NATTable.EMPTY);
-		} catch (InterpreterException e) {
-			// the application of the getter should normally not give a problem
-			throw new RuntimeException(e);
-		}
+	public ATObject base_getValue() throws InterpreterException {
+		return Reflection.downObject(JavaInterfaceAdaptor.invokeJavaMethod(accessor_, host_, NATTable.EMPTY.elements_));
 	}
 
 	public ATObject base_setValue(ATObject newValue) throws InterpreterException {
 		// certain fields may not have setters
-		if(setter_ != null)
-			return getter_.base_apply(new NATTable(new ATObject[] { newValue }));
-		throw new XIllegalOperation("Field " + name_.base_getText().asNativeText().javaValue + " cannot be set.");
+		if(mutator_ != null)
+			return Reflection.downObject(JavaInterfaceAdaptor.invokeJavaMethod(accessor_, host_, new ATObject[] { newValue }));
+		else
+			throw new XIllegalOperation("Field " + name_ + " cannot be set.");
 	}
 
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<native field:"+name_.base_getText().asNativeText().javaValue+">");
+		return NATText.atValue("<native field:"+name_+" of "+ host_.meta_print().javaValue +">");
 	}
 }

@@ -122,7 +122,11 @@ public class MirrorTest extends ReflectiveAccessTest {
 	 */
 	public void testJavaMirrorBaseRelation() {
 		ATMirror mirror = NATMirrorFactory._INSTANCE_.createMirror(True);
-		assertEquals(True, mirror.base_getBase());
+		try {
+			assertEquals(True, mirror.base_getBase());
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
 	}
 	
 	/**
@@ -152,7 +156,7 @@ public class MirrorTest extends ReflectiveAccessTest {
 					trueMirror,
 					AGSymbol.alloc("respondsTo"),
 					new NATTable(new ATObject[] { AGSymbol.alloc("ifTrue:") }));
-			responds.base_getBase().asBoolean().base_ifTrue_ifFalse_(success, fail);
+			responds.base_getBase().base_asBoolean().base_ifTrue_ifFalse_(success, fail);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
@@ -176,14 +180,14 @@ public class MirrorTest extends ReflectiveAccessTest {
 	public void testJavaMirrorFieldAccess() {
 		try {
 			ATMethod emptyExtension  = 
-				new JavaAnonymousMethod(MirrorTest.class) {
+				new NativeAnonymousMethod(MirrorTest.class) {
 					public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 						return NATNil._INSTANCE_;
 					};
 				};
 			
 			ATMethod invokeSuccess = 
-				new JavaAnonymousMethod(MirrorTest.class) {
+				new NativeAnonymousMethod(MirrorTest.class) {
 					public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 						evaluateInput(
 								"def invoke(@args) { \"ok\" };",
@@ -195,9 +199,9 @@ public class MirrorTest extends ReflectiveAccessTest {
 			ATObject extendedSuccess =
 				OBJLexicalRoot._INSTANCE_.base_extend_with_mirroredBy_(
 					success,
-					new JavaClosure(success, emptyExtension),
+					new NativeClosure(success, emptyExtension),
 					(NATIntercessiveMirror)OBJMirrorRoot._INSTANCE_.meta_extend(
-							new JavaClosure(success, emptyExtension)));
+							new NativeClosure(success, emptyExtension)));
 			
 			
 			ATMirror extendedSuccessMirror = NATMirrorFactory._INSTANCE_.createMirror(extendedSuccess);
@@ -206,13 +210,13 @@ public class MirrorTest extends ReflectiveAccessTest {
 					extendedSuccessMirror,
 					AGSymbol.alloc("dynamicParent"));
 			
-			receiver.base_getBase().asClosure().base_apply(NATTable.EMPTY);
+			receiver.base_getBase().base_asClosure().base_apply(NATTable.EMPTY);
 			
 			extendedSuccessMirror.meta_assignField(
 					extendedSuccessMirror,
 					AGSymbol.alloc("mirror"), 
 					extendedSuccessMirror.meta_extend(
-							new JavaClosure(extendedSuccessMirror, invokeSuccess)));
+							new NativeClosure(extendedSuccessMirror, invokeSuccess)));
 			
 			extendedSuccess.meta_invoke(
 					extendedSuccess,

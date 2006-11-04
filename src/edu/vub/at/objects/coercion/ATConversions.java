@@ -53,52 +53,57 @@ import edu.vub.at.objects.natives.NATNumeric;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.symbiosis.JavaObject;
 
 /**
  * ATConversions is an interface defining all conversion functions between different
  * types of ambienttalk language elements. 
  * 
+ * TODO: rename all base_is/as methods to meta_is/as and add global methods of the form
+ * def isXXX: val { (reflect: val).isXXX() }
+ * 
  * @author smostinc
  */
 public interface ATConversions {
 
-	public boolean isClosure();
-	public boolean isSymbol();
-	public boolean isTable();
-	public boolean isBoolean();
-	public boolean isCallFrame();
-	public boolean isUnquoteSplice();
-	public boolean isSplice();
-	public boolean isMethod();
-	public boolean isMessageCreation();
-	public ATBoolean base_isMirror();
+	public boolean base_isClosure() throws InterpreterException;
+	public boolean base_isSymbol() throws InterpreterException;
+	public boolean base_isTable() throws InterpreterException;
+	public boolean base_isBoolean() throws InterpreterException;
+	public boolean base_isCallFrame() throws InterpreterException;
+	public boolean base_isUnquoteSplice() throws InterpreterException;
+	public boolean base_isSplice() throws InterpreterException;
+	public boolean base_isMethod() throws InterpreterException;
+	public boolean base_isMessageCreation() throws InterpreterException;
+	public boolean base_isMirror() throws InterpreterException;
 	
-	public ATClosure   asClosure() throws XTypeMismatch;
-	public ATSymbol    asSymbol() throws XTypeMismatch;
-	public ATTable     asTable() throws XTypeMismatch;
-	public ATBoolean   asBoolean() throws XTypeMismatch;
-	public ATNumber    asNumber() throws XTypeMismatch;
-	public ATMessage   asMessage() throws XTypeMismatch;
-	public ATField     asField() throws XTypeMismatch;
-	public ATMethod    asMethod() throws XTypeMismatch;
-	public ATMirror    asMirror() throws XTypeMismatch;
-	public ATHandler   asHandler() throws XTypeMismatch;
+	public ATClosure   base_asClosure() throws XTypeMismatch;
+	public ATSymbol    base_asSymbol() throws XTypeMismatch;
+	public ATTable     base_asTable() throws XTypeMismatch;
+	public ATBoolean   base_asBoolean() throws XTypeMismatch;
+	public ATNumber    base_asNumber() throws XTypeMismatch;
+	public ATMessage   base_asMessage() throws XTypeMismatch;
+	public ATField     base_asField() throws XTypeMismatch;
+	public ATMethod    base_asMethod() throws XTypeMismatch;
+	public ATMirror    base_asMirror() throws XTypeMismatch;
+	public ATHandler   base_asHandler() throws XTypeMismatch;
 	
 	// Abstract Grammar Elements
 	
-	public ATStatement  asStatement() throws XTypeMismatch;
-	public ATDefinition asDefinition() throws XTypeMismatch;
-	public ATExpression asExpression() throws XTypeMismatch;
-	public ATBegin      asBegin() throws XTypeMismatch;
-	public ATMessageCreation asMessageCreation() throws XTypeMismatch;
-	public ATUnquoteSplice asUnquoteSplice() throws XTypeMismatch;
-	public ATSplice asSplice() throws XTypeMismatch;
+	public ATStatement  		base_asStatement() throws XTypeMismatch;
+	public ATDefinition 		base_asDefinition() throws XTypeMismatch;
+	public ATExpression 		base_asExpression() throws XTypeMismatch;
+	public ATBegin      		base_asBegin() throws XTypeMismatch;
+	public ATMessageCreation 	base_asMessageCreation() throws XTypeMismatch;
+	public ATUnquoteSplice 	base_asUnquoteSplice() throws XTypeMismatch;
+	public ATSplice 			base_asSplice() throws XTypeMismatch;
 	
 	// Native Value Elements
 	
-	public boolean isNativeBoolean() throws XTypeMismatch;
+	public boolean isNativeBoolean();
 	public boolean isNativeText();
 	public boolean isAmbientTalkObject();
+	public boolean isJavaObjectUnderSymbiosis();
 	
 	public NATObject   asAmbientTalkObject() throws XTypeMismatch;
 	public NATNumber   asNativeNumber() throws XTypeMismatch;
@@ -107,6 +112,7 @@ public interface ATConversions {
 	public NATTable    asNativeTable() throws XTypeMismatch;
 	public NATBoolean  asNativeBoolean() throws XTypeMismatch;
 	public NATNumeric  asNativeNumeric() throws XTypeMismatch;
+	public JavaObject  asJavaObjectUnderSymbiosis() throws XTypeMismatch;
 	
 	// Allows reusing Java throw and try-catch
 	

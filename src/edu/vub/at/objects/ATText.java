@@ -45,9 +45,9 @@ public interface ATText extends ATExpression {
 	public ATNil base_find_do_(ATText regexp, ATClosure consumer) throws InterpreterException;
 	public ATText base_replace_by_(ATText regexp, ATClosure transformer) throws InterpreterException;
 	
-	public ATText base_toUpperCase();
-	public ATText base_toLowerCase();
-	public ATNumber base_length();
+	public ATText base_toUpperCase() throws InterpreterException;
+	public ATText base_toLowerCase() throws InterpreterException;
+	public ATNumber base_length() throws InterpreterException;
 	
 	public ATText base__oppls_(ATObject other) throws InterpreterException;
 	public ATNumber base__opltx__opeql__opgtx_(ATText other) throws InterpreterException;

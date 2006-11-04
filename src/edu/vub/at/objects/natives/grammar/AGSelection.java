@@ -73,8 +73,8 @@ public final class AGSelection extends AGExpression implements ATSelection {
 	 * AGSEL(rcv,sel).quote(ctx) = AGSEL(rcv.quote(ctx), sel.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGSelection(rcvExp_.meta_eval(ctx).asExpression(),
-				              selector_.meta_eval(ctx).asSymbol());
+		return new AGSelection(rcvExp_.meta_eval(ctx).base_asExpression(),
+				              selector_.meta_eval(ctx).base_asSymbol());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

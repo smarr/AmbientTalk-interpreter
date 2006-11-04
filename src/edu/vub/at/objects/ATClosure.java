@@ -62,7 +62,7 @@ public interface ATClosure extends ATObject {
 	
 	/**
 	 * Allows AmbientTalk programmers to write
-	 * { boolean }.whileTrue: { body }
+	 * { booleanCondition }.whileTrue: { body }
 	 * which will execute body as long as the boolean condition evaluates to true.
 	 */
 	public ATObject base_whileTrue_(ATClosure body) throws InterpreterException;
@@ -79,7 +79,8 @@ public interface ATClosure extends ATObject {
 	 * If quit is not invoked during the execution of the receiver block,
 	 * the block terminates normally, with its normal return value.
 	 *   
-	 * If quit is invoked at the point where the call to escape has already returned normally,
+	 * If quit is invoked at the point where the call to escape has already returned,
+	 * either normally or via an exception or another escape call,
 	 * invoking quit will raise an XIllegalOperation exception.
 	 */
 	public ATObject base_escape() throws InterpreterException;

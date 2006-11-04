@@ -36,6 +36,6 @@ import edu.vub.at.objects.grammar.ATExpression;
  */
 public abstract class AGExpression extends NATAbstractGrammar implements ATExpression {
 
-	public ATExpression asExpression() { return this; }
+	public ATExpression base_asExpression() { return this; }
 
 }

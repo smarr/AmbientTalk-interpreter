@@ -40,10 +40,10 @@ public interface ATTable extends ATExpression {
 
 	// base-level interface
 	
-	public ATNumber base_getLength();
+	public ATNumber base_getLength() throws InterpreterException;
 	public ATObject base_at(ATNumber index) throws InterpreterException;
 	public ATObject base_atPut(ATNumber index, ATObject value) throws InterpreterException;
-	public ATBoolean base_isEmpty();
+	public ATBoolean base_isEmpty() throws InterpreterException;
 	
 	/**
 	 * Apply a closure to each element of the table.

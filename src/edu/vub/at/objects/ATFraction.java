@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.InterpreterException;
+
 
 /**
  * The public interface to a native AmbientTalk fraction (a floating point value).
@@ -37,12 +39,12 @@ public interface ATFraction extends ATNumeric {
 
 	// base-level interface
 	
-	public ATNumeric base_inc();
-	public ATNumeric base_dec();
-	public ATNumeric base_abs();
+	public ATNumeric base_inc() throws InterpreterException;
+	public ATNumeric base_dec() throws InterpreterException;
+	public ATNumeric base_abs() throws InterpreterException;
 	
-	public ATNumber base_round();
-	public ATNumber base_floor();
-	public ATNumber base_ceiling();
+	public ATNumber base_round() throws InterpreterException;
+	public ATNumber base_floor() throws InterpreterException;
+	public ATNumber base_ceiling() throws InterpreterException;
 	
 }

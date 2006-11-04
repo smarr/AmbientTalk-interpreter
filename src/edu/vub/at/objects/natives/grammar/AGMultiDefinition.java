@@ -66,7 +66,7 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
 	 * @return NIL
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		Evaluator.defineParamsForArgs("multi-definition", ctx.base_getLexicalScope(), parameters_, valueExp_.meta_eval(ctx).asTable());
+		Evaluator.defineParamsForArgs("multi-definition", ctx.base_getLexicalScope(), parameters_, valueExp_.meta_eval(ctx).base_asTable());
 		return NATNil._INSTANCE_;
 	}
 
@@ -74,7 +74,7 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
 	 * AGMULTIDEF(par,val).quote(ctx) = AGMULTIDEF(par.quote(ctx), val.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGMultiDefinition(parameters_.meta_quote(ctx).asTable(), valueExp_.meta_quote(ctx).asExpression());
+		return new AGMultiDefinition(parameters_.meta_quote(ctx).base_asTable(), valueExp_.meta_quote(ctx).base_asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

@@ -40,12 +40,12 @@ public interface ATNumeric extends ATExpression {
 
 	// base-level interface to both numbers and fractions
 	
-	public ATFraction base_cos();
-	public ATFraction base_sin();
-	public ATFraction base_tan();
+	public ATFraction base_cos() throws InterpreterException;
+	public ATFraction base_sin() throws InterpreterException;
+	public ATFraction base_tan() throws InterpreterException;
 	
-	public ATFraction base_log();
-	public ATFraction base_sqrt();
+	public ATFraction base_log() throws InterpreterException;
+	public ATFraction base_sqrt() throws InterpreterException;
 	public ATFraction base_expt(ATNumeric pow) throws InterpreterException;	
 	
 	// addition +

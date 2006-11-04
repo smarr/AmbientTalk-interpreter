@@ -60,15 +60,16 @@ public interface ATMethod extends ATObject {
 	 * the name with which they were first bound. Literal blocks which may be created
 	 * outside of a definition are implicitly named 'lambda'.
 	 */
-	public ATSymbol base_getName();
+	public ATSymbol base_getName() throws InterpreterException;
 	
 	/**
-	 * Structural access to the argument list of the method.
+	 * Structural access to the parameter list of the method,
+	 * which is normally a table of symbols.
 	 */
-	public ATTable base_getArguments();
+	public ATTable base_getParameters() throws InterpreterException;
 	
 	/**
 	 * Structural access to the body of the method.
 	 */
-	public ATBegin base_getBodyExpression();
+	public ATBegin base_getBodyExpression() throws InterpreterException;
 }

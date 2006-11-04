@@ -57,11 +57,11 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 
 	public ATTable base_getArguments() { return arguments_; }
 
-	public boolean isMessageCreation() {
+	public boolean base_isMessageCreation() {
    	    return true;
     }
 	
-	public ATMessageCreation asMessageCreation() throws XTypeMismatch {
+	public ATMessageCreation base_asMessageCreation() throws XTypeMismatch {
 		return this;
 	}
 	
@@ -69,8 +69,8 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 	 * Quoting a message creation element returns a new quoted message creation element.
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return this.newQuoted(selector_.meta_quote(ctx).asSymbol(),
-				             arguments_.meta_quote(ctx).asTable());
+		return this.newQuoted(selector_.meta_quote(ctx).base_asSymbol(),
+				             arguments_.meta_quote(ctx).base_asTable());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

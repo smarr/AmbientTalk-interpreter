@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATText;
@@ -49,7 +50,7 @@ public final class AGSelf extends AGSymbol {
 	 * 
 	 * AGSelf().eval(ctx) = ctx.self
 	 */
-	public ATObject meta_eval(ATContext ctx) {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		return ctx.base_getSelf();
 	}
 

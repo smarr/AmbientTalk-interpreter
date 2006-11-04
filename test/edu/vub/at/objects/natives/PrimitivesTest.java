@@ -7,7 +7,7 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.mirrors.JavaClosure;
+import edu.vub.at.objects.mirrors.NativeClosure;
 
 /**
  * 
@@ -35,7 +35,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// "ambienttalk".find: "[aeiou]" do: { |vowel| buff << vowel; nil } => buff = "aiea"
 			final StringBuffer buff = new StringBuffer();
-			TXTambienttalk_.base_find_do_(NATText.atValue("[aeiou]"), new JavaClosure(null) {
+			TXTambienttalk_.base_find_do_(NATText.atValue("[aeiou]"), new NativeClosure(null) {
 				public ATObject base_apply(ATTable arguments) throws InterpreterException {
 					buff.append(arguments.base_at(NATNumber.ONE).asNativeText().javaValue);
 					return NATNil._INSTANCE_;
@@ -44,7 +44,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			assertEquals(buff.toString(), "aiea");
 			
 			// "ambienttalk".replace: "[aeiou]" by: { |vowel| vowel.toUpperCase() } => AmbIEnttAlk
-			ATText replaced = TXTambienttalk_.base_replace_by_(NATText.atValue("[aeiou]"), new JavaClosure(null) {
+			ATText replaced = TXTambienttalk_.base_replace_by_(NATText.atValue("[aeiou]"), new NativeClosure(null) {
 				public ATObject base_apply(ATTable arguments) throws InterpreterException {
 					return arguments.base_at(NATNumber.ONE).asNativeText().base_toUpperCase();
 				}
@@ -155,7 +155,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// 3.doTimes: { |i| buff << i; nil } => buff = 123
 			final StringBuffer buff = new StringBuffer();
-			NATNumber.atValue(3).base_doTimes_(new JavaClosure(null) {
+			NATNumber.atValue(3).base_doTimes_(new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					buff.append(getNbr(args, 1));
 					return NATNil._INSTANCE_;
@@ -165,7 +165,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// 3.to: 5 do: { |i| buff2 << i; nil } => buff2 = 34
 			final StringBuffer buff2 = new StringBuffer();
-			NATNumber.atValue(3).base_to_do_(NATNumber.atValue(5), new JavaClosure(null) {
+			NATNumber.atValue(3).base_to_do_(NATNumber.atValue(5), new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					buff2.append(getNbr(args, 1));
 					return NATNil._INSTANCE_;
@@ -175,7 +175,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// 50.to: 0 step: 10 do: { |i| buff3 << i; nil } => buff3 = 5040302010
 			final StringBuffer buff3 = new StringBuffer();
-			NATNumber.atValue(50).base_to_step_do_(NATNumber.atValue(0), NATNumber.atValue(10), new JavaClosure(null) {
+			NATNumber.atValue(50).base_to_step_do_(NATNumber.atValue(0), NATNumber.atValue(10), new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					buff3.append(getNbr(args, 1));
 					return NATNil._INSTANCE_;
@@ -240,7 +240,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 	
 	public void testTablePrimitives() {
 		try {
-			ATTable vowels = evalAndReturn("[\"a\", \"e\", \"i\", \"o\", \"u\"]").asTable();
+			ATTable vowels = evalAndReturn("[\"a\", \"e\", \"i\", \"o\", \"u\"]").base_asTable();
 
 			// vowels.length = 5
 			assertEquals(5, vowels.base_getLength().asNativeNumber().javaValue);
@@ -286,14 +286,14 @@ public class PrimitivesTest extends AmbientTalkTest {
 	public void testBooleanPrimitives() {
 		try {
 			// (0 < 1).ifTrue: { 0 } => 0
-			assertEquals(NATNumber.ZERO, NATNumber.ZERO.base__opltx_(NATNumber.ONE).base_ifTrue_(new JavaClosure(null) {
+			assertEquals(NATNumber.ZERO, NATNumber.ZERO.base__opltx_(NATNumber.ONE).base_ifTrue_(new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) {
 					return NATNumber.ZERO;
 				}
 			}));
 			
 			// (0 < 1).ifFalse: { 0 } => nil
-			assertEquals(NATNil._INSTANCE_, NATNumber.ZERO.base__opltx_(NATNumber.ONE).base_ifFalse_(new JavaClosure(null) {
+			assertEquals(NATNil._INSTANCE_, NATNumber.ZERO.base__opltx_(NATNumber.ONE).base_ifFalse_(new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) {
 					return NATNumber.ZERO;
 				}
@@ -307,7 +307,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// false.and: { 1/0 } => false
 			try {
-				assertFalse(NATBoolean._FALSE_.base_and_(new JavaClosure(null) {
+				assertFalse(NATBoolean._FALSE_.base_and_(new NativeClosure(null) {
 					public ATObject base_apply(ATTable args) throws InterpreterException {
 						return NATNumber.ONE.base__opdiv_(NATNumber.ZERO);
 					}
@@ -318,7 +318,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// true.or: { 1/0 } => true
 			try {
-				assertTrue(NATBoolean._TRUE_.base_or_(new JavaClosure(null) {
+				assertTrue(NATBoolean._TRUE_.base_or_(new NativeClosure(null) {
 					public ATObject base_apply(ATTable args) throws InterpreterException {
 						return NATNumber.ONE.base__opdiv_(NATNumber.ZERO);
 					}
@@ -328,7 +328,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			}
 			
 			// false.or: { true } => true
-			assertTrue(NATBoolean._FALSE_.base_or_(new JavaClosure(null) {
+			assertTrue(NATBoolean._FALSE_.base_or_(new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					return NATBoolean._TRUE_;
 				}

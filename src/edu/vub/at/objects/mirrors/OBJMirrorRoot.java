@@ -63,7 +63,7 @@ public class OBJMirrorRoot extends NATNil {
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
 		
-		NATMirage principal = (NATMirage)receiver.asMirror().base_getBase();
+		NATMirage principal = (NATMirage)receiver.base_asMirror().base_getBase();
 		
 		
 		// Same as upMetaLevelSelector but with magic_ instead of meta_
@@ -141,7 +141,7 @@ public class OBJMirrorRoot extends NATNil {
 	 * referring to its principal.</p>
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
-		NATMirage principal = (NATMirage)receiver.asMirror().base_getBase();
+		NATMirage principal = (NATMirage)receiver.base_asMirror().base_getBase();
 		
 		// Same as upMetaLevelSelector but with magic_ instead of meta_
 		// invoking a meta-level operation in the base would mean the operation
@@ -166,7 +166,7 @@ public class OBJMirrorRoot extends NATNil {
 						Reflection.downObject(
 								Reflection.upMethodSelection(
 										principal, 
-										jSelector)));
+										jSelector, atSelector)));
 			} catch (XSelectorNotFound e2) {
 				// Principal does not have a corresponding meta_level field nor
 				// method try for a base_level field or method of the mirror itself.
@@ -182,7 +182,7 @@ public class OBJMirrorRoot extends NATNil {
 	 * itself is changed.
 	 */
 	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-		NATMirage principal = (NATMirage)receiver.asMirror().base_getBase();
+		NATMirage principal = (NATMirage)receiver.base_asMirror().base_getBase();
 		
 		String jSelector = Reflection.upMagicFieldMutationSelector(name);
 		
@@ -191,7 +191,7 @@ public class OBJMirrorRoot extends NATNil {
 					principal.getClass(),
 					principal,
 					jSelector,
-					new ATObject[] { value.asMirror().base_getBase() });
+					new ATObject[] { value.base_asMirror().base_getBase() });
 		} catch (XSelectorNotFound e) {
 			// Principal does not have a corresponding meta_level method
 			// OR the passed value is not a mirror object

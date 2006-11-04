@@ -61,7 +61,7 @@ public abstract class NATMessage extends NATNil implements ATMessage {
 		return NATNil._INSTANCE_;
 	}
 	
-	public ATMessage asMessage() {
+	public ATMessage base_asMessage() {
 		return this;
 	}
 

@@ -75,7 +75,7 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 	 * AGASSVAR(nam,val).quote(ctx) = AGASSVAR(nam.quote(ctx), val.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGAssignVariable(variableName_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
+		return new AGAssignVariable(variableName_.meta_quote(ctx).base_asSymbol(), valueExp_.meta_quote(ctx).base_asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

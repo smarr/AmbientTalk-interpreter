@@ -143,12 +143,12 @@ public class NATSuperObject extends NATNil implements ATObject {
         return lookupFrame_.meta_addMethod(method);
     }
 
-    public ATField meta_getField(ATSymbol selector) throws InterpreterException {
-        return lookupFrame_.meta_getField(selector);
+    public ATField meta_grabField(ATSymbol selector) throws InterpreterException {
+        return lookupFrame_.meta_grabField(selector);
     }
 
-    public ATMethod meta_getMethod(ATSymbol selector) throws InterpreterException {
-        return lookupFrame_.meta_getMethod(selector);
+    public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException {
+        return lookupFrame_.meta_grabMethod(selector);
     }
 
     public ATTable meta_listFields() throws InterpreterException {

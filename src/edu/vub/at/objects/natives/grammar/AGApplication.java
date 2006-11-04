@@ -67,7 +67,7 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	 * @return the return value of the applied function.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATClosure clo = funExp_.meta_eval(ctx).asClosure();
+		ATClosure clo = funExp_.meta_eval(ctx).base_asClosure();
 		NATTable args = Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx);
 		ATObject result = null;
 		InvocationStack stack = InvocationStack.getInvocationStack();
@@ -87,8 +87,8 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	 * AGAPL(sel,arg).quote(ctx) = AGAPL(sel.quote(ctx), arg.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGApplication(funExp_.meta_quote(ctx).asExpression(),
-				                arguments_.meta_quote(ctx).asTable());
+		return new AGApplication(funExp_.meta_quote(ctx).base_asExpression(),
+				                arguments_.meta_quote(ctx).base_asTable());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

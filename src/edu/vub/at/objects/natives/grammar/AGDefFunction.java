@@ -88,7 +88,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 * TODO LATER(final fields) closure definition: should they really be fields? fields are mutable?
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		if (ctx.base_getLexicalScope().isCallFrame()) {
+		if (ctx.base_getLexicalScope().base_isCallFrame()) {
 			ctx.base_getLexicalScope().meta_defineField(
 					selectorExp_,
 					new NATClosure(new NATMethod(selectorExp_, argumentExps_, bodyStmts_),
@@ -105,9 +105,9 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 * AGDEFFUN(nam,par,bdy).quote(ctx) = AGDEFFUN(nam.quote(ctx), par.quote(ctx), bdy.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGDefFunction(selectorExp_.meta_quote(ctx).asSymbol(),
-				              argumentExps_.meta_quote(ctx).asTable(),
-				              bodyStmts_.meta_quote(ctx).asBegin());
+		return new AGDefFunction(selectorExp_.meta_quote(ctx).base_asSymbol(),
+				              argumentExps_.meta_quote(ctx).base_asTable(),
+				              bodyStmts_.meta_quote(ctx).base_asBegin());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

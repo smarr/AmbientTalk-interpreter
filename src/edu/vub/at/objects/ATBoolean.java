@@ -47,6 +47,6 @@ public interface ATBoolean extends ATObject {
 	public ATBoolean base_and_(ATClosure other) throws InterpreterException;
 	public ATBoolean base_or_(ATClosure other) throws InterpreterException;
 	
-	public ATBoolean base_not();
+	public ATBoolean base_not() throws InterpreterException;
 	
 }
