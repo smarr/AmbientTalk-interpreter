@@ -32,6 +32,7 @@ import edu.vub.at.objects.mirrors.CoercionTest;
 import edu.vub.at.objects.mirrors.InvocationTest;
 import edu.vub.at.objects.mirrors.MirageTest;
 import edu.vub.at.objects.mirrors.MirrorTest;
+import edu.vub.at.objects.mirrors.MirrorsOnNativesTest;
 import edu.vub.at.objects.mirrors.ReflectionTest;
 import edu.vub.at.objects.natives.EscapeTest;
 import edu.vub.at.objects.natives.ExceptionHandlingTest;
@@ -74,6 +75,7 @@ public class InterpreterTests {
 		suite.addTestSuite(CoercionTest.class);
 		suite.addTestSuite(ExceptionHandlingTest.class);
 		suite.addTestSuite(EscapeTest.class);
+		suite.addTestSuite(MirrorsOnNativesTest.class);
 		//$JUnit-END$
 		return suite;
 	}
