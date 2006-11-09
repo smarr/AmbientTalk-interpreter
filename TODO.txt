@@ -4,6 +4,9 @@ checklist:
 - nadenken over modulair uitbreiden van de code met standard libraries (bvb. at.exceptions.interpreter)
 => zoveel mogelijk in AT zelf schrijven => symbiose mogelijke uitweg voor de nodige native code snippets?
 
+- NATException.meta_newInstance: InterpreterExceptions kunnen we niet instantieren via hetzelfde mechanisme
+als dat van de native methods (IExcs zijn geen ATObjects en nemen niet consistent ATObject args)
+
 - zorgen dat alle AT interfaces alleen nog base_ / meta_ methoden hebben die InterpreterException throwen
 en die alleen AT args of convertible args returnen / nemen
 violators:
