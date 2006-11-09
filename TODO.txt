@@ -6,7 +6,12 @@ checklist:
 
 - zorgen dat alle AT interfaces alleen nog base_ / meta_ methoden hebben die InterpreterException throwen
 en die alleen AT args of convertible args returnen / nemen
-
+violators:
+NATText meta_print() throws InterpreterException;
+alle isXXX() methods => returnen boolean
+ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException;
+en varianten: nemen expliciet een NATIntercessiveMirror ipv een ATMirror
+		
 - mirages + unit tests
 
 - write AmbientTalk code: at.collections, at.unit, at.init, at.mirrors
@@ -24,7 +29,6 @@ For symbiosis, reuse coercers to make NATObjects implement arbitrary Java interf
 => Threads -> currently 'you're on your own'? or consider wrapping each ATObject in a coercer that also acts as a far ref => converts invocations into enqueues, but this requires futures to block the waiting Java Thread
 
 - Reflection
-* Review and fix mirrors and mirages (add/remove "base" and "meta" prefix consistently to all methods in AT interfaces)
 * isXXX and asXXX must become meta_isXXX and meta_asXXX
 
 - Core language evaluator
@@ -49,3 +53,7 @@ meta-level and should be renamed to defineField. Similarly, meta_assignField sho
 variants: meta_assignField(ATField f, ATObject val) and assignField(ATSymbol sel, ATObject val).
 The problem then becomes: ATObject interface only supports the meta_... variants, meaning that
 the evaluation code will require an .isNativeObject() -> .asNativeObject().defineField(...) check.
+
+* externe definities?
+def <expression>.f := val
+def <expression>.m() { meth }

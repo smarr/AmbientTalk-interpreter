@@ -41,7 +41,7 @@ public final class XIllegalSplice extends InterpreterException {
 
 	private static final String _MESSAGE_ = "Spliced expression in illegal expression";
 	
-	private ATExpression spliceExpression_;
+	private final ATExpression spliceExpression_;
 	
 	public XIllegalSplice(ATExpression spliceExp) {
 		super(_MESSAGE_);

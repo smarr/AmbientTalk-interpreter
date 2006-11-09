@@ -75,11 +75,10 @@ public class OBJMirrorRoot extends NATNil {
 		
 		try {
 			return NATMirrorFactory._INSTANCE_.createMirror(
-					Reflection.downObject(
-							Reflection.upInvocation(
+					Reflection.upInvocation(
 									principal, // implementor and self
 									jSelector,
-									arguments)));
+									arguments));
 		} catch (XSelectorNotFound e) {
 			// Principal does not have a corresponding meta_level method
 			// try for a base_level method of the mirror itself. This 
@@ -187,7 +186,7 @@ public class OBJMirrorRoot extends NATNil {
 		String jSelector = Reflection.upMagicFieldMutationSelector(name);
 		
 		try{
-			JavaInterfaceAdaptor.invokeJavaMethod(
+			JavaInterfaceAdaptor.invokeNativeATMethod(
 					principal.getClass(),
 					principal,
 					jSelector,

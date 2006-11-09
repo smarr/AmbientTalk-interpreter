@@ -63,12 +63,12 @@ public class MirageTest extends ReflectiveAccessTest {
 					"def original := \n" +
 					"	cloningMirror.base; \n" +
 					//"def original.sharedField := \"The field is shared.\"; \n" +
-					"cloningMirror.defineField(`(sharedField) , \"The field is shared.\"); \n" +
+					"cloningMirror.defineField(`sharedField , \"The field is shared.\"); \n" +
 					"def clone := clone: original; \n" +
 					// "def clone := cloningMirror.clone().base; \n" +
 					"clone.sharedField := \"But its value is not.\"; \n" +
 					//"def original.nonSharedField := \"That's what happens when you clone too early.\"; \n" +
-					"cloningMirror.defineField(`(nonSharedField) , \"That's what happens when you clone too early.\"); \n" +
+					"cloningMirror.defineField(`nonSharedField , \"That's what happens when you clone too early.\"); \n" +
 					"echo: original.sharedField; \n" +
 					"echo: clone.sharedField; \n" +
 					"echo: original.nonSharedField; \n" +

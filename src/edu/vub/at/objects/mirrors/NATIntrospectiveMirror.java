@@ -28,7 +28,6 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -189,10 +188,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 		try {
 			jSelector = Reflection.upMetaFieldAccessSelector(atSelector);
 			return NATMirrorFactory._INSTANCE_.createMirror(
-					Reflection.downObject(
-							Reflection.upFieldSelection(
-									principal_,
-									jSelector)));
+					Reflection.downObject(Reflection.upFieldSelection(principal_, jSelector)));
 			
 		} catch (XSelectorNotFound e) {
 			try {
@@ -276,7 +272,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	public ATTable meta_listFields() throws InterpreterException {
     	    ATField[] principalMetaFields = Reflection.downMetaLevelFields(principal_);
     	    ATField[] mirrorBaseFields = Reflection.downBaseLevelFields(this);
-        return new NATTable(Evaluator.collate(principalMetaFields, mirrorBaseFields));
+        return new NATTable(NATTable.collate(principalMetaFields, mirrorBaseFields));
     }
 
 	/**
@@ -287,7 +283,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
     public ATTable meta_listMethods() throws InterpreterException {
    	    ATMethod[] principalMetaMethods = Reflection.downMetaLevelMethods(principal_);
    	    ATMethod[] mirrorBaseMethods = Reflection.downBaseLevelMethods(this);
-        return new NATTable(Evaluator.collate(principalMetaMethods, mirrorBaseMethods));
+        return new NATTable(NATTable.collate(principalMetaMethods, mirrorBaseMethods));
     }
 	
 	/* ------------------------------------

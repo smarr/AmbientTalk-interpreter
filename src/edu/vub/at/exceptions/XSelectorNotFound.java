@@ -41,8 +41,8 @@ public class XSelectorNotFound extends InterpreterException {
 
 	private static final long serialVersionUID = -9186247764999498158L;
 	
-	public ATSymbol selector_;
-	public ATObject inObject_;
+	public final ATSymbol selector_;
+	public final ATObject inObject_;
 	
 	public XSelectorNotFound(ATSymbol selector, ATObject inObject) {
 		selector_ = selector;

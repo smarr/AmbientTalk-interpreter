@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
@@ -65,7 +66,7 @@ public final class NATText extends AGExpression implements ATText {
 		}
 
 		public boolean isNativeText() { return true; }
-		public NATText asNativeText() throws InterpreterException { return this; }
+		public NATText asNativeText() throws XTypeMismatch { return this; }
 		
 		public NATText meta_print() throws InterpreterException {
 	        return NATText.atValue("\"" + javaValue + "\"");
@@ -181,6 +182,14 @@ public final class NATText extends AGExpression implements ATText {
 				return NATBoolean.atValue(javaValue.matches(other.asNativeText().javaValue));
 			} catch (PatternSyntaxException e) {
 				throw new XIllegalArgument("Illegal regular expression for ~=: " + e.getMessage());
+			}
+		}
+		
+		public char asChar() throws XIllegalArgument {
+			if (javaValue.length() == 1) {
+				return javaValue.charAt(0);
+			} else {
+				throw new XIllegalArgument("Expected a character, given a string: " + javaValue);
 			}
 		}
 

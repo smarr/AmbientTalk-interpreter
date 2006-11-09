@@ -79,4 +79,5 @@ public class InterpreterException extends Exception {
 	public ATObject getAmbientTalkRepresentation() {
 		return new NATException(this);
 	}
+	
 }

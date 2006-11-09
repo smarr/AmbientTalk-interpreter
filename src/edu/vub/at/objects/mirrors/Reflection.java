@@ -28,24 +28,24 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
-import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.symbiosis.JavaClass;
+import edu.vub.at.objects.symbiosis.JavaObject;
+import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -375,10 +375,10 @@ public final class Reflection {
 	public static final ATField downField(ATObject natObject, ATSymbol atSelector,
 			                              String getPrefix, String setPrefix) throws InterpreterException {
 		String fieldName = upFieldName(atSelector);
-		Method accessorMethod = JavaInterfaceAdaptor.getMethod(natObject.getClass(), natObject, getPrefix + fieldName);
+		Method accessorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, getPrefix + fieldName);
 		Method mutatorMethod;
 		try {
-			mutatorMethod = JavaInterfaceAdaptor.getMethod(natObject.getClass(), natObject, setPrefix + fieldName);
+			mutatorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, setPrefix + fieldName);
 		} catch (XSelectorNotFound e) {
 			mutatorMethod = null;
 		}
@@ -413,7 +413,7 @@ public final class Reflection {
 	 * methods to specify the prefix of the method to be found
 	 */
 	public static final ATMethod downMethod(ATObject natObject, String jSelector, ATSymbol origName) throws InterpreterException {
-		return new NativeMethod(JavaInterfaceAdaptor.getMethod(natObject.getClass(), natObject, jSelector), origName);
+		return new NativeMethod(JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, jSelector), origName);
 	}
 	
 	public static final ATMethod downBaseLevelMethod(ATObject natObject, ATSymbol atSelector) throws InterpreterException {
@@ -446,8 +446,9 @@ public final class Reflection {
 	 *  - obj.base_setSelector(x) => obj.meta_assignField(selector, x)
 	 *  - obj.meta_selector(args) => obj.meta_selector(args)
 	 *  - obj.meta_set|getSelector(args) => obj.meta_set|getSelector(args)
+	 *  - obj.selector(args) => obj.meta_invoke(obj, selector, args)
 	 */
-	public static final ATObject downInvocation(ATObject atRcvr, String jSelector, Object[] jArgs) throws InterpreterException {
+	public static final ATObject downInvocation(ATObject atRcvr, String jSelector, ATObject[] jArgs) throws InterpreterException {
 		if (jArgs == null) { jArgs = NATTable.EMPTY.elements_; }
 		
 		if (jSelector.startsWith(Reflection._BGET_PREFIX_)) {
@@ -461,15 +462,16 @@ public final class Reflection {
 			if (jArgs.length != 1) {
 				throw new XArityMismatch(downBaseFieldMutationSelector(jSelector).toString(), 1, jArgs.length);
 			}
-			return atRcvr.meta_assignField(atRcvr, downBaseFieldMutationSelector(jSelector), downObject(jArgs[0]));
+			return atRcvr.meta_assignField(atRcvr, downBaseFieldMutationSelector(jSelector), jArgs[0]);
 		} else if (jSelector.startsWith(Reflection._BASE_PREFIX_)) {
 			// obj.base_selector(args) => obj.meta_invoke(obj, selector, args)
 			return atRcvr.meta_invoke(atRcvr, downBaseLevelSelector(jSelector), new NATTable(jArgs));
 		} else if (jSelector.startsWith(Reflection._META_PREFIX_)) {
 			// obj.meta_selector(args) => obj.meta_selector(args)
-			return downObject(JavaInterfaceAdaptor.invokeJavaMethod(atRcvr.getClass(), atRcvr, jSelector, jArgs));
+			return JavaInterfaceAdaptor.invokeNativeATMethod(atRcvr.getClass(), atRcvr, jSelector, jArgs);
 		} else {
-			throw new XIllegalArgument("invocation downed with inappropriate java selector: " + jSelector);
+			// obj.selector(args) => obj.meta_invoke(obj, selector, args)
+			return atRcvr.meta_invoke(atRcvr, downSelector(jSelector), new NATTable(jArgs));
 		}
 	}
 
@@ -496,8 +498,8 @@ public final class Reflection {
 	 *  => upInvocation(aNATTable, "meta_invoke", ATObject[] { aNATTable, ATSymbol('at'), ATTable([ATNumber(1)]) })
 	 *  => NATTable must have a method named meta_invoke
 	 */
-	public static final Object upInvocation(ATObject atOrigRcvr, String jSelector, ATTable atArgs) throws InterpreterException {
-		return JavaInterfaceAdaptor.invokeJavaMethod(
+	public static final ATObject upInvocation(ATObject atOrigRcvr, String jSelector, ATTable atArgs) throws InterpreterException {
+		return JavaInterfaceAdaptor.invokeNativeATMethod(
 				    atOrigRcvr.getClass(),
 				    atOrigRcvr,
 					jSelector,
@@ -558,8 +560,8 @@ public final class Reflection {
 	 *  => NATMessage must have a zero-argument method named getSelector
 	 *  
 	 */
-	public static final Object upFieldSelection(ATObject atOrigRcvr, String jSelector) throws InterpreterException {
-		return JavaInterfaceAdaptor.invokeJavaMethod(
+	public static final ATObject upFieldSelection(ATObject atOrigRcvr, String jSelector) throws InterpreterException {
+		return JavaInterfaceAdaptor.invokeNativeATMethod(
 				atOrigRcvr.getClass(),
 				atOrigRcvr,
 				jSelector,
@@ -581,8 +583,8 @@ public final class Reflection {
 	 *  => NATMessage must have a one-argument method named base_setSelector
 	 *  
 	 */
-	public static final Object upFieldAssignment(ATObject atOrigRcvr, String jSelector, ATObject value) throws InterpreterException {
-		return JavaInterfaceAdaptor.invokeJavaMethod(
+	public static final ATObject upFieldAssignment(ATObject atOrigRcvr, String jSelector, ATObject value) throws InterpreterException {
+		return JavaInterfaceAdaptor.invokeNativeATMethod(
 				atOrigRcvr.getClass(),
 				atOrigRcvr,
 				jSelector,
@@ -604,7 +606,7 @@ public final class Reflection {
 	 *  => either NATTable must have a method base_at, which is then wrapped
 	 */
 	public static final NativeClosure upMethodSelection(ATObject atOrigRcvr, String jSelector, ATSymbol origSelector) throws InterpreterException {
-		Method m = JavaInterfaceAdaptor.getMethod(atOrigRcvr.getClass(), atOrigRcvr, jSelector);
+		Method m = JavaInterfaceAdaptor.getNativeATMethod(atOrigRcvr.getClass(), atOrigRcvr, jSelector);
 		return new NativeClosure(atOrigRcvr, new NativeMethod(m, origSelector));
 	}
 	
@@ -618,118 +620,116 @@ public final class Reflection {
 	 * @return a new instance of a Java class
 	 * @throws InterpreterException
 	 */
-	public static final Object upInstanceCreation(ATObject jRcvr, ATTable atInitargs) throws InterpreterException {
+	public static final ATObject upInstanceCreation(ATObject jRcvr, ATTable atInitargs) throws InterpreterException {
 		ATObject[] args = atInitargs.asNativeTable().elements_;
-		Object[] uppedArgs = new Object[args.length];
-		for (int i = 0; i < uppedArgs.length; i++) {
-			uppedArgs[i] = upObject(args[i]);
-		}
-		return JavaInterfaceAdaptor.createClassInstance(jRcvr.getClass(), uppedArgs);
+		return JavaInterfaceAdaptor.createNativeATObject(jRcvr.getClass(), args);
 	}
 	
-	public static final Object upExceptionCreation(InterpreterException jRcvr, ATTable atInitargs) throws InterpreterException {
+	public static final ATObject upExceptionCreation(InterpreterException jRcvr, ATTable atInitargs) throws InterpreterException {
 		ATObject[] args = atInitargs.asNativeTable().elements_;
-		Object[] uppedArgs = new Object[args.length];
-		for (int i = 0; i < uppedArgs.length; i++) {
-			uppedArgs[i] = upObject(args[i]);
-		}
-		return JavaInterfaceAdaptor.createClassInstance(jRcvr.getClass(), uppedArgs);
+		return JavaInterfaceAdaptor.createNativeATObject(jRcvr.getClass(), args);
 	}
 
 	/**
+	 * Pass an AmbientTalk meta-level object into the base-level
+	 */
+	public static final ATObject downObject(ATObject metaObject) throws InterpreterException {
+		if (metaObject.base_isMirror()) {
+			return metaObject.base_asMirror().base_getBase();
+		} else {
+			return metaObject; // most native objects represent both the object at the base and at the meta-level
+		}
+	}
+	
+	/**
+	 * Pass an AmbientTalk base-level object to the meta-level
+	 */
+	public static final ATObject upObject(ATObject baseObject) {
+		if (baseObject instanceof NATMirage) {
+			return ((NATMirage) baseObject).mirror_;
+		} else {
+			return baseObject;
+		}
+	}
+	
+	/**
 	 * Convert a Java object into an AmbientTalk object.
-	 * This is currently only possible if the Java object is a mirror (i.e. it implements ATObject)
-	 * or if it is a 'native type'.
 	 * 
 	 * @param jObj the Java object representing a mirror or a native type
 	 * @return the same object if it implements the ATObject interface
 	 */
-	public static final ATObject downObject(Object jObj) throws InterpreterException {
-		// Our own "dynamic dispatch"
-		// mirror
-		if(jObj instanceof ATMirror) {
-			return ((ATMirror)jObj).base_getBase();
+	public static final ATObject javaToAmbientTalk(Object jObj) throws InterpreterException {
 		// object
-		} else if(jObj instanceof ATObject) {
+		if(jObj instanceof ATObject) {
 			return (ATObject) jObj;
-	    // integer
-		} else if (jObj instanceof Integer) {
-			return NATNumber.atValue(((Integer) jObj).intValue());
-		// double
-		} else if (jObj instanceof Double) {
-			return NATFraction.atValue(((Double) jObj).doubleValue());
-		// float
-		} else if (jObj instanceof Float) {
-			return NATFraction.atValue(((Float) jObj).floatValue());
+	    // primitive java types
+		} else if (jObj.getClass().isPrimitive()) {
+		    return JavaInterfaceAdaptor.primitiveJavaToATObject(jObj);
 		// string
 		} else if (jObj instanceof String) {
 			return NATText.atValue((String) jObj);
-		// char
-		} else if (jObj instanceof Character) {
-			return NATText.atValue(((Character) jObj).toString());
-		// boolean
-		} else if (jObj instanceof Boolean) {
-			return NATBoolean.atValue(((Boolean) jObj).booleanValue());
-		// byte
-		} else if (jObj instanceof Byte) {
-			return NATNumber.atValue(((Byte) jObj).intValue());
-		// short
-		} else if (jObj instanceof Short) {
-			return NATNumber.atValue(((Short) jObj).intValue());
 		// Object[]
 		} else if (jObj instanceof Object[]) {
 			Object[] jArray = (Object[]) jObj;
 			ATObject[] atTable = new ATObject[jArray.length];
 			for (int i = 0; i < jArray.length; i++) {
-				atTable[i] = downObject(jArray[i]);
+				atTable[i] = javaToAmbientTalk(jArray[i]);
 			}
 			return new NATTable(atTable);
 	    // exceptions
 		} else if(jObj instanceof InterpreterException) {
-			return new NATException((InterpreterException)jObj);
+			return ((InterpreterException)jObj).getAmbientTalkRepresentation();
 		// null
 		} else if (jObj == null) {
 			return NATNil._INSTANCE_;
+		// a symbiotic AmbientTalk object
+		} else if (jObj instanceof SymbioticATObjectMarker) {
+			return ((SymbioticATObjectMarker) jObj)._returnNativeAmbientTalkObject();
+		// java.lang.Class
+		} else if (jObj instanceof Class) {
+			return JavaClass.wrapperFor((Class) jObj);
+		// Object and others -> wrap them in a symbiotic AT object
 		} else {
-			throw new RuntimeException("Cannot wrap Java objects of type " + jObj.getClass());			
+			return JavaObject.wrapperFor(jObj);
 		}
 	}
 
 	/**
-	 * Convert an AmbientTalk object into its Java equivalent.
+	 * Convert an AmbientTalk object into an equivalent Java object.
+	 * @param atObj the AmbientTalk object to convert to a Java value
+	 * @param targetType the known static type of the Java object that should be attained
+	 * @return a Java object o where (o instanceof targetType) should yield true
 	 */
-	public static final Object upObject(ATObject atObj) {
-		// Our own "dynamic dispatch"
-		// mirage
-		if(atObj instanceof NATMirage) {
-			return ((NATMirage) atObj).mirror_;
-	    // integer
-		} else if (atObj instanceof NATNumber) {
-			return new Integer(((NATNumber) atObj).javaValue);
-		// double
-		} else if (atObj instanceof NATFraction) {
-			return new Double(((NATFraction) atObj).javaValue);
-		// string
-		} else if (atObj instanceof NATText) {
-			return ((NATText) atObj).javaValue;
-		// booleans
-		} else if (atObj == NATBoolean._TRUE_) {
-			return Boolean.TRUE;
-		} else if (atObj == NATBoolean._FALSE_) {
-			return Boolean.FALSE;
-	    // nil
-		} else if (atObj == NATNil._INSTANCE_) {
-			return null;
-		// Object[]
-		} else if (atObj instanceof NATTable) {
-			ATObject[] atArray = ((NATTable) atObj).elements_;
-			Object[] jArray = new Object[atArray.length];
+	public static final Object ambientTalkToJava(ATObject atObj, Class targetType) throws InterpreterException {
+		// -- WRAPPED OBJECTS -> typecheck delegated to Java! --
+	    if (atObj.isJavaObjectUnderSymbiosis()) {
+		    return atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
+		// -- PRIMITIVE TYPES --
+	    } else if (targetType.isPrimitive()) {
+			return JavaInterfaceAdaptor.atObjectToPrimitiveJava(atObj, targetType);
+		// -- STRINGS --
+		} else if (targetType == String.class) {
+			return atObj.asNativeText().javaValue;
+		// -- ARRAYS --
+		} else if (targetType.isArray()) {
+			ATObject[] atArray = atObj.asNativeTable().elements_;
+			Object[] jArray = (Object[]) Array.newInstance(targetType.getComponentType(), atArray.length);
 			for (int i = 0; i < jArray.length; i++) {
-				jArray[i] = upObject(atArray[i]);
+				jArray[i] = ambientTalkToJava(atArray[i], targetType.getComponentType());
 			}
 			return jArray;
+		// -- EXCEPTIONS --
+		} else if (targetType == Exception.class) {
+			return atObj.asNativeException().getWrappedException();
+		// -- CLASS OBJECTS --
+		} else if (targetType == Class.class) {
+			return atObj.asJavaClassUnderSymbiosis().getWrappedClass();
+        // -- nil => NULL --
+		} else if (atObj == NATNil._INSTANCE_) {
+			return null;
+		// -- INTERFACE TYPES AND NAT CLASSES --
 		} else {
-			return atObj;	
+			return Coercer.coerce(atObj, targetType);	
 		}
 	}
 	
@@ -739,7 +739,7 @@ public final class Reflection {
 	 */
 	public static final ATField[] downBaseLevelFields(ATObject atObj) throws InterpreterException {
 		Method[] allBaseGetMethods =
-			JavaInterfaceAdaptor.allMethodsMatching(atObj.getClass(), Reflection._BGET_PREFIX_, false);
+			JavaInterfaceAdaptor.allMethodsPrefixed(atObj.getClass(), Reflection._BGET_PREFIX_, false);
 		ATField[] fields = new ATField[allBaseGetMethods.length];
 		for (int i = 0; i < allBaseGetMethods.length; i++) {
 			Method m = allBaseGetMethods[i];
@@ -754,7 +754,7 @@ public final class Reflection {
 	 */
 	public static final ATField[] downMetaLevelFields(ATObject atObj) throws InterpreterException {
 		Method[] allMetaGetMethods =
-			JavaInterfaceAdaptor.allMethodsMatching(atObj.getClass(), Reflection._MGET_PREFIX_, false);
+			JavaInterfaceAdaptor.allMethodsPrefixed(atObj.getClass(), Reflection._MGET_PREFIX_, false);
 		ATField[] fields = new ATField[allMetaGetMethods.length];
 		for (int i = 0; i < allMetaGetMethods.length; i++) {
 			Method m = allMetaGetMethods[i];
@@ -772,7 +772,7 @@ public final class Reflection {
 	 */
 	public static final ATMethod[] downBaseLevelMethods(ATObject atObj) throws InterpreterException {
 		Method[] allBaseMethods =
-			JavaInterfaceAdaptor.allMethodsMatching(atObj.getClass(), Reflection._BASE_PREFIX_, false);
+			JavaInterfaceAdaptor.allMethodsPrefixed(atObj.getClass(), Reflection._BASE_PREFIX_, false);
 		Vector allNonFieldBaseMethods = new Vector();
 		for (int i = 0; i < allBaseMethods.length; i++) {
 			Method m = allBaseMethods[i];
@@ -794,7 +794,7 @@ public final class Reflection {
 	 */
 	public static final ATMethod[] downMetaLevelMethods(ATObject natObj) throws InterpreterException {
 		Method[] allMetaMethods =
-			JavaInterfaceAdaptor.allMethodsMatching(natObj.getClass(), Reflection._META_PREFIX_, false);
+			JavaInterfaceAdaptor.allMethodsPrefixed(natObj.getClass(), Reflection._META_PREFIX_, false);
 		Vector allNonFieldMetaMethods = new Vector();
 		for (int i = 0; i < allMetaMethods.length; i++) {
 			Method m = allMetaMethods[i];

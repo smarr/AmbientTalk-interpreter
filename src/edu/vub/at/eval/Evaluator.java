@@ -37,6 +37,7 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
+import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.io.File;
@@ -56,10 +57,11 @@ public final class Evaluator {
 	
 	// important symbols
 	
+	public static final AGSymbol _ANON_MTH_NAM_ = AGSymbol.alloc("nativelambda");
+	public static final NATTable _ANON_MTH_ARGS_ = new NATTable(new ATObject[] { new AGSplice(AGSymbol.alloc("args")) });
 	public static final AGSymbol _LAMBDA_    = AGSymbol.alloc(NATText.atValue("lambda"));
 	public static final AGSymbol _INIT_      = AGSymbol.alloc(NATText.atValue("init"));
 	public static final AGSymbol _CURNS_SYM_ = AGSymbol.alloc("~");
-
 	
 	/**
 	 * A thread-local variable is used to assign a unique global scope to
@@ -327,18 +329,5 @@ public final class Evaluator {
 		 m.appendTail(sb);
 		 return sb.toString();
 	}
-	
-    /**
-     * Auxiliary method to collate two Java arrays
-     * @return an array containing first the elements of ary1, then the elements of ary2
-     */
-    public static final Object[] collate(Object[] ary1, Object[] ary2) {
-	    int siz1 = ary1.length;
-	    int siz2 = ary2.length;
-	    Object[] union = new Object[siz1 + siz2];
-	    System.arraycopy(ary1, 0, union, 0, siz1);
-	    System.arraycopy(ary2, 0, union, siz1, siz2);
-	    return union;
-    }
 	
 }

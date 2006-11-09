@@ -240,11 +240,9 @@ public class MirrorTest extends ReflectiveAccessTest {
 					"\n" +
 					"extendedSuccessMirror.dynamicParent.base.apply([]); \n" +
 					"extendedSuccessMirror.mirror :=  \n" +
-					"// meta_operations expect to be given a mirror on the actual values \n" +
-					"// hence the at first sight superfluous call to reflect: \n" +
-					"  reflect: (extend: extendedSuccessMirror with: { \n" +
+					"  extend: extendedSuccessMirror with: { \n" +
 					"    def invoke(@args) { reflect: \"ok\"}; \n" +
-					"  }); \n" +
+					"  }; \n" +
 					" \n" +
 					"echo: extendedSuccess.whatever()",
 					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));

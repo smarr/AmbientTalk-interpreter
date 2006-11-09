@@ -40,7 +40,7 @@ public class XUserDefined extends InterpreterException {
 
 	private static final long serialVersionUID = -2859841280138142649L;
 
-	public ATObject customException_;
+	public final ATObject customException_;
 	
 	public XUserDefined(ATObject customException) {
 		super("A custom exception object was thrown");

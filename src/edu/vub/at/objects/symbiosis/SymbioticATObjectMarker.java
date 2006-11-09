@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * XTypeMismatch.java created on Jul 13, 2006 at 9:43:54 PM
+ * SymbioticATObjectMarker.java created on 6-nov-2006 at 10:49:45
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,41 +25,22 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.exceptions;
+package edu.vub.at.objects.symbiosis;
 
-import edu.vub.at.eval.Evaluator;
-import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.natives.NATObject;
 
 /**
- * XTypeMismatch instances are thrown when a value conversion failed.
+ * This empty marker interface marks Java objects which actually represent wrappers around AmbientTalk
+ * objects that 'pretend' to be a Java object of a certain interface type. It is used to properly
+ * convert such objects back into their AmbientTalk equivalent when they re-enter the AmbientTalk meta- or base-level.
  * 
- * @author smostinc
  * @author tvcutsem
  */
-public class XTypeMismatch extends InterpreterException {
+public interface SymbioticATObjectMarker {
 
-	private static final long serialVersionUID = -3135452124227872807L;
+	/**
+	 * Accessor to unwrap the symbiotic object.
+	 */
+	public NATObject _returnNativeAmbientTalkObject();
 	
-	private final ATObject failedObject_;
-    private final Class expectedType_;
-
-	public XTypeMismatch(Class expectedType, ATObject failedObject) {
-		expectedType_ = expectedType;
-		failedObject_ = failedObject;
-	}
-
-	public ATObject getFailedObject() {
-		return failedObject_;
-	}
-	
-	public Class getExpectedType() {
-		return expectedType_;
-	}
-	
-	public String getMessage() {
-		String obj = Evaluator.toString(failedObject_);
-		return "Type mismatch: expected " + Evaluator.valueNameOf(expectedType_)
-		           + ", given " + obj + " (type: " + Evaluator.valueNameOf(failedObject_.getClass())+ ")";
-	}
-
 }

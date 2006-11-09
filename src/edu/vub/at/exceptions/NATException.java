@@ -50,19 +50,23 @@ public class NATException extends NATNil {
 		wrappedException_ = wrappedException;
 	}
 
-	public InterpreterException asInterpreterException() throws XTypeMismatch {
+	public NATException asNativeException() throws XTypeMismatch {
+		return this;
+	}
+	
+	public InterpreterException getWrappedException() {
 		return wrappedException_;
 	}
 	
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-        return Reflection.downObject(Reflection.upExceptionCreation(wrappedException_, initargs));
+        return Reflection.upExceptionCreation(wrappedException_, initargs);
     }
 
 	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
 		if(object instanceof NATException) {
 			return NATBoolean.atValue(
 					wrappedException_.getClass().isAssignableFrom(
-					object.asInterpreterException().getClass())); 
+					object.asNativeException().wrappedException_.getClass())); 
 		} else {
 			return NATBoolean._FALSE_;
 		}

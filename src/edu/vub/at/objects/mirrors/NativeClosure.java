@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.objects.ATContext;
@@ -159,7 +160,7 @@ public class NativeClosure extends NATClosure {
 	public void checkArity(ATTable args, int required) throws InterpreterException {
 		int provided = args.base_getLength().asNativeNumber().javaValue;
 		if (provided != required) {
-			throw new XArityMismatch(NativeAnonymousMethod._ANON_MTH_NAM_.toString(), required, provided);
+			throw new XArityMismatch(Evaluator._ANON_MTH_NAM_.toString(), required, provided);
 		}
 	}
 	

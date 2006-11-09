@@ -28,6 +28,7 @@
 package edu.vub.at.objects.coercion;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -53,6 +54,7 @@ import edu.vub.at.objects.natives.NATNumeric;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 
 /**
@@ -112,9 +114,9 @@ public interface ATConversions {
 	public NATTable    asNativeTable() throws XTypeMismatch;
 	public NATBoolean  asNativeBoolean() throws XTypeMismatch;
 	public NATNumeric  asNativeNumeric() throws XTypeMismatch;
+	public NATException asNativeException() throws XTypeMismatch;
+	
 	public JavaObject  asJavaObjectUnderSymbiosis() throws XTypeMismatch;
-	
-	// Allows reusing Java throw and try-catch
-	
-	public InterpreterException asInterpreterException() throws XTypeMismatch;
+	public JavaClass   asJavaClassUnderSymbiosis() throws XTypeMismatch;
+
 }

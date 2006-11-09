@@ -39,7 +39,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * That interface represents an abstract grammar object representing the syntax tree of message creation.
  * This interface is the interface to the actual runtime message object.
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public interface ATMessage extends ATObject {
 	

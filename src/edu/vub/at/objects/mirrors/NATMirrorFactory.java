@@ -53,8 +53,8 @@ public class NATMirrorFactory extends NATNil {
 	public ATMirror base_createMirror(ATObject objectRepresentation) {
 		// As this is a base_method, its result will be downed. Since we explicitly want to
 		// return the newly created NATIntercessiveMirror, it needs to be upped explicitly.
-
-		return new NATIntrospectiveMirror(createMirror(objectRepresentation));
+		// TODO: discuss with Stijn -> I removed the downing on base_ method invocations, explicit up no longer necessary
+		return createMirror(objectRepresentation);
 	}
 	
 }

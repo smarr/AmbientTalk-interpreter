@@ -347,7 +347,8 @@ public final class OBJLexicalRoot extends NATNil {
 	public ATObject base_mirror_(ATClosure code) throws InterpreterException {
 		// As this is a base_method, its result will be downed. Since we explicitly want to
 		// return the newly created NATIntercessiveMirror, it needs to be upped explicitly.
-		return NATMirrorFactory._INSTANCE_.createMirror(OBJMirrorRoot._INSTANCE_.meta_extend(code));
+		// TODO: discuss with Stijn: base_ methods don't down their ret.val
+		return OBJMirrorRoot._INSTANCE_.meta_extend(code);
 	}
 	
 	public ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
@@ -521,7 +522,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * Raises an exception which can be caught by dynamically installed try-catch-using blocks.
 	 */
 	public ATNil base_raise_(ATObject anExceptionObject) throws InterpreterException {
-		throw anExceptionObject.asInterpreterException();
+		throw anExceptionObject.asNativeException().getWrappedException();
 	}
 	
 	/* --------------------

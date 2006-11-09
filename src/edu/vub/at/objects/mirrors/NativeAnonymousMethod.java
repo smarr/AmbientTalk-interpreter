@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalApplication;
 import edu.vub.at.objects.ATContext;
@@ -39,7 +40,6 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
-import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -56,17 +56,6 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  * @author tvc
  */
 public class NativeAnonymousMethod extends NATNil implements ATMethod {
-
-	/**
-	 * The name of an anonymous native lambda is always 'nativelambda'
-	 */
-	protected static final AGSymbol _ANON_MTH_NAM_ = AGSymbol.alloc("nativelambda");
-	
-	/**
-	 * The argument list of an anonymous native lambda is [ \@args ]
-	 */
-	private static final NATTable _ANON_MTH_ARGS_ =
-		new NATTable(new ATObject[] { new AGSplice(AGSymbol.alloc("args")) });
 		
 	private final Class creatorClass_;
 	
@@ -85,9 +74,9 @@ public class NativeAnonymousMethod extends NATNil implements ATMethod {
 		throw new XIllegalApplication("Cannot apply an anonymous native method. Apply the closure instead.", creatorClass_);
 	}
 
-	public ATSymbol base_getName() { return _ANON_MTH_NAM_; }
+	public ATSymbol base_getName() { return Evaluator._ANON_MTH_NAM_; }
 
-	public ATTable base_getParameters() { return _ANON_MTH_ARGS_; }
+	public ATTable base_getParameters() { return Evaluator._ANON_MTH_ARGS_; }
 
 	public ATBegin base_getBodyExpression() {
 		return new AGBegin(new NATTable(new ATObject[] {

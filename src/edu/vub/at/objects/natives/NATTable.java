@@ -39,7 +39,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.mirrors.NativeClosure;
-import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
 import java.util.LinkedList;
@@ -70,16 +69,6 @@ public final class NATTable extends AGExpression implements ATTable {
 	public NATTable(ATObject[] elements) {
 		// assert elements.length > 0
 		elements_ = elements;
-	}
-	
-	// TODO: make this constructor private to ensure singleton EMPTY
-	public NATTable(Object[] javaArray) throws InterpreterException {
-		elements_ = new ATObject[javaArray.length];
-		
-		for(int i = 0; i < javaArray.length; i++) {
-			Object element = javaArray[i];
-			elements_[i] = Reflection.downObject(element);
-		}
 	}
 	
     public ATTable base_asTable() { return this; }
@@ -222,6 +211,19 @@ public final class NATTable extends AGExpression implements ATTable {
 			throw new XIndexOutOfBounds(javaIndex + 1, elements_.length);
 		else
 			return javaIndex;
+	}
+
+	/**
+	 * Auxiliary method to collate two Java arrays
+	 * @return an array containing first the elements of ary1, then the elements of ary2
+	 */
+	public static final ATObject[] collate(ATObject[] ary1, ATObject[] ary2) {
+	    int siz1 = ary1.length;
+	    int siz2 = ary2.length;
+	    ATObject[] union = new ATObject[siz1 + siz2];
+	    System.arraycopy(ary1, 0, union, 0, siz1);
+	    System.arraycopy(ary2, 0, union, siz1, siz2);
+	    return union;
 	}
 
 }

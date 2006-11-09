@@ -39,12 +39,15 @@ public final class XParseError extends InterpreterException {
 	private String erroneousCode_;
 	
 	// indicates the position of the parse error
-	private String fileName_;
-	private int line_;
-	private int column_;
+	private final String fileName_;
+	private final int line_;
+	private final int column_;
 
 	public XParseError(String message, Throwable cause) {
 		super(message, cause);
+		fileName_ = null;
+		line_ = 0;
+		column_ = 0;
 	}
 	
 	public XParseError(String erroneousCode,

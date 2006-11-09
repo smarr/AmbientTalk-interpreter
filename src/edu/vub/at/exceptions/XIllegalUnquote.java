@@ -41,7 +41,7 @@ public final class XIllegalUnquote extends InterpreterException {
 
 	private static final String _MESSAGE_ = "Unquoted expression in non-quoted expression";
 	
-	private ATExpression unquotation_;
+	private final ATExpression unquotation_;
 	
 	public XIllegalUnquote(ATExpression unquotation) {
 		super(_MESSAGE_);

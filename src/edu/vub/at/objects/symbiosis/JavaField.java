@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * XTypeMismatch.java created on Jul 13, 2006 at 9:43:54 PM
+ * JavaField.java created on 5-nov-2006 at 20:08:18
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,41 +25,48 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.exceptions;
+package edu.vub.at.objects.symbiosis;
 
-import edu.vub.at.eval.Evaluator;
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATText;
+
+import java.lang.reflect.Field;
 
 /**
- * XTypeMismatch instances are thrown when a value conversion failed.
+ * A JavaField is a simple wrapper around a native java.lang.reflect.Field
  * 
- * @author smostinc
  * @author tvcutsem
  */
-public class XTypeMismatch extends InterpreterException {
+public final class JavaField extends NATNil implements ATField {
 
-	private static final long serialVersionUID = -3135452124227872807L;
+	private final Object host_;
+	private final Field field_;
+
+	public JavaField(Object host, Field f) {
+		host_ = host;
+		field_ = f;
+	}
+
+	public ATSymbol base_getName() {
+		return Reflection.downSelector(field_.getName());
+	}
+
+	public ATObject base_getValue() throws InterpreterException {
+		return Symbiosis.readField(host_, field_);
+	}
+
+	public ATObject base_setValue(ATObject newValue) throws InterpreterException {
+		Symbiosis.writeField(host_, field_, newValue);
+		return NATNil._INSTANCE_;
+	}
+
+	public NATText meta_print() throws InterpreterException {
+		return NATText.atValue("<java field:"+field_+">");
+	}
 	
-	private final ATObject failedObject_;
-    private final Class expectedType_;
-
-	public XTypeMismatch(Class expectedType, ATObject failedObject) {
-		expectedType_ = expectedType;
-		failedObject_ = failedObject;
-	}
-
-	public ATObject getFailedObject() {
-		return failedObject_;
-	}
-	
-	public Class getExpectedType() {
-		return expectedType_;
-	}
-	
-	public String getMessage() {
-		String obj = Evaluator.toString(failedObject_);
-		return "Type mismatch: expected " + Evaluator.valueNameOf(expectedType_)
-		           + ", given " + obj + " (type: " + Evaluator.valueNameOf(failedObject_.getClass())+ ")";
-	}
-
 }

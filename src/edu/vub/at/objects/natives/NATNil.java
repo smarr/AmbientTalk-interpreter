@@ -30,6 +30,7 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -56,6 +57,7 @@ import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 
 /**
@@ -64,7 +66,7 @@ import edu.vub.at.objects.symbiosis.JavaObject;
  * @author smostinc
  */
 public class NATNil implements ATNil {
-
+	
     protected NATNil() {};
 
     public final static NATNil _INSTANCE_ = new NATNil();
@@ -97,7 +99,7 @@ public class NATNil implements ATNil {
     public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
         try {
 			String jSelector = Reflection.upBaseLevelSelector(atSelector);
-			return Reflection.downObject(Reflection.upInvocation(receiver, jSelector, arguments));
+			return Reflection.upInvocation(receiver, jSelector, arguments);
 		} catch (XSelectorNotFound e) {
 			return receiver.meta_doesNotUnderstand(atSelector).base_asClosure().base_apply(arguments);
 		}
@@ -138,12 +140,12 @@ public class NATNil implements ATNil {
 
         try {
         	   jSelector = Reflection.upBaseFieldAccessSelector(selector);
-            return Reflection.downObject(Reflection.upFieldSelection(receiver, jSelector));
+            return Reflection.upFieldSelection(receiver, jSelector);
         } catch (XSelectorNotFound e) {
             jSelector = Reflection.upBaseLevelSelector(selector);
 
             try {
-				return Reflection.downObject(Reflection.upMethodSelection(receiver, jSelector, selector));
+				return Reflection.upMethodSelection(receiver, jSelector, selector);
 			} catch (XSelectorNotFound e2) {
 				return receiver.meta_doesNotUnderstand(selector);
 			}
@@ -217,7 +219,7 @@ public class NATNil implements ATNil {
     }
 
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-        return Reflection.downObject(Reflection.upInstanceCreation(this, initargs));
+        return Reflection.upInstanceCreation(this, initargs);
     }
 
 	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws InterpreterException {
@@ -477,8 +479,12 @@ public class NATNil implements ATNil {
     	    throw new XTypeMismatch(JavaObject.class, this);
     }
     
-    public InterpreterException asInterpreterException() throws XTypeMismatch {
-    		return new XUserDefined(this);
+    public JavaClass asJavaClassUnderSymbiosis() throws XTypeMismatch {
+	    throw new XTypeMismatch(JavaClass.class, this);
+    }
+    
+    public NATException asNativeException() throws XTypeMismatch {
+    		return new NATException(new XUserDefined(this));
     }
     
     public String toString() {
