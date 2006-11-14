@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * XReflectionFailure.java created on Jul 13, 2006 at 8:32:03 PM
+ * XUnassignableField.java created on 14-nov-2006 at 11:54:27
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -28,38 +28,17 @@
 package edu.vub.at.exceptions;
 
 /**
- * An instance of the class XReflectionFailure is thrown when something goes wrong
- * when dealing with mirror or mirage operations. By extension this also covers 
- * failures when symbiotically accessing Java objects.
+ * An XUnassignableField exception is raised whenever a variable assignment fails because the variable/field is immutable.
+ * This may happen when dealing with native AT objects or with symbiotic Java objects that have final fields.
  * 
- * @author smostinc
+ * @author tvcutsem
  */
-public class XReflectionFailure extends InterpreterException {
+public final class XUnassignableField extends InterpreterException {
 
-	private static final long serialVersionUID = 4082945147643295718L;
+	private static final long serialVersionUID = 2259235392369197805L;
 
-	public XReflectionFailure() {
-		super();
-	}
-
-	public XReflectionFailure(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	public XReflectionFailure(String message) {
-		super(message);
-	}
-
-	public XReflectionFailure(Throwable cause) {
-		super(cause);
-	}
-	
-	public String getMessage() {
-		if (getCause() != null) {
-			return super.getMessage() + ": " + getCause().getMessage();
-		} else {
-		    return super.getMessage();
-		}
+	public XUnassignableField(String fieldName) {
+		super("Unassignable field: " + fieldName);
 	}
 
 }

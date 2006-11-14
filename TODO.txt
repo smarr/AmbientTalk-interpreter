@@ -30,6 +30,8 @@ Solve overloading by being able to annotate a method invocation => future work
 For symbiosis, reuse coercers to make NATObjects implement arbitrary Java interfaces, such as an ActionListener
 => Exceptions map to generic AT exceptions
 => Threads -> currently 'you're on your own'? or consider wrapping each ATObject in a coercer that also acts as a far ref => converts invocations into enqueues, but this requires futures to block the waiting Java Thread
+=> Implementation can be sped up a bit using caching, consider a cache for Symbiosis.getMethods
+requires to change implementation of Symbiosis.invokeSymbioticMethod not to filter out methods by assigning null
 
 - Reflection
 * isXXX and asXXX must become meta_isXXX and meta_asXXX

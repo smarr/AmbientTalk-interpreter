@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.symbiosis.Symbiosis;
 import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 
 import java.lang.reflect.InvocationHandler;
@@ -68,8 +69,11 @@ public final class Coercer implements InvocationHandler {
 		if (type.isInstance(object)) { // object instanceof type
 			return object; // no need to coerce
 		} else if (object.isAmbientTalkObject() && type.isInterface()) {
-			// note that the proxy implements both the required type and the Symbiotic object marker interface to identify it as a wrapper
-			return Proxy.newProxyInstance(type.getClassLoader(), new Class[] { type, SymbioticATObjectMarker.class }, new Coercer(object.asAmbientTalkObject()));
+			// note that the proxy implements both the required type
+			// and the Symbiotic object marker interface to identify it as a wrapper
+			return Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(),
+					                      new Class[] { type, SymbioticATObjectMarker.class },
+					                      new Coercer(object.asAmbientTalkObject()));
 		} else {
 			throw new XTypeMismatch(type, object);
 		}
@@ -90,7 +94,7 @@ public final class Coercer implements InvocationHandler {
 		} else {
 			ATObject[] symbioticArgs = new ATObject[(arguments == null) ? 0 : arguments.length];
 			for (int i = 0; i < symbioticArgs.length; i++) {
-				symbioticArgs[i] = Reflection.javaToAmbientTalk(arguments[i]);
+				symbioticArgs[i] = Symbiosis.javaToAmbientTalk(arguments[i]);
 			}
 			ATObject result = Reflection.downInvocation(principal_, method.getName(), symbioticArgs);
 			// properly 'cast' the returned object into the appropriate interface

@@ -34,18 +34,16 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.ATBoolean;
-import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -75,7 +73,7 @@ import java.util.HashMap;
  *  
  * @author tvcutsem
  */
-public final class JavaClass extends NATNil implements ATClosure {
+public final class JavaClass extends NATObject {
 	
 	/**
 	 * A thread-local hashmap pooling all of the JavaClass wrappers for
@@ -110,26 +108,13 @@ public final class JavaClass extends NATNil implements ATClosure {
 	
 	private final Class wrappedClass_;
 	
-	// lazily instantiated closure
-	private NativeClosure castClosure_;
-	
+	/**
+	 * A JavaClass wrapping a class c has a dynamic is-a parent wrapping c's superclass
+	 * If c is java.lang.Object, the parent of its wrapper is nil
+	 */
 	private JavaClass(Class wrappedClass) {
+		super((wrappedClass == Object.class) ? NATNil._INSTANCE_ : wrapperFor(wrappedClass.getSuperclass()), NATObject._IS_A_);
 		wrappedClass_ = wrappedClass;
-	}
-	
-	private NativeClosure getCastClosure() {
-		if (castClosure_ == null) {
-			castClosure_ = new NativeClosure(this) {
-				// cast(obj)
-				public ATObject base_apply(ATTable args) throws InterpreterException {
-					checkArity(args, 1);
-					JavaObject obj = get(args, 1).asJavaObjectUnderSymbiosis();
-					obj.castTo(wrappedClass_);
-					return obj;
-				}
-			};			
-		}
-		return castClosure_;
 	}
 	
 	public Class getWrappedClass() { return wrappedClass_; }
@@ -161,7 +146,7 @@ public final class JavaClass extends NATNil implements ATClosure {
     public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
         try {
 			String jSelector = Reflection.upSelector(atSelector);
-			return Symbiosis.symbioticInvocation(null, wrappedClass_, jSelector, arguments.asNativeTable().elements_);
+			return Symbiosis.symbioticInvocation(this, null, wrappedClass_, jSelector, arguments.asNativeTable().elements_);
 		} catch (XSelectorNotFound e) {
 			return super.meta_invoke(receiver, atSelector, arguments);
 		}
@@ -295,7 +280,7 @@ public final class JavaClass extends NATNil implements ATClosure {
     public ATMethod meta_grabMethod(ATSymbol methodName) throws InterpreterException {
         Method[] choices = Symbiosis.getMethods(wrappedClass_, Reflection.upSelector(methodName), true);
         if (choices.length > 0) {
-        		return new JavaMethod(null, choices);
+        		return new JavaMethod(this, null, choices);
         } else {
         	    return super.meta_grabMethod(methodName);
         }
@@ -319,15 +304,11 @@ public final class JavaClass extends NATNil implements ATClosure {
      */
     public ATTable meta_listMethods() throws InterpreterException {
 		// instance methods of the wrapped object's class
-		JavaMethod[] jMethods = Symbiosis.getAllMethods(null, wrappedClass_);
+		JavaMethod[] jMethods = Symbiosis.getAllMethods(this, null, wrappedClass_);
         // methods of the AT symbiont
 		ATObject[] symbiontMethods = super.meta_listMethods().asNativeTable().elements_;
 		return new NATTable(NATTable.collate(jMethods, symbiontMethods));
     }
-
-	public ATObject meta_getDynamicParent() throws InterpreterException {
-		return JavaClass.wrapperFor(wrappedClass_.getSuperclass());
-	}
 
 	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
 		return NATBoolean.atValue(this == original);
@@ -336,33 +317,6 @@ public final class JavaClass extends NATNil implements ATClosure {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<java:"+wrappedClass_.toString()+">");
 	}
-    
-	/* ---------------------------------------------
-	 * - implementation of the ATClosure interface -
-	 * --------------------------------------------- */
-
-	public ATObject base_apply(ATTable args) throws InterpreterException {
-		return getCastClosure().base_apply(args);
-	}
-
-	public ATObject base_escape() throws InterpreterException {
-		return getCastClosure().base_escape();
-	}
-
-	public ATContext base_getContext() throws InterpreterException {
-		return getCastClosure().base_getContext();
-	}
-
-	public ATMethod base_getMethod() throws InterpreterException {
-		return getCastClosure().base_getMethod();
-	}
-
-	public ATObject base_whileTrue_(ATClosure body) throws InterpreterException {
-		return getCastClosure().base_whileTrue_(body);
-	}
-
-	public boolean base_isClosure() { return true; }
-	public ATClosure base_asClosure() { return this; }
 	
     public JavaClass asJavaClassUnderSymbiosis() throws XTypeMismatch { return this; }
 

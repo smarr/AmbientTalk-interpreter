@@ -35,17 +35,10 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.objects.symbiosis.JavaClass;
-import edu.vub.at.objects.symbiosis.JavaObject;
-import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -649,87 +642,6 @@ public final class Reflection {
 			return ((NATMirage) baseObject).mirror_;
 		} else {
 			return baseObject;
-		}
-	}
-	
-	/**
-	 * Convert a Java object into an AmbientTalk object.
-	 * 
-	 * @param jObj the Java object representing a mirror or a native type
-	 * @return the same object if it implements the ATObject interface
-	 */
-	public static final ATObject javaToAmbientTalk(Object jObj) throws InterpreterException {
-		// object
-		if(jObj instanceof ATObject) {
-			return (ATObject) jObj;
-	    // primitive java types
-		} else if (jObj.getClass().isPrimitive()) {
-		    return JavaInterfaceAdaptor.primitiveJavaToATObject(jObj);
-		// string
-		} else if (jObj instanceof String) {
-			return NATText.atValue((String) jObj);
-		// Object[]
-		} else if (jObj instanceof Object[]) {
-			Object[] jArray = (Object[]) jObj;
-			ATObject[] atTable = new ATObject[jArray.length];
-			for (int i = 0; i < jArray.length; i++) {
-				atTable[i] = javaToAmbientTalk(jArray[i]);
-			}
-			return new NATTable(atTable);
-	    // exceptions
-		} else if(jObj instanceof InterpreterException) {
-			return ((InterpreterException)jObj).getAmbientTalkRepresentation();
-		// null
-		} else if (jObj == null) {
-			return NATNil._INSTANCE_;
-		// a symbiotic AmbientTalk object
-		} else if (jObj instanceof SymbioticATObjectMarker) {
-			return ((SymbioticATObjectMarker) jObj)._returnNativeAmbientTalkObject();
-		// java.lang.Class
-		} else if (jObj instanceof Class) {
-			return JavaClass.wrapperFor((Class) jObj);
-		// Object and others -> wrap them in a symbiotic AT object
-		} else {
-			return JavaObject.wrapperFor(jObj);
-		}
-	}
-
-	/**
-	 * Convert an AmbientTalk object into an equivalent Java object.
-	 * @param atObj the AmbientTalk object to convert to a Java value
-	 * @param targetType the known static type of the Java object that should be attained
-	 * @return a Java object o where (o instanceof targetType) should yield true
-	 */
-	public static final Object ambientTalkToJava(ATObject atObj, Class targetType) throws InterpreterException {
-		// -- WRAPPED OBJECTS -> typecheck delegated to Java! --
-	    if (atObj.isJavaObjectUnderSymbiosis()) {
-		    return atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
-		// -- PRIMITIVE TYPES --
-	    } else if (targetType.isPrimitive()) {
-			return JavaInterfaceAdaptor.atObjectToPrimitiveJava(atObj, targetType);
-		// -- STRINGS --
-		} else if (targetType == String.class) {
-			return atObj.asNativeText().javaValue;
-		// -- ARRAYS --
-		} else if (targetType.isArray()) {
-			ATObject[] atArray = atObj.asNativeTable().elements_;
-			Object[] jArray = (Object[]) Array.newInstance(targetType.getComponentType(), atArray.length);
-			for (int i = 0; i < jArray.length; i++) {
-				jArray[i] = ambientTalkToJava(atArray[i], targetType.getComponentType());
-			}
-			return jArray;
-		// -- EXCEPTIONS --
-		} else if (targetType == Exception.class) {
-			return atObj.asNativeException().getWrappedException();
-		// -- CLASS OBJECTS --
-		} else if (targetType == Class.class) {
-			return atObj.asJavaClassUnderSymbiosis().getWrappedClass();
-        // -- nil => NULL --
-		} else if (atObj == NATNil._INSTANCE_) {
-			return null;
-		// -- INTERFACE TYPES AND NAT CLASSES --
-		} else {
-			return Coercer.coerce(atObj, targetType);	
 		}
 	}
 	

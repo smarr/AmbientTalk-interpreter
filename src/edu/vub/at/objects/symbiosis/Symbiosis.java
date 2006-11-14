@@ -28,13 +28,27 @@
 package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XReflectionFailure;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XSymbiosisFailure;
+import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.exceptions.signals.Signal;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.coercion.Coercer;
+import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Hashtable;
@@ -50,12 +64,100 @@ import java.util.Vector;
  */
 public final class Symbiosis {
 
-	public static ATObject symbioticInvocation(Object symbiont, Class ofClass, String selector, ATObject[] atArgs) throws XSelectorNotFound {
-		return symbioticInvocation(symbiont, getMethods(ofClass, selector, (symbiont==null)), atArgs);
+	public static ATObject symbioticInvocation(ATObject wrapper, Object symbiont, Class ofClass, String selector, ATObject[] atArgs) throws InterpreterException {
+		return symbioticInvocation(wrapper, symbiont, selector, getMethods(ofClass, selector, (symbiont==null)), atArgs);
 	}
 	
-	public static ATObject symbioticInvocation(Object symbiont, Method[] choices, ATObject[] atArgs) {
-		return null; // TODO: implement invoke for overloaded methods
+	/**
+	 * The Java method invocation algorithm is as follows:
+	 * 
+	 * case of # of methods matching selector:
+	 *   0 => XSelectorNotFound
+	 *   1 => invoke the method OR XIllegalArgument, XArityMismatch, XReflectionFailure
+	 *   * => (case of # of methods with matching arity OR taking varargs:
+	 *           0 => XSymbiosisFailure
+	 *           1 => invoke the method OR XIllegalArgument, XReflectionFailure
+	 *           * => (case of # of methods matching 'default type' of the actual arguments:
+	 *                   0 => XSymbiosisFailure
+	 *                   1 => invoke OR XReflectionFailure
+	 *                   * => XSymbiosisFailure))
+	 * 
+	 * A Java method takes a variable number of AT arguments <=> it has one formal parameter of type ATObject[]
+	 * 
+	 * @param wrapper the ATObject wrapper for the symbiont
+	 * @param symbiont the Java object being accessed from within AmbientTalk
+	 * @param selector the Java selector corresponding to the method invocation
+	 * @param methods all applicable Java methods that correspond to the selector
+	 * @param atArgs the AT args to the symbiotic invocation
+	 * @return the wrapped result of the Java method invocation
+	 * 
+	 * @throws XArityMismatch if the wrong number of arguments were supplied
+	 * @throws XSelectorNotFound if no methods correspond to the given selector
+	 * @throws XTypeMismatch if one of the arguments cannot be converted into the static type expected by the Java method
+	 * @throws XSymbiosisFailure if the method is overloaded and cannot be unambiguously resolved given the actual arguments
+	 * @throws XReflectionFailure if the invoked method is not accessible from within AmbientTalk
+	 * @throws XJavaException if the invoked Java method throws a Java exception
+	 */
+	public static ATObject symbioticInvocation(ATObject wrapper, Object symbiont, String selector, Method[] methods, ATObject[] atArgs) throws InterpreterException {
+		switch (methods.length) {
+		    // no methods found? selector does not exist...
+		    case 0:
+				throw new XSelectorNotFound(Reflection.downSelector(selector), wrapper);
+			// just one method found, no need to resolve overloaded methods
+			case 1: {
+				// if the Java method takes an ATObject array as its sole parameter, it is interpreted as taking
+				// a variable number of ambienttalk arguments
+				Class[] params = methods[0].getParameterTypes();
+				Object[] args;
+				if ((params.length == 1) && params[0].equals(ATObject[].class)) {
+					args = new Object[] { atArgs };
+				} else {
+					if (params.length != atArgs.length) {
+						throw new XArityMismatch("Java method "+Reflection.downSelector(methods[0].getName()), params.length, atArgs.length);
+					}
+					// make sure to properly 'coerce' each argument into the proper AT interface type
+					args = atArgsToJavaArgs(atArgs, params);
+				}
+				return invokeUniqueSymbioticMethod(symbiont, methods[0], args);
+			}	
+		}
+		
+		// overloading: filter out all methods that do not match arity or whose argument types do not match
+		int matchingMethods = 0;
+		Method matchingMethod = null;
+		Object[] actuals = null;
+		Class[] params;
+		for (int i = 0; i < methods.length; i++) {
+			params = methods[i].getParameterTypes();
+			// is the method a varargs method?
+			if ((params.length == 1) && params[0].equals(ATObject[].class)) {
+				actuals = new Object[] { atArgs };
+				matchingMethod = methods[i];
+				matchingMethods++;
+			// does the arity match?
+			} else if (params.length == atArgs.length) {
+				// can it be invoked with the given actuals?
+				try {
+					actuals = atArgsToJavaArgs(atArgs, params);
+					matchingMethod = methods[i];
+					matchingMethods++;
+				} catch(XTypeMismatch e) {
+					// types don't match
+					methods[i] = null; // TODO: don't assign to null, array may be cached or used later on (or by wrapper method)
+				}
+			} else {
+		      // arity does not match
+			  methods[i] = null;
+			}
+		}
+		
+		if (matchingMethods != 1) {
+	      // no methods left or more than one method left? overloading resolution failed
+		  throw new XSymbiosisFailure(symbiont, selector, methods, atArgs, matchingMethods);
+		} else {
+		  // just one method left, invoke it
+		  return invokeUniqueSymbioticMethod(symbiont, matchingMethod, actuals);
+		}
 	}
 	
 	public static ATObject symbioticInstanceCreation(Class ofClass, ATObject[] atArgs) {
@@ -78,7 +180,7 @@ public final class Symbiosis {
 	 */
 	public static ATObject readField(Object fromObject, Field f) throws InterpreterException {
 		try {
-			return Reflection.javaToAmbientTalk(f.get(fromObject));
+			return Symbiosis.javaToAmbientTalk(f.get(fromObject));
 		} catch (IllegalArgumentException e) {
 			// the given object is of the wrong class, should not happen!
 			throw new XReflectionFailure("Illegal class for field access of "+f.getName() + ": " + e.getMessage());
@@ -105,13 +207,13 @@ public final class Symbiosis {
 	 */
 	public static void writeField(Object toObject, Field f, ATObject value) throws InterpreterException {
 		try {
-			f.set(toObject, Reflection.ambientTalkToJava(value, f.getType()));
+			f.set(toObject, Symbiosis.ambientTalkToJava(value, f.getType()));
 		} catch (IllegalArgumentException e) {
 			// the given value is of the wrong type
-			throw new XReflectionFailure("Illegal value for field "+f.getName() + ": " + e.getMessage());
+			throw new XIllegalArgument("Illegal value for field "+f.getName() + ": " + e.getMessage());
 		} catch (IllegalAccessException e) {
-             // the read field is not publicly accessible
-			throw new XReflectionFailure("field assignment of " + f.getName() + " not accessible.");
+             // the read field is not publicly accessible or final
+			throw new XUnassignableField(Reflection.downSelector(f.getName()).toString());
 		}
 	}
 	
@@ -163,12 +265,16 @@ public final class Symbiosis {
 	/**
 	 * Retrieve all methods of a given name from a Java object.
 	 * An empty returned array indicates no match.
+	 * 
+	 * TODO: cache results
 	 */
-	public static Method[] getMethods(Class fromClass, String fieldName, boolean isStatic) throws XSelectorNotFound {
+	public static Method[] getMethods(Class fromClass, String selector, boolean isStatic) throws XSelectorNotFound {
 		Method[] methods = fromClass.getMethods();
+		Method m;
 		Vector properMethods = new Vector(methods.length);
 		for (int i = 0; i < methods.length; i++) {
-			if ((Modifier.isStatic(methods[i].getModifiers())) == isStatic) {
+			m = methods[i];
+			if ((Modifier.isStatic(m.getModifiers())) == isStatic && m.getName().equals(selector)) {
 				properMethods.add(methods[i]);
 			}
 		}
@@ -181,8 +287,10 @@ public final class Symbiosis {
 	 * JavaMethod wrapper, taking care to wrap a set of overloaded methods using the same wrapper.
 	 * 
 	 * @param ofObject if null, all static methods of fromClass are returned, otherwise the instance methods are returned
+	 * 
+	 * TODO: cache results
 	 */
-	public static JavaMethod[] getAllMethods(Object ofObject, Class fromClass) {
+	public static JavaMethod[] getAllMethods(ATObject wrapper, Object ofObject, Class fromClass) {
 		boolean isStatic = (ofObject == null);
 		Method[] methods = fromClass.getMethods();
 		// the following table sorts methods into lists according to their method name
@@ -207,7 +315,7 @@ public final class Symbiosis {
 		int i = 0;
 		for (Iterator iter = sorted.values().iterator(); iter.hasNext(); i++) {
 			LinkedList entry = (LinkedList) iter.next();
-			jmethods[i] = new JavaMethod(ofObject, (Method[]) entry.toArray(new Method[entry.size()]));
+			jmethods[i] = new JavaMethod(wrapper, ofObject, (Method[]) entry.toArray(new Method[entry.size()]));
 		}
 		return jmethods;
 	}
@@ -218,6 +326,7 @@ public final class Symbiosis {
 	 * JavaField wrapper.
 	 * 
 	 * @param ofObject if null, all static fields of fromClass are returned, otherwise the instance fields are returned
+	 * TODO: cache results
 	 */
 	public static JavaField[] getAllFields(Object ofObject, Class fromClass) {
 		boolean isStatic = (ofObject == null);
@@ -252,6 +361,127 @@ public final class Symbiosis {
 			jfields[i] = new JavaField(ofObject, (Field) iter.next());
 		}
 		return jfields;
+	}
+
+	/**
+	 * Convert a Java object into an AmbientTalk object.
+	 * 
+	 * @param jObj the Java object representing a mirror or a native type
+	 * @return the same object if it implements the ATObject interface
+	 */
+	public static final ATObject javaToAmbientTalk(Object jObj) throws InterpreterException {
+		// -- NULL => NIL --
+	    if (jObj == null) {
+		  return NATNil._INSTANCE_;
+		// -- AmbientTalk implementation-level objects --
+	    } else if(jObj instanceof ATObject) {
+			return (ATObject) jObj;
+	    // -- PRIMITIVE TYPE => NUMERIC, TXT --
+		} else if (JavaInterfaceAdaptor.isPrimitiveType(jObj.getClass())) {
+		    return JavaInterfaceAdaptor.primitiveJavaToATObject(jObj);
+		// -- STRING => TEXT --
+		} else if (jObj instanceof String) {
+			return NATText.atValue((String) jObj);
+		// -- ARRAY => TABLE --
+		} else if (jObj.getClass().isArray()) {
+			int length = Array.getLength(jObj);
+			ATObject[] atTable = new ATObject[length];
+			for (int i = 0; i < length; i++) {
+				atTable[i] = javaToAmbientTalk(Array.get(jObj, i));
+			}
+			return new NATTable(atTable);
+	    // -- EXCEPTION => NATEXCEPTION --
+		} else if(jObj instanceof InterpreterException) {
+			return ((InterpreterException)jObj).getAmbientTalkRepresentation();
+		} else if (jObj instanceof Exception) {
+			return new NATException(new XJavaException((Exception) jObj));
+		// -- Symbiotic AmbientTalk object => AmbientTalk object --
+		} else if (jObj instanceof SymbioticATObjectMarker) {
+			return ((SymbioticATObjectMarker) jObj)._returnNativeAmbientTalkObject();
+		// -- java.lang.Class => Symbiotic Class --
+		} else if (jObj instanceof Class) {
+			return JavaClass.wrapperFor((Class) jObj);
+		// -- Object => Symbiotic AT Object --
+		} else {
+			return JavaObject.wrapperFor(jObj);
+		}
+	}
+
+	/**
+	 * Convert an AmbientTalk object into an equivalent Java object.
+	 * @param atObj the AmbientTalk object to convert to a Java value
+	 * @param targetType the known static type of the Java object that should be attained
+	 * @return a Java object o where (o instanceof targetType) should yield true
+	 * 
+	 * @throws XTypeMismatch if the object cannot be converted into the correct Java targetType
+	 */
+	public static final Object ambientTalkToJava(ATObject atObj, Class targetType) throws InterpreterException {
+		// -- WRAPPED JAVA OBJECTS --
+	    if (atObj.isJavaObjectUnderSymbiosis()) {
+	    		Object jObj = atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
+		    Class jCls = jObj.getClass();
+		    // dynamic subtype test: is jCls a subclass of targetType?
+		    if (targetType.isAssignableFrom(jCls)) {
+		    		return jObj;
+		    } else {
+		    		throw new XTypeMismatch(targetType, atObj);
+		    }
+		// -- PRIMITIVE TYPES --
+	    } else if (JavaInterfaceAdaptor.isPrimitiveType(targetType)) {
+			return JavaInterfaceAdaptor.atObjectToPrimitiveJava(atObj, targetType);
+		// -- STRINGS --
+		} else if (targetType == String.class) {
+			return atObj.asNativeText().javaValue;
+		// -- ARRAYS --
+		} else if (targetType.isArray()) {
+			ATObject[] atArray = atObj.asNativeTable().elements_;
+			Object jArray = Array.newInstance(targetType.getComponentType(), atArray.length);
+			for (int i = 0; i < Array.getLength(jArray); i++) {
+				Array.set(jArray, i, ambientTalkToJava(atArray[i], targetType.getComponentType()));
+			}
+			return jArray;
+		// -- EXCEPTIONS --
+		} else if (targetType == Exception.class) {
+			return atObj.asNativeException().getWrappedException();
+		// -- CLASS OBJECTS --
+		} else if (targetType == Class.class) {
+			return atObj.asJavaClassUnderSymbiosis().getWrappedClass();
+	    // -- nil => NULL --
+		} else if (atObj == NATNil._INSTANCE_) {
+			return null;
+		// -- INTERFACE TYPES AND NAT CLASSES --
+		} else {
+			return Coercer.coerce(atObj, targetType);	
+		}
+	}
+	
+	private static ATObject invokeUniqueSymbioticMethod(Object symbiont, Method javaMethod, Object[] jArgs) throws InterpreterException {
+		try {
+			return Symbiosis.javaToAmbientTalk(javaMethod.invoke(symbiont, jArgs));
+		} catch (IllegalAccessException e) {
+			// the invoked method is not publicly accessible
+			throw new XReflectionFailure("Java method "+Reflection.downSelector(javaMethod.getName()) + " is not accessible.", e);
+		} catch (IllegalArgumentException e) {
+			// illegal argument types were supplied, should not happen because the conversion should have already failed earlier (in atArgsToJavaArgs)
+			throw new RuntimeException("[broken at2java conversion?] Illegal argument for Java method "+javaMethod.getName(), e);
+		} catch (InvocationTargetException e) {
+			// the invoked method threw an exception
+			if (e.getCause() instanceof InterpreterException)
+				throw (InterpreterException) e.getCause();
+			else if (e.getCause() instanceof Signal) {
+			    throw (Signal) e.getCause();	
+			} else {
+				throw new XJavaException(symbiont, javaMethod, e.getCause());
+		    }
+		}
+	}
+	
+	private static Object[] atArgsToJavaArgs(ATObject[] args, Class[] types) throws InterpreterException {
+		Object[] jArgs = new Object[args.length];
+		for (int i = 0; i < args.length; i++) {
+			jArgs[i] = Symbiosis.ambientTalkToJava(args[i], types[i]);
+		}
+		return jArgs;
 	}
 	
 }

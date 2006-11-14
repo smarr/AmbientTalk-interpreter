@@ -34,6 +34,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.exceptions.XUserDefined;
 import edu.vub.at.objects.ATBoolean;
@@ -188,12 +189,7 @@ public class NATNil implements ATNil {
      * the lexical root, OBJLexicalRoot, which inherits this implementation.
      */
     public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
-        try {
-			return this.meta_assignField(this, name, value);
-		} catch (XUndefinedField e) {
-			// transform selector not found in undefined variable assignment
-			throw new XUndefinedField("variable assignment", name.base_getText().asNativeText().javaValue);
-		}
+        return this.meta_assignField(this, name, value);
     }
 
     public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
@@ -204,7 +200,7 @@ public class NATNil implements ATNil {
         	   Reflection.upFieldAssignment(receiver, jSelector, value);
 		} catch (XSelectorNotFound e) {
 			// if such a method does not exist, the field assignment has failed
-			throw new XUndefinedField("field assignment", name.base_getText().asNativeText().javaValue);
+			throw new XUnassignableField(name.base_getText().asNativeText().javaValue);
 		}
 		
         return NATNil._INSTANCE_;

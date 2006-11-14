@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.InterpreterException;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 
 /**
  * An XJavaException AmbientTalk native exception wraps a Java exception.
@@ -42,9 +43,19 @@ public final class XJavaException extends InterpreterException {
 	private static final long serialVersionUID = 328306238980169679L;
 
 	private final Throwable wrappedJavaException_;
+	private final Object originatingObject_;
+	private final Method originatingMethod_;
+	
+	public XJavaException(Object jObj, Method jMeth, Throwable exc) {
+		wrappedJavaException_ = exc;
+		originatingObject_ = jObj;
+		originatingMethod_ = jMeth;
+	}
 	
 	public XJavaException(Throwable exc) {
 		wrappedJavaException_ = exc;
+		originatingObject_ = null;
+		originatingMethod_ = null;
 	}
 	
 	// throwable interface implemented through composition with wrappedJavaException_
@@ -62,7 +73,12 @@ public final class XJavaException extends InterpreterException {
 	}
 
 	public String getMessage() {
-		return wrappedJavaException_.getMessage();
+		if (originatingObject_ != null) {
+			return "Java exception from " + originatingObject_.toString() + "."
+			           + originatingMethod_.getName() + ": " + wrappedJavaException_.getMessage();
+		} else {
+			return wrappedJavaException_.getMessage();
+		}
 	}
 
 	public StackTraceElement[] getStackTrace() {
@@ -92,7 +108,5 @@ public final class XJavaException extends InterpreterException {
 	public String toString() {
 		return wrappedJavaException_.toString();
 	}
-	
-	
 	
 }

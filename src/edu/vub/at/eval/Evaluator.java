@@ -88,8 +88,7 @@ public final class Evaluator {
 	/**
 	 * Auxiliary function used to print the elements of a table using various separators.
 	 */
-	public final static NATText printElements(NATTable tab,String start, String sep, String stop) throws InterpreterException {
-		ATObject[] els = tab.elements_;
+	public final static NATText printElements(ATObject[] els,String start, String sep, String stop) throws InterpreterException {
 		if (els.length == 0)
 			return NATText.atValue(String.valueOf(start+stop));
 		
@@ -99,6 +98,13 @@ public final class Evaluator {
 		}
 		buff.append(els[els.length-1].meta_print().asNativeText().javaValue + stop);
 	    return NATText.atValue(buff.toString());
+	}
+	
+	/**
+	 * Auxiliary function used to print the elements of a table using various separators.
+	 */
+	public final static NATText printElements(NATTable tab,String start, String sep, String stop) throws InterpreterException {
+		return printElements(tab.elements_, start, sep, stop);
 	}
 
 	public static final NATText printAsStatements(ATTable tab) throws InterpreterException {

@@ -43,6 +43,7 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 
 import java.lang.reflect.Method;
+import java.util.Vector;
 
 /**
  * JavaMethod is a wrapper class encapsulating one or more java.lang.reflect.Method objects
@@ -54,18 +55,20 @@ import java.lang.reflect.Method;
  *
  * @author tvcutsem
  */
-public final class JavaMethod extends NATNil implements ATMethod {
+public final class JavaMethod extends NATNil implements ATJavaMethod {
 	
+	private final ATObject wrapper_;
 	private final Object receiver_;
 	private final Method[] choices_;
 	
-	public JavaMethod(Object rcvr, Method[] choices) {
+	public JavaMethod(ATObject wrapper, Object rcvr, Method[] choices) {
+		wrapper_ = wrapper;
 		receiver_ = rcvr;
 		choices_ = choices;
 	}
 	
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-		return Symbiosis.symbioticInvocation(receiver_, choices_, arguments.asNativeTable().elements_);
+		return Symbiosis.symbioticInvocation(wrapper_, receiver_, choices_[0].getName(), choices_, arguments.asNativeTable().elements_);
 	}
 
 	public ATBegin base_getBodyExpression() throws InterpreterException {
@@ -96,6 +99,43 @@ public final class JavaMethod extends NATNil implements ATMethod {
 	}
 
 	public boolean base_isMethod() {
+		return true;
+	}
+
+	/**
+	 * For each Method in choices_, check whether it is compatible with the given types.
+	 * If so, add it to the choices_ array of the new JavaMethod.
+	 */
+	public JavaMethod base_cast(ATObject[] types) throws InterpreterException {
+		// unwrap the JavaClass wrappers
+		Class[] actualTypes = new Class[types.length];
+		for (int i = 0; i < actualTypes.length; i++) {
+			actualTypes[i] = types[i].asJavaClassUnderSymbiosis().getWrappedClass();
+		}
+		Vector matchingMethods = new Vector();
+		
+		for (int i = 0; i < choices_.length; i++) {
+			if(matches(choices_[i].getParameterTypes(), actualTypes)) {
+				matchingMethods.add(choices_[i]);
+			}
+		}
+		return new JavaMethod(wrapper_, receiver_,
+				             (Method[]) matchingMethods.toArray(new Method[matchingMethods.size()]));
+	}
+	
+	/**
+	 * Compares two Class arrays and returns true iff both arrays have equal size and all members are the same.
+	 */
+	private static final boolean matches(Class[] formals, Class[] actuals) {
+		if (formals.length != actuals.length)
+			return false;
+		
+		for (int i = 0; i < formals.length; i++) {
+			if (!(formals[i] == actuals[i])) {
+				return false;
+			}
+		}
+		
 		return true;
 	}
 	

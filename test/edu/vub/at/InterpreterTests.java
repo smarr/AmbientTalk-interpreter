@@ -43,6 +43,7 @@ import edu.vub.at.objects.natives.NATObjectTest;
 import edu.vub.at.objects.natives.PrimitivesTest;
 import edu.vub.at.objects.natives.TestFieldMap;
 import edu.vub.at.objects.natives.grammar.TestEval;
+import edu.vub.at.objects.symbiosis.SymbiosisTest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -76,6 +77,7 @@ public class InterpreterTests {
 		suite.addTestSuite(ExceptionHandlingTest.class);
 		suite.addTestSuite(EscapeTest.class);
 		suite.addTestSuite(MirrorsOnNativesTest.class);
+		suite.addTestSuite(SymbiosisTest.class);
 		//$JUnit-END$
 		return suite;
 	}

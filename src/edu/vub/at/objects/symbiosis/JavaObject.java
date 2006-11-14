@@ -103,7 +103,12 @@ public final class JavaObject extends NATObject implements ATObject {
 	
 	private Class staticType_;
 	
+	/**
+	 * A JavaObject wrapping an object o has a dynamic SHARES-A parent pointing to the
+	 * wrapper of o's class.
+	 */
 	private JavaObject(Object wrappedObject) {
+		super(JavaClass.wrapperFor(wrappedObject.getClass()), NATObject._SHARES_A_);
 		wrappedObject_ = wrappedObject;
 		staticType_ = wrappedObject_.getClass();
 	}
@@ -155,7 +160,7 @@ public final class JavaObject extends NATObject implements ATObject {
     public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
         try {
 			String jSelector = Reflection.upSelector(atSelector);
-			return Symbiosis.symbioticInvocation(wrappedObject_, wrappedObject_.getClass(), jSelector, arguments.asNativeTable().elements_);
+			return Symbiosis.symbioticInvocation(this, wrappedObject_, wrappedObject_.getClass(), jSelector, arguments.asNativeTable().elements_);
 		} catch (XSelectorNotFound e) {
 			return super.meta_invoke(receiver, atSelector, arguments);
 		}
@@ -287,7 +292,7 @@ public final class JavaObject extends NATObject implements ATObject {
     public ATMethod meta_grabMethod(ATSymbol methodName) throws InterpreterException {
         Method[] choices = Symbiosis.getMethods(wrappedObject_.getClass(), Reflection.upSelector(methodName), false);
         if (choices.length > 0) {
-        		return new JavaMethod(wrappedObject_, choices);
+        		return new JavaMethod(this, wrappedObject_, choices);
         } else {
         	    return super.meta_grabMethod(methodName);
         }
@@ -311,7 +316,7 @@ public final class JavaObject extends NATObject implements ATObject {
      */
     public ATTable meta_listMethods() throws InterpreterException {
 		// instance methods of the wrapped object's class
-		JavaMethod[] jMethods = Symbiosis.getAllMethods(wrappedObject_, wrappedObject_.getClass());
+		JavaMethod[] jMethods = Symbiosis.getAllMethods(this, wrappedObject_, wrappedObject_.getClass());
         // methods of the AT symbiont
 		ATObject[] symbiontMethods = super.meta_listMethods().asNativeTable().elements_;
 		return new NATTable(NATTable.collate(jMethods, symbiontMethods));

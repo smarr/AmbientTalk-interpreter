@@ -108,6 +108,8 @@ public class JavaInterfaceAdaptor {
 	 * @param jReceiver the Java object representing the receiver (normally an AT object)
 	 * @param jArguments the AT arguments to pass
 	 * @return the return value of the reflectively invoked method
+	 * 
+	 * TODO: code duplication w.r.t. invokeSymbioticMethod => replace this method by calls to invokeSymbioticMethod?
 	 */
 	public static ATObject invokeNativeATMethod(Method javaMethod, ATObject jReceiver, ATObject[] jArguments) throws InterpreterException {
 		try {
@@ -258,6 +260,18 @@ public class JavaInterfaceAdaptor {
 		return coercedArgs;
 	}
 	
+	public static final boolean isPrimitiveType(Class c) {
+		return (c.isPrimitive() ||
+				c == Integer.class ||
+				c == Double.class ||
+				c == Float.class ||
+				c == Character.class ||
+				c == Boolean.class ||
+				c == Byte.class ||
+				c == Long.class ||
+				c == Short.class);
+	}
+	
 	public static final ATObject primitiveJavaToATObject(Object jObj) throws XReflectionFailure {
 		// integer
 		if (jObj instanceof Integer) {
@@ -290,31 +304,31 @@ public class JavaInterfaceAdaptor {
 	
 	public static final Object atObjectToPrimitiveJava(ATObject atObj, Class type) throws InterpreterException {
 		// integer
-		if (type == Integer.class) {
+		if (type == int.class || type == Integer.class) {
 			return Integer.valueOf(atObj.asNativeNumber().javaValue);
 		// double
-		} else if (type == Double.class) {
+		} else if (type == double.class || type == Double.class) {
 			return Double.valueOf(atObj.asNativeFraction().javaValue);
 		// char
-		} else if (type == Character.class) {
+		} else if (type == char.class || type == Character.class) {
 			return Character.valueOf(atObj.asNativeText().asChar());
 		// boolean
-		} else if (type == Boolean.class) {
+		} else if (type == boolean.class || type == Boolean.class) {
 			return Boolean.valueOf(atObj.asNativeBoolean().javaValue);
 		// float
-		} else if (type == Float.class) {
+		} else if (type == float.class || type == Float.class) {
 			throw new XTypeMismatch(Float.class, atObj);
 			//return Float.valueOf((float) atObj.asNativeFraction().javaValue);
 		// byte
-		} else if (type == Byte.class) {
+		} else if (type == byte.class || type == Byte.class) {
 			throw new XTypeMismatch(Byte.class, atObj);
 			//return Byte.valueOf((byte) atObj.asNativeNumber().javaValue);
 		// long
-		} else if (type == Long.class) {
+		} else if (type == long.class || type == Long.class) {
 			throw new XTypeMismatch(Long.class, atObj);
 			//return Long.valueOf((long) atObj.asNativeFraction().javaValue);
 		// short
-		} else if (type == Short.class) {
+		} else if (type == short.class || type == Short.class) {
 			throw new XTypeMismatch(Short.class, atObj);
 			//return Short.valueOf((short) atObj.asNativeNumber().javaValue);
 		} else {
