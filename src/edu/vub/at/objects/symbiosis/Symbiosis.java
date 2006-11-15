@@ -268,7 +268,7 @@ public final class Symbiosis {
 	 * 
 	 * TODO: cache results
 	 */
-	public static Method[] getMethods(Class fromClass, String selector, boolean isStatic) throws XSelectorNotFound {
+	public static Method[] getMethods(Class fromClass, String selector, boolean isStatic) {
 		Method[] methods = fromClass.getMethods();
 		Method m;
 		Vector properMethods = new Vector(methods.length);

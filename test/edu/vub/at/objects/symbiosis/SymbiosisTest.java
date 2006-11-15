@@ -36,6 +36,8 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XSymbiosisFailure;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
+import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNil;
@@ -356,21 +358,54 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 * Tests first-class field access for both instances and classes
 	 */
 	public void testFirstClassFields() {
-		
+		try {
+			// def result := (reflect: atTestObject).grabField("xtest")
+			ATField result = atTestObject.meta_grabField(AGSymbol.alloc("xtest")).base_asField();
+			assertEquals("xtest", result.base_getName().toString());
+			assertEquals(TEST_OBJECT_INIT, result.base_getValue().asNativeNumber().javaValue);
+			
+			// result := (reflect: atTestClass).grabField("ytest")
+			result = atTestClass.meta_grabField(AGSymbol.alloc("ytest")).base_asField();
+			assertEquals("ytest", result.base_getName().toString());
+			assertEquals(ytest, result.base_getValue().asNativeText().javaValue);
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
 	}
 	
 	/**
 	 * Tests first-class method access for both instances and classes
 	 */
 	public void testFirstClassMethods() {
-		
+		try {
+			// def result := (reflect: atTestObject).grabMethod("gettertest")
+			ATMethod result = atTestObject.meta_grabMethod(AGSymbol.alloc("gettertest")).base_asMethod();
+			assertEquals("gettertest", result.base_getName().toString());
+			// assert (42 == result())
+			assertEquals(TEST_OBJECT_INIT, result.base_apply(NATTable.EMPTY, null).asNativeNumber().javaValue);
+			
+			// result := (reflect: atTestClass).grabMethod("prefix")
+			result = atTestClass.meta_grabMethod(AGSymbol.alloc("prefix")).base_asMethod();
+			assertEquals("prefix", result.base_getName().toString());
+			// assert ("AmbientTalk" == result(""))
+			assertEquals(ytest, result.base_apply(new NATTable(new ATObject[] { NATText.atValue("") }), null).asNativeText().javaValue);	
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
 	}
 	
 	/**
 	 * Tests casting to manually resolve overloaded method invocations
 	 */
 	public void testCasting() {
-		
+		try {
+			// invokes overloadedmatch2(SymbiosisTest) via explicit casting
+			ATObject method = atTestObject.meta_select(atTestObject, AGSymbol.alloc("overloadedmatch2"));
+			ATObject castedMethod = method.meta_invoke(method, AGSymbol.alloc("cast"), new NATTable(new ATObject[] { atTestClass }));
+			castedMethod.base_asMethod().base_apply(new NATTable(new ATObject[] { atTestObject }), null);
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
 	}
 	
 	/**

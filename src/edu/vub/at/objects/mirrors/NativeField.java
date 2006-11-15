@@ -97,4 +97,8 @@ public class NativeField extends NATNil implements ATField {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<native field:"+name_+" of "+ host_.meta_print().javaValue +">");
 	}
+	
+	public ATField base_asField() {
+		return this;
+	}
 }

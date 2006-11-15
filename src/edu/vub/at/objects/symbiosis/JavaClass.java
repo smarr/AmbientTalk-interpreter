@@ -169,6 +169,7 @@ public final class JavaClass extends NATObject {
     /**
      * When selecting a field from a symbiotic Java class object, if the object's class
      * has a static field with a matching selector, it is automatically read;
+     * if it has methods corresponding to the selector, they are returned in a JavaMethod wrapper,
      * otherwise, the fields of its AT symbiont are checked.
      */
     public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
@@ -177,7 +178,12 @@ public final class JavaClass extends NATObject {
         try {
             return Symbiosis.readField(null, wrappedClass_, jSelector);
         } catch (XUndefinedField e) {
-            return super.meta_select(receiver, selector);
+    	   		Method[] choices = Symbiosis.getMethods(wrappedClass_, jSelector, true);
+    	   		if (choices.length > 0) {
+    	   			return new JavaMethod(this, null, choices);
+    	   		} else {
+    	   			return super.meta_select(receiver, selector);
+    	   		}
         }
     }
     

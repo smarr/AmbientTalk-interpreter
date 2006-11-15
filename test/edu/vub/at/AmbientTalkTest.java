@@ -8,12 +8,14 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATContext;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.NATParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 
 import junit.framework.TestCase;
@@ -37,7 +39,7 @@ public abstract class AmbientTalkTest extends TestCase {
 	 */
 	public static final ATObject evalSnippet(Class forTestClass, String name, ATContext inContext) throws InterpreterException {
 		try {
-			File inFile = new File(forTestClass.getResource(forTestClass.getSimpleName() + "-" + name).toURI());
+			File inFile = new File(new URI(forTestClass.getResource(Evaluator.getSimpleName(forTestClass) + "-" + name).toString()));
             // load the code from the file
 			String code = Evaluator.loadContentOfFile(inFile);
 		    
@@ -48,7 +50,7 @@ public abstract class AmbientTalkTest extends TestCase {
 			throw new XIOProblem(e);
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
-			return null;
+			return NATNil._INSTANCE_;
 		}
 	}
 	
@@ -71,7 +73,7 @@ public abstract class AmbientTalkTest extends TestCase {
 			ATAbstractGrammar ptree = 
 				NATParser._INSTANCE_.base_parse(NATText.atValue(input));
 			ptree.meta_eval(ctx_);
-			fail("Expected an exception of type " + interpreterExceptionClass.getSimpleName()); // test should throw an exception
+			fail("Expected an exception of type " + Evaluator.getSimpleName(interpreterExceptionClass)); // test should throw an exception
 		} catch (InterpreterException ex) {
 			if (!interpreterExceptionClass.isInstance(ex)) {
 				ex.printStackTrace();

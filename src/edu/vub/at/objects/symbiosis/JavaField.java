@@ -69,4 +69,8 @@ public final class JavaField extends NATNil implements ATField {
 		return NATText.atValue("<java field:"+field_+">");
 	}
 	
+	public ATField base_asField() {
+		return this;
+	}
+	
 }

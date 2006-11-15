@@ -300,7 +300,7 @@ public final class Evaluator {
 	}
 	
 	public static final String valueNameOf(Class c) {
-		String name = c.getSimpleName();
+		String name = getSimpleName(c);
 		if (name.startsWith("AT")) {
 			return "a" + classnameToValuename(name, "AT");
 		} else if (name.startsWith("NAT")) {
@@ -334,6 +334,16 @@ public final class Evaluator {
 		 }
 		 m.appendTail(sb);
 		 return sb.toString();
+	}
+	
+	// UTILITY METHODS
+	
+	/**
+	 * Returns the unqualified name of a class.
+	 */
+	public static final String getSimpleName(Class c) {
+		String nam = c.getName();
+		return nam.substring(nam.lastIndexOf(".") + 1);
 	}
 	
 }

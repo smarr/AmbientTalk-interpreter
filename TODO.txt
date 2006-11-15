@@ -32,6 +32,13 @@ For symbiosis, reuse coercers to make NATObjects implement arbitrary Java interf
 => Threads -> currently 'you're on your own'? or consider wrapping each ATObject in a coercer that also acts as a far ref => converts invocations into enqueues, but this requires futures to block the waiting Java Thread
 => Implementation can be sped up a bit using caching, consider a cache for Symbiosis.getMethods
 requires to change implementation of Symbiosis.invokeSymbioticMethod not to filter out methods by assigning null
+=> representing array types in AT, i.e. how to access a wrapper for Type[] classes?
+Normally, arrays are represented as tables and vice versa, but for base_cast, requires explicit type wrapper for arrays
+=> als JavaClass wrappers in een delegation hierarchy hangen: heeft het zin om dan methoden toe te voegen
+die andere methoden uit andere klassen kunnen overriden? momenteel geen effect omdat een JavaClass wrapper onmiddelijk
+alle methods van een class opvraagt, niet alleen de declared methods. Langs de andere kant: dit soort 'overriding' is niet
+compleet in de zin dat Java methods de overriding methode niet zien, dus de semantiek matcht dan niet meer.
+Misschien dus beter om JavaClass objecten hun parent op NIL te zetten?
 
 - Reflection
 * isXXX and asXXX must become meta_isXXX and meta_asXXX
@@ -52,6 +59,7 @@ to give an error when invoking 'init' (i.e. 'init' should only be invoked via me
 make sure it's called only once.
 Perhaps a cleaner meta-level interface is having meta_clone and meta_new => clone makes a clone without initializing it, new also does initialization.
 The reason being that explicitly providing meta_init allows base-level code to re-initialize a live object at the meta-level.
+update: why not introduce syntax: new <expression>(arguments) , which is equivalent to: (reflect: <expression>).new(arguments)
 
 * meta_defineField versus meta_addField => perhaps defineField is not accessible from the
 meta-level and should be renamed to defineField. Similarly, meta_assignField should come in two
@@ -62,3 +70,6 @@ the evaluation code will require an .isNativeObject() -> .asNativeObject().defin
 * externe definities?
 def <expression>.f := val
 def <expression>.m() { meth }
+
+* zoveel mogelijk native methods vervangen door code gedumpt in de init.at file
+bvb. alle controlestructuren, isXXX: methoden, ...

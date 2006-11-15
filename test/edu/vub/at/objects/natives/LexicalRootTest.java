@@ -4,9 +4,11 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.eval.Evaluator;
 
 /**
- * @author tvc
+ * @author tvcutsem
  *
  * The unit test LexicalRootTest tests globally visible methods in the lexical root.
+ * 
+ * TODO: finish me
  */
 public class LexicalRootTest extends AmbientTalkTest {
 

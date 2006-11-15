@@ -8,9 +8,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.mirrors.NativeClosure;
-import edu.vub.at.objects.symbiosis.JavaClass;
-
-import java.lang.reflect.Field;
 
 /**
  * 

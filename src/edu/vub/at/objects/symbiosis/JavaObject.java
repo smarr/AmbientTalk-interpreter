@@ -118,7 +118,7 @@ public final class JavaObject extends NATObject implements ATObject {
 			staticType_ = type;
 		} else {
 			throw new XJavaException(new ClassCastException("Failed to cast a Java object of type "
-					     + staticType_.getSimpleName() + " into a " + type.getSimpleName()));
+					     + staticType_.getName() + " into a " + type.getName()));
 		}
 	}
 
@@ -183,6 +183,7 @@ public final class JavaObject extends NATObject implements ATObject {
     /**
      * When selecting a field from a symbiotic Java object, if the object's class
      * has a non-static field with a matching selector, it is automatically read;
+     * if it has a corresponding method, the method is returned in a closure,
      * otherwise, the fields of its AT symbiont are checked.
      */
     public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
@@ -191,7 +192,12 @@ public final class JavaObject extends NATObject implements ATObject {
         try {
             return Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
         } catch (XUndefinedField e) {
-            return super.meta_select(receiver, selector);
+        	    Method[] choices = Symbiosis.getMethods(wrappedObject_.getClass(), jSelector, false);
+        	    if (choices.length > 0) {
+        	     	return new JavaMethod(this, wrappedObject_, choices);
+        	    } else {
+        	      	return super.meta_select(receiver, selector);
+        	    }
         }
     }
     

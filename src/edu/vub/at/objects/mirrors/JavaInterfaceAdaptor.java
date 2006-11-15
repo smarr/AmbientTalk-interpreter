@@ -305,13 +305,13 @@ public class JavaInterfaceAdaptor {
 	public static final Object atObjectToPrimitiveJava(ATObject atObj, Class type) throws InterpreterException {
 		// integer
 		if (type == int.class || type == Integer.class) {
-			return Integer.valueOf(atObj.asNativeNumber().javaValue);
+			return new Integer(atObj.asNativeNumber().javaValue);
 		// double
 		} else if (type == double.class || type == Double.class) {
-			return Double.valueOf(atObj.asNativeFraction().javaValue);
+			return new Double(atObj.asNativeFraction().javaValue);
 		// char
 		} else if (type == char.class || type == Character.class) {
-			return Character.valueOf(atObj.asNativeText().asChar());
+			return new Character(atObj.asNativeText().asChar());
 		// boolean
 		} else if (type == boolean.class || type == Boolean.class) {
 			return Boolean.valueOf(atObj.asNativeBoolean().javaValue);
