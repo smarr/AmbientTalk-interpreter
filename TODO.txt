@@ -26,19 +26,12 @@ en varianten: nemen expliciet een NATIntercessiveMirror ipv een ATMirror
 => introduce a 'jlobby' namespace similar to lobby, but initialized with CLASSPATH of JVM instead of OBJECTPATH -> can be queried for classes! e,g, jlobby.java.lang.String, jlobby.edu.vub.at.Evaluator, ...
 JavaPackage = namespace, JavaClass = object that understands 'new' and static methods, JavaObject = object whose methods become methods, whose getter/setter methods become fields
 Solve overloading by being able to annotate a method invocation => future work
-=> Automatic conversions: use coercers for going from an ATObject to a Java interface type
-For symbiosis, reuse coercers to make NATObjects implement arbitrary Java interfaces, such as an ActionListener
-=> Exceptions map to generic AT exceptions
 => Threads -> currently 'you're on your own'? or consider wrapping each ATObject in a coercer that also acts as a far ref => converts invocations into enqueues, but this requires futures to block the waiting Java Thread
 => Implementation can be sped up a bit using caching, consider a cache for Symbiosis.getMethods
 requires to change implementation of Symbiosis.invokeSymbioticMethod not to filter out methods by assigning null
 => representing array types in AT, i.e. how to access a wrapper for Type[] classes?
 Normally, arrays are represented as tables and vice versa, but for base_cast, requires explicit type wrapper for arrays
-=> als JavaClass wrappers in een delegation hierarchy hangen: heeft het zin om dan methoden toe te voegen
-die andere methoden uit andere klassen kunnen overriden? momenteel geen effect omdat een JavaClass wrapper onmiddelijk
-alle methods van een class opvraagt, niet alleen de declared methods. Langs de andere kant: dit soort 'overriding' is niet
-compleet in de zin dat Java methods de overriding methode niet zien, dus de semantiek matcht dan niet meer.
-Misschien dus beter om JavaClass objecten hun parent op NIL te zetten?
+=> casting for constructors
 
 - Reflection
 * isXXX and asXXX must become meta_isXXX and meta_asXXX

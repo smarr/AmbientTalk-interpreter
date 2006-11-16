@@ -101,8 +101,6 @@ public final class JavaObject extends NATObject implements ATObject {
 	
 	private final Object wrappedObject_;
 	
-	private Class staticType_;
-	
 	/**
 	 * A JavaObject wrapping an object o has a dynamic SHARES-A parent pointing to the
 	 * wrapper of o's class.
@@ -110,24 +108,10 @@ public final class JavaObject extends NATObject implements ATObject {
 	private JavaObject(Object wrappedObject) {
 		super(JavaClass.wrapperFor(wrappedObject.getClass()), NATObject._SHARES_A_);
 		wrappedObject_ = wrappedObject;
-		staticType_ = wrappedObject_.getClass();
-	}
-	
-	public void castTo(Class type) throws XJavaException {
-		if (type.isInstance(wrappedObject_)) {
-			staticType_ = type;
-		} else {
-			throw new XJavaException(new ClassCastException("Failed to cast a Java object of type "
-					     + staticType_.getName() + " into a " + type.getName()));
-		}
 	}
 
 	public Object getWrappedObject() {
 		return wrappedObject_;
-	}
-	
-	public Class getStaticType() {
-		return staticType_;
 	}
 	
 	public boolean isJavaObjectUnderSymbiosis() {

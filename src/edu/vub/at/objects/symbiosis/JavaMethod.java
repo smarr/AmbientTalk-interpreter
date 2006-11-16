@@ -70,7 +70,10 @@ public final class JavaMethod extends NATNil implements ATJavaMethod {
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 		return Symbiosis.symbioticInvocation(wrapper_, receiver_, choices_[0].getName(), choices_, arguments.asNativeTable().elements_);
 	}
-
+	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
+		return base_apply(arguments, ctx);
+	}
+	
 	public ATBegin base_getBodyExpression() throws InterpreterException {
 		// list all of the method signatures of the (possibly overloaded) Java method
 		StringBuffer buff = new StringBuffer("Java implementation of: ");

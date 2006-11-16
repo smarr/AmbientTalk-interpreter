@@ -28,6 +28,7 @@
 package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -59,12 +60,6 @@ import java.util.HashMap;
  *  - cloning a Java class results in the same Java class instance
  *  - sending 'new' to a Java class invokes the constructor and returns a new instance of the class under symbiosis
  *  - all static fields and methods of the Java class are reflected under symbiosis as fields and methods of the AT object
- * 
- * A JavaClass instance can be used as a closure. When applied to an object, it acts as a Java 'cast' operation:
- *  - performing JavaClass(AmbientTalkObject) coerces the ambienttalk object into the correct Java type
- *    (this ONLY works if JavaClass represents a Java Interface type!)
- *  - performing JavaClass(JavaObject) performs type coercion just like doing (JavaClass) JavaObject.
- *    Upon failure, a ClassCastException is raised as expected
  *  
  * JavaClass instances are pooled (on a per-actor basis): there should exist only one JavaClass instance
  * for each Java class loaded into the JVM. Because the JVM ensures that a Java class
@@ -109,11 +104,10 @@ public final class JavaClass extends NATObject {
 	private final Class wrappedClass_;
 	
 	/**
-	 * A JavaClass wrapping a class c has a dynamic is-a parent wrapping c's superclass
-	 * If c is java.lang.Object, the parent of its wrapper is nil
+	 * A JavaClass wrapping a class c is an object that has the lexical scope as its lexical parent
+	 * and has NIL as its dynamic parent.
 	 */
 	private JavaClass(Class wrappedClass) {
-		super((wrappedClass == Object.class) ? NATNil._INSTANCE_ : wrapperFor(wrappedClass.getSuperclass()), NATObject._IS_A_);
 		wrappedClass_ = wrappedClass;
 	}
 	
@@ -249,9 +243,24 @@ public final class JavaClass extends NATObject {
 	 */
 	public ATObject meta_clone() throws InterpreterException { return this; }
 	
+	/**
+	 * aJavaClass.new(@args) == aJavaClass.init(@args)
+	 * AmbientTalk objects can add a custom init method to the class in order to intercept
+	 * instance creation. The original instance can then be created by invoking super.init(@args).
+	 * 
+	 * For example, imagine we want to extend the class java.lang.Point with a 3D coordinate, e.g. a 'z' field:
+	 * <tt>
+	 * def Point := jlobby.java.awt.Point;
+	 * def Point.init(x,y,z) {
+	 *   def point := super.init(x,y); // invokes the Java constructor
+	 *   def point.z := z; // adds a field dynamically to the new JavaObject wrapper
+	 *   point; // important! the return value of init determines the return value of 'new'
+	 * }
+	 * def mypoint := Point.new(1,2,3);
+	 * </tt>
+	 */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-    	    // TODO: can a symbiotic AT object add its own constructors in any way?
-		return Symbiosis.symbioticInstanceCreation(wrappedClass_, initargs.asNativeTable().elements_);
+    	    return this.meta_invoke(this, Evaluator._INIT_, initargs);
     }
     
     /**
@@ -323,6 +332,14 @@ public final class JavaClass extends NATObject {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<java:"+wrappedClass_.toString()+">");
 	}
+	
+    /**
+     * See JavaClass#meta_newInstance(ATTable) for more details about the behaviour
+     * of Java class instantiation in AmbientTalk.
+     */
+    public ATObject base_init(ATObject[] initargs) throws InterpreterException {
+    		return Symbiosis.symbioticInstanceCreation(wrappedClass_, initargs);
+    }
 	
     public JavaClass asJavaClassUnderSymbiosis() throws XTypeMismatch { return this; }
 

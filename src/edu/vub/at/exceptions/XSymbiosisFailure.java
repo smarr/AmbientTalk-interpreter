@@ -31,6 +31,7 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.mirrors.Reflection;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 /**
@@ -46,13 +47,32 @@ public class XSymbiosisFailure extends InterpreterException {
 	private final String message_;
 	
 	/**
+	 * Reports that an overloaded method could not be resolved to a unique implementation.
 	 * @param symbiont the Java object upon which the overloaded symbiotic invocation failed.
 	 * @param selector the name of the invoked overloaded method
 	 * @param choices all applicable methods (may contain null values, corresponding to non-applicable choices)
+	 * @param numMatchingMethods the number of matching methods (the number of non-null values in choices)
 	 */
 	public XSymbiosisFailure(Object symbiont, String selector, Method[] choices, ATObject[] atArgs, int numMatchingMethods) throws InterpreterException {
 		StringBuffer buff = new StringBuffer("Overloaded Java invocation has " + numMatchingMethods + " matches:\n");
 		buff.append(symbiont.toString() + "." + Reflection.downSelector(selector) + Evaluator.printElements(atArgs, "(",",",")").javaValue);
+		for (int i = 0; i < choices.length; i++) {
+			if (choices[i] != null) {
+				buff.append("\n" + choices[i].toString());
+			}
+		}
+		message_ = buff.toString();
+	}
+	
+	/**
+	 * Reports that an overloaded constructor could not be resolved to a unique implementation.
+	 * @param failedClass the Java class whose constructor could not be resolved.
+	 * @param choices all applicable constructors (may contain null values, corresponding to non-applicable choices)
+	 * @param numMatchingCtors the number of matching constructors (the number of non-null values in choices)
+	 */
+	public XSymbiosisFailure(Class failedClass, Constructor[] choices, ATObject[] atArgs, int numMatchingCtors) throws InterpreterException {
+		StringBuffer buff = new StringBuffer("Overloaded Java constructor has " + numMatchingCtors + " matches:\n");
+		buff.append(Evaluator.getSimpleName(failedClass) + ".new"+ Evaluator.printElements(atArgs, "(",",",")").javaValue);
 		for (int i = 0; i < choices.length; i++) {
 			if (choices[i] != null) {
 				buff.append("\n" + choices[i].toString());

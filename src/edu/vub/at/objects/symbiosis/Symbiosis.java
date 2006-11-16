@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.exceptions.XNotInstantiatable;
 import edu.vub.at.exceptions.XReflectionFailure;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XSymbiosisFailure;
@@ -47,6 +48,7 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -160,8 +162,81 @@ public final class Symbiosis {
 		}
 	}
 	
-	public static ATObject symbioticInstanceCreation(Class ofClass, ATObject[] atArgs) {
-		return null; // TODO: implement jClass.new(args) => JavaObject.wrapperFor( jClass.class.newInstance(args) )
+	/**
+	 * Creates a new instance of a Java class.
+	 * 
+	 * @param ofClass the Java class of which to create an instance
+	 * @param atArgs the AmbientTalk arguments to the constructor, to be converted to Java arguments
+	 * @return an unitialized JavaObject wrapper around a newly created instance of the class
+	 * 
+	 * @throws XArityMismatch if the wrong number of arguments were supplied
+	 * @throws XNotInstantiatable if no public constructors are available or if the class is abstract
+	 * @throws XTypeMismatch if one of the arguments cannot be converted into the static type expected by the constructor
+	 * @throws XSymbiosisFailure if the constructor is overloaded and cannot be unambiguously resolved given the actual arguments
+	 * @throws XReflectionFailure if the invoked constructor is not accessible from within AmbientTalk
+	 * @throws XJavaException if the invoked Java constructor throws a Java exception
+	 */
+	public static ATObject symbioticInstanceCreation(Class ofClass, ATObject[] atArgs) throws InterpreterException {
+		Constructor[] ctors = ofClass.getConstructors();
+		switch (ctors.length) {
+		     // no constructors found? class is not instantiatable...
+		case 0:
+			throw new XNotInstantiatable(ofClass);
+			// just one constructor found, no need to resolve overloaded methods
+		case 1: {
+			// if the constructor takes an ATObject array as its sole parameter, it is interpreted as taking
+			// a variable number of ambienttalk arguments
+			Class[] params = ctors[0].getParameterTypes();
+			Object[] args;
+			if ((params.length == 1) && params[0].equals(ATObject[].class)) {
+				args = new Object[] { atArgs };
+			} else {
+				if (params.length != atArgs.length) {
+					throw new XArityMismatch("Java constructor "+Reflection.downSelector(ctors[0].getName()), params.length, atArgs.length);
+				}
+				// make sure to properly convert actual arguments into Java objects
+				args = atArgsToJavaArgs(atArgs, params);
+			}
+			return invokeUniqueSymbioticConstructor(ctors[0], args);
+		  }	
+		}
+		
+		// overloading: filter out all constructors that do not match arity or whose argument types do not match
+		int matchingCtors = 0;
+		Constructor matchingCtor = null;
+		Object[] actuals = null;
+		Class[] params;
+		for (int i = 0; i < ctors.length; i++) {
+			params = ctors[i].getParameterTypes();
+			// is the constructor a varargs constructor?
+			if ((params.length == 1) && params[0].equals(ATObject[].class)) {
+				actuals = new Object[] { atArgs };
+				matchingCtor = ctors[i];
+				matchingCtors++;
+				// does the arity match?
+			} else if (params.length == atArgs.length) {
+				// can it be invoked with the given actuals?
+				try {
+					actuals = atArgsToJavaArgs(atArgs, params);
+					matchingCtor = ctors[i];
+					matchingCtors++;
+				} catch(XTypeMismatch e) {
+					// types don't match
+					ctors[i] = null; // TODO: don't assign to null, array may be cached or used later on (or by wrapper method)
+				}
+			} else {
+				// arity does not match
+				ctors[i] = null;
+			}
+		}
+		
+		if (matchingCtors != 1) {
+			// no constructors left or more than one constructor left? overloading resolution failed
+			throw new XSymbiosisFailure(ofClass, ctors, atArgs, matchingCtors);
+		} else {
+			// just one constructor left, invoke it
+			return invokeUniqueSymbioticConstructor(matchingCtor, actuals);
+		}
 	}
 	
 	/**
@@ -237,8 +312,8 @@ public final class Symbiosis {
 	 */
 	public static boolean hasField(Class c, String selector, boolean isStatic) {
 		try {
-			c.getField(selector);
-			return true;
+			Field f = c.getField(selector);
+			return (Modifier.isStatic(f.getModifiers()) == isStatic);
 		} catch (NoSuchFieldException e) {
 			return false;
 		}
@@ -472,6 +547,30 @@ public final class Symbiosis {
 			    throw (Signal) e.getCause();	
 			} else {
 				throw new XJavaException(symbiont, javaMethod, e.getCause());
+		    }
+		}
+	}
+	
+	private static ATObject invokeUniqueSymbioticConstructor(Constructor ctor, Object[] jArgs) throws InterpreterException {
+		try {
+			return JavaObject.wrapperFor(ctor.newInstance(jArgs));
+		} catch (IllegalAccessException e) {
+			// the invoked method is not publicly accessible
+			throw new XReflectionFailure("Java constructor "+Reflection.downSelector(ctor.getName()) + " is not accessible.", e);
+		} catch (IllegalArgumentException e) {
+			// illegal argument types were supplied, should not happen because the conversion should have already failed earlier (in atArgsToJavaArgs)
+			throw new RuntimeException("[broken at2java conversion?] Illegal argument for Java constructor "+ctor.getName(), e);
+		} catch (InstantiationException e) {
+			// the given class is abstract
+			throw new XNotInstantiatable(ctor.getDeclaringClass(), e);
+		} catch (InvocationTargetException e) {
+			// the invoked method threw an exception
+			if (e.getCause() instanceof InterpreterException)
+				throw (InterpreterException) e.getCause();
+			else if (e.getCause() instanceof Signal) {
+			    throw (Signal) e.getCause();	
+			} else {
+				throw new XJavaException(null, ctor, e.getCause());
 		    }
 		}
 	}

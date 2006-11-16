@@ -31,7 +31,7 @@ import edu.vub.at.exceptions.InterpreterException;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
+import java.lang.reflect.Member;
 
 /**
  * An XJavaException AmbientTalk native exception wraps a Java exception.
@@ -44,9 +44,9 @@ public final class XJavaException extends InterpreterException {
 
 	private final Throwable wrappedJavaException_;
 	private final Object originatingObject_;
-	private final Method originatingMethod_;
+	private final Member originatingMethod_; // method or constructor in which exception originated
 	
-	public XJavaException(Object jObj, Method jMeth, Throwable exc) {
+	public XJavaException(Object jObj, Member jMeth, Throwable exc) {
 		wrappedJavaException_ = exc;
 		originatingObject_ = jObj;
 		originatingMethod_ = jMeth;
@@ -60,10 +60,6 @@ public final class XJavaException extends InterpreterException {
 	
 	// throwable interface implemented through composition with wrappedJavaException_
 
-	public synchronized Throwable fillInStackTrace() {
-		return wrappedJavaException_.fillInStackTrace();
-	}
-
 	public Throwable getCause() {
 		return wrappedJavaException_.getCause();
 	}
@@ -71,11 +67,18 @@ public final class XJavaException extends InterpreterException {
 	public String getLocalizedMessage() {
 		return wrappedJavaException_.getLocalizedMessage();
 	}
+	
+	public Throwable getWrappedJavaException() {
+		return wrappedJavaException_;
+	}
 
 	public String getMessage() {
 		if (originatingObject_ != null) {
 			return "Java exception from " + originatingObject_.toString() + "."
 			           + originatingMethod_.getName() + ": " + wrappedJavaException_.getMessage();
+		} else if (originatingMethod_ != null) {
+			return "Java exception from constructor " + originatingMethod_.getName()
+			   + ": " + wrappedJavaException_.getMessage();
 		} else {
 			return wrappedJavaException_.getMessage();
 		}

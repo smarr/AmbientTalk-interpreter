@@ -28,14 +28,18 @@
 package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.XNotInstantiatable;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XSymbiosisFailure;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -80,6 +84,22 @@ public class SymbiosisTest extends AmbientTalkTest {
 	
 	public SymbiosisTest() {
 		xtest = 0;
+	}
+
+	public SymbiosisTest(SymbiosisTest t) {
+		xtest = -1;
+	}
+	
+	public SymbiosisTest(AmbientTalkTest t) {
+		xtest = -1;
+	}
+	
+	private static class ExceptionTest extends Exception {
+		private static final long serialVersionUID = 1L;
+	}
+
+	public SymbiosisTest(JavaClass c) throws ExceptionTest {
+		throw new ExceptionTest();
 	}
 	
 	public static final int TEST_OBJECT_INIT = 42;
@@ -413,10 +433,15 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testSymbiontParents() {
 		try {
-			// the parent of atTestObject is atTestClass
+			// the dynamic parent of atTestObject is atTestClass
 			assertEquals(atTestClass, atTestObject.meta_getDynamicParent());
-			// the parent of atTestClass is a wrapper for the class AmbientTalkTest
-			assertEquals(JavaClass.wrapperFor(AmbientTalkTest.class), atTestClass.meta_getDynamicParent());
+			// the dynamic parent of atTestClass is nil
+			assertEquals(NATNil._INSTANCE_, atTestClass.meta_getDynamicParent());
+			
+			// the lexical parent of atTestObject is the lexical root
+			assertEquals(Evaluator.getGlobalLexicalScope(), atTestObject.meta_getLexicalParent());
+			// the lexical parent of atTestClass is the lexical root
+			assertEquals(Evaluator.getGlobalLexicalScope(), atTestClass.meta_getLexicalParent());
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -426,7 +451,46 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 * Tests whether new per-instance methods and fields can be added to a wrapped Java object.
 	 */
 	public void testSymbiontInstanceAdditions() {
-		
+		try {
+			// (reflect: atTestObject).defineField("x", 1)
+			atTestObject.meta_defineField(AGSymbol.alloc("x"), NATNumber.ONE);
+			// assert(atTestObject.x == 1)
+			assertEquals(NATNumber.ONE, atTestObject.meta_select(atTestObject, AGSymbol.alloc("x")));
+			
+			// (reflect: atTestObject).addMethod(<method:"foo",[x],{x}>)
+			ATMethod foo = evalAndReturn("def foo(x) { x }; foo").base_asClosure().base_getMethod();
+			atTestObject.meta_addMethod(foo);
+			// assert(atTestObject.foo(0) == 0)
+			assertEquals(NATNumber.ZERO, atTestObject.meta_invoke(atTestObject, AGSymbol.alloc("foo"),
+					new NATTable(new ATObject[] { NATNumber.ZERO })));
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Tests whether no duplicate methods or fields can be added to a wrapped Java object.
+	 */
+	public void testSymbiontDuplicates() {
+		try {
+			try {
+				// def atTestObject.xtest := 1
+				atTestObject.meta_defineField(AGSymbol.alloc("xtest"), NATNumber.ONE);
+				fail("expected a duplicate slot exception");
+			} catch (XDuplicateSlot e) {
+			    // expected exception: success
+			}
+			try {
+				// def atTestObject.gettertest() { nil }
+				ATMethod getter = evalAndReturn("def gettertest() { nil }; gettertest").base_asClosure().base_getMethod();
+				atTestObject.meta_addMethod(getter);
+				fail("expected a duplicate slot exception");
+			} catch (XDuplicateSlot e) {
+			    // expected exception: success
+			}
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -434,20 +498,143 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 * Also tests whether existing instances can make use of these newly added methods
 	 */
 	public void testSymbiontClassAdditions() {
-		
-	}
-	
-	/**
-	 * Tests the invocation of new on wrapped classes.
-	 */
-	public void testInstanceCreation() {
-		
+		try {
+			// (reflect: atTestClass).defineField("z", 1)
+			atTestClass.meta_defineField(AGSymbol.alloc("z"), NATNumber.ONE);
+			// assert(atTestClass.z == 1)
+			assertEquals(NATNumber.ONE, atTestClass.meta_select(atTestClass, AGSymbol.alloc("z")));
+			// assert(aTestObject.z == 1) -> delegation to class
+			assertEquals(NATNumber.ONE, atTestObject.meta_select(atTestObject, AGSymbol.alloc("z")));
+			
+			// (reflect: atTestClass).addMethod(<method:"get",[],{self.xtest}>)
+			ATMethod get = evalAndReturn("def get() { self.xtest }; get").base_asClosure().base_getMethod();
+			atTestClass.meta_addMethod(get);
+			// assert(atTestObject.xtest == atTestObject.get())
+			assertEquals(atTestObject.meta_select(atTestObject, AGSymbol.alloc("xtest")),
+					     atTestObject.meta_invoke(atTestObject, AGSymbol.alloc("get"), NATTable.EMPTY));
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
 	}
 	
 	/**
 	 * Tests cloning behaviour for both wrapped class instances and classes.
 	 */
 	public void testCloning() {
-		
+		try {
+			// cloning a class results in the same class
+			assertEquals(atTestClass, atTestClass.meta_clone());
+			
+			try {
+				// cloning a java object results in an error
+				atTestObject.meta_clone();
+				fail("expected an illegal operation exception");
+			} catch (XIllegalOperation e) {
+				// expected exception: success
+			}
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
 	}
+	
+	/**
+	 * Tests the invocation of new on a wrapped Java Class.
+	 * Instantiates the Java class via the default init implementation.
+	 */
+	public void testWorkingInstanceCreation() {
+		try {
+			// def instance := atTestClass.new(1)
+			ATObject instance = atTestClass.meta_newInstance(new NATTable(new ATObject[] { NATNumber.ONE }));
+			assertEquals(JavaObject.class, instance.getClass());
+			assertEquals(NATNumber.ONE, instance.meta_select(instance, AGSymbol.alloc("xtest")));
+			
+			Object realInstance = instance.asJavaObjectUnderSymbiosis().getWrappedObject();
+			assertEquals(SymbiosisTest.class, realInstance.getClass());
+			assertEquals(1, ((SymbiosisTest) realInstance).xtest);
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Tests whether classes with private constructors terminate cleanly.
+	 */
+	public void testNonInstantiatableCreation() {
+		try {
+			// def instance := JavaObject.new(1)
+			JavaClass.wrapperFor(JavaObject.class).meta_newInstance(new NATTable(new ATObject[] { NATNumber.ONE }));
+			fail("expected a not instantiatable exception");
+		} catch (XNotInstantiatable e) {
+			// expected exception: success
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Tests whether incorrect arguments passed to constructor terminate cleanly.
+	 */
+	public void testIllegalArgsInstanceCreation() {
+		try {
+			// def instance := atTestClass.new(1.0)
+			atTestClass.meta_newInstance(new NATTable(new ATObject[] { NATFraction.atValue(1.0) }));
+			fail("expected a symbiosis failure with 0 matches");
+		} catch (XSymbiosisFailure e) {
+			// expected exception: success
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Tests whether overloaded constructors which cannot be resolved terminates cleanly.
+	 */
+	public void testOverloadedInstanceCreation() {
+		try {
+			// def instance := atTestClass.new(atTestObject) => 2 matches
+			atTestClass.meta_newInstance(new NATTable(new ATObject[] { atTestObject }));
+			fail("expected a symbiosis failure with 2 matches");
+		} catch (XSymbiosisFailure e) {
+			// expected exception: success
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Tests an instance creation that raises an exception
+	 */
+	public void testExceptionInInstanceCreation() {
+		try {
+			// def instance := atTestClass.new(atTestClass)
+			atTestClass.meta_newInstance(new NATTable(new ATObject[] { atTestClass }));
+			fail("expected the constructor to throw an exception");
+		} catch (XJavaException e) {
+			// expected exception: success if it was an ExceptionTest instance
+			assertEquals(ExceptionTest.class, e.getWrappedJavaException().getClass());
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * Tests the invocation of new on a wrapped Java Class.
+	 * Instantiates the Java class via a custom init implementation.
+	 */
+	public void testCustomInstanceCreation() {
+		try {
+			// def atTestClass.init(x) { def o := super.init(x); def o.ytest := y; o }
+			ATClosure init = evalAndReturn("def init(x,y) { def o := super.init(x); def o.ytest := y; o }; init").base_asClosure();
+			atTestClass.meta_addMethod(init.base_getMethod());
+			
+			// def instance := atTestClass.new(10)
+			ATObject instance = atTestClass.meta_newInstance(new NATTable(new ATObject[] { NATNumber.atValue(10), NATNumber.atValue(11) }));
+			
+			assertEquals(10, instance.meta_select(instance, AGSymbol.alloc("xtest")).asNativeNumber().javaValue);
+			assertEquals(11, instance.meta_select(instance, AGSymbol.alloc("ytest")).asNativeNumber().javaValue);
+		} catch (InterpreterException e) {
+			fail(e.getMessage());
+		}
+	}
+	
 }
