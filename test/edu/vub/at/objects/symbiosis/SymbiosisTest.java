@@ -65,6 +65,12 @@ public class SymbiosisTest extends AmbientTalkTest {
 	
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(TestEval.class);
+		/*Test test= new SymbiosisTest() {
+		        public void runTest() {
+		        	  testAT2JavaConversion();
+		        }
+		 };
+		 junit.textui.TestRunner.run(test);*/
 	}
 	
 	// test fixture

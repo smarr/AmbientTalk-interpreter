@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -38,6 +39,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.symbiosis.Symbiosis;
 
 import java.lang.reflect.Method;
 import java.util.Vector;
@@ -620,7 +622,10 @@ public final class Reflection {
 	
 	public static final ATObject upExceptionCreation(InterpreterException jRcvr, ATTable atInitargs) throws InterpreterException {
 		ATObject[] args = atInitargs.asNativeTable().elements_;
-		return JavaInterfaceAdaptor.createNativeATObject(jRcvr.getClass(), args);
+		//return JavaInterfaceAdaptor.createNativeATObject(jRcvr.getClass(), args);
+		return new NATException((InterpreterException)
+				Symbiosis.symbioticInstanceCreation(jRcvr.getClass(), args)
+				  .asJavaObjectUnderSymbiosis().getWrappedObject());
 	}
 
 	/**

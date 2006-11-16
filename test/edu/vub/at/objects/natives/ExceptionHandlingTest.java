@@ -100,7 +100,6 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	
 	/**
 	 * Tests AT Code raising an newly create (cloned) interpreter exception
-	 * FIXME: this test FAILS because doesNotUnderstandX.new (in general InterpreterException.new) makes wrong use of native method invocation
 	 */
 	public void testRaiseNewInterpreterException() throws InterpreterException {
 		try {			
@@ -115,7 +114,6 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	/**
 	 * Tests AT Code catching an interpreter exception. It implements a sketchy 
 	 * object model where fields can be removed as well.
-	 * FIXME: this test FAILS because InterpreterException and NATException make wrong use of native method invocation
 	 */
 	public void testInterpreterExceptionThrowing() {
 		try {
