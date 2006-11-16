@@ -72,15 +72,38 @@ public class NATMethod extends NATNil implements ATMethod {
 	 * To apply a function, first bind its parameters to the evaluated arguments within a new call frame.
 	 * This call frame is lexically nested within the current lexical scope.
 	 * 
-	 * The implementation-level invariant to be maintained is that the caller of this method should be
-	 * NATClosure.meta_apply. This method should *not* be invoked without passing through NATClosure.meta_apply first.
-	 * If it is, the result will be a dynamically scoped function application.
+	 * This method is invoked via the following paths:
+	 *  - either by directly 'calling a function', in which case this method is applied via NATClosure.base_apply.
+	 *    The closure ensures that the context used is the lexical scope, not the dynamic scope of invocation.
+	 *  - or by 'invoking a method' through an object, in which case this method is applied via NATObject.meta_invoke.
+	 *    The enclosing object ensures that the context is properly initialized with the implementor, the dynamic receiver
+	 *    and the implementor's parent.
 	 * 
 	 * @param arguments the evaluated actual arguments
-	 * @param ctx the context in which to evaluate the method body
+	 * @param ctx the context in which to evaluate the method body, where a call frame will be inserted first
 	 * @return the value of evaluating the function body
 	 */
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+		NATCallframe cf = new NATCallframe(ctx.base_getLexicalScope());
+		Evaluator.defineParamsForArgs(
+				name_.base_getText().asNativeText().javaValue, 
+				cf, 
+				parameters_, arguments);
+		return body_.meta_eval(ctx.base_withLexicalEnvironment(cf));
+	}
+	
+	/**
+	 * Applies the method in the context given, without first inserting a call frame to bind parameters.
+	 * Arguments are bound directly in the given lexical scope.
+	 * 
+	 * This method is often invoked via its enclosing closure when used to implement various language
+	 * constructs such as object:, mirror:, extend:with: etc.
+	 * 
+	 * @param arguments the evaluated actual arguments
+	 * @param ctx the context in which to evaluate the method body, to be used as-is
+	 * @return the value of evaluating the function body
+	 */
+	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
 		Evaluator.defineParamsForArgs(
 				name_.base_getText().asNativeText().javaValue, 
 				ctx.base_getLexicalScope(), 

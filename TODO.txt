@@ -66,10 +66,7 @@ meta-level and should be renamed to defineField. Similarly, meta_assignField sho
 variants: meta_assignField(ATField f, ATObject val) and assignField(ATSymbol sel, ATObject val).
 The problem then becomes: ATObject interface only supports the meta_... variants, meaning that
 the evaluation code will require an .isNativeObject() -> .asNativeObject().defineField(...) check.
-
-* externe definities?
-def <expression>.f := val
-def <expression>.m() { meth }
+=> add a meta_defineFunction operation to ignore the if-test in AGDef...
 
 * zoveel mogelijk native methods vervangen door code gedumpt in de init.at file
 bvb. alle controlestructuren, isXXX: methoden, ...

@@ -82,10 +82,17 @@ public class NATClosure extends NATNil implements ATClosure {
 	 * rather than the runtime context of the invoker.
 	 */
 	public ATObject base_apply(ATTable arguments) throws InterpreterException {
-		NATCallframe scope = new NATCallframe(context_.base_getLexicalScope());
-		return method_.base_apply(arguments, context_.base_withLexicalEnvironment(scope));
+		return method_.base_apply(arguments, context_);
 	}
 
+	/**
+	 * To apply a closure in a given scope, apply its underlying method with a new context
+	 * constructed from the scope object.
+	 */
+	public ATObject base_applyInScope(ATTable args, ATObject scope) throws InterpreterException {
+		return method_.base_applyInScope(args, new NATContext(scope, scope, scope.meta_getDynamicParent()));
+	}
+	
 	/**
 	 * receiver is a zero-argument block closure returning a boolean
 	 * @param body a zero-argument block closure

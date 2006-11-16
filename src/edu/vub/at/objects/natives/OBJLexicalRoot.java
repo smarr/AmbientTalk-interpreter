@@ -276,7 +276,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 */
 	public ATObject base_object_(ATClosure code) throws InterpreterException {
 		NATObject newObject = new NATObject(code.base_getContext().base_getLexicalScope());
-		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newObject, newObject, NATNil._INSTANCE_));
+		code.base_applyInScope(NATTable.EMPTY, newObject);
 		return newObject;
 	}
 	
@@ -358,7 +358,7 @@ public final class OBJLexicalRoot extends NATNil {
 		NATMirage newMirage = new NATMirage(code.base_getContext().base_getLexicalScope(), mirrorClone);
 		mirrorClone.setBase(newMirage);
 		
-		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newMirage, newMirage, newMirage.dynamicParent_));
+		code.base_applyInScope(NATTable.EMPTY, newMirage);
 		
 		return newMirage;
 
@@ -371,7 +371,7 @@ public final class OBJLexicalRoot extends NATNil {
 		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._IS_A_);
 		mirrorClone.setBase(newMirage);
 		
-		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
+		code.base_applyInScope(NATTable.EMPTY, newMirage);
 		
 		return newMirage;
 
@@ -384,7 +384,7 @@ public final class OBJLexicalRoot extends NATNil {
 		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._SHARES_A_);
 		mirrorClone.setBase(newMirage);
 		
-		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(newMirage, newMirage, NATNil._INSTANCE_));
+		code.base_applyInScope(NATTable.EMPTY, newMirage);
 		
 		return newMirage;
 

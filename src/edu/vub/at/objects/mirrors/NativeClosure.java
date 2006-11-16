@@ -122,7 +122,7 @@ public class NativeClosure extends NATClosure {
 			// this method is supposed to be overridden by an anonymous subclass
 			throw new RuntimeException("NativeClosure's meta_apply not properly overridden by " + scope_.getClass());
 		} else {
-			return method_.base_apply(arguments, this.base_getContext());
+			return method_.base_applyInScope(arguments, this.base_getContext());
 		}
 	}
 	

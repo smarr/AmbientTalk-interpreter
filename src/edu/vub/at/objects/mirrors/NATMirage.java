@@ -29,11 +29,13 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -438,7 +440,13 @@ public class NATMirage extends NATObject {
 				AGSymbol.alloc("lexicalParent")));
 	}	
 	
+	public boolean base_isMirror() {
+		return false;
+	}
 	
+	public ATMirror base_asMirror() throws XTypeMismatch {
+		return NATNil._INSTANCE_.base_asMirror();
+	}
 	
 	
 }

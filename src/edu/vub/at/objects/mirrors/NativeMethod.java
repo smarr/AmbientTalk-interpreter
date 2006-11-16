@@ -96,6 +96,11 @@ public final class NativeMethod extends NATNil implements ATMethod {
 		return JavaInterfaceAdaptor.invokeNativeATMethod(javaMethod_, ctx.base_getLexicalScope(),
 						                                arguments.asNativeTable().elements_);
 	}
+	
+	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
+		return JavaInterfaceAdaptor.invokeNativeATMethod(javaMethod_, ctx.base_getLexicalScope(),
+						                                arguments.asNativeTable().elements_);
+	}
 
 	public ATMethod base_asMethod() throws XTypeMismatch {
 		return this;

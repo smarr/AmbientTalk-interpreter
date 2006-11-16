@@ -228,10 +228,10 @@ public class NATObject extends NATCallframe implements ATObject {
 			return this.getLocalField(selector).base_asClosure().base_apply(arguments);
 		} else if (this.hasLocalMethod(selector)) {
 			// immediately execute the method in the context ctx where
-			//  ctx.scope = the implementing scope, being this object
+			//  ctx.scope = the implementing scope, being this object, under which an additional callframe will be inserted
 			//  ctx.self  = the late bound receiver, being the passed receiver
 			//  ctx.super = the parent of the implementor
-			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(new NATCallframe(this), receiver, dynamicParent_));
+			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver, dynamicParent_));
 		} else {
 			return dynamicParent_.meta_invoke(receiver, selector, arguments);
 		}

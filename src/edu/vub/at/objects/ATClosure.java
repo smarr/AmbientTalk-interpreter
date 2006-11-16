@@ -31,15 +31,22 @@ import edu.vub.at.exceptions.InterpreterException;
 
 
 /**
- * The public interface to a native AmbientTalk closure (a piece of code + enclosing environment).
+ * The public interface to a native AmbientTalk closure (a method + enclosing environment).
  * 
  * Since ATMethods are always wrapped either at creation time (blocks) or during 
  * lookup (methods), ATClosures are by definition the only way methods and blocks 
  * can be encountered at the ambienttalk base level. Closures should respond to the
- * meta_apply method, which should trigger the invocation of their encapsulating method in the
+ * base_apply method, which should trigger the invocation of their encapsulating method in the
  * enclosed closure context.
  * 
+ * Closures are sometimes also 'abused' to simply represent blocks of source code whose
+ * body has to be evaluated not in the enclosed lexical context, but within the context
+ * of another object. To facilitate such use, a closure provides the method 'base_applyInScope'
+ * which will execute the enclosed method in the scope of the given object, rather than
+ * in the enclosed lexical context.
+ * 
  * @author smostinc
+ * @author tvcutsem
  */
 public interface ATClosure extends ATObject {
 	
@@ -54,11 +61,27 @@ public interface ATClosure extends ATObject {
 	public ATContext base_getContext() throws InterpreterException;
 	
 	/**
-	 * Applies the closure to the given arguments, already wrapped in a table
+	 * Applies the closure to the given arguments, already wrapped in a table.
+	 * The enclosed method is executed in the context provided by the closure.
+	 * 
 	 * @param args the already evaluated arguments, wrapped in a table
 	 * @return the value of evaluating the method body in the context of the closure
 	 */
 	public ATObject base_apply(ATTable args) throws InterpreterException;
+	
+	/**
+	 * Applies the closure to the given arguments, already wrapped in a table.
+	 * The enclodes method is executed in the context of the given object. The
+	 * enclosed closure context is disregarded.
+	 * 
+	 * The context provided by an object is always equal to:
+	 * <tt>ctx(cur=object,self=object,super=object.dynamicParent)</tt>
+	 * 
+	 * @param args the already evaluated arguments, wrapped in a table
+	 * @param scope the object that will act as self and as lexically enclosing scope.
+	 * @return the value of evaluating the method body in the context of the given object scope
+	 */
+	public ATObject base_applyInScope(ATTable args, ATObject scope) throws InterpreterException;
 	
 	/**
 	 * Allows AmbientTalk programmers to write

@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATDefField.java created on 26-jul-2006 at 14:48:27
+ * ATDefExternalField.java created on 16-nov-2006 at 8:30:39
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -30,10 +30,13 @@ package edu.vub.at.objects.grammar;
 /**
  * @author tvcutsem
  *
- * The public interface to a field definition abstract grammar element.
+ * The public interface to an external field definition abstract grammar element.
+ * <tt>def rcv.nam := val</tt>
  */
-public interface ATDefField extends ATDefinition {
+public interface ATDefExternalField extends ATDefinition {
 
+	public ATSymbol base_getReceiver();
+	
 	public ATSymbol base_getName();
 	
 	public ATExpression base_getValueExpression();

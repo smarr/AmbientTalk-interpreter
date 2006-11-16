@@ -34,7 +34,6 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
-import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -158,8 +157,9 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 				/* parent porinter type */
 				parentPointerType);
 			
-		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(extension, extension, this));
-			
+		code.base_applyInScope(NATTable.EMPTY, extension);
+		
+		// TODO: is this still necessary? can't we simply return the extension which is already a mirror?
 		return NATMirrorFactory._INSTANCE_.createMirror(extension);
 	}
 	

@@ -81,6 +81,7 @@ public class MirageTest extends ReflectiveAccessTest {
 		}
 	};
 	
+	// FIXME: mirror: and other natives should revert to old way of closure application
 	public void testMirageInvocation() {
 		try {
 			evaluateInput(

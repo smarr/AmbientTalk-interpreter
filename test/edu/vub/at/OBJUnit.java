@@ -151,8 +151,7 @@ public class OBJUnit extends NATNil {
 		
 		clone.ctx_ = new NATContext(extension, extension, clone);
 		
-		code.base_getMethod().base_apply(NATTable.EMPTY, clone.ctx_);
-		
+		code.base_applyInScope(NATTable.EMPTY, extension);
 		return extension;
 	}
 }

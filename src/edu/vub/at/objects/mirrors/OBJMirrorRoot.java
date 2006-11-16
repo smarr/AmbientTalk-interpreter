@@ -34,7 +34,6 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 
@@ -107,8 +106,7 @@ public class OBJMirrorRoot extends NATNil {
 				/* parent pointer type */
 				parentPointerType);
 			
-		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(extension, extension, this));
-			
+		code.base_applyInScope(NATTable.EMPTY, extension);
 		return extension;
 	}
 	

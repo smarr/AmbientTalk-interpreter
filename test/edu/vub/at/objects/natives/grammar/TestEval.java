@@ -4,6 +4,7 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -69,6 +70,32 @@ public class TestEval extends AmbientTalkTest {
         	  assertEquals(atThree_, tab.base_asTable().base_at(NATNumber.ONE));
         } catch(XSelectorNotFound e) {
         	  fail("broken definition:"+e.getMessage());
+        }
+	}
+	
+	public void testDefExternalMethod() throws InterpreterException {
+		ATObject rcvr = new NATObject();
+		AGSymbol rcvnam = AGSymbol.alloc("o");
+		ctx_.base_getLexicalScope().meta_defineField(rcvnam, rcvr);
+        evalAndCompareTo("def o.x() { self }", NATNil._INSTANCE_);
+        try {
+        	  ATClosure clo = rcvr.meta_lookup(atX_).base_asClosure();
+        	  assertEquals(atX_, clo.base_getMethod().base_getName());
+        	  assertEquals(rcvr, rcvr.meta_invoke(rcvr, atX_, NATTable.EMPTY));
+        } catch(XSelectorNotFound e) {
+        	  fail("broken external method definition:"+e.getMessage());
+        }
+	}
+	
+	public void testDefExternalField() throws InterpreterException {
+		ATObject rcvr = new NATObject();
+		AGSymbol rcvnam = AGSymbol.alloc("o2");
+		ctx_.base_getLexicalScope().meta_defineField(rcvnam, rcvr);
+        evalAndCompareTo("def o2.x := 3", NATNil._INSTANCE_);
+        try {
+        	  assertEquals(atThree_, rcvr.meta_select(rcvr, atX_));
+        } catch(XUndefinedField e) {
+        	  fail("broken external field definition:"+e.getMessage());
         }
 	}
 	

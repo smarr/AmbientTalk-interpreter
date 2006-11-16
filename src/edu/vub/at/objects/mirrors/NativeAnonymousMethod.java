@@ -74,6 +74,10 @@ public class NativeAnonymousMethod extends NATNil implements ATMethod {
 		throw new XIllegalApplication("Cannot apply an anonymous native method. Apply the closure instead.", creatorClass_);
 	}
 
+	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
+		return base_apply(arguments, ctx);
+	}
+	
 	public ATSymbol base_getName() { return Evaluator._ANON_MTH_NAM_; }
 
 	public ATTable base_getParameters() { return Evaluator._ANON_MTH_ARGS_; }

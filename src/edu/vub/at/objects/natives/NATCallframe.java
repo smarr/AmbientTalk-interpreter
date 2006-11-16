@@ -233,6 +233,9 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * --------------------------------- */
 	
 	public ATNil meta_addField(ATField field) throws InterpreterException {
+		// FIXME: should really add the ATField object, its base_get and base_set methods
+		// may encode additional behaviour which is now lost => no reason to differentiate
+		// between defineField and addField!
 		return this.meta_defineField(field.base_getName(), field.base_getValue());
 	}
 	

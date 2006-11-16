@@ -228,8 +228,7 @@ public class NATNil implements ATNil {
 				/* parent porinter type */
 				parentPointerType);
 			
-		code.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(extension, extension, this));
-			
+		code.base_applyInScope(NATTable.EMPTY, extension);
 		return extension;
 	}
 	

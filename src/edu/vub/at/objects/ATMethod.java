@@ -48,11 +48,27 @@ public interface ATMethod extends ATObject {
 	 * The context is usually supplied by a closure and is necessary in order to
 	 * pair a method with its current receiver (its 'self')
 	 * 
+	 * The method itself is responsible for creating the appropriate 'call frame'
+	 * or activation record in which to define temporary variables and parameter bindings.
+	 * 
 	 * @param arguments the actual arguments, already eagerly evaluated
-	 * @param ctx the context in which to evaluate the method body
-	 * @return the value of evaluating the method body in the given context
+	 * @param ctx the context in which to evaluate the method body, call frame not yet inserted
+	 * @return the value of evaluating the method body in a context derived from the given context
 	 */
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException;
+	
+	/**
+	 * Applies the method to the given arguments in the given context.
+	 * The context is usually supplied by a closure and is necessary in order to
+	 * pair a method with its current receiver (its 'self')
+	 * 
+	 * The method will use the given context 'as-is', and will *not* insert an additional call frame.
+	 * 
+	 * @param arguments the actual arguments, already eagerly evaluated
+	 * @param ctx the context in which to evaluate the method body, to be used without inserting a call frame
+	 * @return the value of evaluating the method body in the given context
+	 */
+	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException;
 	
 	/**
 	 * Structural access to the name of the method. Note that all methods (defined
