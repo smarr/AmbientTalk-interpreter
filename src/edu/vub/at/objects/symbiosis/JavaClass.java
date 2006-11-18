@@ -260,7 +260,9 @@ public final class JavaClass extends NATObject {
 	 * </tt>
 	 */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-    	    return this.meta_invoke(this, Evaluator._INIT_, initargs);
+    	    // immediately perform the NATObject behaviour: don't look for an 'init' method in the Java class,
+    	    // only look for an 'init' method at the AmbientTalk level.
+    	    return super.meta_invoke(this, Evaluator._INIT_, initargs);
     }
     
     /**

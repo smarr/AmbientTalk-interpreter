@@ -583,6 +583,12 @@ public class NATObject extends NATCallframe implements ATObject {
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
 	public boolean isAmbientTalkObject() { return true; }
+	
+	// TODO: discuss with Stijn: base_isMirror => isMirror, i.e. don't make this accessible?
+	// NATMirage has to override this again and say false again, seems ugly
+	
+	// perhaps we should provide annotations for objects and only return true if the objects
+	// mention that they actually represent a mirror, boolean, closure, ...
 	public boolean base_isMirror() { return true; }
 	public boolean base_isBoolean() { return true; }
 	public boolean base_isClosure() { return true; }

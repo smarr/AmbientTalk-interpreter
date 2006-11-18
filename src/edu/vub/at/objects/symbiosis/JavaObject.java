@@ -246,8 +246,11 @@ public final class JavaObject extends NATObject implements ATObject {
 		throw new XIllegalOperation("Cannot clone Java object under symbiosis: " + wrappedObject_.toString());
 	}
 	
+	/**
+	 * Invoking new on a JavaObject will exhibit the same behaviour as if new was invoked on the parent class.
+	 */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-    	    throw new XIllegalOperation("Cannot instantiate a Java object: " + wrappedObject_.toString());
+    	    return dynamicParent_.meta_newInstance(initargs);
     }
     
     /**
