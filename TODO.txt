@@ -20,9 +20,7 @@ en varianten: nemen expliciet een NATIntercessiveMirror ipv een ATMirror
 - distribution: add comm protocol, discovery protocol, remote actors (what about using a lightweight lib?)
 
 - Symbiosis:
-=> introduce a 'jlobby' namespace similar to lobby, but initialized with CLASSPATH of JVM instead of OBJECTPATH -> can be queried for classes! e,g, jlobby.java.lang.String, jlobby.edu.vub.at.Evaluator, ...
-JavaPackage = namespace, JavaClass = object that understands 'new' and static methods, JavaObject = object whose methods become methods, whose getter/setter methods become fields
-Solve overloading by being able to annotate a method invocation => future work
+=> Solve overloading by being able to annotate a method invocation => future work
 => Threads -> currently 'you're on your own'? or consider wrapping each ATObject in a coercer that also acts as a far ref => converts invocations into enqueues, but this requires futures to block the waiting Java Thread
 => Implementation can be sped up a bit using caching, consider a cache for Symbiosis.getMethods
 requires to change implementation of Symbiosis.invokeSymbioticMethod not to filter out methods by assigning null
