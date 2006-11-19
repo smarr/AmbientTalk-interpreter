@@ -39,6 +39,7 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.symbiosis.JavaPackage;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,6 +74,7 @@ public final class Evaluator {
 	        return createGlobalLexicalScope();
 	    }
 	};
+	
 	/**
 	 * A thread-local variable is used to assign a unique lobby namespace to
 	 * each separate actor. Each actor that invokes the getLobby()
@@ -81,6 +83,18 @@ public final class Evaluator {
 	private static final ThreadLocal _LOBBY_NAMESPACE_ = new ThreadLocal() {
 	    protected synchronized Object initialValue() {
 	        return createLobbyNamespace();
+	    }
+	};
+	
+	/**
+	 * A thread-local variable is used to assign a unique jlobby root to
+	 * each separate actor. The jlobby root is the root JavaPackage from
+	 * which other Java packages can be loaded. Each actor that invokes the getJLobbyRoot()
+	 * method receives its own separate copy of the jlobby root
+	 */
+	private static final ThreadLocal _JLOBBY_ROOT_ = new ThreadLocal() {
+	    protected synchronized Object initialValue() {
+	        return createJLobbyRoot();
 	    }
 	};
 	
@@ -277,6 +291,13 @@ public final class Evaluator {
 	}
 	
 	/**
+	 * @return the jlobby root package of an actor, which is a JavaPackage with an empty path prefix.
+	 */
+	public static JavaPackage getJLobbyRoot() {
+		return (JavaPackage) _JLOBBY_ROOT_.get();
+	}
+	
+	/**
 	 * Restores the global lexical scope to a fresh empty object.
 	 * Resets the lobby global namespace.
 	 */
@@ -298,6 +319,14 @@ public final class Evaluator {
 	private static NATObject createLobbyNamespace() {
 		return new NATObject();
 	}
+
+    /**
+     * A jlobby root package is a JavaPackage with an empty path prefix
+     */
+	private static NATObject createJLobbyRoot() {
+		return new JavaPackage("");
+	}
+	
 	
 	public static final String valueNameOf(Class c) {
 		String name = getSimpleName(c);

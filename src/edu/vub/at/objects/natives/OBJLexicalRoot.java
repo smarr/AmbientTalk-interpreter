@@ -124,6 +124,13 @@ public final class OBJLexicalRoot extends NATNil {
 		return Evaluator.getGlobalLexicalScope();
 	}
 	
+	/**
+	 * jlobby (the Java class package root, initialized using the Java classpath)
+	 */
+	public ATObject base_getJlobby() {
+		return Evaluator.getJLobbyRoot();
+	}
+	
 	/* ------------------------
 	 * -- Control Structures --
 	 * ------------------------ */

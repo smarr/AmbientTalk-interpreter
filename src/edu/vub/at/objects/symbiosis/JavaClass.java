@@ -41,6 +41,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
@@ -174,7 +175,7 @@ public final class JavaClass extends NATObject {
         } catch (XUndefinedField e) {
     	   		Method[] choices = Symbiosis.getMethods(wrappedClass_, jSelector, true);
     	   		if (choices.length > 0) {
-    	   			return new JavaMethod(this, null, choices);
+    	   			return new NativeClosure(receiver, new JavaMethod(this, null, choices));
     	   		} else {
     	   			return super.meta_select(receiver, selector);
     	   		}

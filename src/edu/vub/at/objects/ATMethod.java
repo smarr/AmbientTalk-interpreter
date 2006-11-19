@@ -36,10 +36,12 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * functions do not close over an environment allowing for them to be shared between 
  * different clones. The environment is to be supplied during lookup (which wraps 
  * ATMethods into ATClosures). As a consequence it is not possible to
- * a) get hold of an ATMethod at the base-level (since lookup implies wrapping)
- * b) directly apply an ATMethod (as application requires context parameters)
+ * get hold of an ATMethod at the base-level (since lookup implies wrapping)
+ * 
+ * TODO: turn base_getxxx into meta_getxxx?
  * 
  * @author smostinc
+ * @author tvcutsem
  */
 public interface ATMethod extends ATObject {
 

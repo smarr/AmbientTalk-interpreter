@@ -70,6 +70,7 @@ import java.util.Vector;
  *       files from being loaded twice.
  *  - does not correspond to any file or directory, resulting in a selector not found exception as usual.
  * 
+ * @author tvcutsem
  * @author smostinc
  */
 public final class NATNamespace extends NATObject {

@@ -32,6 +32,7 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.exceptions.XClassNotFound;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XNotInstantiatable;
@@ -79,6 +80,8 @@ public class SymbiosisTest extends AmbientTalkTest {
 	
 	private SymbiosisTest jTestObject;
 	private JavaObject atTestObject;
+	
+	private JavaPackage jLobby_;
 	
 	// these fields and methods will be reflectively invoked from within AmbientTalk
 	public int xtest;
@@ -133,6 +136,8 @@ public class SymbiosisTest extends AmbientTalkTest {
 		
 		jTestObject = new SymbiosisTest(TEST_OBJECT_INIT);
 		atTestObject = JavaObject.wrapperFor(jTestObject);
+		
+		jLobby_ = new JavaPackage("");
 	}
 	
 	/**
@@ -422,6 +427,8 @@ public class SymbiosisTest extends AmbientTalkTest {
 	
 	/**
 	 * Tests casting to manually resolve overloaded method invocations
+	 * FIXME: test no longer works because methods are wrapped in closures, and they don't
+	 * understand cast. Rethink casting, because current scheme also does not work for constructors.
 	 */
 	public void testCasting() {
 		try {
@@ -645,7 +652,9 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 * Tests the invocation of new on a wrapped Java Class.
 	 * Instantiates the Java class via a custom init implementation.
 	 * 
-	 * BEWARE: this test should come last as it MODIFIES the test fixture (the JavaClass wrapper object)!
+	 * BEWARE: this test should be the last for testing symbiotic instance creation as it
+	 * MODIFIES the test fixture (the JavaClass wrapper object)! Ths is because the JavaClass wrapper
+	 * is pooled and reused throughout subsequent tests.
 	 */
 	public void testCustomInstanceCreation() {
 		try {
@@ -663,4 +672,65 @@ public class SymbiosisTest extends AmbientTalkTest {
 		}
 	}
 	
+	/**
+	 * Tests whether jlobby.java results in a new JavaPackage.
+	 * Tests whether jlobby.java.lang results in a new JavaPackage.
+	 * Tests whether jlobby.java.lang.Object results in the proper loading of that class
+	 */
+	public void testJLobbyPackageLoading() throws InterpreterException {
+		ATObject jpkg = jLobby_.meta_select(jLobby_, AGSymbol.alloc("java"));
+		assertEquals(JavaPackage.class, jpkg.getClass());
+		assertTrue(jLobby_.meta_respondsTo(AGSymbol.alloc("java")).asNativeBoolean().javaValue);
+		ATObject jlpkg = jpkg.meta_select(jpkg, AGSymbol.alloc("lang"));
+		assertEquals(JavaPackage.class, jlpkg.getClass());
+		assertTrue(jpkg.meta_respondsTo(AGSymbol.alloc("lang")).asNativeBoolean().javaValue);
+		ATObject jObject = jlpkg.meta_select(jlpkg, AGSymbol.alloc("Object"));
+		assertEquals(JavaClass.class, jObject.getClass());
+		assertTrue(jlpkg.meta_respondsTo(AGSymbol.alloc("Object")).asNativeBoolean().javaValue);
+	}
+	
+	/**
+	 * Tests whether lowercase classes can be loaded via the class method of a JavaPackage.
+	 */
+	public void testJLobbyExplicitClassLoading() throws InterpreterException {
+		ATObject eduVubAtObjectsSymbiosisPkg = new JavaPackage("edu.vub.at.objects.symbiosis.");
+
+		// load the class manually: invoke pkg.class("lowercaseClassTest")
+		ATObject cls = eduVubAtObjectsSymbiosisPkg.meta_invoke(
+				eduVubAtObjectsSymbiosisPkg,
+				AGSymbol.alloc("class"),
+				new NATTable(new ATObject[] { AGSymbol.alloc("lowercaseClassTest") }));
+		assertEquals(JavaClass.class, cls.getClass());
+		assertTrue(eduVubAtObjectsSymbiosisPkg.meta_respondsTo(
+				    AGSymbol.alloc("lowercaseClassTest")).asNativeBoolean().javaValue);
+	}
+	
+	/**
+	 * Tests whether access to a nonexistent class gives rise to a selector not found exception.
+	 */
+	public void testJLobbyNonexistentClassLoading() throws InterpreterException {
+		try {
+			jLobby_.meta_select(jLobby_, AGSymbol.alloc("Foo"));
+			fail("expected a class not found exception");
+		} catch (XClassNotFound e) {
+			// success: expected exception
+		}
+	}
+	
+	/**
+	 * Tests whether the uppercase package 'foo.Bar' can be loaded via the package method of a JavaPackage.
+	 */
+	public void testJLobbyExplicitPackageLoading() throws InterpreterException {
+		// def fooPkg := jLobby.foo;
+		ATObject fooPkg = jLobby_.meta_select(jLobby_, AGSymbol.alloc("foo"));
+		// def BarPkg := foo.package(`Bar);
+		ATObject BarPkg = fooPkg.meta_invoke(fooPkg,
+										   AGSymbol.alloc("package"),
+										   new NATTable(new ATObject[] { AGSymbol.alloc("Bar") }));
+		assertEquals(JavaPackage.class, BarPkg.getClass());
+		assertTrue(fooPkg.meta_respondsTo(AGSymbol.alloc("Bar")).asNativeBoolean().javaValue);
+	}
+	
 }
+
+class lowercaseClassTest { }
