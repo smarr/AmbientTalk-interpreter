@@ -27,6 +27,7 @@ requires to change implementation of Symbiosis.invokeSymbioticMethod not to filt
 => representing array types in AT, i.e. how to access a wrapper for Type[] classes?
 Normally, arrays are represented as tables and vice versa, but for base_cast, requires explicit type wrapper for arrays
 => casting for constructors
+=> methods with _ in Java
 
 - Reflection
 * isXXX and asXXX must become meta_isXXX and meta_asXXX

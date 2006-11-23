@@ -164,7 +164,8 @@ public final class NATText extends AGExpression implements ATText {
 		}
 		
 		public ATText base__oppls_(ATObject other) throws InterpreterException {
-			return NATText.atValue(javaValue + other.asNativeText().javaValue);
+			return NATText.atValue(javaValue +
+					(other.isNativeText() ? other.asNativeText().javaValue : other.meta_print().javaValue));
 		}
 		
 		public ATNumber base__opltx__opeql__opgtx_(ATText other) throws InterpreterException {

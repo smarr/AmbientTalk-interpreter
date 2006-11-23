@@ -55,6 +55,8 @@ import edu.vub.at.objects.natives.grammar.TestEval;
 
 import java.awt.event.ActionListener;
 
+import javax.swing.JTextField;
+
 /**
  * Tests the symbiosis with Java. This is primarily done by wrapping
  * the SymbiosisTest class and instances itself and invoking some of
@@ -67,8 +69,8 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(TestEval.class);
 		/*Test test= new SymbiosisTest() {
-		        public void runTest() {
-		        	  testAT2JavaConversion();
+		        public void runTest() throws Exception {
+		        	  testBugfixOverloadedConstructor();
 		        }
 		 };
 		 junit.textui.TestRunner.run(test);*/
@@ -429,6 +431,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 * Tests casting to manually resolve overloaded method invocations
 	 * FIXME: test no longer works because methods are wrapped in closures, and they don't
 	 * understand cast. Rethink casting, because current scheme also does not work for constructors.
+	 * Suggested solution: use future annotations on message sends to specify the types
 	 */
 	public void testCasting() {
 		try {
@@ -729,6 +732,19 @@ public class SymbiosisTest extends AmbientTalkTest {
 										   new NATTable(new ATObject[] { AGSymbol.alloc("Bar") }));
 		assertEquals(JavaPackage.class, BarPkg.getClass());
 		assertTrue(fooPkg.meta_respondsTo(AGSymbol.alloc("Bar")).asNativeBoolean().javaValue);
+	}
+	
+	/**
+	 * BUGFIX TEST: jlobby.javax.swing.JTextField.new(80) failed to discriminate between constructors
+	 * JTextField(String) and JTextField(int), reason was that anything native was convertible to
+	 * NATText and also to String. Fixed by reimplementing asNativeText in NATNil to throw a type
+	 * exception as usual.
+	 */
+	public void testBugfixOverloadedConstructor() throws InterpreterException {
+		// def jTextField := jLobby.javax.swing.JTextField;
+		ATObject jTextField = JavaClass.wrapperFor(JTextField.class);
+		// jTextField.new(80)
+		jTextField.meta_invoke(jTextField, AGSymbol.alloc("new"), new NATTable(new ATObject[] { NATNumber.atValue(80) }));
 	}
 	
 }
