@@ -84,8 +84,12 @@ public class NATField extends NATNil implements ATField {
 	 * They expect the new owner of the field as the sole instance to their 'new' method
 	 */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-		ATObject newhost = initargs.base_at(NATNumber.ONE);
-		return new NATField(name_, (NATCallframe) newhost);
+		if (initargs.base_getLength() != NATNumber.ONE) {
+			return super.meta_newInstance(initargs);
+		} else {
+			ATObject newhost = initargs.base_at(NATNumber.ONE);
+			return new NATField(name_, (NATCallframe) newhost);
+		}
 	}
 
 }

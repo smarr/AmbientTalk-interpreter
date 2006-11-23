@@ -82,11 +82,15 @@ public final class JavaField extends NATNil implements ATField {
 	 * They expect the new owner of the field as the sole instance to their 'new' method
 	 */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-		ATObject newhost = initargs.base_at(NATNumber.ONE);
-		if (newhost.isJavaObjectUnderSymbiosis()) {
-			return new JavaField(newhost.asJavaObjectUnderSymbiosis().getWrappedObject(), field_);
+		if (initargs.base_getLength() != NATNumber.ONE) {
+			return super.meta_newInstance(initargs);
 		} else {
-			throw new XIllegalArgument("Java Field re-initialization requires a symbiotic Java object, given " + newhost);
+			ATObject newhost = initargs.base_at(NATNumber.ONE);
+			if (newhost.isJavaObjectUnderSymbiosis()) {
+				return new JavaField(newhost.asJavaObjectUnderSymbiosis().getWrappedObject(), field_);
+			} else {
+				throw new XIllegalArgument("Java Field re-initialization requires a symbiotic Java object, given " + newhost);
+			}
 		}
 	}
 	
