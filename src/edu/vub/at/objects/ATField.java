@@ -33,6 +33,11 @@ import edu.vub.at.objects.grammar.ATSymbol;
 /**
  * ATFields provide a mapping from an immutable name to a potentially mutable value.
  * 
+ * Note that when field objects are added to an object, and that object is cloned,
+ * the field object will be re-instantiated (i.e. its 'new' method is invoked).
+ * This implies that any object implementing ATField should provide a meta_newInstance
+ * method whose sole initarg is the new host for the field.
+ * 
  * @author smostinc
  */
 public interface ATField extends ATObject {
@@ -51,9 +56,9 @@ public interface ATField extends ATObject {
 	/**
 	 * Sets the value of the field if possible
 	 * @param newValue - the value the field should hold.
-	 * @return - the value the field had before.
+	 * @return - the return value is ignored.
 	 * @throws InterpreterException - if the field cannot be modified.
 	 */
-	public ATObject base_setValue(ATObject newValue) throws InterpreterException;
+	public ATNil base_setValue(ATObject newValue) throws InterpreterException;
 
 }

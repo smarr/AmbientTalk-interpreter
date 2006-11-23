@@ -27,11 +27,11 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -41,6 +41,8 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Vector;
 
 /**
@@ -48,9 +50,16 @@ import java.util.Vector;
  * an ordinary object in the following regards:
  * - it has no dynamic parent
  * - it treats method definition as the addition of a closure to its variables.
- * - it cannot be reified such that send, invoke and select are impossible
- * - it cannot be reified such that it cannot be extended or explicitly shared
- * - since a call frame its lexical parent is shared, cloning it indicates faulty behaviour  
+ * - it cannot be extended nor cloned
+ * 
+ * Callframes can be regarded as 'field-only' objects. Fields are implemented as follows:
+ *  - native fields are implemented efficiently using a 'map': the map datastructure maps
+ *    selectors to indices into a state vector, such that field names can be shared efficiently
+ *    across clones.
+ *  - custom fields are collected in a linked list. Their lookup and assignment is slower,
+ *    and when an object is cloned, the custom field objects are re-instantiated.
+ *    The new clone is passed as the sole argument to 'new'.
+ * 
  * 
  * @author smostinc
  */
@@ -59,20 +68,23 @@ public class NATCallframe extends NATNil implements ATObject {
 	protected FieldMap 		variableMap_;
 	protected final Vector	stateVector_;
 	protected final ATObject 	lexicalParent_;
+	protected LinkedList customFields_;
 	
 	public NATCallframe(ATObject lexicalParent) {
 		variableMap_   = new FieldMap();
 		stateVector_   = new Vector();
 		lexicalParent_ = lexicalParent;
+		customFields_ = null;
 	}
 	
 	/**
 	 * Used internally for cloning a callframe/object.
 	 */
-	protected NATCallframe(FieldMap varMap, Vector stateVector, ATObject lexicalParent) {
+	protected NATCallframe(FieldMap varMap, Vector stateVector, ATObject lexicalParent, LinkedList customFields) {
 		variableMap_ = varMap;
 		stateVector_ = stateVector;
 		lexicalParent_ = lexicalParent;
+		customFields_ = customFields;
 	}
 
 	/* ------------------------------
@@ -171,11 +183,14 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * @throws InterpreterException 
 	 */
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
-		boolean fieldAdded = variableMap_.put(name);
-		if (!fieldAdded) {
+		if (this.hasLocalField(name)) {
 			// field already exists...
-			throw new XDuplicateSlot("field ", name.base_getText().asNativeText().javaValue);
+			throw new XDuplicateSlot("field ", name.base_getText().asNativeText().javaValue);			
 		} else {
+			boolean fieldAdded = variableMap_.put(name);
+			if (!fieldAdded) {
+				throw new RuntimeException("Assertion failed: field not added to map while not duplicate");
+			}
 			// field now defined, add its value to the state vector
 			stateVector_.add(value);
 		}
@@ -233,10 +248,19 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * --------------------------------- */
 	
 	public ATNil meta_addField(ATField field) throws InterpreterException {
-		// FIXME: should really add the ATField object, its base_get and base_set methods
-		// may encode additional behaviour which is now lost => no reason to differentiate
-		// between defineField and addField!
-		return this.meta_defineField(field.base_getName(), field.base_getValue());
+		ATSymbol name = field.base_getName();
+		if (this.hasLocalField(name)) {
+			// field already exists...
+			throw new XDuplicateSlot("field ", name.base_getText().asNativeText().javaValue);			
+		} else {
+			// add the field to the list of custom fields, which is created lazily
+			if (customFields_ == null) {
+				customFields_ = new LinkedList();
+			}
+			// append the custom field object
+			customFields_.add(field);
+		}
+		return NATNil._INSTANCE_;
 	}
 	
 	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
@@ -246,10 +270,15 @@ public class NATCallframe extends NATNil implements ATObject {
 	}
 	
 	public ATField meta_grabField(ATSymbol selector) throws InterpreterException {
-		if (this.hasLocalField(selector)) {
+		if (this.hasLocalNativeField(selector)) {
 			return new NATField(selector, this);
 		} else {
-			throw new XSelectorNotFound(selector, this);
+			ATField fld = this.getLocalCustomField(selector);
+			if (fld != null) {
+				return fld;
+			} else {
+				throw new XSelectorNotFound(selector, this);
+			}
 		}
 	}
 
@@ -258,12 +287,19 @@ public class NATCallframe extends NATNil implements ATObject {
 	}
 
 	public ATTable meta_listFields() throws InterpreterException {
-		ATObject[] fields = new ATObject[stateVector_.size()];
+		ATObject[] nativeFields = new ATObject[stateVector_.size()];
 		ATSymbol[] fieldNames = variableMap_.listFields();
+		// native fields first
 		for (int i = 0; i < fieldNames.length; i++) {
-			fields[i] = new NATField(fieldNames[i], this);
+			nativeFields[i] = new NATField(fieldNames[i], this);
 		}
-		return new NATTable(fields);
+		if (customFields_ == null) {
+			// no custom fields
+			return new NATTable(nativeFields);
+		} else {
+			ATObject[] customFields = (ATObject[]) customFields_.toArray(new ATObject[customFields_.size()]);
+			return new NATTable(NATTable.collate(nativeFields, customFields));
+		}
 	}
 
 	public ATTable meta_listMethods() throws InterpreterException {
@@ -294,40 +330,6 @@ public class NATCallframe extends NATNil implements ATObject {
 		return true;
 	}
 	
-	// protected methods, only to be used by NATCallframe and NATObject
-	
-	protected boolean hasLocalField(ATSymbol selector) {
-		return variableMap_.get(selector) != -1;
-	}
-	
-	/**
-	 * This variant returns the actual value of a field not a reification of the 
-	 * field itself.
-	 */
-	protected ATObject getLocalField(ATSymbol selector) throws XSelectorNotFound {
-		int index = variableMap_.get(selector);
-		if(index != -1) {
-			return (ATObject) (stateVector_.get(index));
-		} else {
-			throw new XSelectorNotFound(selector, this);
-		}
-	}
-	
-	/**
-	 * Set a given field if it exists.
-	 * @return whether the field existed (and the assignment has been performed)
-	 */
-	protected boolean setLocalField(ATSymbol selector, ATObject value) {
-		int index = variableMap_.get(selector);
-		if(index != -1) {
-			// field exists, modify the state vector
-			stateVector_.set(index, value);
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
 		if(	(original instanceof NATCallframe) &
 			! (original instanceof NATObject)) {
@@ -342,6 +344,91 @@ public class NATCallframe extends NATNil implements ATObject {
 
 	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
 		return super.meta_isRelatedTo(object);
+	}
+	
+	
+	// protected methods, only to be used by NATCallframe and NATObject
+
+	protected boolean hasLocalField(ATSymbol selector) throws InterpreterException {
+		return hasLocalNativeField(selector) || hasLocalCustomField(selector);
+	}
+	
+	protected boolean hasLocalNativeField(ATSymbol selector) {
+		return variableMap_.get(selector) != -1;
+	}
+	
+	protected boolean hasLocalCustomField(ATSymbol selector) throws InterpreterException {
+		if (customFields_ == null) {
+			return false;
+		} else {
+			Iterator it = customFields_.iterator();
+			while (it.hasNext()) {
+				ATField field = (ATField) it.next();
+				if (field.base_getName().equals(selector)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+	
+	/**
+	 * Reads out the value of either a native or a custom field.
+	 * @throws XSelectorNotFound if no native or custom field with the given name exists locally.
+	 */
+	protected ATObject getLocalField(ATSymbol selector) throws InterpreterException {
+		int index = variableMap_.get(selector);
+		if(index != -1) {
+			return (ATObject) (stateVector_.get(index));
+		} else {
+			ATField fld = getLocalCustomField(selector);
+			if (fld != null) {
+				return fld.base_getValue();
+			} else {
+				throw new XSelectorNotFound(selector, this);
+			}
+		}
+	}
+	
+	/**
+	 * @return a custom field matching the given selector or null if such a field does not exist
+	 */
+	protected ATField getLocalCustomField(ATSymbol selector) throws InterpreterException {
+		if (customFields_ == null) {
+			return null;
+		} else {
+			Iterator it = customFields_.iterator();
+			while (it.hasNext()) {
+				ATField field = (ATField) it.next();
+				if (field.base_getName().equals(selector)) {
+					return field;
+				}
+			}
+			return null;
+		}
+	}
+	
+	
+	
+	/**
+	 * Set a given field if it exists.
+	 * @return whether the field existed (and the assignment has been performed)
+	 */
+	protected boolean setLocalField(ATSymbol selector, ATObject value) throws InterpreterException {
+		int index = variableMap_.get(selector);
+		if(index != -1) {
+			// field exists, modify the state vector
+			stateVector_.set(index, value);
+			return true;
+		} else {
+			ATField fld = getLocalCustomField(selector);
+			if (fld != null) {
+				fld.base_setValue(value);
+				return true;
+			} else {
+				return false;
+			}
+		}
 	}
 	
 }

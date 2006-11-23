@@ -48,6 +48,7 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
+import java.util.LinkedList;
 import java.util.Vector;
 
 /**
@@ -80,12 +81,13 @@ public class NATMirage extends NATObject {
 	 */
 	protected NATMirage(FieldMap map,
 			         Vector state,
+			         LinkedList customFields,
 			         MethodDictionary methodDict,
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
-			         NATIntercessiveMirror mirror) {
-		super(map, state, methodDict, dynamicParent, lexicalParent, flags);
+			         NATIntercessiveMirror mirror) throws InterpreterException {
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags);
 		mirror_ = mirror;
 	}
 	
@@ -114,12 +116,14 @@ public class NATMirage extends NATObject {
 	// Called by the default NATObject Cloning algorithm
 	protected NATObject createClone(FieldMap map,
 			Vector state,
+			LinkedList customFields,
 			MethodDictionary methodDict,
 			ATObject dynamicParent,
 			ATObject lexicalParent,
 			byte flags) throws InterpreterException {
 		NATMirage clone = new NATMirage(map,
 				state,
+				customFields,
 				methodDict,
 				dynamicParent,
 				lexicalParent,

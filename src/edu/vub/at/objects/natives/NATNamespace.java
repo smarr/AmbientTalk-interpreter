@@ -40,6 +40,7 @@ import edu.vub.at.parser.NATParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.Vector;
 
 /**
@@ -96,13 +97,14 @@ public final class NATNamespace extends NATObject {
 	 */
 	private NATNamespace(FieldMap map,
 			  Vector state,
+			  LinkedList customFields,
 			  MethodDictionary methodDict,
 			  ATObject dynamicParent,
 			  ATObject lexicalParent,
 			  byte flags,
 			  File path,
-			  String name) {
-	  super(map, state, methodDict, dynamicParent, lexicalParent, flags);
+			  String name) throws InterpreterException {
+	  super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags);
 	  path_ = path;
 	  name_ = name;
 	}
@@ -185,12 +187,14 @@ public final class NATNamespace extends NATObject {
 	
 	protected NATObject createClone(FieldMap map,
 			  Vector state,
+			  LinkedList customFields,
 			  MethodDictionary methodDict,
 			  ATObject dynamicParent,
 			  ATObject lexicalParent,
-			  byte flags) {
+			  byte flags) throws InterpreterException {
       return new NATNamespace(map,
     		  				    state,
+    		  				    customFields,
     		  				    methodDict,
     		  				    dynamicParent,
     		  				    lexicalParent,

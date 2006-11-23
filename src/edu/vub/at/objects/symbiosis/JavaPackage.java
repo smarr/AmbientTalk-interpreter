@@ -37,6 +37,7 @@ import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.LinkedList;
 import java.util.Vector;
 
 /**
@@ -78,12 +79,13 @@ public final class JavaPackage extends NATObject {
 	 */
 	private JavaPackage(FieldMap map,
 			  		   Vector state,
+			  		   LinkedList customFields,
 			  		   MethodDictionary methodDict,
 			  		   ATObject dynamicParent,
 			  		   ATObject lexicalParent,
 			  		   byte flags,
-			  		   String path) {
-		super(map, state, methodDict, dynamicParent, lexicalParent, flags);
+			  		   String path) throws InterpreterException {
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags);
 		path_ = path;
 	}
 	
@@ -110,12 +112,14 @@ public final class JavaPackage extends NATObject {
 	
 	protected NATObject createClone(FieldMap map,
 			  					Vector state,
+			  					LinkedList customFields,
 			  					MethodDictionary methodDict,
 			  					ATObject dynamicParent,
 			  					ATObject lexicalParent,
-			  					byte flags) {
+			  					byte flags) throws InterpreterException {
 		return new JavaPackage(map,
     		  				      state,
+    		  				      customFields,
     		  				      methodDict,
     		  				      dynamicParent,
     		  				      lexicalParent,

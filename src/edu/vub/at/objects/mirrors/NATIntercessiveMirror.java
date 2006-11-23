@@ -39,6 +39,7 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.LinkedList;
 import java.util.Vector;
 
 /**
@@ -86,12 +87,13 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	 */
 	protected NATIntercessiveMirror(FieldMap map,
 			         Vector state,
+			         LinkedList customFields,
 			         MethodDictionary methodDict,
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
-			         NATMirage base) {
-		super(map, state, methodDict, dynamicParent, lexicalParent, flags);
+			         NATMirage base) throws InterpreterException {
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags);
 		principal_ = base;
 
 	}
@@ -132,12 +134,14 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	// Called by the default NATObject Cloning algorithm
 	protected NATObject createClone(FieldMap map,
 			Vector state,
+			LinkedList customFields,
 			MethodDictionary methodDict,
 			ATObject dynamicParent,
 			ATObject lexicalParent,
 			byte flags) throws InterpreterException {
 		return new NATIntercessiveMirror(map,
 				state,
+				customFields,
 				methodDict,
 				dynamicParent,
 				lexicalParent,

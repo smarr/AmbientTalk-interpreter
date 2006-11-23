@@ -28,11 +28,15 @@
 package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
 
 import java.lang.reflect.Field;
@@ -60,7 +64,7 @@ public final class JavaField extends NATNil implements ATField {
 		return Symbiosis.readField(host_, field_);
 	}
 
-	public ATObject base_setValue(ATObject newValue) throws InterpreterException {
+	public ATNil base_setValue(ATObject newValue) throws InterpreterException {
 		Symbiosis.writeField(host_, field_, newValue);
 		return NATNil._INSTANCE_;
 	}
@@ -71,6 +75,19 @@ public final class JavaField extends NATNil implements ATField {
 	
 	public ATField base_asField() {
 		return this;
+	}
+	
+	/**
+	 * Fields can be re-initialized when installed in an object that is being cloned.
+	 * They expect the new owner of the field as the sole instance to their 'new' method
+	 */
+	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
+		ATObject newhost = initargs.base_at(NATNumber.ONE);
+		if (newhost.isJavaObjectUnderSymbiosis()) {
+			return new JavaField(newhost.asJavaObjectUnderSymbiosis().getWrappedObject(), field_);
+		} else {
+			throw new XIllegalArgument("Java Field re-initialization requires a symbiotic Java object, given " + newhost);
+		}
 	}
 	
 }

@@ -55,6 +55,8 @@ import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.NativeClosure;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Vector;
 
 /**
@@ -67,8 +69,8 @@ import java.util.Vector;
  * for reusing the field definition/assignment protocol and for inheriting the
  * variable map, the state vector and the lexical parent.
  * 
- * NATObjects are one of the four native classes that implement the ATObject interface
- * (next to NATCallFrame, NATNil and NATSuperObject). The implementation is such that
+ * NATObjects are one of the five native classes that fully implement the ATObject interface
+ * (next to NATCallFrame, NATNil, NATMirage and NATSuperObject). The implementation is such that
  * a NATObject instance represents *both* a base-level AmbientTalk object, as well as a meta-level
  * AmbientTalk mirror on that object.
  * 
@@ -79,6 +81,7 @@ import java.util.Vector;
  *   - whether the object shares its method dictionary with clones
  * - a variable map, mapping variable names to indices into the state vector
  * - a state vector, containing the field values of the object
+ * - a linked list containing custom field objects
  * - a method dictionary, mapping selectors to methods
  * - a dynamic object parent, to delegate select and invoke operations
  * - a lexical object parent, to support lexical scoping
@@ -126,6 +129,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	// inherited from NATCallframe:
 	// private FieldMap 	variableMap_;
 	// private Vector	stateVector_;
+	// private LinkedList customFields_;
 	
 	/**
 	 * The method dictionary of this object. It maps method selectors to ATMethod objects.
@@ -190,17 +194,33 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * Constructs a new ambienttalk object as a clone of an existing object.
 	 * 
 	 * The caller of this method *must* ensure that the shares flags are set.
+	 * 
+	 * This constructor is responsible for manually re-initialising any custom field
+	 * objects, because the init method of such custom fields is parameterized by the
+	 * clone, which only comes into existence when this constructor runs.
 	 */
 	protected NATObject(FieldMap map,
 			         Vector state,
+			         LinkedList originalCustomFields,
 			         MethodDictionary methodDict,
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
-			         byte flags) {
-		super(map, state, lexicalParent);
+			         byte flags) throws InterpreterException {
+		super(map, state, lexicalParent, null);
 		methodDictionary_ = methodDict;
 		dynamicParent_ = dynamicParent;
 		flags_ = flags; //a cloned object inherits all flags from original
+		
+		// re-initialize all custom fields
+		if (originalCustomFields != null) {
+			customFields_ = new LinkedList();
+			Iterator it = originalCustomFields.iterator();
+			while (it.hasNext()) {
+				ATField field = (ATField) it.next();
+				customFields_.add(field.base_new(new ATObject[] { this }));
+			}
+		}
+		
 	}
 	
 	/* ------------------------------
@@ -396,6 +416,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		
 		return createClone(variableMap_,
 				          (Vector) stateVector_.clone(), // shallow copy
+				          customFields_, // must be re-initialized by clone!
 				          methodDictionary_,
 				          dynamicParent,
 				          lexicalParent_,
@@ -488,12 +509,14 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	protected NATObject createClone(FieldMap map,
 	         					  Vector state,
+	         					  LinkedList originalCustomFields,
 	         					  MethodDictionary methodDict,
 	         					  ATObject dynamicParent,
 	         					  ATObject lexicalParent,
 	         					  byte flags) throws InterpreterException {
 		return new NATObject(map,
 	            state,
+	            originalCustomFields,
 	            methodDict,
 	            dynamicParent,
 	            lexicalParent,

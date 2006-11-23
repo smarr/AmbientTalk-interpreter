@@ -31,7 +31,9 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
@@ -64,10 +66,9 @@ public class NATField extends NATNil implements ATField {
 		}
 	}
 
-	public ATObject base_setValue(ATObject newValue) throws InterpreterException {
-		ATObject result = base_getValue();
+	public ATNil base_setValue(ATObject newValue) throws InterpreterException {
 		frame_.meta_assignField(frame_, name_, newValue);
-		return result;
+		return NATNil._INSTANCE_;
 	}
 	
 	public NATText meta_print() throws InterpreterException {
@@ -78,6 +79,13 @@ public class NATField extends NATNil implements ATField {
 		return this;
 	}
 	
-	
+	/**
+	 * Fields can be re-initialized when installed in an object that is being cloned.
+	 * They expect the new owner of the field as the sole instance to their 'new' method
+	 */
+	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
+		ATObject newhost = initargs.base_at(NATNumber.ONE);
+		return new NATField(name_, (NATCallframe) newhost);
+	}
 
 }
