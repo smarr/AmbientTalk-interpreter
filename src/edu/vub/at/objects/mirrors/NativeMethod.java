@@ -82,7 +82,7 @@ public final class NativeMethod extends NATNil implements ATMethod {
 		Class[] paramTypes = javaMethod_.getParameterTypes();
 		AGSymbol[] paramNames = new AGSymbol[paramTypes.length];
 		for (int i = 0; i < paramTypes.length; i++) {
-			paramNames[i] = AGSymbol.alloc(Evaluator.valueNameOf(paramTypes[i]));
+			paramNames[i] = AGSymbol.jAlloc(Evaluator.valueNameOf(paramTypes[i]));
 		}
 		return new NATTable(paramNames);
 	}

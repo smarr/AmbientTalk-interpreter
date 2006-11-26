@@ -118,32 +118,32 @@ public class ReflectiveAccessTest extends AmbientTalkTestCase {
 	 */
 	protected void setUp() throws Exception {
 		lexicalRoot = new NATObject(OBJLexicalRoot._INSTANCE_);
-		lexicalRoot.meta_defineField(AGSymbol.alloc("success"), success);
-		lexicalRoot.meta_defineField(AGSymbol.alloc("fail"), fail);
-		lexicalRoot.meta_defineField(AGSymbol.alloc("echo:"), echo_);
-		lexicalRoot.meta_defineField(AGSymbol.alloc("symbol"), symbol);
-		lexicalRoot.meta_defineField(AGSymbol.alloc("true"), True);
-		lexicalRoot.meta_defineField(AGSymbol.alloc("false"), False);
-		lexicalRoot.meta_defineField(AGSymbol.alloc("closures"), closures);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("success"), success);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("fail"), fail);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("echo:"), echo_);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("symbol"), symbol);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("true"), True);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("false"), False);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("closures"), closures);
 		
-		lexicalRoot.meta_defineField(AGSymbol.alloc("symIfTrue"), AGSymbol.alloc("ifTrue:"));
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("symIfTrue"), AGSymbol.jAlloc("ifTrue:"));
 		
 		ATObject mirrors = new NATObject(lexicalRoot);
-		mirrors.meta_defineField(AGSymbol.alloc("Factory"), NATMirrorFactory._INSTANCE_);
+		mirrors.meta_defineField(AGSymbol.jAlloc("Factory"), NATMirrorFactory._INSTANCE_);
 		
 		ATObject natives = new NATObject(lexicalRoot);
-		natives.meta_defineField(AGSymbol.alloc("Context"), NATMirrorFactory._INSTANCE_);
+		natives.meta_defineField(AGSymbol.jAlloc("Context"), NATMirrorFactory._INSTANCE_);
 		
 		ATObject at = new NATObject(lexicalRoot);
-		at.meta_defineField(AGSymbol.alloc("mirrors"), mirrors);
-		at.meta_defineField(AGSymbol.alloc("natives"), natives);
+		at.meta_defineField(AGSymbol.jAlloc("mirrors"), mirrors);
+		at.meta_defineField(AGSymbol.jAlloc("natives"), natives);
 		
-		lexicalRoot.meta_defineField(AGSymbol.alloc("at"), at);
-		lexicalRoot.meta_defineField(AGSymbol.alloc("root"), lexicalRoot);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("at"), at);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("root"), lexicalRoot);
 		
-		lexicalRoot.meta_defineField(AGSymbol.alloc("unittest:"), unittest_);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("unittest:"), unittest_);
 		
-		lexicalRoot.meta_defineField(AGSymbol.alloc("unit"), OBJUnit._INSTANCE_);
+		lexicalRoot.meta_defineField(AGSymbol.jAlloc("unit"), OBJUnit._INSTANCE_);
 	}
 
 }

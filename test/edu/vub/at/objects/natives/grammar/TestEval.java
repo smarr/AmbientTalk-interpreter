@@ -75,7 +75,7 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testDefExternalMethod() throws InterpreterException {
 		ATObject rcvr = new NATObject();
-		AGSymbol rcvnam = AGSymbol.alloc("o");
+		AGSymbol rcvnam = AGSymbol.jAlloc("o");
 		ctx_.base_getLexicalScope().meta_defineField(rcvnam, rcvr);
         evalAndCompareTo("def o.x() { self }", NATNil._INSTANCE_);
         try {
@@ -89,7 +89,7 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testDefExternalField() throws InterpreterException {
 		ATObject rcvr = new NATObject();
-		AGSymbol rcvnam = AGSymbol.alloc("o2");
+		AGSymbol rcvnam = AGSymbol.jAlloc("o2");
 		ctx_.base_getLexicalScope().meta_defineField(rcvnam, rcvr);
         evalAndCompareTo("def o2.x := 3", NATNil._INSTANCE_);
         try {

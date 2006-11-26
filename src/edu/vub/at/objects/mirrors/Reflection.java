@@ -103,7 +103,7 @@ public final class Reflection {
 	 * - any underscores (_) are replaced by colons (:)
 	 */
 	public static final ATSymbol downSelector(String jSelector) {
-		return AGSymbol.alloc(javaToAmbientTalkSelector(jSelector));
+		return AGSymbol.jAlloc(javaToAmbientTalkSelector(jSelector));
 	}
 	
 	/**

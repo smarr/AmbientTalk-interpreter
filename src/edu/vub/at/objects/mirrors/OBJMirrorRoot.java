@@ -36,6 +36,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * OBJMirrorRoot is a singleton which is shared by as a parent by all NATIntercessiveMirrors,
@@ -47,6 +48,7 @@ import edu.vub.at.objects.natives.NATTable;
  */
 public class OBJMirrorRoot extends NATNil {
 	
+	public static ATSymbol _MIRROR_ = AGSymbol.jAlloc("mirror");
 	public static final OBJMirrorRoot _INSTANCE_ = new OBJMirrorRoot();
 	
 	/* PRIVATE CONSTRUCTOR - SINGLETON PATTERN */
@@ -188,7 +190,7 @@ public class OBJMirrorRoot extends NATNil {
 					principal.getClass(),
 					principal,
 					jSelector,
-					new ATObject[] { value.base_asMirror().base_getBase() });
+					new ATObject[] { name.equals(_MIRROR_)? value : value.base_asMirror().base_getBase() });
 		} catch (XSelectorNotFound e) {
 			// Principal does not have a corresponding meta_level method
 			// OR the passed value is not a mirror object

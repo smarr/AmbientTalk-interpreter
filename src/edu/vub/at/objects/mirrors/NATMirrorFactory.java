@@ -41,7 +41,14 @@ import edu.vub.at.objects.natives.NATNil;
  */
 public class NATMirrorFactory extends NATNil {
 	
+	// FIXME : keep only _INSTANCE_ once _ is supported in AT.
+	public static final NATMirrorFactory INSTANCE;
+	
 	public static final NATMirrorFactory _INSTANCE_ = new NATMirrorFactory();
+	
+	static {
+		INSTANCE = _INSTANCE_;
+	}
 	
 	public ATMirror createMirror(ATObject objectRepresentation) {
 		if(objectRepresentation instanceof NATMirage)

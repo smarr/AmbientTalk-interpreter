@@ -65,10 +65,10 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 			}				
 		};
 		
-		testScope.meta_defineField(AGSymbol.alloc("symbol"), symbol);
+		testScope.meta_defineField(AGSymbol.jAlloc("symbol"), symbol);
 
 		testScope.meta_defineField(
-				AGSymbol.alloc("echo:"),
+				AGSymbol.jAlloc("echo:"),
 				new NativeClosure(NATNil._INSTANCE_) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
@@ -77,9 +77,9 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 				});
 		
 		testScope.meta_defineField(
-				AGSymbol.alloc("doesNotUnderstandX"),
+				AGSymbol.jAlloc("doesNotUnderstandX"),
 				new NATException(new XSelectorNotFound(
-						AGSymbol.alloc("nativeException"),
+						AGSymbol.jAlloc("nativeException"),
 						globalLexScope)));
 		
 		testCtx = new NATContext(
@@ -137,16 +137,16 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 			ATObject testScope = new NATCallframe(globalLexScope);
 			
 			testScope.meta_defineField(
-					AGSymbol.alloc("echo:"),
+					AGSymbol.jAlloc("echo:"),
 					new NativeClosure(NATNil._INSTANCE_) {
 						public ATObject base_apply(ATTable arguments) throws InterpreterException {
 							System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
 							return NATNil._INSTANCE_;
 						}						
 					});			testScope.meta_defineField(
-					AGSymbol.alloc("doesNotUnderstandX"),
+					AGSymbol.jAlloc("doesNotUnderstandX"),
 					new NATException(new XSelectorNotFound(
-							AGSymbol.alloc("nativeException"),
+							AGSymbol.jAlloc("nativeException"),
 							globalLexScope)));
 			
 			ATContext testCtx = new NATContext(

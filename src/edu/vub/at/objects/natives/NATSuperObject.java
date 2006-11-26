@@ -37,6 +37,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * NATSuperObject is a decorator class for an ATObject when denoted using the super
@@ -70,7 +71,9 @@ public class NATSuperObject extends NATNil implements ATObject {
      * 'late binding of self'.
      */
     public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
-        return lookupFrame_.meta_invoke(receiver_, selector, arguments);
+    		if(selector == AGSymbol.jAlloc("==")) // intercept equality tests on this object
+    			return super.meta_invoke(this, selector, arguments);
+    		return lookupFrame_.meta_invoke(receiver_, selector, arguments);
     }
 
     public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {

@@ -82,23 +82,23 @@ public class InvocationTest extends ReflectiveAccessTest {
 	public void testSimulatedBaseInvocation() {
 		try {
 			True.meta_invoke(
-					True, AGSymbol.alloc("ifTrue:"),
+					True, AGSymbol.jAlloc("ifTrue:"),
 					new NATTable(new ATObject[] { success }));
 			True.meta_invoke(
-					True, AGSymbol.alloc("ifFalse:"),
+					True, AGSymbol.jAlloc("ifFalse:"),
 					new NATTable(new ATObject[] { fail }));
 			True.meta_invoke(
-					True, AGSymbol.alloc("ifTrue:ifFalse:"),
+					True, AGSymbol.jAlloc("ifTrue:ifFalse:"),
 					new NATTable(new ATObject[] { success, fail }));
 
 			False.meta_invoke(
-					False, AGSymbol.alloc("ifTrue:"),
+					False, AGSymbol.jAlloc("ifTrue:"),
 					new NATTable(new ATObject[] { fail }));
 			False.meta_invoke(
-					False, AGSymbol.alloc("ifFalse:"),
+					False, AGSymbol.jAlloc("ifFalse:"),
 					new NATTable(new ATObject[] { success }));
 			False.meta_invoke(
-					False, AGSymbol.alloc("ifTrue:ifFalse:"),
+					False, AGSymbol.jAlloc("ifTrue:ifFalse:"),
 					new NATTable(new ATObject[] { fail, success }));
 		} catch (InterpreterException e) {
 			e.printStackTrace();
@@ -151,10 +151,10 @@ public class InvocationTest extends ReflectiveAccessTest {
 	 */
 	public void testSimulatedBaseFieldAccess() {
 		try {
-			ATObject accessor = closures.meta_select(closures, AGSymbol.alloc("at"));
+			ATObject accessor = closures.meta_select(closures, AGSymbol.jAlloc("at"));
 			ATObject element = accessor.base_asClosure().base_apply(
 					new NATTable(new ATObject[] {
-							closures.meta_select(closures, AGSymbol.alloc("length"))}));
+							closures.meta_select(closures, AGSymbol.jAlloc("length"))}));
 			element.base_asClosure().base_apply(NATTable.EMPTY);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
@@ -201,7 +201,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 	public void testJavaBaseFieldAssignment() {
 		try {
 			ATMessage message = new NATMethodInvocation(
-					AGSymbol.alloc("at"), 
+					AGSymbol.jAlloc("at"), 
 					NATTable.EMPTY);
 			
 			message.base_setArguments( 
@@ -229,11 +229,11 @@ public class InvocationTest extends ReflectiveAccessTest {
 	public void testSimulatedBaseFieldAssignment() {
 		try {
 			ATMessage message = new NATMethodInvocation(
-					AGSymbol.alloc("at"), 
+					AGSymbol.jAlloc("at"), 
 					NATTable.EMPTY);
 			
 			message.meta_assignVariable(
-					AGSymbol.alloc("arguments"), 
+					AGSymbol.jAlloc("arguments"), 
 					new NATTable(new ATObject[] {
 							closures.base_getLength()	
 					}));

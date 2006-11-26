@@ -69,17 +69,17 @@ public class CoercionTest extends TestCase {
 	public void setUp() {
 		try {
 			customClosure_ = new NATObject();
-			customClosure_.meta_defineField(AGSymbol.alloc("apply"), new NativeClosure(customClosure_) {
+			customClosure_.meta_defineField(AGSymbol.jAlloc("apply"), new NativeClosure(customClosure_) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					ATTable apply_args = get(args, 1).base_asTable();
 					assertEquals(42, getNbr(apply_args, 1));
 					return NATNil._INSTANCE_;
 				}
 			});
-			customClosure_.meta_defineField(AGSymbol.alloc("method"), new NATMethod(AGSymbol.alloc("foo"), NATTable.EMPTY, new AGBegin(NATTable.EMPTY)));
+			customClosure_.meta_defineField(AGSymbol.jAlloc("method"), new NATMethod(AGSymbol.jAlloc("foo"), NATTable.EMPTY, new AGBegin(NATTable.EMPTY)));
 			customContext_ = new NATObject();
-			customContext_.meta_defineField(AGSymbol.alloc("self"), NATNumber.atValue(24));
-			customClosure_.meta_defineField(AGSymbol.alloc("context"), customContext_);
+			customContext_.meta_defineField(AGSymbol.jAlloc("self"), NATNumber.atValue(24));
+			customClosure_.meta_defineField(AGSymbol.jAlloc("context"), customContext_);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -97,7 +97,7 @@ public class CoercionTest extends TestCase {
 	public void testCoercedMetalevelInvocation() {
 		try {
 			ATClosure coercedObject = customClosure_.base_asClosure();
-			assertTrue(coercedObject.meta_respondsTo(AGSymbol.alloc("apply")).asNativeBoolean().javaValue);
+			assertTrue(coercedObject.meta_respondsTo(AGSymbol.jAlloc("apply")).asNativeBoolean().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}

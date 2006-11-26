@@ -163,8 +163,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 			
 		code.base_applyInScope(NATTable.EMPTY, extension);
 		
-		// TODO: is this still necessary? can't we simply return the extension which is already a mirror?
-		return NATMirrorFactory._INSTANCE_.createMirror(extension);
+		return extension;
 	}
 	
 	/* ---------------------------------

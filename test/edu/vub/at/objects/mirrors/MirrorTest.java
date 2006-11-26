@@ -28,25 +28,71 @@
 
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATMethod;
+import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.XUserDefined;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.NATCallframe;
-import edu.vub.at.objects.natives.NATContext;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATSuperObject;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
-public class MirrorTest extends ReflectiveAccessTest {
-
+public class MirrorTest extends AmbientTalkTest {
+	
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(MirrorTest.class);
 	}	
+	
+	protected void setUp() throws Exception {
+		super.setUp();
+		
+		evalAndReturn(
+				"def at := object: { \n" +
+				"  def mirrors := object: { \n" +
+				"    def Factory := jlobby.edu.vub.at.objects.mirrors.NATMirrorFactory.INSTANCE; \n" +
+				"  }; \n" +
+				"  def unit := object: { \n" +
+				"    def XUnitFailed := object: { \n" +
+				"      def message := \"Unittest Failed\"; \n" +
+				"      def init(@args) { \n" +
+				"        if: (args.length > 0) then: { \n" +
+				"			message := args[1]; \n" +
+				"        } \n" +
+				"      } \n" +
+				"    }; \n" +
+				"    def fail( message ) { raise: XUnitFailed.new( message ) }; \n" +
+				"  }; \n" +
+				"}; \n" +
+				"\n" +
+				"def symbol( text ) { jlobby.edu.vub.at.objects.natives.grammar.AGSymbol.alloc( text ) }; \n");
+	}
+
+	/**
+	 * Following a bug report by Stijn. Intercessive mirror creation and extension do 
+	 * not always behave properly (e.g. they return mirages or superfluous introspective
+	 * mirrors wrapping the desired result)
+	 */
+	public void testMirrorCreation() {
+		ATObject mirror = evalAndReturn("def simpleMirror := mirror: { nil }; simpleMirror;");
+		
+		if(! (mirror instanceof NATIntercessiveMirror) ) {
+			fail("Return value of mirror: { ... } is not an intercessive mirror.");
+		};
+		
+		mirror = evalAndReturn("extend: simpleMirror with: { nil }");
+		
+		if(! (mirror instanceof NATIntercessiveMirror) ) {
+			fail("Extensions of a mirror: { ... } are not intercessive mirrors. " + mirror.getClass());
+		};
+	}
 	
 	/**
 	 * This test goes over all abstract grammar elements and tests their accessors
@@ -66,53 +112,31 @@ public class MirrorTest extends ReflectiveAccessTest {
 	 * - Invoking base-level reflectee behaviour on a mirror
 	 * - Return values of meta_operations are mirrors
 	 * - Field selection from a mirror results in a mirror
-	 * - Field assignment on a mirror with a non-mirror value
+	 * - TODO Field assignment on a mirror with a non-mirror value
 	 *
 	 */
 	public void testStratification() { 
 		
-		try {
-			// Test setup : create a new scope and define a mirror inside it.
-			NATCallframe testScope = new NATCallframe(lexicalRoot);
-			
-			try {
-				evaluateInput(
-						"def mirror  := at.mirrors.Factory.createMirror(true);",
-						new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
-			} catch (InterpreterException e) {
-				fail("exception : could not create a mirror : " + e);
-			}
-			
-			// Invoking base-level reflectee behaviour on a mirror.
-			try {
-				evaluateInput(
-						"mirror.ifTrue: fail;" +
-						"fail()",
-						new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
-			} catch (XSelectorNotFound e) {
-				// the method meta_ifTrue on NATBoolean does not exist
-				// the method base_ifTrue on NATMirror does not exist
-				// success
-			}
-
-			// Mirror consistency : return values are mirrors too.
-			try {
-				evaluateInput(
-						"def responds    := mirror.respondsTo( symbol(\"ifTrue:\") );" +
-						"(responds.isMirror())" +
-						"   .ifTrue: success ifFalse: fail;" +
-						"responds.ifTrue: fail ifFalse: fail",
-						new NATContext(testScope, lexicalRoot, NATNil._INSTANCE_));
-			} catch (XSelectorNotFound e) {
-				// meta_ifTrue_ifFalse_ is not a method of NATBoolean
-				// base_ifTrue_ifFalse_ is not a method of NATMirror
-				// success
-			}
-		} catch (InterpreterException e) {
-			e.printStackTrace();
-			fail("exception: "+ e);
-		}		
+		evalAndReturn("def mirror  := at.mirrors.Factory.createMirror(true);");
 		
+		// Invoking base-level reflectee behaviour on a mirror. 
+		// Throws XSelectorNotFound as: 
+		// - the method meta_ifTrue on NATBoolean does not exist
+		// - the method base_ifTrue on NATMirror does not exist
+		evalAndTestException(
+				"mirror.ifTrue: { nil }; \n",
+				XSelectorNotFound.class);
+		
+		// Mirror consistency : return values are mirrors too.
+		// Throws XSelectorNotFound as responds is a mirror and: 
+		// - the method meta_ifTrue on NATBoolean does not exist
+		// - the method base_ifTrue on NATMirror does not exist
+		evalAndTestException(
+				"def responds    := mirror.respondsTo( symbol(\"ifTrue:\") );" +
+				"(responds.isMirror())" +
+				"   .ifFalse: { at.unit.fail(\"Return value is not a mirror\") };" +
+				"responds.ifTrue: { at.unit.fail(\"Can invoke base-level methods through a mirror\") };",
+				XSelectorNotFound.class);		
 	};
 	
 	
@@ -121,9 +145,28 @@ public class MirrorTest extends ReflectiveAccessTest {
 	 * - down(up(o)) == o
 	 */
 	public void testJavaMirrorBaseRelation() {
-		ATMirror mirror = NATMirrorFactory._INSTANCE_.createMirror(True);
 		try {
-			assertEquals(True, mirror.base_getBase());
+			ATObject[] objects 		= new ATObject[] { 
+					NATNil._INSTANCE_, NATBoolean._TRUE_, NATNumber.ZERO, new NATObject(), 
+					new NATSuperObject(new NATObject(), Evaluator.getGlobalLexicalScope()),
+					NATTable.EMPTY, new NATIntrospectiveMirror(NATNil._INSTANCE_),
+					new NATIntercessiveMirror(Evaluator.getGlobalLexicalScope(), true)
+			};
+			ATMirror[] mirrors 		= new ATMirror[objects.length];
+			
+			for (int i = 0; i < objects.length; i++) {
+				mirrors[i] = NATMirrorFactory._INSTANCE_.createMirror(objects[i]);
+			}
+			
+			for (int i = 0; i < objects.length; i++) {
+				assertEquals(objects[i], mirrors[i].base_getBase());
+			}
+
+//			TODO(discuss) should NATIntrospectiveMirrors be unique? 
+//			(requires a map or every object has a lazily initialised pointer)
+//			for (int i = 0; i < objects.length; i++) {
+//				assertEquals(mirrors[i], NATMirrorFactory._INSTANCE_.createMirror(objects[i]));
+//			}
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -134,29 +177,34 @@ public class MirrorTest extends ReflectiveAccessTest {
 	 * - down(up(o)) == o
 	 */
 	public void testMirrorBaseRelation() {
-		try {
-			evaluateInput(
-					"def mirror  := at.mirrors.Factory.createMirror(true);" +
-					// "echo: (\"testMirrorBaseRelation mirror is \".+(mirror));" +
-					"(true == mirror.getBase())" +
-					"  .ifTrue: success ifFalse: fail;" +
-					"(true == mirror.base)" +
-					"  .ifTrue: success ifFalse: fail",
-					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (InterpreterException e) {
-			e.printStackTrace();
-			fail("exception: "+ e);
-		}		
+		evalAndReturn(
+				"def emptyObject := object: { def getSuper() { super } }; \n" +
+				"def objects := [ nil, true, 1, emptyObject, emptyObject.getSuper(), reflect: nil, mirror: { nil } ]; \n" +
+				"def mirrors[objects.length] { nil }; \n" +
+				"\n" +
+				"1.to: objects.length do: { | i | \n" +
+				"  mirrors[i] := reflect: objects[i]; \n" +
+				"}; \n" +
+				"1.to: objects.length do: { | i | \n" +
+				"  (objects[i] == mirrors[i].getBase()) \n" +
+				"    .ifFalse: { at.unit.fail(\"down(up(\" + objects[i] + \")) != \" + objects[i]); }; \n" +
+				"  (objects[i] == mirrors[i].base) \n" +
+				"    .ifFalse: { at.unit.fail(\"down(up(\" + objects[i] + \")) != \" + objects[i]); } \n" +
+				"} \n");
 	}	
-	
+		
 	public void testJavaMirrorInvocation() {
 		try {
-			ATMirror trueMirror = NATMirrorFactory._INSTANCE_.createMirror(True);
+			ATMirror trueMirror = NATMirrorFactory._INSTANCE_.createMirror(NATBoolean._TRUE_);
 			ATMirror responds = (ATMirror)trueMirror.meta_invoke(
 					trueMirror,
-					AGSymbol.alloc("respondsTo"),
-					new NATTable(new ATObject[] { AGSymbol.alloc("ifTrue:") }));
-			responds.base_getBase().base_asBoolean().base_ifTrue_ifFalse_(success, fail);
+					AGSymbol.jAlloc("respondsTo"),
+					new NATTable(new ATObject[] { AGSymbol.jAlloc("ifTrue:") }));
+			responds.base_getBase().base_asBoolean().base_ifFalse_(new NativeClosure(NATNil._INSTANCE_) {
+				public ATObject base_apply(ATTable arguments) throws InterpreterException {
+					throw new XUserDefined(NATNil._INSTANCE_);
+				}
+			});
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
@@ -164,112 +212,59 @@ public class MirrorTest extends ReflectiveAccessTest {
 	}
 			
 	public void testMirrorInvocation() {
-		try {
-			evaluateInput(
-					"def trueMirror  := at.mirrors.Factory.createMirror(true);" +
-					"def responds    := trueMirror.respondsTo( symIfTrue );" +
-					"def base        := responds.base;" +
-					"base.ifTrue: success ifFalse: fail",
-					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (InterpreterException e) {
-			e.printStackTrace();
-			fail("exception: "+ e);
-		}		
-	}
-	
-	public void testJavaMirrorFieldAccess() {
-		try {
-			ATMethod emptyExtension  = 
-				new NativeAnonymousMethod(MirrorTest.class) {
-					public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-						return NATNil._INSTANCE_;
-					};
-				};
-			
-			ATMethod invokeSuccess = 
-				new NativeAnonymousMethod(MirrorTest.class) {
-					public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-						evaluateInput(
-								"def invoke(@args) { \"ok\" };",
-								ctx);
-						return NATNil._INSTANCE_;
-					};
-				};
-			
-			ATObject extendedSuccess =
-				OBJLexicalRoot._INSTANCE_.base_extend_with_mirroredBy_(
-					success,
-					new NativeClosure(success, emptyExtension),
-					(NATIntercessiveMirror)OBJMirrorRoot._INSTANCE_.meta_extend(
-							new NativeClosure(success, emptyExtension)));
-			
-			
-			ATMirror extendedSuccessMirror = NATMirrorFactory._INSTANCE_.createMirror(extendedSuccess);
-			
-			ATMirror receiver = (ATMirror)extendedSuccessMirror.meta_select(
-					extendedSuccessMirror,
-					AGSymbol.alloc("dynamicParent"));
-			
-			receiver.base_getBase().base_asClosure().base_apply(NATTable.EMPTY);
-			
-			extendedSuccessMirror.meta_assignField(
-					extendedSuccessMirror,
-					AGSymbol.alloc("mirror"), 
-					extendedSuccessMirror.meta_extend(
-							new NativeClosure(extendedSuccessMirror, invokeSuccess)));
-			
-			extendedSuccess.meta_invoke(
-					extendedSuccess,
-					AGSymbol.alloc("whatever"),
-					NATTable.EMPTY);
-			
-		} catch (InterpreterException e) {
-			e.printStackTrace();
-			fail("exception: "+ e);
-		}
+		evalAndReturn(
+				"def trueMirror  := at.mirrors.Factory.createMirror(true);" +
+				"def responds    := trueMirror.respondsTo( symbol( \"ifTrue:\" ) );" +
+				"def base        := responds.base;" +
+				"base.ifFalse: { at.unit.fail(\"Incorrect Mirror Invocation\"); }");
 	}
 			
 	public void testMirrorFieldAccess() {
-		try {
-			evaluateInput(
-					"def extendedSuccess := \n" +
-					"  extend: success with: { nil } \n" +
-					"  mirroredBy: (mirror: { nil }); \n" +
-					"def extendedSuccessMirror := \n" +
-					"  reflect: extendedSuccess; \n" +
-					"\n" +
-					"extendedSuccessMirror.dynamicParent.base.apply([]); \n" +
-					"extendedSuccessMirror.mirror :=  \n" +
-					"  extend: extendedSuccessMirror with: { \n" +
-					"    def invoke(@args) { reflect: \"ok\"}; \n" +
-					"  }; \n" +
-					" \n" +
-					"echo: extendedSuccess.whatever()",
-					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (InterpreterException e) {
-			e.printStackTrace();
-			fail("exception: "+ e);
-		}		
+		evalAndReturn(
+				"def extendedMirroredClosure := \n" +
+				"  extend: { raise: (object: { nil }) } \n" +
+				"    with: { nil } \n" +
+				"    mirroredBy: (mirror: { nil }); \n" +
+				"def intercessiveMirror := \n" +
+				"  reflect: extendedMirroredClosure");
+		
+		evalAndTestException(
+				"intercessiveMirror.dynamicParent.base.apply([]); \n",
+				XUserDefined.class);
+		
+		// Cannot assign a base-level entity to a meta-level variable
+		evalAndTestException(
+				"intercessiveMirror.mirror := \n" +
+				"  object: { \n" +
+				"    def invoke(@args) { reflect: \"ok\"}; \n" +
+				"  };\n" +
+				"extendedMirroredClosure.whatever()",
+				XTypeMismatch.class);
+		
+		// Cannot assign a base-level entity to a meta-level variable
+		evalAndReturn(
+				"intercessiveMirror.mirror := \n" +
+				"  mirror: { \n" +
+				"    def invoke(@args) { reflect: \"ok\"}; \n" +
+				"  };\n" +
+				"extendedMirroredClosure.whatever()");
 	}
 	
 	/* following a bug report by tom */
 	public void testListMethods() {
-		try {
-			evaluateInput(
-					"def test := object: { \n" +
-					"  def hello() { echo: \"hello\"; self }; \n" +
-					"  def world() { echo: \"world\"; self }; \n" +
+		evalAndCompareTo(
+				"def test := object: { \n" +
+					"  def hello() { \"hello\" }; \n" +
+					"  def world() { \"world\" }; \n" +
 					"}; \n" +
-					"echo: (reflect: test).listMethods(); \n" +
-					"def testMirrored := object: { \n" +
-					"  def hello() { echo: \"hello\"; self }; \n" +
-					"  def world() { echo: \"world\"; self }; \n" +
+					"(reflect: test).listMethods(); \n",
+				"<mirror on:[<method:world>, <method:hello>]>");
+		evalAndCompareTo(
+				"def testMirrored := object: { \n" +
+					"  def hello() { \"hello\" }; \n" +
+					"  def world() { \"world\" }; \n" +
 					"} mirroredBy: (mirror: { nil }); \n" +
-					"echo: (reflect: testMirrored).listMethods();",
-					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
-		} catch (InterpreterException e) {
-			e.printStackTrace();
-			fail("exception: "+ e);
-		}		
+					"(reflect: testMirrored).listMethods();",
+				"<mirror on:[<method:world>, <method:hello>]>");
 	}	
 }

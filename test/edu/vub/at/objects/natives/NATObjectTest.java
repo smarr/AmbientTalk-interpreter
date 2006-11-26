@@ -35,7 +35,7 @@ public class NATObjectTest extends AmbientTalkTest {
 		original = new NATObject();
 		
 		original.meta_addMethod(
-				new NATMethod(AGSymbol.alloc("defaultMethod"), NATTable.EMPTY, null) {
+				new NATMethod(AGSymbol.jAlloc("defaultMethod"), NATTable.EMPTY, null) {
 					public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 						throw new TestException("Application of this method is expected to fail", 0);
 					}
@@ -57,14 +57,14 @@ public class NATObjectTest extends AmbientTalkTest {
 				});
 			
 		clone.meta_addMethod(
-				new NATMethod(AGSymbol.alloc("addedMethod"), NATTable.EMPTY, null) {
+				new NATMethod(AGSymbol.jAlloc("addedMethod"), NATTable.EMPTY, null) {
 					public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 						throw new TestException("This method needs to be visible in the clone", 1);
 					}
 				});
 		
 		try {
-			clone.meta_invoke(clone, AGSymbol.alloc("addedMethod"), NATTable.EMPTY);
+			clone.meta_invoke(clone, AGSymbol.jAlloc("addedMethod"), NATTable.EMPTY);
 		} catch (TestException ae) { 
 			// given the definition, this should happen!!!
 		} catch (XSelectorNotFound se) {

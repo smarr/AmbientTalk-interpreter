@@ -84,7 +84,7 @@ public class NativeAnonymousMethod extends NATNil implements ATMethod {
 
 	public ATBegin base_getBodyExpression() {
 		return new AGBegin(new NATTable(new ATObject[] {
-				AGSymbol.alloc("Native anonymous implementation in " + creatorClass_.getName())}));
+				AGSymbol.jAlloc("Native anonymous implementation in " + creatorClass_.getName())}));
 	}
 	
 	public NATText meta_print() throws InterpreterException {

@@ -30,27 +30,27 @@ public class TestFieldMap extends AmbientTalkTestCase {
 	 */
 	protected void setUp() throws Exception {
 		map_ = new FieldMap();
-		assertTrue(map_.put(AGSymbol.alloc("x")));
-		map_.put(AGSymbol.alloc("y"));
-		map_.put(AGSymbol.alloc("z"));
-		map_.put(AGSymbol.alloc("u"));
-		assertTrue(map_.put(AGSymbol.alloc("v")));
-		map_.put(AGSymbol.alloc("w"));
-		map_.put(AGSymbol.alloc("a"));
-		map_.put(AGSymbol.alloc("b"));
-		assertFalse(map_.put(AGSymbol.alloc("x")));
+		assertTrue(map_.put(AGSymbol.jAlloc("x")));
+		map_.put(AGSymbol.jAlloc("y"));
+		map_.put(AGSymbol.jAlloc("z"));
+		map_.put(AGSymbol.jAlloc("u"));
+		assertTrue(map_.put(AGSymbol.jAlloc("v")));
+		map_.put(AGSymbol.jAlloc("w"));
+		map_.put(AGSymbol.jAlloc("a"));
+		map_.put(AGSymbol.jAlloc("b"));
+		assertFalse(map_.put(AGSymbol.jAlloc("x")));
 	}
 
 	public void testMap() {
-		assertEquals(0, map_.get(AGSymbol.alloc("x")));
-		assertEquals(1, map_.get(AGSymbol.alloc("y")));
-		assertEquals(2, map_.get(AGSymbol.alloc("z")));
-		assertEquals(3, map_.get(AGSymbol.alloc("u")));
-		assertEquals(4, map_.get(AGSymbol.alloc("v")));
-		assertEquals(5, map_.get(AGSymbol.alloc("w")));
-		assertEquals(6, map_.get(AGSymbol.alloc("a")));
-		assertEquals(7, map_.get(AGSymbol.alloc("b")));
-		assertEquals(-1, map_.get(AGSymbol.alloc("c")));
+		assertEquals(0, map_.get(AGSymbol.jAlloc("x")));
+		assertEquals(1, map_.get(AGSymbol.jAlloc("y")));
+		assertEquals(2, map_.get(AGSymbol.jAlloc("z")));
+		assertEquals(3, map_.get(AGSymbol.jAlloc("u")));
+		assertEquals(4, map_.get(AGSymbol.jAlloc("v")));
+		assertEquals(5, map_.get(AGSymbol.jAlloc("w")));
+		assertEquals(6, map_.get(AGSymbol.jAlloc("a")));
+		assertEquals(7, map_.get(AGSymbol.jAlloc("b")));
+		assertEquals(-1, map_.get(AGSymbol.jAlloc("c")));
 	}
 
 }

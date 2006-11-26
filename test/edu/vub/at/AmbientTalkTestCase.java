@@ -49,9 +49,9 @@ public class AmbientTalkTestCase extends TestCase {
 		ATObject scope = new NATObject(self); // scope has no dyn parent and is nested within self
 		
 		
-		self.meta_defineField(AGSymbol.alloc("unittest:"), unittest_);
+		self.meta_defineField(AGSymbol.jAlloc("unittest:"), unittest_);
 		
-		self.meta_defineField(AGSymbol.alloc("unit"), OBJUnit._INSTANCE_);
+		self.meta_defineField(AGSymbol.jAlloc("unit"), OBJUnit._INSTANCE_);
 				
 		ctx_ = new NATContext(scope, self, supr);
 	}

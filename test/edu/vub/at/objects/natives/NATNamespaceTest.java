@@ -89,35 +89,35 @@ public class NATNamespaceTest extends TestCase {
 			// create the namespace 'at' bound to the path /tmp/at
 			NATNamespace atNS = new NATNamespace("/at", at_);
 			// bind the name 'at' to the atNS namespace in the lobby
-			lobby.meta_defineField(AGSymbol.alloc("at"), atNS);
+			lobby.meta_defineField(AGSymbol.jAlloc("at"), atNS);
 
 			// now, try to select the 'at' slot from the lobby
-			ATObject at = lobby.meta_select(lobby, AGSymbol.alloc("at"));
+			ATObject at = lobby.meta_select(lobby, AGSymbol.jAlloc("at"));
 			// the at slot should equal a namespace object
 			assertTrue(at instanceof NATNamespace);
 			assertEquals("<ns:/at>", at.meta_print().javaValue);
 			
-			ATObject test = at.meta_select(at, AGSymbol.alloc("test"));
+			ATObject test = at.meta_select(at, AGSymbol.jAlloc("test"));
 			// the test slot should equal a namespace object
 			assertTrue(test instanceof NATNamespace);
 			assertEquals("<ns:/at/test>", test.meta_print().javaValue);	
 			
 			// select at.test.file1 which should load file1 and return 1
-			ATObject result = test.meta_select(test, AGSymbol.alloc("file1"));
+			ATObject result = test.meta_select(test, AGSymbol.jAlloc("file1"));
 			assertEquals(NATNumber.ONE, result);
 			
 			// ensure file1 is now really bound to 1 in the namespace 'test'
-			assertTrue(test.meta_respondsTo(AGSymbol.alloc("file1")).asNativeBoolean().javaValue);
+			assertTrue(test.meta_respondsTo(AGSymbol.jAlloc("file1")).asNativeBoolean().javaValue);
 			
 			// normally, by loading file1, file2 should have been loaded as well:
-			assertTrue(test.meta_respondsTo(AGSymbol.alloc("file2")).asNativeBoolean().javaValue);
+			assertTrue(test.meta_respondsTo(AGSymbol.jAlloc("file2")).asNativeBoolean().javaValue);
 			
 			// test.file2 should be a normaly object with a ~ slot bound to test
-			ATObject fileScope = test.meta_select(test, AGSymbol.alloc("file2"));
-			assertEquals(test, fileScope.meta_select(fileScope, AGSymbol.alloc("~")));
+			ATObject fileScope = test.meta_select(test, AGSymbol.jAlloc("file2"));
+			assertEquals(test, fileScope.meta_select(fileScope, AGSymbol.jAlloc("~")));
 			
 			// test.file2.y should equal nil
-			assertEquals(NATNil._INSTANCE_, fileScope.meta_select(fileScope, AGSymbol.alloc("y")));
+			assertEquals(NATNil._INSTANCE_, fileScope.meta_select(fileScope, AGSymbol.jAlloc("y")));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -133,10 +133,10 @@ public class NATNamespaceTest extends TestCase {
 			// create the namespace 'at' bound to the path /tmp/at
 			NATNamespace atNS = new NATNamespace("/at", at_);
 			// bind the name 'at' to the atNS namespace in the lobby
-			lobby.meta_assignField(lobby, AGSymbol.alloc("at"), atNS);
+			lobby.meta_assignField(lobby, AGSymbol.jAlloc("at"), atNS);
 
 			// select '/.at.test'
-			ATObject test = atNS.meta_select(atNS, AGSymbol.alloc("test"));
+			ATObject test = atNS.meta_select(atNS, AGSymbol.jAlloc("test"));
 			// the test slot should equal a namespace object
 			assertTrue(test instanceof NATNamespace);
 			assertEquals("<ns:/at/test>", test.meta_print().javaValue);	
@@ -144,9 +144,9 @@ public class NATNamespaceTest extends TestCase {
 			// select at.test.file2 which should load file2 and raise an error
 			// because ~.file2.x in file1.at will result in evaluating nil.x
 			try {
-				test.meta_select(test, AGSymbol.alloc("file2"));
+				test.meta_select(test, AGSymbol.jAlloc("file2"));
 			} catch(XSelectorNotFound e) {
-				if (e.selector_.equals(AGSymbol.alloc("x")) && e.inObject_.equals(NATNil._INSTANCE_)) {
+				if (e.selector_.equals(AGSymbol.jAlloc("x")) && e.inObject_.equals(NATNil._INSTANCE_)) {
 					// ok
 					System.out.println("[expected]: "+e.getMessage());
 				} else

@@ -53,7 +53,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		txt_ = txt;
 	}
 	
-	public static final AGSymbol alloc(String javaRepresentation) {
+	public static final AGSymbol jAlloc(String javaRepresentation) {
 		return alloc(NATText.atValue(javaRepresentation));
 	}
 	

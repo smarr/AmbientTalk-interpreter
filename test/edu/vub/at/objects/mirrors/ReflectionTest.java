@@ -61,13 +61,13 @@ public class ReflectionTest extends TestCase {
 	}
 	
 	public void testUpSelector() throws InterpreterException {
-		assertEquals("foo_", Reflection.upSelector(AGSymbol.alloc("foo:")));
-		assertEquals("foo_bar_", Reflection.upSelector(AGSymbol.alloc("foo:bar:")));
-		assertEquals("_oppls_", Reflection.upSelector(AGSymbol.alloc("+")));
-		assertEquals("set_opnot_", Reflection.upSelector(AGSymbol.alloc("set!")));
-		assertEquals("foo__opltx_bar_", Reflection.upSelector(AGSymbol.alloc("foo:<bar:")));
-		assertEquals("_opbla_", Reflection.upSelector(AGSymbol.alloc(":opbla:")));
-		assertEquals("yes_opque_", Reflection.upSelector(AGSymbol.alloc("yes?")));
+		assertEquals("foo_", Reflection.upSelector(AGSymbol.jAlloc("foo:")));
+		assertEquals("foo_bar_", Reflection.upSelector(AGSymbol.jAlloc("foo:bar:")));
+		assertEquals("_oppls_", Reflection.upSelector(AGSymbol.jAlloc("+")));
+		assertEquals("set_opnot_", Reflection.upSelector(AGSymbol.jAlloc("set!")));
+		assertEquals("foo__opltx_bar_", Reflection.upSelector(AGSymbol.jAlloc("foo:<bar:")));
+		assertEquals("_opbla_", Reflection.upSelector(AGSymbol.jAlloc(":opbla:")));
+		assertEquals("yes_opque_", Reflection.upSelector(AGSymbol.jAlloc("yes?")));
 	}
 	
 	

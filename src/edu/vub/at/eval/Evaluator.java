@@ -58,11 +58,11 @@ public final class Evaluator {
 	
 	// important symbols
 	
-	public static final AGSymbol _ANON_MTH_NAM_ = AGSymbol.alloc("nativelambda");
-	public static final NATTable _ANON_MTH_ARGS_ = new NATTable(new ATObject[] { new AGSplice(AGSymbol.alloc("args")) });
+	public static final AGSymbol _ANON_MTH_NAM_ = AGSymbol.jAlloc("nativelambda");
+	public static final NATTable _ANON_MTH_ARGS_ = new NATTable(new ATObject[] { new AGSplice(AGSymbol.jAlloc("args")) });
 	public static final AGSymbol _LAMBDA_    = AGSymbol.alloc(NATText.atValue("lambda"));
 	public static final AGSymbol _INIT_      = AGSymbol.alloc(NATText.atValue("init"));
-	public static final AGSymbol _CURNS_SYM_ = AGSymbol.alloc("~");
+	public static final AGSymbol _CURNS_SYM_ = AGSymbol.jAlloc("~");
 	
 	/**
 	 * A thread-local variable is used to assign a unique global scope to
