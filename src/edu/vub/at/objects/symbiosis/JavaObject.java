@@ -301,7 +301,7 @@ public final class JavaObject extends NATObject implements ATObject {
 		JavaField[] jFields = Symbiosis.getAllFields(wrappedObject_, wrappedObject_.getClass());
         // fields of the AT symbiont
     		ATObject[] symbiontFields = super.meta_listFields().asNativeTable().elements_;
-    		return new NATTable(NATTable.collate(jFields, symbiontFields));
+    		return NATTable.atValue(NATTable.collate(jFields, symbiontFields));
     }
 
     /**
@@ -313,7 +313,7 @@ public final class JavaObject extends NATObject implements ATObject {
 		JavaMethod[] jMethods = Symbiosis.getAllMethods(this, wrappedObject_, wrappedObject_.getClass());
         // methods of the AT symbiont
 		ATObject[] symbiontMethods = super.meta_listMethods().asNativeTable().elements_;
-		return new NATTable(NATTable.collate(jMethods, symbiontMethods));
+		return NATTable.atValue(NATTable.collate(jMethods, symbiontMethods));
     }
 
 	public NATText meta_print() throws InterpreterException {

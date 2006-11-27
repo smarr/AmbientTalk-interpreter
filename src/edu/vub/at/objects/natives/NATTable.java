@@ -65,8 +65,7 @@ public final class NATTable extends AGExpression implements ATTable {
 			return new NATTable(array);
 	}	
 	
-	// TODO: make this constructor private to ensure singleton EMPTY
-	public NATTable(ATObject[] elements) {
+	private NATTable(ATObject[] elements) {
 		// assert elements.length > 0
 		elements_ = elements;
 	}
@@ -99,7 +98,7 @@ public final class NATTable extends AGExpression implements ATTable {
 				result.add(elements_[i].meta_eval(ctx));
 			}
 		}
-		return new NATTable((ATObject[]) result.toArray(new ATObject[siz]));
+		return atValue((ATObject[]) result.toArray(new ATObject[siz]));
 	}
 	
 	/**
@@ -124,7 +123,7 @@ public final class NATTable extends AGExpression implements ATTable {
 				result.add(elements_[i].meta_quote(ctx));
 			}
 		}
-		return new NATTable((ATObject[]) result.toArray(new ATObject[siz]));
+		return atValue((ATObject[]) result.toArray(new ATObject[siz]));
 	}
 	
 	public NATText meta_print() throws InterpreterException {
@@ -148,7 +147,7 @@ public final class NATTable extends AGExpression implements ATTable {
 	
 	public ATNil base_each_(ATClosure clo) throws InterpreterException {
 		for (int i = 0; i < elements_.length; i++) {
-			clo.base_apply(new NATTable(new ATObject[] { elements_[i] }));
+			clo.base_apply(atValue(new ATObject[] { elements_[i] }));
 		}
 		return NATNil._INSTANCE_;
 	}
@@ -158,15 +157,15 @@ public final class NATTable extends AGExpression implements ATTable {
 		
 		ATObject[] result = new ATObject[elements_.length];
 		for (int i = 0; i < elements_.length; i++) {
-			result[i] = clo.base_apply(new NATTable(new ATObject[] { elements_[i] }));
+			result[i] = clo.base_apply(atValue(new ATObject[] { elements_[i] }));
 		}
-		return new NATTable(result);
+		return atValue(result);
 	}
 	
 	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws InterpreterException {
 		ATObject total = init;
 		for (int i = 0; i < elements_.length; i++) {
-			total = clo.base_apply(new NATTable(new ATObject[] { total, elements_[i] }));
+			total = clo.base_apply(atValue(new ATObject[] { total, elements_[i] }));
 		}
 		return total;
 	}

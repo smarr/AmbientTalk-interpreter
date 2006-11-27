@@ -89,7 +89,7 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 			tab[i] = initExp_.meta_eval(ctx);
 		}
 		
-		ctx.base_getLexicalScope().meta_defineField(tblName_, new NATTable(tab));
+		ctx.base_getLexicalScope().meta_defineField(tblName_, NATTable.atValue(tab));
 		
 		return NATNil._INSTANCE_;
 	}

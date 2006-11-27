@@ -45,7 +45,7 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 			ATMethod m = c.base_getMethod();
 			assertEquals(NativeMethod.class, m.getClass());
 			assertEquals(AGSymbol.jAlloc("+"), m.base_getName());
-			assertEquals(NATNumber.atValue(2), c.base_apply(new NATTable(new ATObject[] { NATNumber.ONE })));
+			assertEquals(NATNumber.atValue(2), c.base_apply(NATTable.atValue(new ATObject[] { NATNumber.ONE })));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}

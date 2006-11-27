@@ -83,7 +83,7 @@ public class NativeAnonymousMethod extends NATNil implements ATMethod {
 	public ATTable base_getParameters() { return Evaluator._ANON_MTH_ARGS_; }
 
 	public ATBegin base_getBodyExpression() {
-		return new AGBegin(new NATTable(new ATObject[] {
+		return new AGBegin(NATTable.atValue(new ATObject[] {
 				AGSymbol.jAlloc("Native anonymous implementation in " + creatorClass_.getName())}));
 	}
 	

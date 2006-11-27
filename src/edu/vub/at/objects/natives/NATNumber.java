@@ -91,7 +91,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 */
 	public ATNil base_doTimes_(ATClosure code) throws InterpreterException {
 		for (int i = 1; i <= javaValue; i++) {
-			code.base_apply(new NATTable(new ATObject[] { NATNumber.atValue(i) }));
+			code.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(i) }));
 		}
 		return NATNil._INSTANCE_;
 	}
@@ -117,11 +117,11 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 		int start = javaValue;
 		if (start > stop) {
 			for (int i = start; i > stop; i -= step) {
-				code.base_apply(new NATTable(new ATObject[] { NATNumber.atValue(i) }));
+				code.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(i) }));
 			}
 		} else {
 			for (int i = start; i < stop; i+= step) {
-				code.base_apply(new NATTable(new ATObject[] { NATNumber.atValue(i) }));
+				code.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(i) }));
 			}
 		}
 		return NATNil._INSTANCE_;

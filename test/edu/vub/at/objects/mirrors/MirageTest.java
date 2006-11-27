@@ -28,11 +28,9 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATObject;
 
 /**
  * MirageTest tests the creation of Mirages (objects with custom meta-behaviour) given
@@ -42,8 +40,6 @@ import edu.vub.at.objects.natives.NATObject;
  */
 public class MirageTest extends ReflectiveAccessTest {
 
-	private ATObject tstObject = new NATObject();
-	
 	public static void main(String[] args) {
 		junit.swingui.TestRunner.run(MirageTest.class);
 	}

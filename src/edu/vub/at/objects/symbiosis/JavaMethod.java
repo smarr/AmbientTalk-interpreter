@@ -82,7 +82,7 @@ public final class JavaMethod extends NATNil implements ATJavaMethod {
 			buff.append(choices_[i].toString());
 		}
 		buff.append("\n");
-		return new AGBegin(new NATTable(new ATObject[] { NATText.atValue(buff.toString()) }));
+		return new AGBegin(NATTable.atValue(new ATObject[] { NATText.atValue(buff.toString()) }));
 	}
 
 	public ATSymbol base_getName() throws InterpreterException {

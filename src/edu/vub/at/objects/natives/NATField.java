@@ -57,7 +57,7 @@ public class NATField extends NATNil implements ATField {
 		return name_;
 	}
 
-	public ATObject base_getValue() throws InterpreterException {
+	public ATObject base_readField() throws InterpreterException {
 		try {
 			return frame_.getLocalField(name_);
 		} catch (InterpreterException e) {
@@ -66,14 +66,17 @@ public class NATField extends NATNil implements ATField {
 		}
 	}
 
-	public ATNil base_setValue(ATObject newValue) throws InterpreterException {
-		frame_.meta_assignField(frame_, name_, newValue);
-		return NATNil._INSTANCE_;
+	public ATNil base_writeField(ATObject newValue) throws InterpreterException {
+		return frame_.meta_assignField(frame_, name_, newValue);
 	}
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<field:"+name_.meta_print().javaValue+">");
 	}
+	
+    public boolean isNativeField() {
+        return true;
+    }
 
 	public ATField base_asField() throws XTypeMismatch {
 		return this;

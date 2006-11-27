@@ -426,7 +426,7 @@ public final class OBJLexicalRoot extends NATNil {
 			}
 			
 			if (replacementCode != null) {
-				return replacementCode.base_apply(new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
+				return replacementCode.base_apply(NATTable.atValue(new ATObject[] { e.getAmbientTalkRepresentation() }));
 			} else {
 				throw e;
 			}
@@ -443,7 +443,7 @@ public final class OBJLexicalRoot extends NATNil {
 			return tryBlock.base_apply(NATTable.EMPTY);
 		} catch(InterpreterException e) {
 			if (handler.base_canHandle(e.getAmbientTalkRepresentation()).asNativeBoolean().javaValue) {
-				return handler.base_getHandler().base_apply(new NATTable(new ATObject[] { e.getAmbientTalkRepresentation() }));
+				return handler.base_getHandler().base_apply(NATTable.atValue(new ATObject[] { e.getAmbientTalkRepresentation() }));
 			} else {
 				throw e;
 			}
@@ -456,7 +456,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * Ad-hoc code for two exception handlers
 	 */
 	public ATObject base_try_using_using_(ATClosure tryBlock, ATHandler hdl1, ATHandler hdl2) throws InterpreterException {
-		return base_try_usingHandlers_(tryBlock, new NATTable(new ATObject[] { hdl1, hdl2 }));
+		return base_try_usingHandlers_(tryBlock, NATTable.atValue(new ATObject[] { hdl1, hdl2 }));
 	}
 	
 	/**
@@ -465,7 +465,7 @@ public final class OBJLexicalRoot extends NATNil {
 	 * Ad-hoc code for three exception handlers
 	 */
 	public ATObject base_try_using_using_using_(ATClosure tryBlock, ATHandler hdl1, ATHandler hdl2, ATHandler hdl3) throws InterpreterException {
-		return base_try_usingHandlers_(tryBlock, new NATTable(new ATObject[] { hdl1, hdl2, hdl3 }));
+		return base_try_usingHandlers_(tryBlock, NATTable.atValue(new ATObject[] { hdl1, hdl2, hdl3 }));
 	}
 	
 	/**

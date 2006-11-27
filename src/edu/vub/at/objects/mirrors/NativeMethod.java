@@ -84,11 +84,11 @@ public final class NativeMethod extends NATNil implements ATMethod {
 		for (int i = 0; i < paramTypes.length; i++) {
 			paramNames[i] = AGSymbol.jAlloc(Evaluator.valueNameOf(paramTypes[i]));
 		}
-		return new NATTable(paramNames);
+		return NATTable.atValue(paramNames);
 	}
 
 	public ATBegin base_getBodyExpression() {
-		return new AGBegin(new NATTable(new ATObject[] {
+		return new AGBegin(NATTable.atValue(new ATObject[] {
 				NATText.atValue("Native implementation of " + javaMethod_.toString())}));
 	}
 	

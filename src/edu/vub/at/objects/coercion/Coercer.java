@@ -92,13 +92,21 @@ public final class Coercer implements InvocationHandler {
 		} else if (method.getDeclaringClass() == SymbioticATObjectMarker.class) {
 			return principal_;
 		} else {
-			ATObject[] symbioticArgs = new ATObject[(arguments == null) ? 0 : arguments.length];
-			for (int i = 0; i < symbioticArgs.length; i++) {
-				symbioticArgs[i] = Symbiosis.javaToAmbientTalk(arguments[i]);
+			ATObject[] symbioticArgs;
+             // support for variable-arity invocations from within AmbientTalk
+			if ((arguments != null) && (arguments.length == 1) && (arguments[0] instanceof ATObject[])) {
+				// no need to convert arguments
+				symbioticArgs = (ATObject[]) arguments[0];
+			} else {
+				symbioticArgs = new ATObject[(arguments == null) ? 0 : arguments.length];
+				for (int i = 0; i < symbioticArgs.length; i++) {
+					symbioticArgs[i] = Symbiosis.javaToAmbientTalk(arguments[i]);
+				}
 			}
-			ATObject result = Reflection.downInvocation(principal_, method.getName(), symbioticArgs);
+
+			ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);
 			// properly 'cast' the returned object into the appropriate interface
-			return coerce(result, method.getReturnType());
+			return Symbiosis.ambientTalkToJava(result, method.getReturnType());
 		}
 	}
 	

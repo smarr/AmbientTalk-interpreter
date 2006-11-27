@@ -186,7 +186,7 @@ public class NATClosure extends NATNil implements ATClosure {
 		};
 		
 		try {
-			return this.base_apply(new NATTable(new ATObject[] { quit }));
+			return this.base_apply(NATTable.atValue(new ATObject[] { quit }));
 		} catch(SignalEscape e) {
 			if (e.originatingBlock == this) {
 				return e.returnedValue;

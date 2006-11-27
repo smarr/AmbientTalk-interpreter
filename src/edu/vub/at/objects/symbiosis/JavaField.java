@@ -60,11 +60,11 @@ public final class JavaField extends NATNil implements ATField {
 		return Reflection.downSelector(field_.getName());
 	}
 
-	public ATObject base_getValue() throws InterpreterException {
+	public ATObject base_readField() throws InterpreterException {
 		return Symbiosis.readField(host_, field_);
 	}
 
-	public ATNil base_setValue(ATObject newValue) throws InterpreterException {
+	public ATNil base_writeField(ATObject newValue) throws InterpreterException {
 		Symbiosis.writeField(host_, field_, newValue);
 		return NATNil._INSTANCE_;
 	}

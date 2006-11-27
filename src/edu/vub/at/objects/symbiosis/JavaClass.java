@@ -313,7 +313,7 @@ public final class JavaClass extends NATObject {
 		JavaField[] jFields = Symbiosis.getAllFields(null, wrappedClass_);
         // fields of the AT symbiont
     		ATObject[] symbiontFields = super.meta_listFields().asNativeTable().elements_;
-    		return new NATTable(NATTable.collate(jFields, symbiontFields));
+    		return NATTable.atValue(NATTable.collate(jFields, symbiontFields));
     }
 
     /**
@@ -325,7 +325,7 @@ public final class JavaClass extends NATObject {
 		JavaMethod[] jMethods = Symbiosis.getAllMethods(this, null, wrappedClass_);
         // methods of the AT symbiont
 		ATObject[] symbiontMethods = super.meta_listMethods().asNativeTable().elements_;
-		return new NATTable(NATTable.collate(jMethods, symbiontMethods));
+		return NATTable.atValue(NATTable.collate(jMethods, symbiontMethods));
     }
 
 	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {

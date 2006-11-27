@@ -217,7 +217,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			Iterator it = originalCustomFields.iterator();
 			while (it.hasNext()) {
 				ATField field = (ATField) it.next();
-				customFields_.add(field.base_new(new ATObject[] { this }));
+				customFields_.add(field.base_new(new ATObject[] { this }).base_asField());
 			}
 		}
 		
@@ -486,7 +486,7 @@ public class NATObject extends NATCallframe implements ATObject {
 
 	public ATTable meta_listMethods() throws InterpreterException {
 		Collection methods = methodDictionary_.values();
-		return new NATTable((ATObject[]) methods.toArray(new ATObject[methods.size()]));
+		return NATTable.atValue((ATObject[]) methods.toArray(new ATObject[methods.size()]));
 	}
 	
 	public NATText meta_print() throws InterpreterException {

@@ -261,11 +261,11 @@ public class NATNil implements ATNil {
     }
 
     public ATTable meta_listFields() throws InterpreterException {
-        return new NATTable(Reflection.downBaseLevelFields(this));
+        return NATTable.atValue(Reflection.downBaseLevelFields(this));
     }
 
     public ATTable meta_listMethods() throws InterpreterException {
-    	    return new NATTable(Reflection.downBaseLevelMethods(this));
+    	    return NATTable.atValue(Reflection.downBaseLevelMethods(this));
     }
 
     /* ---------------------------------
@@ -357,10 +357,6 @@ public class NATNil implements ATNil {
     public boolean isJavaObjectUnderSymbiosis() {
     	    return false;
     }
-    
-    public boolean base_isMirror() {
-        return false;
-    }
 
     public boolean isNativeBoolean() {
         return false;
@@ -370,6 +366,14 @@ public class NATNil implements ATNil {
         return false;
     }
 
+    public boolean isNativeField() {
+        return false;
+    }
+    
+    public boolean base_isMirror() {
+        return false;
+    }
+    
     public ATClosure base_asClosure() throws XTypeMismatch {
         throw new XTypeMismatch(ATClosure.class, this);
     }

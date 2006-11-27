@@ -51,7 +51,7 @@ public interface ATField extends ATObject {
 	 * @return the current value of the field.
 	 * @throws InterpreterException 
 	 */
-	public ATObject base_getValue() throws InterpreterException;
+	public ATObject base_readField() throws InterpreterException;
 	
 	/**
 	 * Sets the value of the field if possible
@@ -59,6 +59,6 @@ public interface ATField extends ATObject {
 	 * @return - the return value is ignored.
 	 * @throws InterpreterException - if the field cannot be modified.
 	 */
-	public ATNil base_setValue(ATObject newValue) throws InterpreterException;
+	public ATNil base_writeField(ATObject newValue) throws InterpreterException;
 
 }

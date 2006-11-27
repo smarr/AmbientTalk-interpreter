@@ -111,7 +111,7 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testAssignTable() throws InterpreterException {
 		// def x[2] { nil }
-		ATTable table = new NATTable(new ATObject[] { NATNil._INSTANCE_, NATNil._INSTANCE_ });
+		ATTable table = NATTable.atValue(new ATObject[] { NATNil._INSTANCE_, NATNil._INSTANCE_ });
 		ctx_.base_getLexicalScope().meta_defineField(atX_, table);
 		
         evalAndCompareTo("x[1] := 3", NATNil._INSTANCE_);
@@ -148,7 +148,7 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testTabulation() throws InterpreterException {
 		// def x := [3,1]
-		ATTable table = new NATTable(new ATObject[] { atThree_, NATNumber.ONE });
+		ATTable table = NATTable.atValue(new ATObject[] { atThree_, NATNumber.ONE });
 		ctx_.base_getLexicalScope().meta_defineField(atX_, table);
 		
         evalAndCompareTo("x[1]", atThree_);
@@ -181,7 +181,7 @@ public class TestEval extends AmbientTalkTest {
 	public void testSelection() throws InterpreterException {
 		// def x := object: { def y() { 3 } }
 		NATObject x = new NATObject(ctx_.base_getSelf());
-		NATMethod y = new NATMethod(atY_, NATTable.EMPTY, new AGBegin(new NATTable(new ATObject[] { atThree_ })));
+		NATMethod y = new NATMethod(atY_, NATTable.EMPTY, new AGBegin(NATTable.atValue(new ATObject[] { atThree_ })));
 		x.meta_addMethod(y);
 		ctx_.base_getLexicalScope().meta_defineField(atX_, x);
 
@@ -208,8 +208,8 @@ public class TestEval extends AmbientTalkTest {
 		
 		// def identity(x) { x }
 		ATSymbol identityS = AGSymbol.alloc(NATText.atValue("identity"));
-		ATTable pars = new NATTable(new ATObject[] { atX_ });
-		NATMethod identity = new NATMethod(identityS, pars, new AGBegin(new NATTable(new ATObject[] { atX_ })));
+		ATTable pars = NATTable.atValue(new ATObject[] { atX_ });
+		NATMethod identity = new NATMethod(identityS, pars, new AGBegin(NATTable.atValue(new ATObject[] { atX_ })));
 		ctx_.base_getLexicalScope().meta_addMethod(identity);
 		
 		evalAndCompareTo("identity(1)", NATNumber.ONE);
@@ -221,8 +221,8 @@ public class TestEval extends AmbientTalkTest {
 		
 		// def identity := { | x | x }
 		ATSymbol identityS = AGSymbol.alloc(NATText.atValue("identity"));
-		ATTable pars = new NATTable(new ATObject[] { atX_ });
-		NATClosure identity = new NATClosure(new NATMethod(identityS, pars, new AGBegin(new NATTable(new ATObject[] { atX_ }))), ctx_);
+		ATTable pars = NATTable.atValue(new ATObject[] { atX_ });
+		NATClosure identity = new NATClosure(new NATMethod(identityS, pars, new AGBegin(NATTable.atValue(new ATObject[] { atX_ }))), ctx_);
 		ctx_.base_getLexicalScope().meta_defineField(identityS, identity);
 		
 		evalAndCompareTo("identity(1)", NATNumber.ONE);
@@ -231,8 +231,8 @@ public class TestEval extends AmbientTalkTest {
 	public void testMethodInvocation() throws InterpreterException {
          // def x := object: { def x := 3; def m(y) { y; x } }
 		NATObject x = new NATObject(ctx_.base_getLexicalScope());
-		NATMethod m = new NATMethod(atM_, new NATTable(new ATObject[] { atY_ }),
-				                         new AGBegin(new NATTable(new ATObject[] { atY_, atX_ })));
+		NATMethod m = new NATMethod(atM_, NATTable.atValue(new ATObject[] { atY_ }),
+				                         new AGBegin(NATTable.atValue(new ATObject[] { atY_, atX_ })));
 		x.meta_defineField(atX_, atThree_);
 		x.meta_addMethod(m);
 		ctx_.base_getLexicalScope().meta_defineField(atX_, x);
@@ -255,8 +255,8 @@ public class TestEval extends AmbientTalkTest {
 		evalAndCompareTo("[1, @[2,[3]], [4], @[5], @[], 6]", "[1, 2, [3], [4], 5, 6]");
 		
 		// def m(x,y,z) { z }
-		NATMethod m = new NATMethod(atM_, new NATTable(new ATObject[] { atX_, atY_, atZ_ }),
-                                           new AGBegin(new NATTable(new ATObject[] { atZ_ })));
+		NATMethod m = new NATMethod(atM_, NATTable.atValue(new ATObject[] { atX_, atY_, atZ_ }),
+                                           new AGBegin(NATTable.atValue(new ATObject[] { atZ_ })));
         ctx_.base_getSelf().meta_addMethod(m);
 		
 		evalAndCompareTo("m(1,@[2,3])", "3");
@@ -265,9 +265,9 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testVariableArguments() throws InterpreterException {
 		// def m(x,y,@z) { [x, y, z] }
-		NATMethod m = new NATMethod(atM_, new NATTable(new ATObject[] { atX_, atY_, new AGSplice(atZ_) }),
-                                           new AGBegin(new NATTable(new ATObject[] {
-                                        		   new NATTable(new ATObject[] { atX_, atY_, atZ_ })
+		NATMethod m = new NATMethod(atM_, NATTable.atValue(new ATObject[] { atX_, atY_, new AGSplice(atZ_) }),
+                                           new AGBegin(NATTable.atValue(new ATObject[] {
+                                        		   NATTable.atValue(new ATObject[] { atX_, atY_, atZ_ })
                                            })));
         ctx_.base_getSelf().meta_addMethod(m);
 		
@@ -280,8 +280,8 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testVariableKeywordArguments() throws InterpreterException {
 		// def foo:bar:(x,@y) { y }
-		NATMethod fooBar = new NATMethod(atFooBar_, new NATTable(new ATObject[] { atX_, new AGSplice(atY_) }),
-                                                new AGBegin(new NATTable(new ATObject[] { atY_ })));
+		NATMethod fooBar = new NATMethod(atFooBar_, NATTable.atValue(new ATObject[] { atX_, new AGSplice(atY_) }),
+                                                new AGBegin(NATTable.atValue(new ATObject[] { atY_ })));
         ctx_.base_getSelf().meta_addMethod(fooBar);
 		
 		evalAndCompareTo("foo: 1 bar: 2", "[2]");

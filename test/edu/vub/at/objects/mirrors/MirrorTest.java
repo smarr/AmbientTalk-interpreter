@@ -199,7 +199,7 @@ public class MirrorTest extends AmbientTalkTest {
 			ATMirror responds = (ATMirror)trueMirror.meta_invoke(
 					trueMirror,
 					AGSymbol.jAlloc("respondsTo"),
-					new NATTable(new ATObject[] { AGSymbol.jAlloc("ifTrue:") }));
+					NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("ifTrue:") }));
 			responds.base_getBase().base_asBoolean().base_ifFalse_(new NativeClosure(NATNil._INSTANCE_) {
 				public ATObject base_apply(ATTable arguments) throws InterpreterException {
 					throw new XUserDefined(NATNil._INSTANCE_);

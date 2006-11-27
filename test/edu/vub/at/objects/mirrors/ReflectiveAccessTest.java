@@ -98,8 +98,7 @@ public class ReflectiveAccessTest extends AmbientTalkTestCase {
 	
 	protected ATObject lexicalRoot		= null;
 	
-	protected ATTable closures 			= new NATTable(
-			new ATObject[] { fail, fail, success });
+	protected ATTable closures 			= NATTable.atValue(new ATObject[] { fail, fail, success });
 	
 	protected void evaluateInput(String input, ATContext ctx) throws InterpreterException {
 		try {

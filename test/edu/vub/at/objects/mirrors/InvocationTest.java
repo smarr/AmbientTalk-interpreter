@@ -83,23 +83,23 @@ public class InvocationTest extends ReflectiveAccessTest {
 		try {
 			True.meta_invoke(
 					True, AGSymbol.jAlloc("ifTrue:"),
-					new NATTable(new ATObject[] { success }));
+					NATTable.atValue(new ATObject[] { success }));
 			True.meta_invoke(
 					True, AGSymbol.jAlloc("ifFalse:"),
-					new NATTable(new ATObject[] { fail }));
+					NATTable.atValue(new ATObject[] { fail }));
 			True.meta_invoke(
 					True, AGSymbol.jAlloc("ifTrue:ifFalse:"),
-					new NATTable(new ATObject[] { success, fail }));
+					NATTable.atValue(new ATObject[] { success, fail }));
 
 			False.meta_invoke(
 					False, AGSymbol.jAlloc("ifTrue:"),
-					new NATTable(new ATObject[] { fail }));
+					NATTable.atValue(new ATObject[] { fail }));
 			False.meta_invoke(
 					False, AGSymbol.jAlloc("ifFalse:"),
-					new NATTable(new ATObject[] { success }));
+					NATTable.atValue(new ATObject[] { success }));
 			False.meta_invoke(
 					False, AGSymbol.jAlloc("ifTrue:ifFalse:"),
-					new NATTable(new ATObject[] { fail, success }));
+					NATTable.atValue(new ATObject[] { fail, success }));
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+e);
@@ -153,7 +153,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 		try {
 			ATObject accessor = closures.meta_select(closures, AGSymbol.jAlloc("at"));
 			ATObject element = accessor.base_asClosure().base_apply(
-					new NATTable(new ATObject[] {
+					NATTable.atValue(new ATObject[] {
 							closures.meta_select(closures, AGSymbol.jAlloc("length"))}));
 			element.base_asClosure().base_apply(NATTable.EMPTY);
 		} catch (InterpreterException e) {
@@ -205,7 +205,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					NATTable.EMPTY);
 			
 			message.base_setArguments( 
-					new NATTable(new ATObject[] {
+					NATTable.atValue(new ATObject[] {
 							closures.base_getLength()	
 					}));
 
@@ -234,7 +234,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 			
 			message.meta_assignVariable(
 					AGSymbol.jAlloc("arguments"), 
-					new NATTable(new ATObject[] {
+					NATTable.atValue(new ATObject[] {
 							closures.base_getLength()	
 					}));
 

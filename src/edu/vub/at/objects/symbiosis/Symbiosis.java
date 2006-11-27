@@ -445,6 +445,11 @@ public final class Symbiosis {
 	 * @return the same object if it implements the ATObject interface
 	 */
 	public static final ATObject javaToAmbientTalk(Object jObj) throws InterpreterException {
+		// -- IMPLEMENTATION-level OBJECTS --
+		if (jObj instanceof ATObject) {
+			// the object is already an AmbientTalk object
+			return (ATObject) jObj;
+		}
 		// -- NULL => NIL --
 	    if (jObj == null) {
 		  return NATNil._INSTANCE_;
@@ -464,7 +469,7 @@ public final class Symbiosis {
 			for (int i = 0; i < length; i++) {
 				atTable[i] = javaToAmbientTalk(Array.get(jObj, i));
 			}
-			return new NATTable(atTable);
+			return NATTable.atValue(atTable);
 	    // -- EXCEPTION => NATEXCEPTION --
 		} else if(jObj instanceof InterpreterException) {
 			return ((InterpreterException)jObj).getAmbientTalkRepresentation();
@@ -501,6 +506,10 @@ public final class Symbiosis {
 		    } else {
 		    		throw new XTypeMismatch(targetType, atObj);
 		    }
+		// -- IMPLEMENTATION-LEVEL OBJECTS --
+	    } else if (targetType.isInstance(atObj)) {
+			// target type is a subtype of ATObject, return the implementation-level object itself
+			return atObj;
 		// -- PRIMITIVE TYPES --
 	    } else if (JavaInterfaceAdaptor.isPrimitiveType(targetType)) {
 			return JavaInterfaceAdaptor.atObjectToPrimitiveJava(atObj, targetType);

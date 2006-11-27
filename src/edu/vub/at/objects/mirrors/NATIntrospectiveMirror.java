@@ -272,7 +272,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	public ATTable meta_listFields() throws InterpreterException {
     	    ATField[] principalMetaFields = Reflection.downMetaLevelFields(principal_);
     	    ATField[] mirrorBaseFields = Reflection.downBaseLevelFields(this);
-        return new NATTable(NATTable.collate(principalMetaFields, mirrorBaseFields));
+        return NATTable.atValue(NATTable.collate(principalMetaFields, mirrorBaseFields));
     }
 
 	/**
@@ -283,7 +283,7 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
     public ATTable meta_listMethods() throws InterpreterException {
    	    ATMethod[] principalMetaMethods = Reflection.downMetaLevelMethods(principal_);
    	    ATMethod[] mirrorBaseMethods = Reflection.downBaseLevelMethods(this);
-        return new NATTable(NATTable.collate(principalMetaMethods, mirrorBaseMethods));
+        return NATTable.atValue(NATTable.collate(principalMetaMethods, mirrorBaseMethods));
     }
 	
 	/* ------------------------------------

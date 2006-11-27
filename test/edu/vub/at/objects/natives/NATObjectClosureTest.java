@@ -152,7 +152,7 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod scopeTestMethod = new NATMethod(
 					scopeTest, 
 					NATTable.EMPTY, 
-					new AGBegin(new NATTable(new ATObject[] {
+					new AGBegin(NATTable.atValue(new ATObject[] {
 							new AGScopeTest(object, object, object.meta_getDynamicParent())})));
 			object.meta_addMethod(scopeTestMethod);
 			
@@ -181,7 +181,7 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod lateBoundSelfTestMethod = new NATMethod(
 					lateBoundSelf, 
 					NATTable.EMPTY, 
-					new AGBegin(new NATTable(new ATObject[] {
+					new AGBegin(NATTable.atValue(new ATObject[] {
 							new AGScopeTest(parent, child, parent.meta_getDynamicParent())})));
 			
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
@@ -197,7 +197,7 @@ public class NATObjectClosureTest extends TestCase {
 //							return ctx.getParentObject();
 //						}
 //					}
-					new AGBegin(new NATTable(new ATObject[] {
+					new AGBegin(NATTable.atValue(new ATObject[] {
 							new AGScopeTest(child, child, parent)})));
 			
 			parent.meta_addMethod(lateBoundSelfTestMethod);
@@ -227,11 +227,10 @@ public class NATObjectClosureTest extends TestCase {
 			NATObject child = (NATObject)parent.meta_extend(
 					new NATClosure(
 							new NATMethod(AGSymbol.alloc(NATText.atValue("lambda")), NATTable.EMPTY,
-									new AGBegin(new NATTable(new ATObject[] {
+									new AGBegin(NATTable.atValue(new ATObject[] {
 											new AGDefFunction(superSemantics, NATTable.EMPTY, 
 													new AGBegin(
-															new NATTable(
-																	new ATObject[] { test } )))}))),
+															NATTable.atValue(new ATObject[] { test })))}))),
 																	lexicalRoot_,
 																	lexicalRoot_));
 			
@@ -242,7 +241,7 @@ public class NATObjectClosureTest extends TestCase {
 			ATMethod lateBoundSelfTestMethod = new NATMethod(
 					lateBoundSelf, 
 					NATTable.EMPTY, 
-					new AGBegin(new NATTable(new ATObject[] {
+					new AGBegin(NATTable.atValue(new ATObject[] {
 							new AGScopeTest(parent, child, parent.meta_getDynamicParent())})));
 			
 			parent.meta_addMethod(lateBoundSelfTestMethod);

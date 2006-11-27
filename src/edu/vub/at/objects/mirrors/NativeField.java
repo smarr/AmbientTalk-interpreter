@@ -85,11 +85,11 @@ public class NativeField extends NATNil implements ATField {
 		return name_;
 	}
 
-	public ATObject base_getValue() throws InterpreterException {
+	public ATObject base_readField() throws InterpreterException {
 		return JavaInterfaceAdaptor.invokeNativeATMethod(accessor_, host_, NATTable.EMPTY.elements_);
 	}
 
-	public ATNil base_setValue(ATObject newValue) throws InterpreterException {
+	public ATNil base_writeField(ATObject newValue) throws InterpreterException {
 		// certain fields may not have setters
 		if (mutator_ != null) {
 			JavaInterfaceAdaptor.invokeNativeATMethod(accessor_, host_, new ATObject[] { newValue });
@@ -115,6 +115,10 @@ public class NativeField extends NATNil implements ATField {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<native field:"+name_+" of "+ host_.meta_print().javaValue +">");
 	}
+	
+    public boolean isNativeField() {
+        return true;
+    }
 	
 	public ATField base_asField() {
 		return this;

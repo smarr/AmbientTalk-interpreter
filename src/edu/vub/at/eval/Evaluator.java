@@ -59,7 +59,7 @@ public final class Evaluator {
 	// important symbols
 	
 	public static final AGSymbol _ANON_MTH_NAM_ = AGSymbol.jAlloc("nativelambda");
-	public static final NATTable _ANON_MTH_ARGS_ = new NATTable(new ATObject[] { new AGSplice(AGSymbol.jAlloc("args")) });
+	public static final NATTable _ANON_MTH_ARGS_ = NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("args")) });
 	public static final AGSymbol _LAMBDA_    = AGSymbol.alloc(NATText.atValue("lambda"));
 	public static final AGSymbol _INIT_      = AGSymbol.alloc(NATText.atValue("init"));
 	public static final AGSymbol _CURNS_SYM_ = AGSymbol.jAlloc("~");
@@ -151,7 +151,7 @@ public final class Evaluator {
 				result.add(els[i].meta_eval(ctx));
 			}
 		}
-		return new NATTable((ATObject[]) result.toArray(new ATObject[siz]));
+		return NATTable.atValue((ATObject[]) result.toArray(new ATObject[siz]));
 	}
 
 	// auxiliary interface to support functor objects
@@ -201,7 +201,7 @@ public final class Evaluator {
 				restArgs[i] = args[i + numMandatoryPars];
 			}
 			ATSymbol restArgsName = pars[numMandatoryPars].base_asSplice().base_getExpression().base_asSymbol();
-			binder.bindParamToArg(scope, restArgsName, new NATTable(restArgs));
+			binder.bindParamToArg(scope, restArgsName, NATTable.atValue(restArgs));
 			
 		} else {
 			// regular parameter list: arguments and parameters have to match exactly

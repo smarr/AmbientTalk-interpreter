@@ -441,9 +441,11 @@ public final class Reflection {
 	 *  - obj.base_setSelector(x) => obj.meta_assignField(selector, x)
 	 *  - obj.meta_selector(args) => obj.meta_selector(args)
 	 *  - obj.meta_set|getSelector(args) => obj.meta_set|getSelector(args)
-	 *  - obj.selector(args) => obj.meta_invoke(obj, selector, args)
+	 *  - obj.selector(args) => either obj.selector(args) if selector is understood natively
+	 *                          or     obj.meta_invoke(obj, selector, args) otherwise
 	 */
-	public static final ATObject downInvocation(ATObject atRcvr, String jSelector, ATObject[] jArgs) throws InterpreterException {
+	public static final ATObject downInvocation(ATObject atRcvr, Method jMethod, ATObject[] jArgs) throws InterpreterException {
+		String jSelector = jMethod.getName();
 		if (jArgs == null) { jArgs = NATTable.EMPTY.elements_; }
 		
 		if (jSelector.startsWith(Reflection._BGET_PREFIX_)) {
@@ -460,13 +462,18 @@ public final class Reflection {
 			return atRcvr.meta_assignField(atRcvr, downBaseFieldMutationSelector(jSelector), jArgs[0]);
 		} else if (jSelector.startsWith(Reflection._BASE_PREFIX_)) {
 			// obj.base_selector(args) => obj.meta_invoke(obj, selector, args)
-			return atRcvr.meta_invoke(atRcvr, downBaseLevelSelector(jSelector), new NATTable(jArgs));
+			return atRcvr.meta_invoke(atRcvr, downBaseLevelSelector(jSelector), NATTable.atValue(jArgs));
 		} else if (jSelector.startsWith(Reflection._META_PREFIX_)) {
 			// obj.meta_selector(args) => obj.meta_selector(args)
-			return JavaInterfaceAdaptor.invokeNativeATMethod(atRcvr.getClass(), atRcvr, jSelector, jArgs);
+			return JavaInterfaceAdaptor.invokeNativeATMethod(jMethod, atRcvr, jArgs);
 		} else {
-			// obj.selector(args) => obj.meta_invoke(obj, selector, args)
-			return atRcvr.meta_invoke(atRcvr, downSelector(jSelector), new NATTable(jArgs));
+			// atRcvr can respond to the given method natively
+			if (jMethod.getDeclaringClass().isInstance(atRcvr)) {
+				return JavaInterfaceAdaptor.invokeNativeATMethod(jMethod, atRcvr, jArgs);
+			} else {
+			    // obj.selector(args) => obj.meta_invoke(obj, selector, args)
+			    return atRcvr.meta_invoke(atRcvr, downSelector(jSelector), NATTable.atValue(jArgs));
+			}
 		}
 	}
 

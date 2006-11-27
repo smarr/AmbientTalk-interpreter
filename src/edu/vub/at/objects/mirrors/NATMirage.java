@@ -240,7 +240,7 @@ public class NATMirage extends NATObject {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("addMethod"),
-				new NATTable(new ATObject[] { method })
+				NATTable.atValue(new ATObject[] { method })
 				);
 			
 		return NATNil._INSTANCE_;
@@ -250,7 +250,7 @@ public class NATMirage extends NATObject {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("assignField"),
-				new NATTable(new ATObject[] { receiver, selector, value })
+				NATTable.atValue(new ATObject[] { receiver, selector, value })
 				);
 			
 		return NATNil._INSTANCE_;
@@ -268,7 +268,7 @@ public class NATMirage extends NATObject {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("defineField"),
-				new NATTable(new ATObject[] { name, value })
+				NATTable.atValue(new ATObject[] { name, value })
 				);
 			
 		return NATNil._INSTANCE_;
@@ -278,7 +278,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("extend"),
-				new NATTable(new ATObject[] { code })
+				NATTable.atValue(new ATObject[] { code })
 				));
 	}
 	
@@ -286,7 +286,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("getMethod"),
-				new NATTable(new ATObject[] { selector })
+				NATTable.atValue(new ATObject[] { selector })
 				)).base_asMethod();
 	}
 
@@ -294,7 +294,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("invoke"),
-				new NATTable(new ATObject[] { receiver, selector, arguments })
+				NATTable.atValue(new ATObject[] { receiver, selector, arguments })
 				));
 	}
 
@@ -310,7 +310,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("lookup"),
-				new NATTable(new ATObject[] { selector })
+				NATTable.atValue(new ATObject[] { selector })
 				));
 	}
 
@@ -318,7 +318,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("newInstance"),
-				new NATTable(new ATObject[] { initargs })
+				NATTable.atValue(new ATObject[] { initargs })
 				));
 	}
 
@@ -334,7 +334,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("respondsTo"),
-				new NATTable(new ATObject[] { selector })
+				NATTable.atValue(new ATObject[] { selector })
 				)).base_asBoolean();
 	}
 
@@ -342,7 +342,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("select"),
-				new NATTable(new ATObject[] { receiver, selector })
+				NATTable.atValue(new ATObject[] { receiver, selector })
 				));
 	}
 
@@ -350,7 +350,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("share"),
-				new NATTable(new ATObject[] { code })
+				NATTable.atValue(new ATObject[] { code })
 				));
 	}
 
@@ -359,7 +359,7 @@ public class NATMirage extends NATObject {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("addField"),
-				new NATTable(new ATObject[] { field })
+				NATTable.atValue(new ATObject[] { field })
 				);
 			
 		return NATNil._INSTANCE_;
@@ -370,7 +370,7 @@ public class NATMirage extends NATObject {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("assignVariable"),
-				new NATTable(new ATObject[] { name, value })
+				NATTable.atValue(new ATObject[] { name, value })
 				);
 			
 		return NATNil._INSTANCE_;
@@ -381,7 +381,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("doesNotUnderstand"),
-				new NATTable(new ATObject[] { selector })
+				NATTable.atValue(new ATObject[] { selector })
 				));
 	}
 
@@ -390,7 +390,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("getField"),
-				new NATTable(new ATObject[] { selector })
+				NATTable.atValue(new ATObject[] { selector })
 		)).base_asField();
 	}
 
@@ -408,7 +408,7 @@ public class NATMirage extends NATObject {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("send"),
-				new NATTable(new ATObject[] { message })
+				NATTable.atValue(new ATObject[] { message })
 				);
 			
 		return NATNil._INSTANCE_;
@@ -419,7 +419,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("eval"),
-				new NATTable(new ATObject[] { ctx })
+				NATTable.atValue(new ATObject[] { ctx })
 				));
 	}
 
@@ -428,7 +428,7 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("quote"),
-				new NATTable(new ATObject[] { ctx })
+				NATTable.atValue(new ATObject[] { ctx })
 				));
 	}
 

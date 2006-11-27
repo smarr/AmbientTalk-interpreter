@@ -34,6 +34,7 @@ import edu.vub.at.objects.mirrors.MirageTest;
 import edu.vub.at.objects.mirrors.MirrorTest;
 import edu.vub.at.objects.mirrors.MirrorsOnNativesTest;
 import edu.vub.at.objects.mirrors.ReflectionTest;
+import edu.vub.at.objects.natives.CustomFieldsTest;
 import edu.vub.at.objects.natives.EscapeTest;
 import edu.vub.at.objects.natives.ExceptionHandlingTest;
 import edu.vub.at.objects.natives.LexicalRootTest;
@@ -78,6 +79,7 @@ public class InterpreterTests {
 		suite.addTestSuite(EscapeTest.class);
 		suite.addTestSuite(MirrorsOnNativesTest.class);
 		suite.addTestSuite(SymbiosisTest.class);
+		suite.addTestSuite(CustomFieldsTest.class);
 		//$JUnit-END$
 		return suite;
 	}

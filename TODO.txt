@@ -53,8 +53,5 @@ Perhaps a cleaner meta-level interface is having meta_clone and meta_new => clon
 The reason being that explicitly providing meta_init allows base-level code to re-initialize a live object at the meta-level.
 update: why not introduce syntax: new <expression>(arguments) , which is equivalent to: (reflect: <expression>).new(arguments)
 
-- custom fields: re-check all NATObject and NATCallframe meta_ methods and write a unit test,
-also to test custom field re-initialization
-
 * zoveel mogelijk native methods vervangen door code gedumpt in de init.at file
 bvb. alle controlestructuren, isXXX: methoden, ...

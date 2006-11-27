@@ -88,7 +88,7 @@ public class CoercionTest extends TestCase {
 	public void testCoercedBaselevelInvocation() {
 		try {
 			ATClosure coercedObject = customClosure_.base_asClosure();
-			coercedObject.base_apply(new NATTable(new ATObject[] { NATNumber.atValue(42) }));
+			coercedObject.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(42) }));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}

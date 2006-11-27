@@ -106,6 +106,7 @@ public interface ATConversions {
 	public boolean isNativeText();
 	public boolean isAmbientTalkObject();
 	public boolean isJavaObjectUnderSymbiosis();
+	public boolean isNativeField();
 	
 	public NATObject   asAmbientTalkObject() throws XTypeMismatch;
 	public NATNumber   asNativeNumber() throws XTypeMismatch;

@@ -248,11 +248,19 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * --------------------------------- */
 	
 	public ATNil meta_addField(ATField field) throws InterpreterException {
+		// when adding a native field, revert to the more optimized implementation using the map
+		if (field.isNativeField()) {
+			return this.meta_defineField(field.base_getName(), field.base_readField());
+		}
+		
 		ATSymbol name = field.base_getName();
 		if (this.hasLocalField(name)) {
 			// field already exists...
 			throw new XDuplicateSlot("field ", name.base_getText().asNativeText().javaValue);			
 		} else {
+			// add a clone of the field initialized with its new host
+			field = field.base_new(new ATObject[] { this }).base_asField();
+			
 			// add the field to the list of custom fields, which is created lazily
 			if (customFields_ == null) {
 				customFields_ = new LinkedList();
@@ -295,10 +303,10 @@ public class NATCallframe extends NATNil implements ATObject {
 		}
 		if (customFields_ == null) {
 			// no custom fields
-			return new NATTable(nativeFields);
+			return NATTable.atValue(nativeFields);
 		} else {
 			ATObject[] customFields = (ATObject[]) customFields_.toArray(new ATObject[customFields_.size()]);
-			return new NATTable(NATTable.collate(nativeFields, customFields));
+			return NATTable.atValue(NATTable.collate(nativeFields, customFields));
 		}
 	}
 
@@ -383,7 +391,7 @@ public class NATCallframe extends NATNil implements ATObject {
 		} else {
 			ATField fld = getLocalCustomField(selector);
 			if (fld != null) {
-				return fld.base_getValue();
+				return fld.base_readField();
 			} else {
 				throw new XSelectorNotFound(selector, this);
 			}
@@ -423,7 +431,7 @@ public class NATCallframe extends NATNil implements ATObject {
 		} else {
 			ATField fld = getLocalCustomField(selector);
 			if (fld != null) {
-				fld.base_setValue(value);
+				fld.base_writeField(value);
 				return true;
 			} else {
 				return false;
