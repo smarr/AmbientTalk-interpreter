@@ -21,7 +21,18 @@ en varianten: nemen expliciet een NATIntercessiveMirror ipv een ATMirror
 
 - Symbiosis:
 => Solve overloading by being able to annotate a method invocation => future work
-=> Threads -> currently 'you're on your own'? or consider wrapping each ATObject in a coercer that also acts as a far ref => converts invocations into enqueues, but this requires futures to block the waiting Java Thread
+=> Threads -> currently 'you're on your own'? or consider wrapping each ATObject in a coercer that also acts as a far ref
+    => converts invocations into enqueues, but this requires futures to block the waiting Java Thread
+om callbacks Java -> AT en Java Threads deftig te ondersteunen zou elke externe java thread
+(i.e. elke java thread behalve de thread die de actor zelf voorstelt) AT objecten alleen async mogen invokeren
+dit kan makkelijk in coercer.invoke:
+if (currentthread == actorthread)
+   do invoke synchronously
+else
+   schedule msg + future in actor queue
+   future.wait()
+=> actor thread moet msg.resultComputed(res) oproepen hetgeen dan voor dit soort msges de thread kan doen unblocken
+
 => Implementation can be sped up a bit using caching, consider a cache for Symbiosis.getMethods
 requires to change implementation of Symbiosis.invokeSymbioticMethod not to filter out methods by assigning null
 => representing array types in AT, i.e. how to access a wrapper for Type[] classes?

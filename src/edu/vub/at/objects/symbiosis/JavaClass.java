@@ -28,7 +28,6 @@
 package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -245,25 +244,23 @@ public final class JavaClass extends NATObject {
 	public ATObject meta_clone() throws InterpreterException { return this; }
 	
 	/**
-	 * aJavaClass.new(@args) == aJavaClass.init(@args)
-	 * AmbientTalk objects can add a custom init method to the class in order to intercept
-	 * instance creation. The original instance can then be created by invoking super.init(@args).
+	 * aJavaClass.new(@args) == invoke a Java constructor
+	 * AmbientTalk objects can add a custom new method to the class in order to intercept
+	 * instance creation. The original instance can then be performed by invoking super.new(@args).
 	 * 
 	 * For example, imagine we want to extend the class java.lang.Point with a 3D coordinate, e.g. a 'z' field:
 	 * <tt>
 	 * def Point := jlobby.java.awt.Point;
-	 * def Point.init(x,y,z) {
-	 *   def point := super.init(x,y); // invokes the Java constructor
+	 * def Point.new(x,y,z) { // 'override' the new method
+	 *   def point := super.new(x,y); // invokes the Java constructor
 	 *   def point.z := z; // adds a field dynamically to the new JavaObject wrapper
-	 *   point; // important! the return value of init determines the return value of 'new'
+	 *   point; // important! new should return the newly created instance
 	 * }
 	 * def mypoint := Point.new(1,2,3);
 	 * </tt>
 	 */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-    	    // immediately perform the NATObject behaviour: don't look for an 'init' method in the Java class,
-    	    // only look for an 'init' method at the AmbientTalk level.
-    	    return super.meta_invoke(this, Evaluator._INIT_, initargs);
+    	    return Symbiosis.symbioticInstanceCreation(wrappedClass_, initargs.asNativeTable().elements_);
     }
     
     /**
@@ -335,14 +332,6 @@ public final class JavaClass extends NATObject {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<java:"+wrappedClass_.toString()+">");
 	}
-	
-    /**
-     * See JavaClass#meta_newInstance(ATTable) for more details about the behaviour
-     * of Java class instantiation in AmbientTalk.
-     */
-    public ATObject base_init(ATObject[] initargs) throws InterpreterException {
-    		return Symbiosis.symbioticInstanceCreation(wrappedClass_, initargs);
-    }
 	
     public JavaClass asJavaClassUnderSymbiosis() throws XTypeMismatch { return this; }
 

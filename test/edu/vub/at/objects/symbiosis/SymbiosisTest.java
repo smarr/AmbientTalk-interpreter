@@ -660,7 +660,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	
 	/**
 	 * Tests the invocation of new on a wrapped Java Class.
-	 * Instantiates the Java class via a custom init implementation.
+	 * Instantiates the Java class via a custom new implementation.
 	 * 
 	 * BEWARE: this test should be the last for testing symbiotic instance creation as it
 	 * MODIFIES the test fixture (the JavaClass wrapper object)! Ths is because the JavaClass wrapper
@@ -668,12 +668,13 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testCustomInstanceCreation() {
 		try {
-			// def atTestClass.init(x) { def o := super.init(x); def o.ytest := y; o }
-			ATClosure init = evalAndReturn("def init(x,y) { def o := super.init(x); def o.ytest := y; o }; init").base_asClosure();
-			atTestClass.meta_addMethod(init.base_getMethod());
+			// def atTestClass.new(x,y) { def o := super.new(x); def o.ytest := y; o }
+			ATClosure newClo = evalAndReturn("def new(x,y) { def o := super.new(x); def o.ytest := y; o }; new").base_asClosure();
+			atTestClass.meta_addMethod(newClo.base_getMethod());
 			
 			// def instance := atTestClass.new(10, 11)
-			ATObject instance = atTestClass.meta_newInstance(NATTable.atValue(new ATObject[] { NATNumber.atValue(10), NATNumber.atValue(11) }));
+			ATObject instance = atTestClass.meta_invoke(atTestClass, AGSymbol.jAlloc("new"),
+					NATTable.atValue(new ATObject[] { NATNumber.atValue(10), NATNumber.atValue(11) }));
 			
 			assertEquals(10, instance.meta_select(instance, AGSymbol.jAlloc("xtest")).asNativeNumber().javaValue);
 			assertEquals(11, instance.meta_select(instance, AGSymbol.jAlloc("ytest")).asNativeNumber().javaValue);
