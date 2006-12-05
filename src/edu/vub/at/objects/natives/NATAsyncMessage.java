@@ -42,7 +42,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * 
  * @author tvc
  */
-public final class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
+public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 
     private final ATObject sender_;
     private ATObject receiver_ = NATNil._INSTANCE_;
@@ -56,7 +56,7 @@ public final class NATAsyncMessage extends NATMessage implements ATAsyncMessage 
         super(sel, arg);
         sender_ = sdr;
     }
-
+    
     public ATObject base_getSender() {
         return sender_;
     }

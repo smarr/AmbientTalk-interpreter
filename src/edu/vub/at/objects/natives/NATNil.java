@@ -27,7 +27,10 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.actors.ATAbstractActor;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.natives.ActorThread;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.NATException;
@@ -85,6 +88,19 @@ public class NATNil implements ATNil {
         throw new RuntimeException("Not yet implemented: async message sends to native values");
     }
 
+    public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
+    		return meta_invoke(message.base_getReceiver(), message.base_getSelector(), message.base_getArguments());
+    }
+    
+    /**
+     * Standard objects such as nil, numbers, booleans and so on can be passed by copy.
+     * TODO Note that compound objects such as tables should delegate to their parts and
+     * scoped objects (objects and closures) will typically want to give out a reference.
+     */
+    public ATObject meta_pass(ATObject client) throws InterpreterException {
+    		return this;
+    }
+    
     /**
      * The default behaviour of meta_invoke for primitive non-object ambienttalk language values is
      * to check whether the requested functionality is provided by a native Java method
@@ -309,6 +325,16 @@ public class NATNil implements ATNil {
         return NATNil._INSTANCE_;
     }
 
+    public ATAbstractActor meta_getActor() throws InterpreterException {
+    		Thread current = Thread.currentThread();
+    		if (current instanceof ActorThread) {
+			ActorThread actorTread = (ActorThread) current;
+			return actorTread.currentlyServing();
+		} else {
+			throw new XIllegalOperation("Asked for current actor when none was active");
+		}
+    }
+    
 
     /* ---------------------------------
       * -- Value Conversion Protocol   --
@@ -414,6 +440,15 @@ public class NATNil implements ATNil {
     	    throw new XTypeMismatch(ATHandler.class, this);
     }
 
+    // Conversions for concurrency and distribution related object
+    public ATBoolean base_isFarReference() {
+    		return NATBoolean._FALSE_;
+    }
+    
+    public ATFarObject base_asFarReference() throws XTypeMismatch {
+  	    throw new XTypeMismatch(ATFarObject.class, this);
+  	}
+    
     // Conversions for abstract grammar elements
 
     public ATStatement base_asStatement() throws XTypeMismatch {

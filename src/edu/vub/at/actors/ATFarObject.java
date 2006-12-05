@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATMailbox.java created on Aug 21, 2006
+ * ATFarObject.java created on Dec 5, 2006 at 11:19:05 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,23 +25,20 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package edu.vub.at.actors;
 
-import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.ATText;
 
 /**
- * A mailbox is a special kind of table object used to buffer asynchronous messages
+ * ATFarObject is an object reference denoting an object hosted by another actor.
+ *
+ * @author smostinc
  */
-public interface ATMailbox extends ATTable {
+public interface ATFarObject extends ATObject {
 
-    public ATSymbol base_getName();
-    
-	public ATObject base_enqueue(ATObject value) throws InterpreterException;
-
-	public ATObject base_dequeue() throws InterpreterException;
-
+	public ATText base_getActorId();
+	
+	public ATNumber base_getObjectId();
 }

@@ -33,7 +33,7 @@ import edu.vub.at.objects.ATObject;
 /**
  *  
  */
-public interface ATResolution {
+public interface ATResolution extends ATObject {
 
     public ATActor base_getActor();
 

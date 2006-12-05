@@ -27,11 +27,12 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.actors.ATAbstractActor;
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.coercion.ATConversions;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.actors.ATAsyncMessage;
 
 /**
  * ATObject represents the public interface of an AmbientTalk/2 object.
@@ -66,7 +67,23 @@ public interface ATObject extends ATConversions {
      *  - <tt>sentMessage</tt> when the message was sent by the actor.
      */
     public ATNil meta_send(ATAsyncMessage message) throws InterpreterException;
+    
+    /**
+     * Handles a first-class message of which it is the receiver. 
+     * @param message the asynchronous message send by some object possibly from another actor
+     * @return the return value of invoking the method corresponding to the message
+     */
+    public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException;
 
+    /**
+     * Allows objects to specify how they should be passed when going beyond the 
+     * boundaries of a single actor. 
+     * @param client - the object to which this object will be passed
+     * @return Objects may choose to return themselves, a clone or a proxy representation
+     * @throws InterpreterException - when overridden by the user
+     */
+    public ATObject meta_pass(ATObject client) throws InterpreterException;
+    
     /**
      * Invoke a method corresponding to the selector with the given arguments.
      * The selector is looked up along the dynamic delegation chain.
@@ -333,6 +350,14 @@ public interface ATObject extends ATConversions {
      * @throws InterpreterException 
      */
     public ATObject meta_getLexicalParent() throws InterpreterException;
+    
+    /**
+     * Objects are at all times defined within the scope of a single actor, which is
+     * typically the owner of the ActorThread that is executing their code. Only
+     * when a local object designates an object in another actor (i.e. it is a far 
+     * object reference), this will not be the case. 
+     */
+    public ATAbstractActor meta_getActor() throws InterpreterException;
 
     /* ------------------------------------------
       * -- Abstract Grammar evaluation protocol --

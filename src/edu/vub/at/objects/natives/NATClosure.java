@@ -50,7 +50,7 @@ import edu.vub.at.objects.mirrors.NativeClosure;
  * @author smostinc
  */
 public class NATClosure extends NATNil implements ATClosure {
-	
+
 	// these instance variables are inherited and used by a NativeClosure as well.
 	protected ATMethod 	method_;
 	protected ATContext	context_;

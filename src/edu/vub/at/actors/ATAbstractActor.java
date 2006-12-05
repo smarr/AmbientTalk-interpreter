@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATMailbox.java created on Aug 21, 2006
+ * ATAbstractActor.java created on Dec 1, 2006
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,23 +25,26 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package edu.vub.at.actors;
 
-import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * A mailbox is a special kind of table object used to buffer asynchronous messages
+ * ATAbstractActor describes the common interface of all logical processes in the 
+ * AmbientTalk/2 implementation. All such processes are implemented as actors which
+ * continually consume meta-level events from a synchronized event queue. Communication
+ * between all processes is thus strictly organized by passing events.
+ *
+ * @author smostinc
  */
-public interface ATMailbox extends ATTable {
+public interface ATAbstractActor extends ATObject {
 
-    public ATSymbol base_getName();
-    
-	public ATObject base_enqueue(ATObject value) throws InterpreterException;
-
-	public ATObject base_dequeue() throws InterpreterException;
+	/**
+	 * Schedules a meta-level message in the actors event queue.
+	 * @param event the event to be scheduled.
+	 * @return nil
+	 */
+	public abstract ATNil base_scheduleEvent(ATAsyncMessage event);
 
 }

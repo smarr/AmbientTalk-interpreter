@@ -31,10 +31,11 @@ package edu.vub.at.actors;
 import edu.vub.at.objects.ATObject;
 
 /**
- * @deprecated normally not necessary, the ATResolution can contain the service description directly
+ * TODO document the class ATServiceDescription
+ *
+ * @author smostinc
  */
-public interface ATServiceDescription
-{
+public interface ATServiceDescription extends ATObject {
 
     public ATObject getDescription();
 

@@ -28,22 +28,71 @@
 
 package edu.vub.at.actors;
 
+import edu.vub.at.actors.natives.events.ActorEmittedEvents;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NativeClosure;
+import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  *  
  */
-public interface ATActor
+public interface ATActor extends ATAbstractActor
 {
+	public static final ATSymbol _IN_ = AGSymbol.jAlloc("inbox");
 
-    public ATVirtualMachine base_getVirtualMachine();
+	public static final ATSymbol _OUT_ = AGSymbol.jAlloc("outbox");
 
-    public ATTable base_getMailboxes();
-    public ATMailbox base_getMailbox(ATSymbol name);
-    public void base_addMailbox(ATMailbox mailbox);
+	public static final ATSymbol _REQUIRED_ = AGSymbol.jAlloc("required");
+
+	public static final ATSymbol _PROVIDED_ = AGSymbol.jAlloc("provided");
+
+    /* ------------------------------------------
+     * -- Language Construct to Actor Protocol --
+     * ------------------------------------------ */
+
+	/**
+	 * Creates a first-class message in the language. Note that upon creation the
+	 * message does not have a receiver yet. This field wield be set once the message
+	 * is actually being sent, a fact which can be intercepted by overriding the sendTo
+	 * base-level method.
+	 */
+	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments);
+
+	
+	/**
+	 * This method implements the default asynchronous message sending semantics for
+	 * this particular actor. In addition to the ability to override the send meta-
+	 * operation on a single object to have specific adaptions, this hook allows the
+	 * programmer to modify the message sending semantics for all objects inside an 
+	 * actor. The default implementation ensures the correct passing of messages when
+	 * they transgress the boundaries of the sending actor. 
+	 * @throws InterpreterException 
+	 */
+	public ATObject base_send(ATAsyncMessage message) throws InterpreterException;
+	
+	/**
+	 * This mechanism is the most basic mechanism to provide a service. It requires 
+	 * a separate service description and an object offering the service. The return
+	 * value is a closure which allows cancelling the service offer.
+	 */
+	public ATClosure base_provide(ATServiceDescription description, ATObject service);
+	
+	/**
+	 * This mechanism is the most basic mechanism to provide a service. It requires 
+	 * a separate service description and an object offering the service. The return
+	 * value is a closure which allows cancelling the service offer.
+	 */
+	public ATClosure base_require(ATServiceDescription description, ATObject client);
+			
+	public ATVirtualMachine base_getVirtualMachine();
 
     public ATObject base_getBehaviour();
     

@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.coercion;
 
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -38,6 +39,7 @@ import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNumber;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
@@ -100,6 +102,11 @@ public interface ATConversions {
 	public ATUnquoteSplice 	base_asUnquoteSplice() throws XTypeMismatch;
 	public ATSplice 			base_asSplice() throws XTypeMismatch;
 	
+	// Concurrency and Distribution related values
+	public ATBoolean 		base_isFarReference();
+	
+	public ATFarObject		base_asFarReference() throws XTypeMismatch;
+
 	// Native Value Elements
 	
 	public boolean isNativeBoolean();
@@ -119,5 +126,6 @@ public interface ATConversions {
 	
 	public JavaObject  asJavaObjectUnderSymbiosis() throws XTypeMismatch;
 	public JavaClass   asJavaClassUnderSymbiosis() throws XTypeMismatch;
+	
 
 }
