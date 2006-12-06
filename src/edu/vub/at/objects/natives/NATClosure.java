@@ -142,7 +142,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	/**
 	 * The following is a pseudo-code implementation of escape. The important difference
 	 * between the native implementation and this pseudo-code is that the 'escaping exception'
-	 * can *not* be caught at the AmbientTalk level. The XEscape is a truly native exception.
+	 * can *not* be caught at the AmbientTalk level. The SignalEscape is a truly native exception.
 	 * 
 	 * def block.escape() {
 	 *   def returned := false;
@@ -150,13 +150,13 @@ public class NATClosure extends NATNil implements ATClosure {
 	 *     if: (returned) then: {
 	 *       raise: XIllegalOperation.new("Cannot quit, escape activation already returned")
 	 *     } else: {
-	 *       raise: XEscape.new(block, if: (args.isEmpty()) then: nil else: args[1])
+	 *       raise: SignalEscape.new(block, if: (args.isEmpty()) then: nil else: args[1])
 	 *     }
-	 *   }
+	 *   };
 	 *   
 	 *   try: {
 	 *    block(quit);
-	 *   } catch: XEscape using: {|e|
+	 *   } catch: SignalEscape using: {|e|
 	 *     if: (e.block == block) then: {
 	 *       e.val
 	 *     } else: {

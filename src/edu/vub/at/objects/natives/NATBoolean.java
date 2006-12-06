@@ -56,7 +56,7 @@ public abstract class NATBoolean extends NATNil implements ATBoolean {
 	
 	public final boolean javaValue;
 	
-	public NATBoolean(boolean b) {
+	private NATBoolean(boolean b) {
 		javaValue = b;
 	}
 	

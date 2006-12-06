@@ -70,6 +70,8 @@ public class NATSuperObject extends NATNil implements ATObject {
      * lookup will start in the encapsulated lookupFrame_, the receiver will not be bound
      * to 'lookupFrame_', as would normally be the case, but to receiver_, implementing
      * 'late binding of self'.
+     * TODO: equality test interception: can we rework this? make it more general, make it cleaner?
+     * what should be the semantics of doing super == obj or obj == super?
      */
     public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
     		if(selector == AGSymbol.jAlloc("==")) // intercept equality tests on this object
