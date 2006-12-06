@@ -60,7 +60,8 @@ public class NATSuperObject extends NATNil implements ATObject {
       * -- Message Sending Protocol --
       * ------------------------------ */
 
-    public ATNil meta_send(ATAsyncMessage msg) throws InterpreterException {
+    // TODO(send) Ensuring correct lookup and self bindings for send
+    public ATObject meta_send(ATAsyncMessage msg) throws InterpreterException {
         return lookupFrame_.meta_send(msg);
     }
 

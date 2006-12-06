@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.ATAbstractActor;
+import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.actors.natives.ActorThread;
@@ -83,9 +83,9 @@ public class NATNil implements ATNil {
      * Asynchronous messages sent to an object ( o<-m( args )) are handled by the
      * actor in which the object is contained.
      */
-    public ATNil meta_send(ATAsyncMessage message) throws InterpreterException {
-         // TODO: nil <- m() => also do invoke-like deification?
-        throw new RuntimeException("Not yet implemented: async message sends to native values");
+    public ATObject meta_send(ATAsyncMessage message) throws InterpreterException {
+    		this.meta_getActor().base_send(message);
+    		return NATNil._INSTANCE_;
     }
 
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
@@ -325,14 +325,17 @@ public class NATNil implements ATNil {
         return NATNil._INSTANCE_;
     }
 
-    public ATAbstractActor meta_getActor() throws InterpreterException {
+    public ATActor meta_getActor() throws InterpreterException {
     		Thread current = Thread.currentThread();
-    		if (current instanceof ActorThread) {
-			ActorThread actorTread = (ActorThread) current;
-			return actorTread.currentlyServing();
-		} else {
-			throw new XIllegalOperation("Asked for current actor when none was active");
-		}
+    		try {
+			if (current instanceof ActorThread) {
+				ActorThread actorTread = (ActorThread) current;
+				return (ATActor)actorTread.currentlyServing();
+			};
+		// on error | if current thread is not an ActorThread throw XIllegalOperation
+		} catch (ClassCastException e) { }
+    		throw new XIllegalOperation("Asked for current actor when none was active");
+
     }
     
 
@@ -447,6 +450,10 @@ public class NATNil implements ATNil {
     
     public ATFarObject base_asFarReference() throws XTypeMismatch {
   	    throw new XTypeMismatch(ATFarObject.class, this);
+  	}
+    
+    public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch {
+  	    throw new XTypeMismatch(ATAsyncMessage.class, this);
   	}
     
     // Conversions for abstract grammar elements

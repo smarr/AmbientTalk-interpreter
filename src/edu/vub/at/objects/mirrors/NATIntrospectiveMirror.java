@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -109,15 +108,6 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	/* ------------------------------
 	 * -- Message Sending Protocol --
 	 * ------------------------------ */
-	
-	/**
-	 * Asynchronous messages sent to an object ( o<-m( args )) are handled by the 
-	 * actor in which the object is contained.
-	 */
-	public ATNil meta_send(ATAsyncMessage message) throws InterpreterException {
-         // TODO: nil <- m() => also do invoke-like deification?
-		throw new RuntimeException("Not yet implemented: async message sends to mirrors");
-	}
 	
 	/**
 	 * <p>The effect of invoking methods on a mirror (through meta_invoke) consists of

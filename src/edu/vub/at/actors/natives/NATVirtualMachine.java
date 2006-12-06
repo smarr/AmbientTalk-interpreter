@@ -29,6 +29,7 @@ package edu.vub.at.actors.natives;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 
 import edu.vub.at.actors.ATActor;
@@ -149,7 +150,7 @@ public final class NATVirtualMachine extends NATAbstractActor implements ATVirtu
 				}
 			} else {
 				// use the default init file provided with the distribution
-				initFile = new File(NATVirtualMachine.class.getResource("/edu/vub/at/init/init.at").toURI());
+				initFile = new File(new URI(NATVirtualMachine.class.getResource("/edu/vub/at/init/init.at").toString()));
 			}
 			
 			initialisationCode_ = NATParser.parse(initFile.getName(), Evaluator.loadContentOfFile(initFile));

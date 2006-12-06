@@ -209,7 +209,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATNil magic_send(ATAsyncMessage message) throws InterpreterException {
+	public ATObject magic_send(ATAsyncMessage message) throws InterpreterException {
 		return super.meta_send(message);
 	}
 
@@ -404,7 +404,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATNil meta_send(ATAsyncMessage message) throws InterpreterException {
+	public ATObject meta_send(ATAsyncMessage message) throws InterpreterException {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("send"),

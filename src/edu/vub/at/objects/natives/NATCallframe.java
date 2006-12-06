@@ -27,7 +27,10 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.ATAsyncMessage;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Vector;
+
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -40,10 +43,6 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Vector;
 
 /**
  * NATCallframe is a native implementation of a callframe. A callframe differs from
@@ -90,21 +89,6 @@ public class NATCallframe extends NATNil implements ATObject {
 	/* ------------------------------
 	 * -- Message Sending Protocol --
 	 * ------------------------------ */
-	
-	/**
-	 * Asynchronous messages sent to an object or a callframe ( o<-m( args )) are handled by the 
-	 * actor in which the object is contained. This method is a hook 
-	 * allowing intercepting of asynchronous message sends at the granularity of an object, 
-	 * rather than at the level of an actor.
-	 */
-	public ATNil meta_send(ATAsyncMessage message) throws InterpreterException {
-		// assert(this == message.getReceiver());
-//		 TODO Implement the ATActor interface     
-//				ATActor actor = NATActor.currentActor();
-//				ATAsyncMessageCreation message = actor.createMessage(msg.sender, this, msg.selector, msg.arguments);
-//				actor.send(message);
-		throw new RuntimeException("Not yet implemented: async message sending");
-	}
 	
 	/**
 	 * Normally, call frames are not used in receiverful method invocation expressions.

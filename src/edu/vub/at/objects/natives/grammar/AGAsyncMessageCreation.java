@@ -27,13 +27,13 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.actors.ATActor;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATAsyncMessage;
 
 /**
  * AGAsyncMessageCreation implements the ATAsyncMessageCreation interface natively. It is a container for the
@@ -56,15 +56,9 @@ public class AGAsyncMessageCreation extends AGMessageCreation {
 	 * @return a first-class asynchronous message
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-
-	    // TODO(actors): Maybe we could include some abstract factory pattern to allow people to
-	    //      intercept message creation and supply their own objects instead ;-)
-	    // ---> The abstract factory is currently called ATMessageFactory and is situated in
-	    //      the package edu.vub.at.actors.hooks along with a ATSendStrategy. The goal
-	    //      is to have a vat point to one of each in this package. APPROVE?
-
-		return new NATAsyncMessage(ctx.base_getSelf(), this.base_getSelector(),
-				                   Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
+		return meta_getActor().base_createMessage(
+				ctx.base_getSelf(), this.base_getSelector(),
+				Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
 	}
 	
 	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {

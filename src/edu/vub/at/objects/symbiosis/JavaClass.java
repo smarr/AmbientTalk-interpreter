@@ -27,7 +27,10 @@
  */
 package edu.vub.at.objects.symbiosis;
 
-import edu.vub.at.actors.ATAsyncMessage;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -47,10 +50,6 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 
 /**
  * A JavaClass instance represents a Java Class under symbiosis.
@@ -121,15 +120,6 @@ public final class JavaClass extends NATObject {
     /* ------------------------------------------------------
      * - Symbiotic implementation of the ATObject interface -
      * ------------------------------------------------------ */
-    
-    /**
-     * Asynchronous messages sent to a Java object ( o<-m( args )) are scheduled
-     * for later execution by the current actor
-     */
-    public ATNil meta_send(ATAsyncMessage message) throws InterpreterException {
-         // TODO: nil <- m() => also do invoke-like deification?
-        throw new RuntimeException("Not yet implemented: async message sends to JavaClass");
-    }
     
     /**
      * When a method is invoked upon a symbiotic Java class object, the underlying static Java method

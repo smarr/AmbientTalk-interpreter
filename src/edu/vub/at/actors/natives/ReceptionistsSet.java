@@ -58,14 +58,14 @@ public class ReceptionistsSet {
 		
 		/*if object was not previously exported */ 
 		if(hashcodeToObject_.get(hashcodeToObject_) == null) {
-			hashcodeToObject_.put(hashcode, object);
+			hashcodeToObject_.put(new Integer(hashcode), object);
 		}
 		
 		return hashcode;
 	}
 	
 	public ATObject resolveObject(ATFarObject farReference) throws InterpreterException {
-		return (ATObject)hashcodeToObject_.get(farReference.base_getObjectId().asNativeNumber().javaValue);
+		return (ATObject)hashcodeToObject_.get(new Integer(farReference.base_getObjectId().asNativeNumber().javaValue));
 	}
 	
 	/**

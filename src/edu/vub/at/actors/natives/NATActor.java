@@ -29,7 +29,6 @@ package edu.vub.at.actors.natives;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.Vector;
 
 import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
@@ -63,7 +62,6 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.util.GUID;
 
 /**
  * The NATActor class implements the concurrency model of ambienttalk. It continually
@@ -91,8 +89,10 @@ public class NATActor extends NATAbstractActor implements ATActor {
 	
 	public ATObject base_send(ATAsyncMessage message) throws InterpreterException {
 		ATObject receiver = message.base_getReceiver();
+		// TODO(???) outbox_.base_enqueue(message);
 		if(receiver.base_isFarReference().asNativeBoolean().javaValue) {
-			message = (ATAsyncMessage)message.meta_pass(receiver);
+			// TODO geen cast
+			message = message.meta_pass(receiver).base_asAsyncMessage();
 		}
 		host_.base_scheduleEvent(ActorEmittedEvents.transmitMessage(message));
 		return NATNil._INSTANCE_;

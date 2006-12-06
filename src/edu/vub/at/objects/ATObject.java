@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.actors.ATAbstractActor;
+import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.coercion.ATConversions;
@@ -66,7 +66,7 @@ public interface ATObject extends ATConversions {
      * Triggers the following events on this object's beholders (mirror observers):
      *  - <tt>sentMessage</tt> when the message was sent by the actor.
      */
-    public ATNil meta_send(ATAsyncMessage message) throws InterpreterException;
+    public ATObject meta_send(ATAsyncMessage message) throws InterpreterException;
     
     /**
      * Handles a first-class message of which it is the receiver. 
@@ -357,7 +357,7 @@ public interface ATObject extends ATConversions {
      * when a local object designates an object in another actor (i.e. it is a far 
      * object reference), this will not be the case. 
      */
-    public ATAbstractActor meta_getActor() throws InterpreterException;
+    public ATActor meta_getActor() throws InterpreterException;
 
     /* ------------------------------------------
       * -- Abstract Grammar evaluation protocol --
