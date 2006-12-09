@@ -373,17 +373,16 @@ public final class Reflection {
 		String fieldName = upFieldName(atSelector);
 		try {
 			Method accessorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, getPrefix + fieldName);
-			Method mutatorMethod;
+			Method mutatorMethod = null;
 			try {
 				mutatorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, setPrefix + fieldName);
 			} catch (XSelectorNotFound e) {
-				mutatorMethod = null;
-				throw e;
+				// no setter, return a read-only field
 			}
 			return new NativeField(natObject, atSelector, accessorMethod, mutatorMethod);
 		} catch (XSelectorNotFound e) {
 			// selector not found exceptions have to be translated to field not found exceptions
-			throw new XUndefinedField("field access", fieldName);
+			throw new XUndefinedField("field access", atSelector.toString());
 		}
 	}
 	
