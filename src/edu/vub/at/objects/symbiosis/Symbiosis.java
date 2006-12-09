@@ -403,7 +403,7 @@ public final class Symbiosis {
 		int i = 0;
 		for (Iterator iter = uniqueNames.iterator(); iter.hasNext();) {
 			String methodName = (String) iter.next();
-			jmethods[i] = getMethods(fromClass, methodName, isStatic);
+			jmethods[i++] = getMethods(fromClass, methodName, isStatic);
 		}
 		return jmethods;
 	}
