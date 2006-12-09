@@ -89,24 +89,26 @@ public final class Symbiosis {
 	 * @param wrapper the ATObject wrapper for the symbiont
 	 * @param symbiont the Java object being accessed from within AmbientTalk
 	 * @param selector the Java selector corresponding to the method invocation
-	 * @param methods all applicable Java methods that correspond to the selector
+	 * @param jMethod a JavaMethod encapsulating all applicable Java methods that correspond to the selector
 	 * @param atArgs the AT args to the symbiotic invocation
 	 * @return the wrapped result of the Java method invocation
 	 * 
 	 * @throws XArityMismatch if the wrong number of arguments were supplied
-	 * @throws XSelectorNotFound if no methods correspond to the given selector
+	 * @throws XSelectorNotFound if no methods correspond to the given selector (i.e. jMethod is null)
 	 * @throws XTypeMismatch if one of the arguments cannot be converted into the static type expected by the Java method
 	 * @throws XSymbiosisFailure if the method is overloaded and cannot be unambiguously resolved given the actual arguments
 	 * @throws XReflectionFailure if the invoked method is not accessible from within AmbientTalk
 	 * @throws XJavaException if the invoked Java method throws a Java exception
 	 */
-	public static ATObject symbioticInvocation(ATObject wrapper, Object symbiont, String selector, Method[] methods, ATObject[] atArgs) throws InterpreterException {
-		switch (methods.length) {
+	public static ATObject symbioticInvocation(ATObject wrapper, Object symbiont, String selector, JavaMethod jMethod, ATObject[] atArgs)
+	                                           throws InterpreterException {
+		if (jMethod == null) {
 		    // no methods found? selector does not exist...
-		    case 0:
-				throw new XSelectorNotFound(Reflection.downSelector(selector), wrapper);
-			// just one method found, no need to resolve overloaded methods
-			case 1: {
+			throw new XSelectorNotFound(Reflection.downSelector(selector), wrapper);
+		} else {
+			Method[] methods = jMethod.choices_;
+			if (methods.length == 1) {
+				// just one method found, no need to resolve overloaded methods
 				// if the Java method takes an ATObject array as its sole parameter, it is interpreted as taking
 				// a variable number of ambienttalk arguments
 				Class[] params = methods[0].getParameterTypes();
@@ -121,44 +123,47 @@ public final class Symbiosis {
 					args = atArgsToJavaArgs(atArgs, params);
 				}
 				return invokeUniqueSymbioticMethod(symbiont, methods[0], args);
-			}	
-		}
-		
-		// overloading: filter out all methods that do not match arity or whose argument types do not match
-		int matchingMethods = 0;
-		Method matchingMethod = null;
-		Object[] actuals = null;
-		Class[] params;
-		for (int i = 0; i < methods.length; i++) {
-			params = methods[i].getParameterTypes();
-			// is the method a varargs method?
-			if ((params.length == 1) && params[0].equals(ATObject[].class)) {
-				actuals = new Object[] { atArgs };
-				matchingMethod = methods[i];
-				matchingMethods++;
-			// does the arity match?
-			} else if (params.length == atArgs.length) {
-				// can it be invoked with the given actuals?
-				try {
-					actuals = atArgsToJavaArgs(atArgs, params);
-					matchingMethod = methods[i];
-					matchingMethods++;
-				} catch(XTypeMismatch e) {
-					// types don't match
-					methods[i] = null; // TODO: don't assign to null, array may be cached or used later on (or by wrapper method)
+			} else {	
+				// overloading: filter out all methods that do not match arity or whose
+				// argument types do not match
+				Object[] actuals = null;
+				Class[] params;
+				LinkedList matchingMethods = new LinkedList();
+				for (int i = 0; i < methods.length; i++) {
+					params = methods[i].getParameterTypes();
+					// is the method a varargs method?
+					if ((params.length == 1) && params[0].equals(ATObject[].class)) {
+						actuals = new Object[] { atArgs };
+						matchingMethods.addFirst(methods[i]);
+					// does the arity match?
+					} else if (params.length == atArgs.length) {
+						// can it be invoked with the given actuals?
+						try {
+							actuals = atArgsToJavaArgs(atArgs, params);
+							matchingMethods.addFirst(methods[i]);
+						} catch(XTypeMismatch e) {
+							// types don't match
+						}
+					} else {
+				      // arity does not match
+					}
 				}
-			} else {
-		      // arity does not match
-			  methods[i] = null;
+				
+				switch (matchingMethods.size()) {
+				    case 0: {
+					    // no methods left: overloading resolution failed
+					    throw new XSymbiosisFailure(symbiont, selector, atArgs);
+				    }
+				    case 1: {
+				    	// just one method left, invoke it
+						return invokeUniqueSymbioticMethod(symbiont, (Method) matchingMethods.getFirst(), actuals);
+				    }
+				    default: {
+				    	// more than one method left: overloading resolution failed
+						throw new XSymbiosisFailure(symbiont, selector, matchingMethods, atArgs);
+				    }
+				}
 			}
-		}
-		
-		if (matchingMethods != 1) {
-	      // no methods left or more than one method left? overloading resolution failed
-		  throw new XSymbiosisFailure(symbiont, selector, methods, atArgs, matchingMethods);
-		} else {
-		  // just one method left, invoke it
-		  return invokeUniqueSymbioticMethod(symbiont, matchingMethod, actuals);
 		}
 	}
 	
@@ -338,22 +343,39 @@ public final class Symbiosis {
 	}
 	
 	/**
-	 * Retrieve all methods of a given name from a Java object.
-	 * An empty returned array indicates no match.
+	 * Retrieve all methods of a given name from a Java object. These are bundled together
+	 * in a first-class JavaMethod object, which is cached for later reference.
 	 * 
-	 * TODO: cache results
+	 * A null return value indicates no matches.
 	 */
-	public static Method[] getMethods(Class fromClass, String selector, boolean isStatic) {
-		Method[] methods = fromClass.getMethods();
-		Method m;
-		Vector properMethods = new Vector(methods.length);
-		for (int i = 0; i < methods.length; i++) {
-			m = methods[i];
-			if ((Modifier.isStatic(m.getModifiers())) == isStatic && m.getName().equals(selector)) {
-				properMethods.add(methods[i]);
+	public static JavaMethod getMethods(Class fromClass, String selector, boolean isStatic) {
+		// first, check the method cache
+		JavaMethod cachedEntry = JMethodCache._INSTANCE_.get(fromClass, selector, isStatic);
+		if (cachedEntry != null) {
+			// cache hit
+			return cachedEntry;
+		} else {
+			// cache miss: assemble a new JavaMethod entry
+			Method[] methods = fromClass.getMethods();
+			Method m;
+			Vector properMethods = new Vector(methods.length);
+			for (int i = 0; i < methods.length; i++) {
+				m = methods[i];
+				if ((Modifier.isStatic(m.getModifiers())) == isStatic && m.getName().equals(selector)) {
+					properMethods.add(methods[i]);
+				}
+			}
+			Method[] choices = (Method[]) properMethods.toArray(new Method[properMethods.size()]);
+			if (choices.length == 0) {
+				// no matches
+				return null;
+			} else {
+				// add entry to cache and return it
+				JavaMethod jMethod = new JavaMethod(choices);
+				JMethodCache._INSTANCE_.put(fromClass, selector, isStatic, jMethod);
+				return jMethod;
 			}
 		}
-		return (Method[]) properMethods.toArray(new Method[properMethods.size()]);
 	}
 	
 	/**
@@ -365,7 +387,7 @@ public final class Symbiosis {
 	 * 
 	 * TODO: cache results
 	 */
-	public static JavaMethod[] getAllMethods(ATObject wrapper, Object ofObject, Class fromClass) {
+	public static JavaMethod[] getAllMethods(Object ofObject, Class fromClass) {
 		boolean isStatic = (ofObject == null);
 		Method[] methods = fromClass.getMethods();
 		// the following table sorts methods into lists according to their method name
@@ -390,7 +412,7 @@ public final class Symbiosis {
 		int i = 0;
 		for (Iterator iter = sorted.values().iterator(); iter.hasNext(); i++) {
 			LinkedList entry = (LinkedList) iter.next();
-			jmethods[i] = new JavaMethod(wrapper, ofObject, (Method[]) entry.toArray(new Method[entry.size()]));
+			jmethods[i] = new JavaMethod((Method[]) entry.toArray(new Method[entry.size()]));
 		}
 		return jmethods;
 	}
@@ -401,7 +423,6 @@ public final class Symbiosis {
 	 * JavaField wrapper.
 	 * 
 	 * @param ofObject if null, all static fields of fromClass are returned, otherwise the instance fields are returned
-	 * TODO: cache results
 	 */
 	public static JavaField[] getAllFields(Object ofObject, Class fromClass) {
 		boolean isStatic = (ofObject == null);

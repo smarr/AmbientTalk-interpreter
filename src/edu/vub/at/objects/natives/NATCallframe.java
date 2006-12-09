@@ -35,6 +35,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -269,7 +270,7 @@ public class NATCallframe extends NATNil implements ATObject {
 			if (fld != null) {
 				return fld;
 			} else {
-				throw new XSelectorNotFound(selector, this);
+				throw new XUndefinedField("field grabbed", selector.toString());
 			}
 		}
 	}

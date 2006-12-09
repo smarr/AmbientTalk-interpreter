@@ -43,33 +43,40 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 
 import java.lang.reflect.Method;
-import java.util.Vector;
 
 /**
- * JavaMethod is a wrapper class encapsulating one or more java.lang.reflect.Method objects
- * together with a receiver.
+ * JavaMethod is a wrapper class encapsulating one or more java.lang.reflect.Method objects.
+ * The receiver is to be supplied during method application.
  * 
- * A null receiver indicates a static method.
  * All methods in the choices array should be overloaded versions of the same method
- * (i.e. they should have the same selector).
+ * (i.e. they should have the same selector). The choices array should never be empty!
+ *
+ * JavaMethod objects must be constant, they are globally cached for all actors to use.
  *
  * @author tvcutsem
  */
-public final class JavaMethod extends NATNil implements ATJavaMethod {
+public final class JavaMethod extends NATNil implements ATMethod {
 	
-	private final ATObject wrapper_;
-	private final Object receiver_;
-	private final Method[] choices_;
+	protected final Method[] choices_;
 	
-	public JavaMethod(ATObject wrapper, Object rcvr, Method[] choices) {
-		wrapper_ = wrapper;
-		receiver_ = rcvr;
+	public JavaMethod(Method[] choices) {
+		// assertion
+		if (choices.length == 0) { throw new RuntimeException("assertion failed"); }
 		choices_ = choices;
 	}
 	
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-		return Symbiosis.symbioticInvocation(wrapper_, receiver_, choices_[0].getName(), choices_, arguments.asNativeTable().elements_);
+		ATObject wrapper = ctx.base_getSelf();
+		Object receiver;
+		if (wrapper.isJavaObjectUnderSymbiosis()) {
+			receiver = wrapper.asJavaObjectUnderSymbiosis().getWrappedObject();
+		} else {
+			// static invocations do not require a receiver
+			receiver = null;
+		}
+		return Symbiosis.symbioticInvocation(wrapper, receiver, choices_[0].getName(), this, arguments.asNativeTable().elements_);
 	}
+	
 	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
 		return base_apply(arguments, ctx);
 	}
@@ -104,42 +111,19 @@ public final class JavaMethod extends NATNil implements ATJavaMethod {
 	public boolean base_isMethod() {
 		return true;
 	}
-
-	/**
-	 * For each Method in choices_, check whether it is compatible with the given types.
-	 * If so, add it to the choices_ array of the new JavaMethod.
-	 */
-	public JavaMethod base_cast(ATObject[] types) throws InterpreterException {
-		// unwrap the JavaClass wrappers
-		Class[] actualTypes = new Class[types.length];
-		for (int i = 0; i < actualTypes.length; i++) {
-			actualTypes[i] = types[i].asJavaClassUnderSymbiosis().getWrappedClass();
-		}
-		Vector matchingMethods = new Vector();
-		
-		for (int i = 0; i < choices_.length; i++) {
-			if(matches(choices_[i].getParameterTypes(), actualTypes)) {
-				matchingMethods.add(choices_[i]);
-			}
-		}
-		return new JavaMethod(wrapper_, receiver_,
-				             (Method[]) matchingMethods.toArray(new Method[matchingMethods.size()]));
-	}
 	
 	/**
-	 * Compares two Class arrays and returns true iff both arrays have equal size and all members are the same.
+	 * Two JavaMethod instances are equal if they both represent a set of methods
+	 * from the same declaring class with the same selector.
 	 */
-	private static final boolean matches(Class[] formals, Class[] actuals) {
-		if (formals.length != actuals.length)
+	public boolean equals(Object other) {
+		if (other instanceof JavaMethod) {
+			JavaMethod mth = (JavaMethod) other;
+			return (mth.choices_[0].getDeclaringClass().equals(choices_[0].getDeclaringClass())) &&
+			       (mth.choices_[0].getName().equals(choices_[0].getName()));
+		} else {
 			return false;
-		
-		for (int i = 0; i < formals.length; i++) {
-			if (!(formals[i] == actuals[i])) {
-				return false;
-			}
 		}
-		
-		return true;
 	}
 	
 }

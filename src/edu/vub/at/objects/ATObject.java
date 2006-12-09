@@ -160,6 +160,7 @@ public interface ATObject extends ATConversions {
      *
      * @param selector the name of the field or method to look up.
      * @return the contents of the slot
+     * @throws XUndefinedField if the field cannot be found
      *
      * Triggers the <tt>slotSelected</tt> event on this object's beholders (mirror observers).
      */
@@ -187,7 +188,7 @@ public interface ATObject extends ATConversions {
      * @param name a symbol representing the name of the variable to assign.
      * @param value the value to assign to the specified slot.
      * @return nil
-     * @throws ATException if the field to set cannot be found.
+     * @throws XUnassignableField if the field to set cannot be found.
      */
     public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException;
 
@@ -201,7 +202,7 @@ public interface ATObject extends ATConversions {
      * @param value the value to assign to the specified slot.
      *
      * @return nil
-     * @throws ATException if the field to set cannot be found.
+     * @throws XUnassignableField if the field to set cannot be found.
      */
     public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException;
 
@@ -270,7 +271,7 @@ public interface ATObject extends ATConversions {
      *
      * @param field a mirror on the field to add, consisting of a selector (a symbol) and a value (an object)
      * @return nil
-     * @throws ATException if the field name already exists
+     * @throws XDuplicateSlot if the field name already exists
      *
      * TODO: return value = nil?
      */
@@ -283,7 +284,7 @@ public interface ATObject extends ATConversions {
      *
      * @param method a mirror on the method to add. A method consists of a selector, arguments and a body.
      * @return nil
-     * @throws ATException if the method's selector already exists
+     * @throws XDuplicateSlot if the method's selector already exists
      *
      * TODO: return value = nil? argument = a method mirror or a closure mirror?
      */
@@ -295,7 +296,7 @@ public interface ATObject extends ATConversions {
      *
      * @param selector a symbol representing the name of the slot.
      * @return a mirror on this object's field slot.
-     * @throws ATException if the field cannot be found.
+     * @throws XUndefinedField if the field cannot be found.
      */
     public ATField meta_grabField(ATSymbol selector) throws InterpreterException;
 
@@ -305,7 +306,7 @@ public interface ATObject extends ATConversions {
      *
      * @param selector a symbol representing the name of the slot.
      * @return a mirror on this object's method slot.
-     * @throws ATException if the method cannot be found.
+     * @throws XSelectorNotFound if the method cannot be found.
      */
     public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException;
 

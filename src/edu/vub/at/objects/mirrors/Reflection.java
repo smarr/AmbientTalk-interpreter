@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -370,14 +371,20 @@ public final class Reflection {
 	public static final ATField downField(ATObject natObject, ATSymbol atSelector,
 			                              String getPrefix, String setPrefix) throws InterpreterException {
 		String fieldName = upFieldName(atSelector);
-		Method accessorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, getPrefix + fieldName);
-		Method mutatorMethod;
 		try {
-			mutatorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, setPrefix + fieldName);
+			Method accessorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, getPrefix + fieldName);
+			Method mutatorMethod;
+			try {
+				mutatorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, setPrefix + fieldName);
+			} catch (XSelectorNotFound e) {
+				mutatorMethod = null;
+				throw e;
+			}
+			return new NativeField(natObject, atSelector, accessorMethod, mutatorMethod);
 		} catch (XSelectorNotFound e) {
-			mutatorMethod = null;
+			// selector not found exceptions have to be translated to field not found exceptions
+			throw new XUndefinedField("field access", fieldName);
 		}
-		return new NativeField(natObject, atSelector, accessorMethod, mutatorMethod);
 	}
 	
 	public static final ATField downBaseLevelField(ATObject natObject, ATSymbol atSelector) throws InterpreterException {

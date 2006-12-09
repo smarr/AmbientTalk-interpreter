@@ -76,6 +76,7 @@ public class NativeClosure extends NATClosure {
 	
 	/**
 	 * Create a new NativeClosure where meta_apply will be overridden by anonymous subclasses.
+	 * @param scope the object creating this NativeClosure.
 	 */
 	public NativeClosure(ATObject scope) {
 		this(scope, null);
@@ -83,9 +84,10 @@ public class NativeClosure extends NATClosure {
 	
 	/**
 	 * Create a new NativeClosure where meta_apply will invoke the given Java Method.
-	 * @param scope the object creating this NativeClosure.
+	 * @param scope the object that should be used as a receiver for the corresponding method.
+	 * @param meth a presumably native method
 	 */
-	public NativeClosure(ATObject scope, ATMethod meth) {
+	public NativeClosure(ATObject scope, NativeMethod meth) {
 		super(meth, null);
 		scope_ = scope;
 	}
@@ -120,9 +122,23 @@ public class NativeClosure extends NATClosure {
 	public ATObject base_apply(ATTable arguments) throws InterpreterException {
 		if (method_ == null) {
 			// this method is supposed to be overridden by an anonymous subclass
-			throw new RuntimeException("NativeClosure's meta_apply not properly overridden by " + scope_.getClass());
+			throw new RuntimeException("NativeClosure's base_apply not properly overridden by " + scope_.getClass());
 		} else {
-			return method_.base_applyInScope(arguments, this.base_getContext());
+			return method_.base_apply(arguments, this.base_getContext());
+		}
+	}
+	
+	/**
+	 * A NativeClosure can also be directed to execute its wrapped NativeMethod in an
+	 * externally specified scope. Of course, for native calls or symbiotic calls, the
+	 * call will only succeed if the externally specified object is of the correct native type.
+	 */
+	public ATObject base_applyInScope(ATTable args, ATObject scope) throws InterpreterException {
+		if (method_ == null) {
+			// this method is supposed to be overridden by an anonymous subclass
+			throw new RuntimeException("NativeClosure's base_applyInScope not properly overridden by " + scope_.getClass());
+		} else {
+			return method_.base_applyInScope(args, new NATContext(scope, scope, scope.meta_getDynamicParent()));
 		}
 	}
 	

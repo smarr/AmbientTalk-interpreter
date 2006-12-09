@@ -82,7 +82,7 @@ public class NATClosure extends NATNil implements ATClosure {
 	 * rather than the runtime context of the invoker.
 	 */
 	public ATObject base_apply(ATTable arguments) throws InterpreterException {
-		return method_.base_apply(arguments, context_);
+		return method_.base_apply(arguments, this.base_getContext());
 	}
 
 	/**

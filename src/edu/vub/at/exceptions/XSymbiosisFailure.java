@@ -32,7 +32,8 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.mirrors.Reflection;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * An instance of this class is raised whenever a symbiotic method invocation fails due to overloading
@@ -47,20 +48,32 @@ public class XSymbiosisFailure extends InterpreterException {
 	private final String message_;
 	
 	/**
-	 * Reports that an overloaded method could not be resolved to a unique implementation.
+	 * Reports that an overloaded method could not be resolved to a unique implementation
+	 * because there are multiple matches.
 	 * @param symbiont the Java object upon which the overloaded symbiotic invocation failed.
 	 * @param selector the name of the invoked overloaded method
-	 * @param choices all applicable methods (may contain null values, corresponding to non-applicable choices)
-	 * @param numMatchingMethods the number of matching methods (the number of non-null values in choices)
+	 * @param choices a linked list of all applicable java.lang.Method objects
+	 * @param atArgs the actual arguments to the overloaded invocation
 	 */
-	public XSymbiosisFailure(Object symbiont, String selector, Method[] choices, ATObject[] atArgs, int numMatchingMethods) throws InterpreterException {
-		StringBuffer buff = new StringBuffer("Overloaded Java invocation has " + numMatchingMethods + " matches:\n");
+	public XSymbiosisFailure(Object symbiont, String selector, LinkedList choices, ATObject[] atArgs) throws InterpreterException {
+		StringBuffer buff = new StringBuffer("Overloaded Java invocation has " + choices.size() + " matches:\n");
 		buff.append(symbiont.toString() + "." + Reflection.downSelector(selector) + Evaluator.printElements(atArgs, "(",",",")").javaValue);
-		for (int i = 0; i < choices.length; i++) {
-			if (choices[i] != null) {
-				buff.append("\n" + choices[i].toString());
-			}
+		for (Iterator iter = choices.iterator(); iter.hasNext();) {
+			buff.append("\n" + iter.next().toString());
 		}
+		message_ = buff.toString();
+	}
+	
+	/**
+	 * Reports that an overloaded method could not be resolved to a unique implementation
+	 * because there are no matches for any static types.
+	 * @param symbiont the Java object upon which the overloaded symbiotic invocation failed.
+	 * @param selector the name of the invoked overloaded method
+	 * @param atArgs the actual arguments to the overloaded invocation
+	 */
+	public XSymbiosisFailure(Object symbiont, String selector, ATObject[] atArgs) throws InterpreterException {
+		StringBuffer buff = new StringBuffer("Overloaded Java invocation has no matches:\n");
+		buff.append(symbiont + "." + Reflection.downSelector(selector) + Evaluator.printElements(atArgs, "(",",",")").javaValue);
 		message_ = buff.toString();
 	}
 	

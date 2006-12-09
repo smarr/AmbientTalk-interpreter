@@ -156,7 +156,7 @@ public class NATNil implements ATNil {
         String jSelector = null;
 
         try {
-        	   jSelector = Reflection.upBaseFieldAccessSelector(selector);
+        	jSelector = Reflection.upBaseFieldAccessSelector(selector);
             return Reflection.upFieldSelection(receiver, jSelector);
         } catch (XSelectorNotFound e) {
             jSelector = Reflection.upBaseLevelSelector(selector);
@@ -191,7 +191,7 @@ public class NATNil implements ATNil {
     }
 
     public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
-        throw new XIllegalOperation("Cannot add fields to a sealed " + this.getClass().getName());
+        throw new XIllegalOperation("Cannot add fields to " + Evaluator.valueNameOf(this.getClass()));
     }
 
     /**
@@ -261,11 +261,11 @@ public class NATNil implements ATNil {
       * --------------------------------- */
 
     public ATNil meta_addField(ATField field) throws InterpreterException {
-        throw new XIllegalOperation("Cannot add fields to an object of type " + this.getClass().getName());
+        throw new XIllegalOperation("Cannot add fields to " + Evaluator.valueNameOf(this.getClass()));
     }
 
     public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
-        throw new XIllegalOperation("Cannot add methods to an object of type " + this.getClass().getName());
+        throw new XIllegalOperation("Cannot add methods to " + Evaluator.valueNameOf(this.getClass()));
     }
 
     public ATField meta_grabField(ATSymbol fieldName) throws InterpreterException {

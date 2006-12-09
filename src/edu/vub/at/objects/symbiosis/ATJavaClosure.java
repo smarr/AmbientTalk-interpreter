@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATJavaMethod.java created on 14-nov-2006 at 13:17:33
+ * ATJavaClosure.java created on 14-nov-2006 at 13:17:33
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -28,30 +28,32 @@
 package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATMethod;
+import edu.vub.at.exceptions.XSymbiosisFailure;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 
 /**
- * The public interface to a symbiotic Java method.
+ * The public interface to a closure pairing a Java wrapper object with a symbiotic Java method.
  * 
  * @author tvcutsem
  */
-public interface ATJavaMethod extends ATMethod {
+public interface ATJavaClosure extends ATClosure {
 
 	/**
 	 * Using this method, AmbientTalk symbiotic code is able to perform manual overloaded method disambiguation.
-	 * When evaluating <tt>javaObject.methodName</tt>, the result is a method wrapper for all of the overloaded methods
-	 * whose name corresponds to <tt>methodName</tt>. Sometimes, the symbiosis layer is not able to disambiguate methods
-	 * simply by means of the types of the actual arguments. In that case, this 'cast' method can be used to manually
-	 * disambiguate methods as follows: <tt>jObject.methodName.cast(JClass1, JClass2)(arg1, arg2)</tt>.
+	 * When evaluating <tt>javaObject.methodName</tt>, the result is a java closure wrapping all of the overloaded
+	 * methods whose name corresponds to <tt>methodName</tt>. Sometimes, the symbiosis layer is not able
+	 * to disambiguate methods simply by means of the types of the actual arguments. In that case,
+	 * this 'cast' method can be used to manually disambiguate methods as follows:
+	 * <tt>jObject.methodName.cast(JClass1, JClass2)(arg1, arg2)</tt>.
 	 * 
-	 * <tt>jObject.methodName.cast(JClass1, JClass2)</tt> evaluates to a first-class method that only
+	 * <tt>jObject.methodName.cast(JClass1, JClass2)</tt> evaluates to a java closure that only
 	 * contains those overloaded methods whose parameter types exactly match the ones given.
 	 * 
 	 * @param types an array of JavaClass objects
-	 * @return a new JavaMethod where the wrapped overloaded methods correspond to the given types
+	 * @return a new JavaClosure where the wrapped overloaded methods correspond to the given types
 	 * @throws XSymbiosisFailure when no wrapped methods correspond to the given types
 	 */
-	public JavaMethod base_cast(ATObject[] types) throws InterpreterException;
+	public ATClosure base_cast(ATObject[] types) throws InterpreterException;
 	
 }
