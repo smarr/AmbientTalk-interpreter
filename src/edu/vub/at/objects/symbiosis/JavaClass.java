@@ -311,7 +311,7 @@ public final class JavaClass extends NATObject {
      */
     public ATTable meta_listMethods() throws InterpreterException {
 		// instance methods of the wrapped object's class
-		JavaMethod[] jMethods = Symbiosis.getAllMethods(null, wrappedClass_);
+		JavaMethod[] jMethods = Symbiosis.getAllMethods(wrappedClass_, true);
         // methods of the AT symbiont
 		ATObject[] symbiontMethods = super.meta_listMethods().asNativeTable().elements_;
 		return NATTable.atValue(NATTable.collate(jMethods, symbiontMethods));

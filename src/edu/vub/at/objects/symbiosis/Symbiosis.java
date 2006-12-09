@@ -53,6 +53,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -383,36 +384,26 @@ public final class Symbiosis {
 	 * (this includes methods defined in superclasses). All methods are properly wrapped in a
 	 * JavaMethod wrapper, taking care to wrap a set of overloaded methods using the same wrapper.
 	 * 
-	 * @param ofObject if null, all static methods of fromClass are returned, otherwise the instance methods are returned
-	 * 
-	 * TODO: cache results
+	 * @param isStatic if true, all static methods of fromClass are returned, otherwise the instance methods are returned
 	 */
-	public static JavaMethod[] getAllMethods(Object ofObject, Class fromClass) {
-		boolean isStatic = (ofObject == null);
+	public static JavaMethod[] getAllMethods(Class fromClass, boolean isStatic) {
+		// assemble a set of all unique selectors of all (non-)static methods of the class
+		HashSet uniqueNames = new HashSet();
 		Method[] methods = fromClass.getMethods();
-		// the following table sorts methods into lists according to their method name
-		Hashtable sorted = new Hashtable();
 		for (int i = 0; i < methods.length; i++) {
 			Method m = methods[i];
 			if ((Modifier.isStatic(m.getModifiers())) == isStatic) {
-				LinkedList l = (LinkedList) sorted.get(m.getName());
-				// does an entry for this method already exist?
-				if (l == null) {
-					// no? then add a list entry to the table of found methods
-					l = new LinkedList();
-					sorted.put(m.getName(), l);
-				}
-				// add method to appropriate entry
-				l.addLast(m);
+				uniqueNames.add(m.getName());
 			}
 		}
-		// create a JavaMethod[] array large enough to contain all entries in 'sorted'
-		JavaMethod[] jmethods = new JavaMethod[sorted.size()];
-		// loop over all entries in the table and group the methods into a single wrapper
+		
+		// create a JavaMethod[] array large enough to contain all 'unique methods'
+		JavaMethod[] jmethods = new JavaMethod[uniqueNames.size()];
+		// loop over all entries and group the methods into a single wrapper
 		int i = 0;
-		for (Iterator iter = sorted.values().iterator(); iter.hasNext(); i++) {
-			LinkedList entry = (LinkedList) iter.next();
-			jmethods[i] = new JavaMethod((Method[]) entry.toArray(new Method[entry.size()]));
+		for (Iterator iter = uniqueNames.iterator(); iter.hasNext();) {
+			String methodName = (String) iter.next();
+			jmethods[i] = getMethods(fromClass, methodName, isStatic);
 		}
 		return jmethods;
 	}

@@ -33,8 +33,11 @@ else
    future.wait()
 => actor thread moet msg.resultComputed(res) oproepen hetgeen dan voor dit soort msges de thread kan doen unblocken
 
-=> Implementation can be sped up a bit using caching, consider a cache for Symbiosis.getMethods
-requires to change implementation of Symbiosis.invokeSymbioticMethod not to filter out methods by assigning null
+=> Implementation can be sped up a bit using caching. Currently, only methods are cached, could also
+cache Constructors if we introduce a JavaConstructor class? This could also be used to solve problem of
+casting for constructors. E.g. if aClass.new returns a JavaConstructor which is a special kind of JavaClosure,
+then we can do aClass.new.cast(Type1, Type2)(a, b)
+
 => representing array types in AT, i.e. how to access a wrapper for Type[] classes?
 Normally, arrays are represented as tables and vice versa, but for base_cast, requires explicit type wrapper for arrays
 => casting for constructors
