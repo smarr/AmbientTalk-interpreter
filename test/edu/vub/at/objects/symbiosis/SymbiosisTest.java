@@ -44,6 +44,7 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
@@ -422,13 +423,20 @@ public class SymbiosisTest extends AmbientTalkTest {
 			ATMethod result = atTestObject.meta_grabMethod(AGSymbol.jAlloc("gettertest")).base_asMethod();
 			assertEquals("gettertest", result.base_getName().toString());
 			// assert (42 == result())
-			assertEquals(TEST_OBJECT_INIT, result.base_apply(NATTable.EMPTY, null).asNativeNumber().javaValue);
+			assertEquals(TEST_OBJECT_INIT, result.base_apply(NATTable.EMPTY,
+					new NATContext(atTestObject, atTestObject, atTestObject.meta_getDynamicParent())).asNativeNumber().javaValue);
+			
+			// clo := atTestObject.gettertest
+			ATClosure clo = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("gettertest")).base_asClosure();
+			// assert (42 == clo())
+			assertEquals(TEST_OBJECT_INIT, clo.base_apply(NATTable.EMPTY).asNativeNumber().javaValue);
 			
 			// result := (reflect: atTestClass).grabMethod("prefix")
 			result = atTestClass.meta_grabMethod(AGSymbol.jAlloc("prefix")).base_asMethod();
 			assertEquals("prefix", result.base_getName().toString());
 			// assert ("AmbientTalk" == result(""))
-			assertEquals(ytest, result.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue("") }), null).asNativeText().javaValue);	
+			assertEquals(ytest, result.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue("") }),
+					new NATContext(atTestClass, atTestClass, atTestClass.meta_getDynamicParent())).asNativeText().javaValue);	
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -436,16 +444,19 @@ public class SymbiosisTest extends AmbientTalkTest {
 	
 	/**
 	 * Tests casting to manually resolve overloaded method invocations
-	 * FIXME: test no longer works because methods are wrapped in closures, and they don't
-	 * understand cast. Rethink casting, because current scheme also does not work for constructors.
-	 * Suggested solution: use future annotations on message sends to specify the types
+	 * Selecting a method from a Java object results in a JavaClosure instance. Such a Java
+	 * closure understands the message 'cast', which allows the programmer to manually restrict
+	 * the wrapped JavaMethods to specific type signatures. In this case, the two choices
+	 *   overloadedmatch2(Object)
+	 *   overloadedmatch2(SymbiosisTest)
+	 * are manually restricted such that only the second one remains applicable
 	 */
 	public void testCasting() {
 		try {
 			// invokes overloadedmatch2(SymbiosisTest) via explicit casting
-			ATObject method = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("overloadedmatch2"));
-			ATObject castedMethod = method.meta_invoke(method, AGSymbol.jAlloc("cast"), NATTable.atValue(new ATObject[] { atTestClass }));
-			castedMethod.base_asMethod().base_apply(NATTable.atValue(new ATObject[] { atTestObject }), null);
+			ATClosure method = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("overloadedmatch2")).base_asClosure();
+			ATClosure castedMethod = method.meta_invoke(method, AGSymbol.jAlloc("cast"), NATTable.atValue(new ATObject[] { atTestClass })).base_asClosure();
+			castedMethod.base_apply(NATTable.atValue(new ATObject[] { atTestObject }));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
