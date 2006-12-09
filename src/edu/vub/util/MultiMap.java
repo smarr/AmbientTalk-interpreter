@@ -48,7 +48,7 @@ public class MultiMap implements Map, Serializable, Cloneable {
 				result.add(new Entry(key, value));
 			}
 		}
-		return null;
+		return result;
 	}
 
 	public boolean equals(Object toBeCompared) {
