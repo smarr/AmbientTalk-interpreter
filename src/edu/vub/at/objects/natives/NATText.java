@@ -186,11 +186,11 @@ public final class NATText extends AGExpression implements ATText {
 			}
 		}
 		
-		public char asChar() throws XIllegalArgument {
+		public char asChar() throws XTypeMismatch {
 			if (javaValue.length() == 1) {
 				return javaValue.charAt(0);
 			} else {
-				throw new XIllegalArgument("Expected a character, given a string: " + javaValue);
+				throw new XTypeMismatch(Character.class, this);
 			}
 		}
 
