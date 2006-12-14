@@ -556,7 +556,13 @@ public final class Symbiosis {
 			return Symbiosis.javaToAmbientTalk(javaMethod.invoke(symbiont, jArgs));
 		} catch (IllegalAccessException e) {
 			// the invoked method is not publicly accessible
-			throw new XReflectionFailure("Java method "+Reflection.downSelector(javaMethod.getName()) + " is not accessible.", e);
+			// sometimes this may happen when accessing inner classes, try again with an interface method:
+			Method interfaceMethod = toInterfaceMethod(javaMethod);
+			if (interfaceMethod == null) { // no success
+			    throw new XReflectionFailure("Java method "+Reflection.downSelector(javaMethod.getName()) + " is not accessible.", e);
+			} else {
+				return invokeUniqueSymbioticMethod(symbiont, interfaceMethod, jArgs);
+			}
 		} catch (IllegalArgumentException e) {
 			// illegal argument types were supplied, should not happen because the conversion should have already failed earlier (in atArgsToJavaArgs)
 			throw new RuntimeException("[broken at2java conversion?] Illegal argument for Java method "+javaMethod.getName(), e);
@@ -602,6 +608,35 @@ public final class Symbiosis {
 			jArgs[i] = Symbiosis.ambientTalkToJava(args[i], types[i]);
 		}
 		return jArgs;
+	}
+	
+	/**
+	 * Extremely vague and dirty feature of Java reflection: it can sometimes happen that
+	 * a method is invoked on a private inner class via a publicly accessible interface method.
+	 * In those cases, invoking that method results in an IllegalAccessException.
+	 * One example is invoking aVector.iterator().hasNext()
+	 * 
+	 * The problem is that aVector.iterator() returns an instance of java.util.AbstractList$Itr
+	 * which is probably private. Selecting that class's hasNext method and invoking it results in
+	 * an IllegalAccessException. This can be circumvented by invoking the hasNext method through
+	 * the java.util.Iterator interface class.
+	 */
+	private static Method toInterfaceMethod(Method m) {
+		Class[] interfaces = m.getDeclaringClass().getInterfaces();
+		if (interfaces == null) {
+			return null;
+		} else {
+			// find the method in one of the interface declarations
+			for (int i = 0; i < interfaces.length; i++) {
+				try {
+					return interfaces[i].getMethod(m.getName(), m.getParameterTypes());
+				} catch(NoSuchMethodException e) {
+					// continue searching
+				}
+			}
+			// no declared method found
+			return null;
+		}
 	}
 	
 }
