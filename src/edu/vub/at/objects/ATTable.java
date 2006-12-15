@@ -67,6 +67,12 @@ public interface ATTable extends ATExpression {
 	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws InterpreterException;
 	
 	/**
+	 * Keep only those elements of the table for which the closure evaluates to true.
+	 * result := [ tabl ].filter: { |elt| booleanCondition(elt) }
+	 */
+	public ATTable base_filter_(ATClosure clo) throws InterpreterException;
+	
+	/**
 	 * Implode the receiver table of characters into a text string
 	 */
 	public ATText base_implode() throws InterpreterException;

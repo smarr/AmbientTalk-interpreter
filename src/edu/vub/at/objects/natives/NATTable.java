@@ -42,6 +42,7 @@ import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
 import java.util.LinkedList;
+import java.util.Vector;
 
 /**
  * The native implementation of an AmbientTalk table.
@@ -168,6 +169,16 @@ public final class NATTable extends AGExpression implements ATTable {
 			total = clo.base_apply(atValue(new ATObject[] { total, elements_[i] }));
 		}
 		return total;
+	}
+	
+	public ATTable base_filter_(ATClosure clo) throws InterpreterException {
+		Vector matchingElements = new Vector(elements_.length);
+		for (int i = 0; i < elements_.length; i++) {
+			if (clo.base_apply(atValue(new ATObject[] { elements_[i] })).asNativeBoolean().javaValue) {
+				matchingElements.add(elements_[i]);
+			}
+		}
+		return atValue((ATObject[]) matchingElements.toArray(new ATObject[matchingElements.size()]));
 	}
 	
 	public ATText base_implode() throws InterpreterException {
