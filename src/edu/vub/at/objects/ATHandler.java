@@ -39,17 +39,6 @@ import edu.vub.at.exceptions.InterpreterException;
 public interface ATHandler extends ATObject {
 	
 	/**
-	 * @return the filter object of a handler specifying which exceptions it can handle. 
-	 * The filter object of a handler is used for comparison on raised objects.
-	 */
-	public ATObject base_getFilter() throws InterpreterException;
-	
-	/**
-	 * @return the closure that can be applied given the raised exception.
-	 */
-	public ATClosure base_getHandler() throws InterpreterException;
-	
-	/**
 	 * Used to determine whether a handler will be triggered when an exception is raised.
 	 * Its primary use is to provide a hook to deviate from the default semantics, which is:
 	 * 
@@ -59,4 +48,16 @@ public interface ATHandler extends ATObject {
 	 * 
 	 */
 	public ATBoolean base_canHandle(ATObject anException) throws InterpreterException;
+	
+	/**
+	 * When a handler has answered that it can handle an exception, the following
+	 * method is invoked, asking the handler to handle the exception.
+	 * The default semantics is simply to invoke the associated handler closure.
+	 * 
+	 * def handle(anException) {
+	 *   handler(anException)
+	 * };
+	 * 
+	 */
+	public ATObject base_handle(ATObject anException) throws InterpreterException;
 }

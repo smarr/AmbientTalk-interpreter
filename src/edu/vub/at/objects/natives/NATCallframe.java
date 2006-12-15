@@ -60,7 +60,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  *    and when an object is cloned, the custom field objects are re-instantiated.
  *    The new clone is passed as the sole argument to 'new'.
  * 
- * 
+ * @author tvcutsem
  * @author smostinc
  */
 public class NATCallframe extends NATNil implements ATObject {

@@ -41,24 +41,20 @@ import edu.vub.at.objects.ATObject;
  */
 public class NATHandler extends NATNil implements ATHandler {
 
-	private ATObject filter_;
-	private ATClosure handler_;
+	private final ATObject filter_;
+	private final ATClosure handler_;
 	
 	public NATHandler(ATObject filter, ATClosure handler) {
 		this.filter_ = filter;
 		this.handler_ = handler;
 	}
 
-	public ATObject base_getFilter() {
-		return filter_;
-	}
-
-	public ATClosure base_getHandler() {
-		return handler_;
-	}
-
 	public ATBoolean base_canHandle(ATObject anException) throws InterpreterException {
 		return anException.meta_isRelatedTo(filter_);
+	}
+	
+	public ATObject base_handle(ATObject anException) throws InterpreterException {
+		return handler_.base_apply(NATTable.atValue(new ATObject[] { anException }));
 	}
 	
 	public ATHandler base_asHandler() {

@@ -64,6 +64,7 @@ import edu.vub.at.parser.NATParser;
  * This empty object is local to each actor and is mutable.
  * 
  * @author smostinc
+ * @author tvcutsem
  */
 public final class OBJLexicalRoot extends NATNil {
 	
@@ -413,23 +414,19 @@ public final class OBJLexicalRoot extends NATNil {
 		try {
 			return tryBlock.base_apply(NATTable.EMPTY);
 		} catch(InterpreterException e) {
-			ATClosure replacementCode = null;
 			ATObject[] handlers = exceptionHandlers.asNativeTable().elements_;
 			
 			// find the appropriate handler
 			for (int i = 0; i < handlers.length; i++) {
 				ATHandler handler = handlers[i].base_asHandler();
-				if (handler.base_canHandle(e.getAmbientTalkRepresentation()).asNativeBoolean().javaValue) {
-					replacementCode = handler.base_getHandler();
-					break;
-				};			
+				ATObject exc = e.getAmbientTalkRepresentation();
+				if (handler.base_canHandle(exc).asNativeBoolean().javaValue) {
+					return handler.base_handle(exc);
+				};	
 			}
 			
-			if (replacementCode != null) {
-				return replacementCode.base_apply(NATTable.atValue(new ATObject[] { e.getAmbientTalkRepresentation() }));
-			} else {
-				throw e;
-			}
+			// no handler found, re-throw the exception
+			throw e;
 		}
 	}
 	
@@ -442,8 +439,9 @@ public final class OBJLexicalRoot extends NATNil {
 		try {
 			return tryBlock.base_apply(NATTable.EMPTY);
 		} catch(InterpreterException e) {
-			if (handler.base_canHandle(e.getAmbientTalkRepresentation()).asNativeBoolean().javaValue) {
-				return handler.base_getHandler().base_apply(NATTable.atValue(new ATObject[] { e.getAmbientTalkRepresentation() }));
+			ATObject exc = e.getAmbientTalkRepresentation();
+			if (handler.base_canHandle(exc).asNativeBoolean().javaValue) {
+				return handler.base_handle(exc);
 			} else {
 				throw e;
 			}
