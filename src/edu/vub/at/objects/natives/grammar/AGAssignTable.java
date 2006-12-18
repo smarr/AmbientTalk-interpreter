@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -100,5 +101,21 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 				idxExp_.meta_print().javaValue + "] := " +
 				valExp_.meta_print().javaValue);
 	}
+
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * Passing a mutable and compound object implies making a new instance of the 
+     * object while invoking pass on all its constituents.
+     */
+    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    		return new AGAssignTable(tblExp_.meta_pass(client).base_asExpression(), idxExp_.meta_pass(client).base_asExpression(), valExp_.meta_pass(client).base_asExpression());
+    }
+    
+    public ATObject meta_resolve() throws InterpreterException {
+		return new AGAssignTable(tblExp_.meta_resolve().base_asExpression(), idxExp_.meta_resolve().base_asExpression(), valExp_.meta_resolve().base_asExpression());
+    }
 
 }

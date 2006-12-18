@@ -222,4 +222,9 @@ public class NATMailbox extends NATObservable implements ATMailbox {
 		}
 	}
 
+	public ATTable base_filter_(ATClosure clo) throws InterpreterException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

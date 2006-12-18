@@ -28,29 +28,40 @@
 
 package edu.vub.at.actors;
 
+import java.io.File;
+
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 
 /**
  * A virtual machine is deployed on top of a physical device and may host a set of actors.
  */
-public interface ATVirtualMachine {
-
+public interface ATVirtualMachine extends ATAbstractActor {
+	
+	
     public ATDevice base_getDevice();
 
     /* --------------------------
+     * -- Actor Initialisation --
+     * -------------------------- */
+	
+	public File[] getObjectPathRoots();
+	
+	public ATAbstractGrammar getInitialisationCode();
+	
+    /* --------------------------
      * -- Actor to VM Protocol --
      * -------------------------- */
-    
+        
 	/**
-	 * Called indirectly (by scheduling an event) by an actor to signal its creation
-	 * to the hosting virtual machine. Its task is to notify possible observers.
-	 * @param actor - the newly created actor
-	 * @return
+	 * Called indirectly (by scheduling an event) to signal the creation of a
+	 * new actor. This method then notifies possible observers.
 	 */
-	public ATObject base_newActor(ATActor actor);
-    
+	public ATNil base_newActor(ATActor actor);
+
     /**
      * This method is implicitly called (by scheduling an event) whenever an actor 
      * attempts to send a message which goes beyond its own boundaries. The virtual

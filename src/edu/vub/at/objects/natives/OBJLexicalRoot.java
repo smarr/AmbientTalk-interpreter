@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.actors.natives.NATActor;
+import edu.vub.at.actors.natives.NATVirtualMachine;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
@@ -240,6 +242,17 @@ public final class OBJLexicalRoot extends NATNil {
 	 */
 	public ATObject base_do_unless_(ATClosure body, ATBoolean condition) throws InterpreterException {
 		return condition.base_ifFalse_(body);
+	}
+	
+	
+	/* ----------------------------
+	 * -- Actor Creation Methods --
+	 * ---------------------------- */
+	
+	public ATObject base_actor_(ATClosure code) throws InterpreterException {
+		NATActor actor = new NATActor(meta_getActor().base_getVirtualMachine(), code);
+		return actor.base_getBehaviour();
+		
 	}
 	
 	

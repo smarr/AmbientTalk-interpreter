@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -112,4 +113,20 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 				initExp_.meta_print().javaValue + "}");
 	}
 	
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * Passing a mutable and compound object implies making a new instance of the 
+     * object while invoking pass on all its constituents.
+     */
+    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    		return new AGDefTable(tblName_.meta_pass(client).base_asSymbol(), sizExp_.meta_pass(client).base_asExpression(), initExp_.meta_pass(client).base_asExpression());
+    }
+    
+    public ATObject meta_resolve() throws InterpreterException {
+		return new AGDefTable(tblName_.meta_resolve().base_asSymbol(), sizExp_.meta_resolve().base_asExpression(), initExp_.meta_resolve().base_asExpression());
+}
+
 }

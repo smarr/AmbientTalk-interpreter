@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalApplication;
@@ -90,5 +91,18 @@ public class NativeAnonymousMethod extends NATNil implements ATMethod {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<anonymous java method in "+creatorClass_.getName()+">");
 	}
+	
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * Passing an object with an attached (implicit) scope implies creating a far object
+     * reference for them, so that their methods can only be invoked asynchronously but
+     * within the correct actor and scope.
+     */
+    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    		return meta_getActor().base_reference_for_(this, client);
+    }
 
 }

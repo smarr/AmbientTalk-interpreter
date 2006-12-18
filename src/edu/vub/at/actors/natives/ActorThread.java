@@ -29,7 +29,6 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATObject;
 
 /**
  * An ActorThread is a thread which is parametrised with an actor for which it will
@@ -41,10 +40,8 @@ public final class ActorThread extends Thread {
 
 	private NATAbstractActor		owner_;
 	private boolean				askedToStop_ = false;
-	protected final ATObject[]	initArgs_;
 	
-	public ActorThread(ATObject[] initArgs, NATAbstractActor owner) {
-		initArgs_	= initArgs;
+	public ActorThread(NATAbstractActor owner) {
 		owner_ 		= owner;
 	}
 	
@@ -58,13 +55,6 @@ public final class ActorThread extends Thread {
 		
 	public void run() {
 		
-		try {
-			owner_.base_init(initArgs_);
-		} catch (InterpreterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		while(! askedToStop_) {
 			
 			try {
@@ -72,7 +62,7 @@ public final class ActorThread extends Thread {
 				
 				System.out.println("Handling an event: " + event.base_getSelector());
 				
-				owner_.meta_receive(event);
+				owner_.meta_invoke(owner_, event.base_getSelector(), event.base_getArguments());
 				
 			} catch (InterruptedException e) {
 				// If interrupted, we may be asked to stop.

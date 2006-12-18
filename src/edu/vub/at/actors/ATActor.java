@@ -28,7 +28,6 @@
 
 package edu.vub.at.actors;
 
-import edu.vub.at.actors.natives.events.ActorEmittedEvents;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -36,9 +35,6 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.mirrors.NativeClosure;
-import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -91,12 +87,60 @@ public interface ATActor extends ATAbstractActor
 	 * value is a closure which allows cancelling the service offer.
 	 */
 	public ATClosure base_require(ATServiceDescription description, ATObject client);
-			
+	
+    /* -------------------------------------
+     * -- Object Passing Protocol Support --
+     * ------------------------------------- */
+
+	/**
+	 * This mechanism interacts with the built-in receptionists set of the actor to 
+	 * produce a new far object reference to a local object. The created far object
+	 * is by no means unique within the actor that created it. 
+	 * 
+	 * Creating such far references is performed when passing objects by reference
+	 * in the meta_pass method of scoped objects such as closures, objects and fields.
+	 * 
+	 * @param object the local object to be given a reference to
+	 * @param client the remote object to which it will be sent
+	 * @return a newly created far object reference
+	 * 
+	 * @see edu.vub.at.objects.ATObject#meta_pass(ATFarObject)
+	 */
+	public ATFarObject base_reference_for_(ATObject object, ATFarObject client) throws InterpreterException;
+	
+	/**
+	 * This mechanism interacts with the built-in receptionists set of the actor to 
+	 * resolve far references (which were received as part of an async message). The
+	 * method returns a local object whenever the far object denotes an object 
+	 * hosted by this actor. 
+	 * 
+	 * If the denoted object is not hosted by this actor, a far object (possibly but
+	 * not necessarily the passed one) is returned which is the local and unique 
+	 * representative of the remote object. This object will contain the queue of 
+	 * messages to be transmitted to the remote object. 
+	 * 
+	 * @param farReference the reference to be resolved
+	 * @return a local object | a unique far reference for this actor
+	 */
+	public ATObject base_resolveFarReference(ATFarObject farReference) throws InterpreterException;
+
+	/**
+	 * Registers an object as a far reference denoting one or possibly more objects 
+	 * on another actor. Registering is required to be consulted whenever a try-to-
+	 * transmit command is issued by the virtual machine for a particular actor. The
+	 * far objects can then schedule messages for transmission by the virtual machine
+	 * provided that they claim to be hosted on the said actor.
+	 *  
+	 * @param farObject - object accumulating messages for an object hosted by another actor
+	 * @return nil
+	 */
+	public ATNil base_registerFarReference(ATFarObject farObject) throws InterpreterException;
+	
 	public ATVirtualMachine base_getVirtualMachine();
 
     public ATObject base_getBehaviour();
     
     public ATBoolean base_isLocal();
     public ATBoolean base_isRemote();
-
+    
 }

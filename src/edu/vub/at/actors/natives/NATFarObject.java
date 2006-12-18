@@ -27,9 +27,13 @@
  */
 package edu.vub.at.actors.natives;
 
+import java.net.InetSocketAddress;
+
 import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.natives.events.ActorEmittedEvents;
+import edu.vub.at.actors.natives.events.VMEmittedEvents;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -38,17 +42,13 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
-import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.util.GUID;
 
 /**
  * 
@@ -58,35 +58,79 @@ import edu.vub.util.GUID;
  */
 public class NATFarObject extends NATNil implements ATFarObject {
 	
-	private GUID actorId_;
-	private int objectId_;
-	private ATActor actor_;
+	public static final ATSymbol _OUT_ = AGSymbol.jAlloc("outbox");
 	
-	public ATText base_getActorId() {
-		return NATText.atValue(actorId_.toString());
-	}
-
-	public ATNumber base_getObjectId() {
-		return NATNumber.atValue(objectId_);
-	}
-
-	public NATFarObject(ATActor actor, GUID actorId, int objectId) {
-		actor_ = actor;
-		actorId_ = actorId;
+	// Contains the messages buffered by the far object reference, waiting for transmission by the virtual machine
+	private final NATMailbox buffered_;
+	
+	// Virtual Machines are identified by IP address + port
+	private final InetSocketAddress virtualMachineId_;
+	
+	// Inside a Virtual Machine actors (which accept the messages for this far object) are denoted by their hashcode
+	private final int actorId_;
+	
+	// Inside an Actor, objects are denoted by their hashcode
+	private final int objectId_;
+	
+	public NATFarObject(ATActor actor, int objectId) {
+		
+		buffered_ = new NATMailbox(actor, _OUT_);
+		
+		virtualMachineId_ = null /* actor.base_getVirtualMachine(). */;
+		actorId_ = actor.hashCode();
 		objectId_ = objectId;
 	}
 	
+	public ATNil meta_flush(ATObject destination) {
+		// TODO(new conc model) implement flushing of the far object buffer
+		return NATNil._INSTANCE_;		
+	}
+	
+	public ATObject meta_resolve() throws InterpreterException {
+		
+		ATObject resolved = super.meta_getActor().base_resolveFarReference(this);
+		
+		if(resolved.base_isFarReference().asNativeBoolean().javaValue) {
+			super.meta_getActor().base_registerFarReference(resolved.base_asFarReference());
+		}
+		
+		return resolved;		
+	}
+	
+	public ATBoolean meta_isHostedBy_(ATActor host) throws InterpreterException {
+		// TODO(implement) far actors
+//		return NATBoolean.atValue(meta_getActor().equals(far));
+		return NATBoolean._FALSE_;
+	}
+
 	/* ------------------------------
      * -- Message Sending Protocol --
      * ------------------------------ */
 
-	public ATObject meta_send(ATAsyncMessage message) throws InterpreterException {
-		// The super implementation of meta_getActor returns the executing one.
-		return super.meta_getActor().base_send(message);
+	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
+		message = message.meta_pass(this).base_asAsyncMessage();
+		
+		buffered_.base_enqueue(message);
+		
+		// TODO(new conc model) document
+		// NOTE This event is emitted by both the VM and far objects on behalf of 
+		// the actors themselves - for 
+		// clarity the definition belongs to VMEmittedEvents as the VM will use this
+		// event whenever detecting the presence of an actor. It's presence is also
+		// documented in ActorEmittedEvents in the Actor to Self Protocol section.
+		// super.meta_getActor().base_scheduleEvent(VMEmittedEvents.attemptTransmission(meta_getActor()));
+		
+		return NATNil._INSTANCE_;
 	}
 	
-	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
-		throw new XIllegalOperation("Received an asynchronous message for a far object reference which could not be resolved.");
+	/**
+	 * When passing a far reference to another actor, notify the surrounding actor to
+	 * allow for implementing a distributed garbage collection strategy.
+	 */
+	public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+		if(client.base_isFarReference().asNativeBoolean().javaValue)
+			super.meta_getActor().base_scheduleEvent(ActorEmittedEvents.passingFarReference(this, client.base_asFarReference()));
+		return this;
 	}
 
 	/**
@@ -280,7 +324,26 @@ public class NATFarObject extends NATNil implements ATFarObject {
 	}
 	
 	public ATActor meta_getActor() {
-		return actor_;
+		// TODO(implement) far actors, so a far object can return one
+		// FIXME return actor_;
+		return null;
+	}
+
+	
+	/* -----------------------
+	 * -- Structural Access --
+	 * ----------------------- */
+	
+	public int getActorId() {
+		return actorId_;
+	}
+
+	public int getObjectId() {
+		return objectId_;
+	}
+
+	public InetSocketAddress getVirtualMachineId() {
+		return virtualMachineId_;
 	}
 
 }

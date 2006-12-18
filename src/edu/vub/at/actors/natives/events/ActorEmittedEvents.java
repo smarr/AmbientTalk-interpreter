@@ -29,6 +29,7 @@ package edu.vub.at.actors.natives.events;
 
 import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.actors.ATServiceDescription;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -96,5 +97,43 @@ public class ActorEmittedEvents {
 	 */
 	public static final ATAsyncMessage cancelSubscription(ATServiceDescription description, ATObject client) {
 		return new NATAsyncMessage(client, _CANCEL_SUBSCRIPTION_,  NATTable.atValue(new ATObject[] { description, client }));
+	}
+	
+    /* ----------------------------
+     * -- Actor to Self Protocol --
+     * ---------------------------- */
+	
+	public static final ATSymbol _PROCESS_ = AGSymbol.jAlloc("process");
+	public static final ATSymbol _PUBLISH_BEHAVIOUR_ = AGSymbol.jAlloc("publishBehaviour");
+	public static final ATSymbol _NOTIFICATION_ = AGSymbol.jAlloc("notifyObserver");
+	
+	/**
+	 * @see edu.vub.at.actors.natives.NATActor#base_process()
+	 */
+	public static final ATAsyncMessage processMessage(ATAsyncMessage msg) {
+		return new NATAsyncMessage(msg.base_getReceiver(), _PROCESS_, NATTable.EMPTY);
+	}
+	
+	/*
+	 * Actors perform an asynchronous self-send of 'transmit when scheduling messages in the outbox.
+	 * @see edu.vub.at.actors.natives.events.VMEmittedEvents#attemptTransmission(ATActor)
+	 */
+	
+	public static final ATAsyncMessage publishBehaviour(ATActor newlyCreated) {
+		return new NATAsyncMessage(newlyCreated, _PUBLISH_BEHAVIOUR_, NATTable.EMPTY);
+	}
+	
+	public static final ATAsyncMessage notifyObservers(ATAsyncMessage notification) {
+		return new NATAsyncMessage(notification.base_getSender(), _NOTIFICATION_, NATTable.atValue(new ATObject[] { notification }));
+	}
+	
+    /* ----------------------------------
+     * -- Far Object to Actor Protocol --
+     * ---------------------------------- */
+	
+	public static final ATSymbol _FAR_PASSED_ = AGSymbol.jAlloc("farReferencePassed");
+	
+	public static final ATAsyncMessage passingFarReference(ATFarObject ref, ATFarObject client) {
+		return new NATAsyncMessage(ref, _FAR_PASSED_, NATTable.atValue(new ATObject[] { ref, client }));
 	}
 }

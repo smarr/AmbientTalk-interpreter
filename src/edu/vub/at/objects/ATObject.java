@@ -29,6 +29,7 @@ package edu.vub.at.objects;
 
 import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.coercion.ATConversions;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -59,9 +60,9 @@ public interface ATObject extends ATConversions {
       * ------------------------------ */
 
     /**
-     * Sends a newly created message asynchronously to this object.
+     * Sends a newly created message asynchronously by this object.
      * The message may be scheduled in the current actor's outbox if the current ATObject is a remote reference.
-     * @param message the asynchronous message (by default created using the actor's ATMessageFactory)
+     * @param message the asynchronous message (by default created using the actor's base_createMessage method)
      *
      * Triggers the following events on this object's beholders (mirror observers):
      *  - <tt>sentMessage</tt> when the message was sent by the actor.
@@ -74,15 +75,6 @@ public interface ATObject extends ATConversions {
      * @return the return value of invoking the method corresponding to the message
      */
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException;
-
-    /**
-     * Allows objects to specify how they should be passed when going beyond the 
-     * boundaries of a single actor. 
-     * @param client - the object to which this object will be passed
-     * @return Objects may choose to return themselves, a clone or a proxy representation
-     * @throws InterpreterException - when overridden by the user
-     */
-    public ATObject meta_pass(ATObject client) throws InterpreterException;
     
     /**
      * Invoke a method corresponding to the selector with the given arguments.
@@ -128,10 +120,34 @@ public interface ATObject extends ATConversions {
      */
     public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException;
 
-    /* ------------------------------------------
-      * -- Slot accessing and mutating protocol --
-      * ------------------------------------------ */
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
 
+    /**
+     * Allows objects to specify how they should be passed when going beyond the 
+     * boundaries of a single actor. 
+     * @param client - the object to which this object will be passed
+     * @return Objects may choose to return themselves, a clone or a proxy representation
+     * @throws InterpreterException - when overridden by the user
+     */
+    public ATObject meta_pass(ATFarObject client) throws InterpreterException;
+
+    /**
+     * Invoked when an object is received as part of an asynchronous message sent from 
+     * another actor than the one that will handle the message. This is achieved by 
+     * ensuring meta_pass is only invoked on messages that leave the actor. Then when
+     * a message is received upon which no pass was invoked, resolve is a nil operation.
+     *  
+     * @return
+     * @throws InterpreterException
+     */
+    public ATObject meta_resolve() throws InterpreterException;
+    
+    /* ------------------------------------------
+     * -- Slot accessing and mutating protocol --
+     * ------------------------------------------ */
+    
     /**
      * Select a slot (field | method) from an object whose name corresponds to the given
      * selector. The slot lookup follows the dynamic delegation chain.

@@ -59,8 +59,9 @@ public abstract class NATAbstractActor extends NATObservable implements ATAbstra
 	 */
 	protected final ActorThread executor_;
 	
-	protected NATAbstractActor(ATObject[] initArgs) {
-		executor_ = new ActorThread(initArgs, this);
+	protected NATAbstractActor() {
+		executor_ = new ActorThread(this);
+		executor_.start();
 	}
 	
 	public ATNil base_scheduleEvent(ATAsyncMessage event) {

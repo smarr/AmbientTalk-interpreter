@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATField;
@@ -123,4 +124,17 @@ public class NativeField extends NATNil implements ATField {
 	public ATField base_asField() {
 		return this;
 	}
+	
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * Passing an object with an attached (implicit) scope implies creating a far object
+     * reference for them, so that their methods can only be invoked asynchronously but
+     * within the correct actor and scope.
+     */
+    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    		return meta_getActor().base_reference_for_(this, client);
+    }
 }

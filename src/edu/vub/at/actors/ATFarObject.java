@@ -27,9 +27,12 @@
  */
 package edu.vub.at.actors;
 
-import edu.vub.at.objects.ATNumber;
+import java.net.InetSocketAddress;
+
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATText;
 
 /**
  * ATFarObject is an object reference denoting an object hosted by another actor.
@@ -38,7 +41,11 @@ import edu.vub.at.objects.ATText;
  */
 public interface ATFarObject extends ATObject {
 
-	public ATText base_getActorId();
+	public int getActorId();
+	public int getObjectId();
+	public InetSocketAddress getVirtualMachineId();
 	
-	public ATNumber base_getObjectId();
+	public ATBoolean meta_isHostedBy_(ATActor host) throws InterpreterException;
+	
+	public ATNil meta_flush(ATObject destination) throws InterpreterException;
 }

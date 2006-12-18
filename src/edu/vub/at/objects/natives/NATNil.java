@@ -34,6 +34,7 @@ import edu.vub.at.actors.natives.ActorThread;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.NATException;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -80,25 +81,16 @@ public class NATNil implements ATNil {
       * ------------------------------ */
 
     /**
-     * Asynchronous messages sent to an object ( o<-m( args )) are handled by the
-     * actor in which the object is contained.
+     * The meta_send operation is invoked on the sender of an asynchronous message, i.e.
+     * the object bound to self when the message was created. Under normal circumstances
+     * the only possible type for this pseudovariable is a NATObject. 
      */
     public ATObject meta_send(ATAsyncMessage message) throws InterpreterException {
-    		this.meta_getActor().base_send(message);
-    		return NATNil._INSTANCE_;
+    		throw new XIllegalArgument("Cannot send an asynchronous message from a sender " + this + " (type: " + Evaluator.valueNameOf(this.getClass()) + "), expected " + Evaluator.valueNameOf(ATObject.class));
     }
 
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
     		return meta_invoke(message.base_getReceiver(), message.base_getSelector(), message.base_getArguments());
-    }
-    
-    /**
-     * Standard objects such as nil, numbers, booleans and so on can be passed by copy.
-     * TODO Note that compound objects such as tables should delegate to their parts and
-     * scoped objects (objects and closures) will typically want to give out a reference.
-     */
-    public ATObject meta_pass(ATObject client) throws InterpreterException {
-    		return this;
     }
     
     /**
@@ -138,6 +130,30 @@ public class NATNil implements ATNil {
         throw new XSelectorNotFound(selector, this);
     }
 
+    
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * Standard objects such as nil, numbers, booleans and so on can be passed by copy.
+     * TODO Note that compound objects such as tables should delegate to their parts and
+     * scoped objects (objects and closures) will typically want to give out a reference.
+     */
+    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    		return this;
+    }
+    
+    
+    /**
+     * Standard objects such as nil, numbers, booleans and so on can be passed by copy.
+     * TODO Note that compound objects such as tables should delegate to their parts and
+     * scoped objects (objects and closures) will typically want to give out a reference.
+     */
+    public ATObject meta_resolve() throws InterpreterException {
+    		return this;
+    }
+    
     /* ------------------------------------------
       * -- Slot accessing and mutating protocol --
       * ------------------------------------------ */

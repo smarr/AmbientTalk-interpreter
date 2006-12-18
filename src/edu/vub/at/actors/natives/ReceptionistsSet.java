@@ -65,7 +65,22 @@ public class ReceptionistsSet {
 	}
 	
 	public ATObject resolveObject(ATFarObject farReference) throws InterpreterException {
-		return (ATObject)hashcodeToObject_.get(new Integer(farReference.base_getObjectId().asNativeNumber().javaValue));
+		Integer objectId = new Integer(farReference.getObjectId());
+		
+		/* 
+		 * check if we have an object matching the new incoming description. 
+		 * -> the object may be local and handed out using exportObject
+		 * -> the object may be remote and already have a unique local representation
+		 */
+		ATObject result = (ATObject)hashcodeToObject_.get(objectId);
+
+		if(result == null) { // This is a previously unknown object
+			// Store it as the unique representation of this object in this actor
+			hashcodeToObject_.put(objectId, farReference);
+			result = farReference;
+		}
+		
+		return result;
 	}
 	
 	/**
@@ -78,8 +93,7 @@ public class ReceptionistsSet {
 	 * This method is related to a simple reference listing strategy which should be 
 	 * the basis for a distributed garbage collector.
 	 */
-	public void addClient(ATObject service, ATObject client) throws InterpreterException {
-		// TODO type narrowing to a far reference
+	public void addClient(ATObject service, ATFarObject client) throws InterpreterException {
 		objectToClients_.put(service, client.meta_getActor());
 	}
 
@@ -88,8 +102,7 @@ public class ReceptionistsSet {
 	 * the conditions negotiated for the use of the service (e.g. its lease period)
 	 * have expired.
 	 */
-	public void removeClient(ATObject service, ATObject client) throws InterpreterException {
-		// TODO type narrowing to a far reference
+	public void removeClient(ATObject service, ATFarObject client) throws InterpreterException {
 		objectToClients_.removeValue(service, client.meta_getActor());
 	}
 }

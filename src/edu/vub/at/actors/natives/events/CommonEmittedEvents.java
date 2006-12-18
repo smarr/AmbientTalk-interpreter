@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATAbstractActor.java created on Dec 1, 2006
+ * CommonEmittedEvents.java created on Dec 16, 2006 at 11:29:34 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,26 +25,28 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors;
+package edu.vub.at.actors.natives.events;
 
-import edu.vub.at.objects.ATNil;
+import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATAsyncMessage;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
- * ATAbstractActor describes the common interface of all logical processes in the 
- * AmbientTalk/2 implementation. All such processes are implemented as actors which
- * continually consume meta-level events from a synchronized event queue. Communication
- * between all processes is thus strictly organized by passing events.
+ * 
+ * TODO document the class CommonEmittedEvents
  *
  * @author smostinc
  */
-public interface ATAbstractActor extends ATObservable {
+public class CommonEmittedEvents {
 
-	/**
-	 * Schedules a meta-level message in the actors event queue.
-	 * @param event the event to be scheduled.
-	 * @return nil
-	 */
-	public abstract ATNil base_scheduleEvent(ATAsyncMessage event);
-
+	public static final ATSymbol _INIT_ = AGSymbol.jAlloc("init");
+	
+	public static ATAsyncMessage initializeObject(ATObject receiver, ATTable initArgs) throws InterpreterException {
+		return new NATAsyncMessage(NATNil._INSTANCE_, receiver, _INIT_, initArgs);
+	}
 }

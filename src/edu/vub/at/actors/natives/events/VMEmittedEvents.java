@@ -27,6 +27,7 @@
  */
 package edu.vub.at.actors.natives.events;
 
+import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATResolution;
 import edu.vub.at.objects.ATObject;
@@ -89,5 +90,20 @@ public static final ATAsyncMessage couldNotDeliverMessage(ATAsyncMessage msg) {
 	 */
 	public static final ATAsyncMessage lostResolution(ATResolution res) {
 		return new NATAsyncMessage(res.base_getActor(), _LOST_RESOLUTION_,  NATTable.atValue(new ATObject[] { res }));
+	}
+	
+    /* ----------------------------------
+     * -- Actor | VM to Actor Protocol --
+     * ---------------------------------- */
+	
+	public static final ATSymbol _ATTEMPT_TRANSMIT_ = AGSymbol.jAlloc("transmit");
+
+	/**
+	 * Sent by the VM upon detection of the presence of an actor and self-sent by the
+	 * actor when scheduling a message in the outbox.
+	 * @see edu.vub.at.actors.natives.NATActor#base_transmit(ATActor, ATObject)
+	 */
+	public static final ATAsyncMessage attemptTransmission(ATActor actor, ATObject handler) {
+		return new NATAsyncMessage(actor, _ATTEMPT_TRANSMIT_, NATTable.atValue(new ATObject[] { actor, handler }));
 	}
 }

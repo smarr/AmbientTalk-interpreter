@@ -37,6 +37,7 @@ import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATDevice;
 import edu.vub.at.actors.ATServiceDescription;
 import edu.vub.at.actors.ATVirtualMachine;
+import edu.vub.at.actors.natives.events.CommonEmittedEvents;
 import edu.vub.at.actors.natives.events.VMEmittedEvents;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -45,6 +46,7 @@ import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -69,35 +71,72 @@ public final class NATVirtualMachine extends NATAbstractActor implements ATVirtu
 	
 	public static final ATSymbol _NEW_ACTOR_ = AGSymbol.jAlloc("actorCreated");
 	
-	protected File[] objectPathRoots_; 
-	protected ATAbstractGrammar initialisationCode_;
+	private File[] objectPathRoots_; 
+	private ATAbstractGrammar initialisationCode_;
+	
 	protected ATDevice device_;
 	
+	private boolean initialized_ = false;
+	
+	/*
+	 * These accessor methods are synchronized to ensure that the virtual machine
+	 * was properly initialised before giving out one of its datamembers (set by
+	 * base_init)
+	 */
+	public ATAbstractGrammar getInitialisationCode() {
+		synchronized (this) {
+			while(! initialized_) {
+				try {
+					wait();
+				} catch (InterruptedException e) { 
+					continue;
+				}
+			}
+			return initialisationCode_;
+		}
+	}
+
+	public File[] getObjectPathRoots() {
+		synchronized (this) {
+			while(! initialized_) {
+				try {
+					wait();
+				} catch (InterruptedException e) { 
+					continue;
+				}
+			}
+			return objectPathRoots_;
+		}
+	}
+
 	public NATVirtualMachine(NATText objectPath, NATText initPath) throws InterpreterException {
-		super(new ATObject[] { objectPath, initPath});
+		this.base_scheduleEvent(
+				CommonEmittedEvents.initializeObject(this,
+						NATTable.atValue(new ATObject[] { objectPath, initPath })));
 	}
 
 	private NATVirtualMachine(File[] objectPathRoots, ATAbstractGrammar initCode, ATObject[] initArgs) throws InterpreterException {
-		super(initArgs);
-		// Avoids race conditions between the constructor and base_init which will be executed by the newly created ActorThread
-		synchronized (this) {
-			objectPathRoots_ = objectPathRoots;
-			initialisationCode_ = initCode;
-		}
+		objectPathRoots_ = objectPathRoots;
+		initialisationCode_ = initCode;
+		this.base_scheduleEvent(
+				CommonEmittedEvents.initializeObject(this,
+						NATTable.atValue(initArgs)));
 	}
 
 	
 	public ATObject base_init(ATObject[] initArgs) throws InterpreterException {
 		if(initArgs.length < 2) {
-			// Avoids race conditions between base_init and the constructor executing in another (Actor)Thread
+			throw new XArityMismatch("init", 2, initArgs.length);
+		} else {
 			synchronized (this) {
 				ATObject objectPath	= initArgs[0];
 				ATObject initPath	= initArgs[1];
 				if(objectPath	!= NATNil._INSTANCE_) setObjectPath(objectPath.asNativeText());
 				if(initPath 		!= NATNil._INSTANCE_) setInitPath(initPath.asNativeText());
+
+				initialized_ = true;
+				notifyAll();
 			}
-		} else {
-			throw new XArityMismatch("init", 2, initArgs.length);
 		}
 		
 		return NATNil._INSTANCE_;
@@ -181,13 +220,14 @@ public final class NATVirtualMachine extends NATAbstractActor implements ATVirtu
 		return NATBoolean._TRUE_;
 	}
 	
-	// Signals observers of newly created actor
+	// Informs observers of the newly created actor
 	// CALLBACK : none
-	public ATObject base_newActor(ATActor actor) {
+	public ATNil base_newActor(ATActor actor) {
 		try {
 			base_fire_withArgs_(_NEW_ACTOR_, NATTable.atValue(new ATObject[] { actor }));
 		} catch (InterpreterException e) {
 			// Ignore exceptions raised while triggering observers
+			// TODO: may be useful to have a logfile or so to report all errors anyhow.
 		}
 		return NATNil._INSTANCE_;		
 	}

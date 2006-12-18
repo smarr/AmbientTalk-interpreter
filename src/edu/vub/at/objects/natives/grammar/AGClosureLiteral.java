@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
@@ -94,4 +95,20 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 					}
 				}).asNativeText();
 	}
+	
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * Passing a mutable and compound object implies making a new instance of the 
+     * object while invoking pass on all its constituents.
+     */
+	public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+		return new AGClosureLiteral(arguments_.meta_pass(client).base_asTable(), body_.meta_pass(client).base_asBegin());
+	}
+    
+    public ATObject meta_resolve() throws InterpreterException {
+    		return new AGClosureLiteral(arguments_.meta_resolve().base_asTable(), body_.meta_resolve().base_asBegin());
+    }
 }

@@ -31,9 +31,12 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.grammar.AGMultiAssignment;
 
 /**
  * Instances of the class NATAsyncMessage represent first-class asynchronous messages.
@@ -58,12 +61,29 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
         sender_ = sdr;
     }
     
+    public NATAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg) {
+        this(sdr, sel, arg);
+        receiver_ = rcv;
+    }
+
     public ATObject base_getSender() {
         return sender_;
     }
 
     public ATObject base_getReceiver() {
         return receiver_;
+    }
+    
+    // TODO proper comparison for messages (also far-near sensitive)
+    public ATBoolean base__opeql__opeql_(ATObject comparand) {
+    		if (comparand instanceof NATAsyncMessage) {
+			NATAsyncMessage msg = (NATAsyncMessage) comparand;
+			return NATBoolean.atValue(
+					(sender_ == msg.sender_) &&
+					(selector_ == msg.selector_));
+		} else {
+			return NATBoolean._FALSE_;
+		}
     }
 
     /**
@@ -75,7 +95,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     public ATObject base_sendTo(ATObject receiver) throws InterpreterException {
         // fill in the receiver first
         this.receiver_ = receiver;
-        return receiver.meta_send(this);
+        return sender_.meta_send(this);
     }
     
 	public NATText meta_print() throws InterpreterException {
@@ -85,4 +105,20 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch {
   	    return this;
   	}
+    
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * Passing a mutable and compound object implies making a new instance of the 
+     * object while invoking pass on all its constituents.
+     */
+    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    		return new NATAsyncMessage(sender_.meta_pass(client), receiver_.meta_pass(client), selector_.meta_pass(client).base_asSymbol(), arguments_.meta_pass(client).base_asTable());
+    }
+
+    public ATObject meta_resolve() throws InterpreterException {
+		return new NATAsyncMessage(sender_.meta_resolve(), receiver_.meta_resolve(), selector_.meta_resolve().base_asSymbol(), arguments_.meta_resolve().base_asTable());
+	}
 }

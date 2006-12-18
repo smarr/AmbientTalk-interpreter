@@ -45,8 +45,8 @@ import edu.vub.at.objects.natives.NATText;
  */
 public abstract class AGMessageCreation extends AGExpression implements ATMessageCreation {
 
-	private final ATSymbol selector_;
-	private final ATTable arguments_;
+	protected final ATSymbol selector_;
+	protected final ATTable arguments_;
 	
 	public AGMessageCreation(ATSymbol sel, ATTable args) {
 		selector_ = sel;

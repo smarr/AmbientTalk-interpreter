@@ -31,6 +31,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
 
+import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -91,7 +93,7 @@ public class NATCallframe extends NATNil implements ATObject {
 	 * -- Message Sending Protocol --
 	 * ------------------------------ */
 	
-	/**
+    /**
 	 * Normally, call frames are not used in receiverful method invocation expressions.
 	 * That is, normally, the content of call frames is accessed via the meta_lookup operation.
 	 * 
@@ -423,5 +425,18 @@ public class NATCallframe extends NATNil implements ATObject {
 			}
 		}
 	}
+	
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * Passing an object with an attached (implicit) scope implies creating a far object
+     * reference for them, so that their methods can only be invoked asynchronously but
+     * within the correct actor and scope.
+     */
+    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    		return meta_getActor().base_reference_for_(this, client);
+    }
 	
 }

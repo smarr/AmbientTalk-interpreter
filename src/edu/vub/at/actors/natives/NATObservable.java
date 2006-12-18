@@ -30,6 +30,10 @@ package edu.vub.at.actors.natives;
 import java.util.Iterator;
 import java.util.Set;
 
+import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATObservable;
+import edu.vub.at.actors.natives.events.ActorEmittedEvents;
+import edu.vub.at.actors.natives.events.VMEmittedEvents;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
@@ -51,7 +55,7 @@ import edu.vub.util.MultiMap;
  *
  * @author smostinc
  */
-public class NATObservable extends NATNil {
+public class NATObservable extends NATNil implements ATObservable {
 
 	protected final MultiMap observers_ = new MultiMap();
 	
@@ -92,12 +96,23 @@ public class NATObservable extends NATNil {
 			if(eventObservers != null) {
 				for (Iterator iter = eventObservers.iterator(); iter.hasNext();) {
 					ATClosure observer = (ATClosure) iter.next();
-					observer.meta_send(
-							new NATAsyncMessage(this, Evaluator._APPLY_, arguments));
+					this.meta_getActor().base_scheduleEvent(
+							ActorEmittedEvents.notifyObservers(
+									new NATAsyncMessage(this, observer, Evaluator._APPLY_, NATTable.atValue( new ATObject[] { arguments }))));
 				}
 			}
 		}
 		return NATNil._INSTANCE_;
 	}
 
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * TODO Proper semantics
+     */
+    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    		throw new RuntimeException("Attempting to pass an observable - not yet implemented");
+    }
 }

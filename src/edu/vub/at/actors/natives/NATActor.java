@@ -29,14 +29,20 @@ package edu.vub.at.actors.natives;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.actors.ATMailbox;
 import edu.vub.at.actors.ATResolution;
 import edu.vub.at.actors.ATServiceDescription;
 import edu.vub.at.actors.ATVirtualMachine;
 import edu.vub.at.actors.natives.events.ActorEmittedEvents;
+import edu.vub.at.actors.natives.events.CommonEmittedEvents;
+import edu.vub.at.actors.natives.events.VMEmittedEvents;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
@@ -88,14 +94,13 @@ public class NATActor extends NATAbstractActor implements ATActor {
 	}
 	
 	public ATObject base_send(ATAsyncMessage message) throws InterpreterException {
-		ATObject receiver = message.base_getReceiver();
-		// TODO(???) outbox_.base_enqueue(message);
-		if(receiver.base_isFarReference().asNativeBoolean().javaValue) {
-			// TODO geen cast
-			message = message.meta_pass(receiver).base_asAsyncMessage();
-		}
-		host_.base_scheduleEvent(ActorEmittedEvents.transmitMessage(message));
-		return NATNil._INSTANCE_;
+		/*
+		 * By construction all message sends are local ones, which implies that at
+		 * the point the actor is asked to send them (and far references have thus
+		 * already invoked meta_pass on the message), all that needs to be done is
+		 * accept the message ourselves
+		 */ 
+		return this.base_scheduleEvent(VMEmittedEvents.acceptMessage(message));
 	}
 	
 	public ATClosure base_provide(final ATServiceDescription description, final ATObject service) {
@@ -124,26 +129,30 @@ public class NATActor extends NATAbstractActor implements ATActor {
 
 	public ATNil base_accept(ATAsyncMessage message) throws InterpreterException {
 		inbox_.base_enqueue(message);
-		base_scheduleEvent(new NATAsyncMessage(this, AGSymbol.jAlloc("process"), NATTable.EMPTY));
+		base_scheduleEvent(ActorEmittedEvents.processMessage(message));
 		return NATNil._INSTANCE_;
 	}
 
 	public ATObject base_process() throws InterpreterException {
 		if(! inbox_.base_isEmpty().asNativeBoolean().javaValue) {
 			ATAsyncMessage msg = (ATAsyncMessage)inbox_.base_dequeue();
-			ATObject receiver = msg.base_getReceiver();
 			
-			if(receiver.base_isFarReference().asNativeBoolean().javaValue) 
-				receiver = receptionists_.resolveObject(receiver.base_asFarReference());
-			
-			ATObject result = receiver.meta_receive(msg);
+			msg = msg.meta_resolve().base_asAsyncMessage();
+			ATObject result = msg.base_getReceiver().meta_receive(msg);
 			
 			base_fire_withArgs_(_PROCESSED_, NATTable.atValue(new ATObject[] { msg, result }));
-			
 			return result;
 		} else {
 			return NATNil._INSTANCE_;
 		}
+	}
+	
+	// Notifications are different from ordinary messages in that they
+	// 1) do not trigger messageProcessed observers
+	// 2) are not put in the inbox of an actor (they are processed immediately)
+	public ATObject base_notifyObserver(ATAsyncMessage notification) throws InterpreterException {
+		notification = notification.meta_resolve().base_asAsyncMessage();
+		return notification.base_getReceiver().meta_receive(notification);
 	}
 	
 	/**
@@ -170,10 +179,26 @@ public class NATActor extends NATAbstractActor implements ATActor {
 		return null;
 	}
 
-	public ATNil base_transmit(ATActor receiver) throws InterpreterException {
-		// TODO filter out all messages desined for objects hosted by that actor 
-		// using GUID and schedule them for transmission with the VM
-		return null;
+	/**
+	 * Offers all far object references a chance to claim whether they are hosted by 
+	 * the given actor, thereby filtering out all messages that can be sent to the 
+	 * provided destination and schedule them for transmission with the VM
+	 * @param receiver - a host actor which has become available
+	 * @param destination - an object which will receive the forwarded messages
+	 */
+	public ATNil base_transmit(final ATActor receiver, final ATObject destination) throws InterpreterException {
+		for (Iterator farObjectIterator = farObjects_.iterator(); farObjectIterator.hasNext();) {
+			ATFarObject farObject = (ATFarObject) farObjectIterator.next();
+			
+			farObject.meta_isHostedBy_(receiver).base_ifTrue_(
+					new NativeClosure(farObject) {
+						public ATObject base_apply(ATTable arguments) throws InterpreterException {
+							return scope_.base_asFarReference().meta_flush(destination);
+						}
+					});
+		}
+
+		return NATNil._INSTANCE_;		
 	}
 
 	public ATNil base_foundResolution(ATResolution found) throws InterpreterException {
@@ -206,19 +231,13 @@ public class NATActor extends NATAbstractActor implements ATActor {
 	 * is transient so that it is not passed when an actor would be serialised and 
 	 * transported to another virtual machine.
 	 */
-	protected transient NATVirtualMachine host_;
+	protected transient ATVirtualMachine host_;
 	
 	/*
 	 * This object is created when the actor is initialized: i.e. it is the object 
 	 * that results from evaluating the closure passed when the actor was constructed.
 	 */
 	private ATObject behaviour_ = null; 
-	
-	/*
-	 * TODO This actor is given a globally unique ID, used in conjunction with an intra-
-	 * actor index to identify all objects it has exported.
-	 */
-	//GUID actorId_ = GUID.forObject(this);
 	
 	/*
 	 * Actors have a classical combination of an inbox and outbox which reify the
@@ -233,7 +252,9 @@ public class NATActor extends NATAbstractActor implements ATActor {
 	final ATMailbox requiredbox_ = new NATMailbox(this, ATActor._REQUIRED_);
 		
 	ReceptionistsSet receptionists_ = new ReceptionistsSet(_AVERAGE_SERVICES_PER_ACTOR_);
-
+	Set farObjects_ = new TreeSet();
+	
+	
 	/* -----------------------------
 	 * -- Initialisation Protocol --
 	 * ----------------------------- */
@@ -246,7 +267,7 @@ public class NATActor extends NATAbstractActor implements ATActor {
 	 * If the user did not specify an objectpath, the default is .;$AT_OBJECTPATH;$AT_HOME
 	 */
 	protected void initLobbyUsingObjectPath() throws InterpreterException {
-		File[] objectPathRoots = host_.objectPathRoots_;
+		File[] objectPathRoots = host_.getObjectPathRoots();
 		
 		NATObject lobby = Evaluator.getLobbyNamespace();
 		
@@ -291,7 +312,7 @@ public class NATActor extends NATAbstractActor implements ATActor {
 	 * @throws InterpreterException
 	 */
 	protected void initRootObject() throws InterpreterException {
-		ATAbstractGrammar initialisationCode = host_.initialisationCode_;
+		ATAbstractGrammar initialisationCode = host_.getInitialisationCode();
 		
 		// evaluate the initialization code in the context of the global scope
 		NATObject globalScope = Evaluator.getGlobalLexicalScope();
@@ -300,14 +321,28 @@ public class NATActor extends NATAbstractActor implements ATActor {
 		initialisationCode.meta_eval(initCtx);
 	}
 	
-	public NATActor(NATVirtualMachine host, ATClosure body) throws InterpreterException {
-		super(new ATObject[] { body });
+	public NATActor(ATVirtualMachine host, ATClosure body) throws InterpreterException {
 		host_ = host;
 		
+		this.base_scheduleEvent(ActorEmittedEvents.publishBehaviour(this));
+		this.base_scheduleEvent(CommonEmittedEvents.initializeObject(this, NATTable.atValue(new ATObject[] { body })));
 		host.base_scheduleEvent(ActorEmittedEvents.newlyCreated(this));
-		executor_.start();
 	}
 	
+	/**
+	 * Called from the actor's executor, prior to the initialisation to ensure that
+	 * the creating actor can continue processing immediately without having to wait
+	 * for the initialisation to finish.
+	 */
+	public ATNil base_publishBehaviour() {
+		synchronized (this) {
+			int objectId = receptionists_.exportObject(Evaluator.getGlobalLexicalScope());
+			behaviour_ = new NATFarObject(this, objectId);
+			this.notify();
+			return NATNil._INSTANCE_;
+		}
+	}
+
 	/**
 	 * Called from the NATActor's executor to ensure the correctness of the tread-
 	 * local variable Evaluator.getGlobalLexicalScope().
@@ -322,15 +357,15 @@ public class NATActor extends NATAbstractActor implements ATActor {
 		initRootObject();
 		
 		ATObject beh = Evaluator.getGlobalLexicalScope();
-		initialisationCode.base_getMethod().base_apply(NATTable.EMPTY, new NATContext(beh, beh, beh.meta_getDynamicParent()));
-		
-		behaviourInitialised(beh);
-		
+		initialisationCode.base_applyInScope(NATTable.EMPTY, beh);
+				
 		return NATNil._INSTANCE_;
 	}
 
 	public ATObject meta_clone() throws InterpreterException {
-		return new NATActor(host_, executor_.initArgs_[1].base_asClosure());
+		// FIXME
+//		return new NATActor(host_, executor_.initArgs_[1].base_asClosure());
+		return null;
 	}
 
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
@@ -354,13 +389,37 @@ public class NATActor extends NATAbstractActor implements ATActor {
 		return behaviour_;
 	}
 
-	public ATMailbox base_getInbox() {
-		return inbox_;
+	/* -----------------------------
+	 * -- Object Passing Protocol --
+	 * ----------------------------- */
+	
+	public ATFarObject base_reference_for_(ATObject object, ATFarObject client) throws InterpreterException {
+		int objectId = receptionists_.exportObject(object);
+		receptionists_.addClient(object, client);
+		return new NATFarObject(this, objectId);
 	}
 	
-	public ATMailbox base_getOutbox() {
-		return outbox_;
+	public ATObject base_resolveFarReference(ATFarObject farReference) throws InterpreterException {
+		return receptionists_.resolveObject(farReference);
 	}
+	
+	public ATNil base_farReferencePassed(ATFarObject passed, ATFarObject client) {
+		// TODO(dgc) store the new client of the object somehow...
+		return NATNil._INSTANCE_;
+	}
+	
+	public ATNil base_registerFarReference(ATFarObject farObject) {
+		farObjects_.add(farObject);
+		return NATNil._INSTANCE_;
+	}
+	
+
+	
+	
+	
+	
+	
+	
 	
 	public ATVirtualMachine base_getVirtualMachine() {
 		return host_;
@@ -374,19 +433,8 @@ public class NATActor extends NATAbstractActor implements ATActor {
 		return NATBoolean._FALSE_;
 	}
 
-
 	public ATActor asActor() throws XTypeMismatch {
 		return this;
 	}
 		
-	// ACTORTHREAD CALLBACKS
-	
-	protected void behaviourInitialised(ATObject behaviour) {
-//		TODO implement far objects
-//		synchronized (this) {
-//			int objectId = receptionists_.exportObject(behaviour);
-//			behaviour_ = new NATFarObject(this, actorId_, objectId);
-//			this.notify();
-//		}
-	}
 }

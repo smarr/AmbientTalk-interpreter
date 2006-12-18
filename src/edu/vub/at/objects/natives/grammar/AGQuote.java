@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -72,4 +73,19 @@ public final class AGQuote extends AGExpression implements ATQuote {
 		return NATText.atValue("`("+ stmt_.meta_print().javaValue + ")");
 	}
 
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * Passing a mutable and compound object implies making a new instance of the 
+     * object while invoking pass on all its constituents.
+     */
+    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    		return new AGQuote(stmt_.meta_pass(client).base_asStatement());
+    }
+    
+    public ATObject meta_resolve() throws InterpreterException {
+		return new AGQuote(stmt_.meta_resolve().base_asStatement());
+}
 }

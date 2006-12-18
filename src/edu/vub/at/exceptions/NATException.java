@@ -71,7 +71,4 @@ public class NATException extends NATNil {
 			return NATBoolean._FALSE_;
 		}
 	}
-    
-    
-
 }
