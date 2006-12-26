@@ -30,7 +30,6 @@ package edu.vub.at.objects.coercion;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -41,6 +40,7 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -50,6 +50,7 @@ import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATNumeric;
@@ -76,6 +77,7 @@ public interface ATConversions {
 	public boolean base_isBoolean() throws InterpreterException;
 	public boolean base_isCallFrame() throws InterpreterException;
 	public boolean base_isUnquoteSplice() throws InterpreterException;
+	public boolean base_isVariableAssignment() throws InterpreterException;
 	public boolean base_isSplice() throws InterpreterException;
 	public boolean base_isMethod() throws InterpreterException;
 	public boolean base_isMessageCreation() throws InterpreterException;
@@ -99,14 +101,15 @@ public interface ATConversions {
 	public ATExpression 		base_asExpression() throws XTypeMismatch;
 	public ATBegin      		base_asBegin() throws XTypeMismatch;
 	public ATMessageCreation 	base_asMessageCreation() throws XTypeMismatch;
-	public ATUnquoteSplice 	base_asUnquoteSplice() throws XTypeMismatch;
+	public ATUnquoteSplice 		base_asUnquoteSplice() throws XTypeMismatch;
+	public ATAssignVariable 	base_asVariableAssignment() throws InterpreterException;
 	public ATSplice 			base_asSplice() throws XTypeMismatch;
 	
 	// Concurrency and Distribution related values
 	public ATBoolean 		base_isFarReference();
 	
 	public ATFarObject		base_asFarReference() throws XTypeMismatch;
-	public ATAsyncMessage		base_asAsyncMessage() throws XTypeMismatch;
+	public ATAsyncMessage	base_asAsyncMessage() throws XTypeMismatch;
 
 	// Native Value Elements
 	

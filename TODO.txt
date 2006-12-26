@@ -49,6 +49,30 @@ introduce another method named 'javaToATSelector'
 - Reflection
 * isXXX and asXXX must become meta_isXXX and meta_asXXX
 
+- Next to the == operator, which defines equality through identity, we should introduce
+an operator = which defines structural equality
+e.g. [2,3] is not == to [2,3] but [2,3] = [2,3]
+likewise: object: { def a := 1 } is not == to another such object (only == to itself)
+but = could by default do a field-wise comparison
+e.g.
+boolean NATNil.base__opeql_(ATObject other) {
+  foreach field | method selector of this {
+    if (other.meta_respondsTo(selector) {
+       continue;
+    } else {
+       return false;
+    }
+  }
+  return dynamicParent_.base__opeql_(other.meta_getDynamicParent());
+}
+(NATObject/NATCallframe could have specialized implementation)
+NATTable also needs specialized impl.
+
+the default semantics of '=' is '=='? (e.g. numbers, etc.)
+Note that structural equivalence of objects is defined in terms of their public fields/methods
++ those of their dynamic parents. Lexical parents are not taken into consideration, as they are
+considered 'private' to the object.
+
 - Core language evaluator
 * remove as much .asNative...() casts from the code as possible. Each such cast precludes use of custom AT objects.
 

@@ -27,10 +27,13 @@
  */
 package edu.vub.at.objects;
 
-import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XDuplicateSlot;
+import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XUnassignableField;
+import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.coercion.ATConversions;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
@@ -367,14 +370,6 @@ public interface ATObject extends ATConversions {
      * @throws InterpreterException 
      */
     public ATObject meta_getLexicalParent() throws InterpreterException;
-    
-    /**
-     * Objects are at all times defined within the scope of a single actor, which is
-     * typically the owner of the ActorThread that is executing their code. Only
-     * when a local object designates an object in another actor (i.e. it is a far 
-     * object reference), this will not be the case. 
-     */
-    public ATActor meta_getActor() throws InterpreterException;
 
     /* ------------------------------------------
       * -- Abstract Grammar evaluation protocol --

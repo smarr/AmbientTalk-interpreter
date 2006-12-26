@@ -31,7 +31,6 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.AmbientTalkTestCase;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;

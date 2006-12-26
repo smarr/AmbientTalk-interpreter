@@ -40,7 +40,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.mirrors.NativeClosure;
-import edu.vub.at.objects.natives.grammar.AGAsyncMessageCreation;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
 import java.util.LinkedList;
@@ -246,25 +245,25 @@ public final class NATTable extends AGExpression implements ATTable {
      * Passing a mutable and compound object implies making a new instance of the 
      * object while invoking pass on all its constituents.
      */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
-    		ATObject[] passed = new ATObject[elements_.length];
-    		
-    		for (int i = 0; i < elements_.length; i++) {
+	public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+		ATObject[] passed = new ATObject[elements_.length];
+
+		for (int i = 0; i < elements_.length; i++) {
 			passed[i] = elements_[i].meta_pass(client);
 		}
-    		
-    		return NATTable.atValue(passed);
-    }
 
-    public ATObject meta_resolve() throws InterpreterException {
-		ATObject[] resolved = new ATObject[elements_.length];
-		
-		for (int i = 0; i < elements_.length; i++) {
-		resolved[i] = elements_[i].meta_resolve();
+		return NATTable.atValue(passed);
 	}
-		
+
+	public ATObject meta_resolve() throws InterpreterException {
+		ATObject[] resolved = new ATObject[elements_.length];
+
+		for (int i = 0; i < elements_.length; i++) {
+			resolved[i] = elements_[i].meta_resolve();
+		}
+
 		return NATTable.atValue(resolved);
-}
+	}
 
 
 }

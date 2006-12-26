@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -46,14 +45,14 @@ import edu.vub.at.objects.grammar.ATSymbol;
  */
 public class NATMethod extends NATNil implements ATMethod {
 
-	private final ATSymbol 			name_;
-	private final ATTable 			parameters_;
-	private final ATBegin				body_;
+	private final ATSymbol 	name_;
+	private final ATTable 	parameters_;
+	private final ATBegin	body_;
 	
 	
 	public NATMethod(ATSymbol name, ATTable parameters, ATBegin body) {
 		name_ 		= name;
-		parameters_ 	= parameters;
+		parameters_ = parameters;
 		body_ 		= body;
 	}
 
@@ -86,11 +85,12 @@ public class NATMethod extends NATNil implements ATMethod {
 	 */
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 		NATCallframe cf = new NATCallframe(ctx.base_getLexicalScope());
+		ATContext evalCtx = ctx.base_withLexicalEnvironment(cf);
 		Evaluator.defineParamsForArgs(
 				name_.base_getText().asNativeText().javaValue, 
-				cf, 
+				evalCtx, 
 				parameters_, arguments);
-		return body_.meta_eval(ctx.base_withLexicalEnvironment(cf));
+		return body_.meta_eval(evalCtx);
 	}
 	
 	/**
@@ -107,7 +107,7 @@ public class NATMethod extends NATNil implements ATMethod {
 	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
 		Evaluator.defineParamsForArgs(
 				name_.base_getText().asNativeText().javaValue, 
-				ctx.base_getLexicalScope(), 
+				ctx, 
 				parameters_, arguments);
 		return body_.meta_eval(ctx);
 	}
@@ -123,18 +123,5 @@ public class NATMethod extends NATNil implements ATMethod {
 	public boolean base_isMethod() {
 		return true;
 	}
-	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing an object with an attached (implicit) scope implies creating a far object
-     * reference for them, so that their methods can only be invoked asynchronously but
-     * within the correct actor and scope.
-     */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
-    		return meta_getActor().base_reference_for_(this, client);
-    }
 
 }

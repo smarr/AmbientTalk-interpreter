@@ -48,7 +48,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  */
 public class OBJMirrorRoot extends NATNil {
 	
-	public static ATSymbol _MIRROR_ = AGSymbol.jAlloc("mirror");
+	public static final ATSymbol _MIRROR_ = AGSymbol.jAlloc("mirror");
 	public static final OBJMirrorRoot _INSTANCE_ = new OBJMirrorRoot();
 	
 	/* PRIVATE CONSTRUCTOR - SINGLETON PATTERN */

@@ -29,9 +29,11 @@ package edu.vub.at.eval;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.exceptions.XIllegalParameter;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -162,16 +164,22 @@ public final class Evaluator {
 	
 	/**
 	 * Auxiliary function to bind formal parameters to actual arguments within a certain scope.
-	 * TODO(coercers) currently does not work for user-defined ATTables
+	 * 
+	 * A formal parameter list is defined as:
+	 * (mandatory arg: ATSymbol)* , (optional arg: ATVarAssignment)*, (rest arg: ATSplice)?
+	 * 
+	 * An actual argument list is defined as:
+	 * (actual arg: ATObject)*
 	 * 
 	 * @param funnam the name of the function for which to bind these elements, for debugging purposes only
-	 * @param scope the frame in which to store the bindings
+	 * @param context the context whose lexical scope denotes the frame in which to store the bindings
+	 * The context is also the context in which to evaluate optional argument expressions.
 	 * @param parameters the formal parameter references (of which the last element may be a 'rest' arg to collect left-over arguments)
 	 * @param arguments the actual arguments, already evaluated
 	 * @param binder a functor object describing the strategy to bind an argument to a parameter (assign or define the parameter)
 	 * @throws XArityMismatch when the formals don't match the actuals
 	 */
-	private static final void bindArguments(String funnam, ATObject scope, ATTable parameters, ATTable arguments, BindClosure binder) throws InterpreterException {
+	private static final void bindArguments(String funnam, ATContext context, ATTable parameters, ATTable arguments, BindClosure binder) throws InterpreterException {
 		if (parameters == NATTable.EMPTY) {
 			if (arguments == NATTable.EMPTY)
 				return; // no need to bind any arguments
@@ -182,44 +190,103 @@ public final class Evaluator {
 		ATObject[] pars = parameters.asNativeTable().elements_;
 		ATObject[] args = arguments.asNativeTable().elements_;
 		
-		// check to see whether the last argument is a spliced parameters, which
-		// indicates a variable parameter list
-		if (pars[pars.length - 1].base_isSplice()) {
-			int numMandatoryPars = (pars.length - 1);
-			// if so, check whether at least all mandatory parameters are matched
-			if (args.length < numMandatoryPars)
-				throw new XArityMismatch(funnam, numMandatoryPars, args.length);
-			
-			// bind all parameters except for the last one
-			for (int i = 0; i < numMandatoryPars; i++) {
-				binder.bindParamToArg(scope, pars[i].base_asSymbol(), args[i]);
-			}
-			
-			// bind the last parameter to the remaining arguments
-			int numRemainingArgs = args.length - numMandatoryPars;
-			ATObject[] restArgs = new ATObject[numRemainingArgs];
-			for (int i = 0; i < numRemainingArgs; i++) {
-				restArgs[i] = args[i + numMandatoryPars];
-			}
-			ATSymbol restArgsName = pars[numMandatoryPars].base_asSplice().base_getExpression().base_asSymbol();
-			binder.bindParamToArg(scope, restArgsName, NATTable.atValue(restArgs));
-			
-		} else {
-			// regular parameter list: arguments and parameters have to match exactly
-			if (pars.length != args.length)
-				throw new XArityMismatch(funnam, pars.length, args.length);	
+		/* Traverse formal parameter list conceptually according to
+		 * the following state diagram:
+		 * 
+		 *  state: mandatory [start state, end state]
+		 *    case Symbol => mandatory
+		 *    case Assignment => optional
+		 *    case Splice => rest-arg
+		 *  state: optional [end state]
+		 *    case Symbol => error // no mandatory pars after optional pars
+		 *    case Assignment => optional
+		 *    case Splice => rest-arg
+		 *  state: rest-arg [end state]
+		 *    case * => error // rest-arg should be last
+		 *  state: error [end state]
+		 *    case * => error
+		 */
 		
-			for (int i = 0; i < pars.length; i++) {
-			     binder.bindParamToArg(scope, pars[i].base_asSymbol(), args[i]);	
-		    }
+		int paridx = 0;
+		int numMandatoryArguments = 0;
+		ATObject scope = context.base_getLexicalScope();
+		
+		// determine number of mandatory arguments
+		for (; paridx < pars.length && pars[paridx].base_isSymbol(); paridx++) {
+			numMandatoryArguments++;
+		}
+		
+		// are there enough actual arguments to satisfy all mandatory args?
+		if (numMandatoryArguments > args.length) {
+			// error: not enough actuals
+			throw new XArityMismatch(funnam, numMandatoryArguments, args.length);
+		}
+		
+		// bind all mandatory arguments
+		for (paridx = 0; paridx < numMandatoryArguments; paridx++) {
+			// bind formal to actual
+			binder.bindParamToArg(scope, pars[paridx].base_asSymbol(), args[paridx]);			
+		}
+		
+		// if there are no more parameters, make sure all actuals are processed
+		if (numMandatoryArguments == pars.length) {
+			if (numMandatoryArguments < args.length) {
+				// error: too many actuals
+				throw new XArityMismatch(funnam, numMandatoryArguments, args.length);
+			} // else { return; }
+		} else {
+		    // if there are more parameters, process optionals first and then rest parameter
+			int numDefaultOptionals = 0; // count the number of optional arguments that had no corresponding actual
+			// determine number of optional arguments
+			for (; paridx < pars.length && pars[paridx].base_isVariableAssignment(); paridx++) {
+				if (paridx < args.length) {
+					// bind formal to actual and ignore default initialization expression
+					binder.bindParamToArg(scope, pars[paridx].base_asVariableAssignment().base_getName(), args[paridx]);	
+				} else {
+					// no more actuals: bind optional parameter to default initialization expression
+					ATAssignVariable param = pars[paridx].base_asVariableAssignment();
+					binder.bindParamToArg(scope, param.base_getName(), param.base_getValueExpression().meta_eval(context));
+					numDefaultOptionals++;
+				}
+			}
+			
+			// if there are no more parameters, make sure all actuals are processed
+			if (paridx == pars.length) {
+				if (paridx < args.length) {
+					// error: too many actuals
+					throw new XArityMismatch(funnam, numMandatoryArguments, args.length);
+				} // else { return; }
+			} else {
+				// all that is left to process is an optional rest-parameter
+				// check whether last param is spliced, which indicates variable parameter list
+				if (pars[paridx].base_isSplice()) {
+					// bind the last parameter to the remaining arguments
+					int numRemainingArgs = args.length - paridx + numDefaultOptionals; // #actuals - #actuals used to fill in mandatory or optional args 
+					ATObject[] restArgs = new ATObject[numRemainingArgs];
+					for (int i = 0; i < numRemainingArgs; i++) {
+						restArgs[i] = args[i + paridx];
+					}
+					ATSymbol restArgsName = pars[paridx].base_asSplice().base_getExpression().base_asSymbol();
+					binder.bindParamToArg(scope, restArgsName, NATTable.atValue(restArgs));
+					
+					// rest parameter should always be last
+					if (paridx != pars.length - 1) {
+						throw new XIllegalParameter(funnam, "rest parameter is not the last parameter: " + pars[paridx]);
+					} // else { return; }
+				} else {
+					// optionals followed by mandatory parameter
+					throw new XIllegalParameter(funnam, "optional parameters followed by mandatory parameter " + pars[paridx]);
+				}
+			}
 		}
 	}
 	
 	/**
-	 * Bind all of the given parameters as newly defined slots in the given scope to the given arguments
+	 * Bind all of the given parameters as newly defined slots in the given scope to the given arguments.
+	 * The scope is defined as the lexical scope of the given context.
 	 */
-	public static final void defineParamsForArgs(String funnam, ATObject scope, ATTable parameters, ATTable arguments) throws InterpreterException {
-		bindArguments(funnam, scope, parameters, arguments, new BindClosure() {
+	public static final void defineParamsForArgs(String funnam, ATContext context, ATTable parameters, ATTable arguments) throws InterpreterException {
+		bindArguments(funnam, context, parameters, arguments, new BindClosure() {
 			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws InterpreterException {
 				scope.meta_defineField(param, arg);
 			}
@@ -229,8 +296,8 @@ public final class Evaluator {
 	/**
 	 * Assign all of the formal parameter names in the scope object to the given arguments
 	 */
-	public static final void assignArgsToParams(String funnam, ATObject scope, ATTable parameters, ATTable arguments) throws InterpreterException {
-		bindArguments(funnam, scope, parameters, arguments, new BindClosure() {
+	public static final void assignArgsToParams(String funnam, ATContext context, ATTable parameters, ATTable arguments) throws InterpreterException {
+		bindArguments(funnam, context, parameters, arguments, new BindClosure() {
 			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws InterpreterException {
 				scope.meta_assignVariable(param, arg);
 			}

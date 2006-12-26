@@ -29,6 +29,7 @@ package edu.vub.at.exceptions;
 
 import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.natives.NATException;
 
 import java.io.PrintStream;
 

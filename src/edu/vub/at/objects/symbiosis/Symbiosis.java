@@ -28,7 +28,6 @@
 package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.NATException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XNotInstantiatable;
@@ -43,6 +42,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;

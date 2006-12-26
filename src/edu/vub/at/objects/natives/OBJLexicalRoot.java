@@ -27,10 +27,14 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.actors.ATActor;
+import edu.vub.at.actors.natives.ActorThread;
 import edu.vub.at.actors.natives.NATActor;
 import edu.vub.at.actors.natives.NATVirtualMachine;
+import edu.vub.at.actors.util.BlockingFuture;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -245,14 +249,29 @@ public final class OBJLexicalRoot extends NATNil {
 	}
 	
 	
-	/* ----------------------------
-	 * -- Actor Creation Methods --
-	 * ---------------------------- */
+	/* ------------------------------------------
+	 * -- Actor Creation and accessing Methods --
+	 * ------------------------------------------ */
 	
+	// FIXME: code should be deep-copied (meta-passed)! but closures normally by ref!?
 	public ATObject base_actor_(ATClosure code) throws InterpreterException {
-		NATActor actor = new NATActor(meta_getActor().base_getVirtualMachine(), code);
-		return actor.base_getBehaviour();
-		
+		//ATAbstractGrammar bhvCode = code.base_getMethod().base_getBodyExpression();
+		//ATAbstractGrammar passedCode = bhvCode.meta_pass(???);
+		BlockingFuture behaviourFuture = NATActor.atValue(NATVirtualMachine.currentVM(), code);
+		return behaviourFuture.get(); // blocks until far ref to behaviour has been constructed
+	}
+	
+	public ATActor base_getActor() throws InterpreterException {
+		Thread current = Thread.currentThread();
+		try {
+		  ActorThread actorTread = (ActorThread) current;
+	      return (ATActor) actorTread.currentlyServing();
+		} catch (ClassCastException e) {
+			// TODO: couple remote threads to their own actor which can e.g. be created lazily
+			System.err.println("Asked for current actor when none was active");
+			e.printStackTrace();
+			throw new XIllegalOperation("Asked for current actor when none was active", e);
+		}
 	}
 	
 	

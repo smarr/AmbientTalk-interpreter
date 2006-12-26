@@ -92,10 +92,13 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		return txt_.asNativeText();
 	}
 	
+	public boolean base_isSymbol() {
+		return true;
+	}
+	
 	public ATSymbol base_asSymbol() {
 		return this;
 	}
-	
 	
 	// comparison and identity operations
 	

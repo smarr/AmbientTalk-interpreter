@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.actors.ATFarObject;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATAssignVariable;
@@ -97,5 +98,13 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 
     public ATObject meta_resolve(ATObject client) throws InterpreterException {
 		return new AGAssignVariable(variableName_.meta_resolve().base_asSymbol(), valueExp_.meta_resolve().base_asExpression());
+    }
+    
+    public boolean base_isVariableAssignment() {
+        return true;
+    }
+    
+    public ATAssignVariable base_asVariableAssignment() throws XTypeMismatch {
+        return this;
     }
 }

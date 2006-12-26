@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
@@ -227,17 +226,6 @@ public class NATObject extends NATCallframe implements ATObject {
 	/* ------------------------------
 	 * -- Message Sending Protocol --
 	 * ------------------------------ */
-
-	/**
-     * Asynchronous messages ( o<-m( args )) sent in the context of an object o (i.e. 
-     * sent in a method or closure where the self pseudovariable is bound to o)  are 
-     * delegated to the base-level send method of the actor in which the object o is 
-     * contained.
-     */
-    public ATObject meta_send(ATAsyncMessage message) throws InterpreterException {
-    		this.meta_getActor().base_send(message);
-    		return NATNil._INSTANCE_;
-    }
 	
 	/**
 	 * Invocations on an object ( <tt>o.m( args )</tt> ) are handled by looking up the requested

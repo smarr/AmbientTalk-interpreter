@@ -40,6 +40,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -124,6 +125,6 @@ public final class NativeMethod extends NATNil implements ATMethod {
      * within the correct actor and scope.
      */
     public ATObject meta_pass(ATFarObject client) throws InterpreterException {
-    		return meta_getActor().base_reference_for_(this, client);
+    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
     }
 }

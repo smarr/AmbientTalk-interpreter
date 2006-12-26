@@ -44,6 +44,7 @@ import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
 
 /**
  * <p>NATIntrospectiveMirror is a default mirror to represent an ambienttalk object 
@@ -328,6 +329,6 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
      * within the correct actor and scope.
      */
     public ATObject meta_pass(ATFarObject client) throws InterpreterException {
-    		return meta_getActor().base_reference_for_(this, client);
+    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
     }
 }

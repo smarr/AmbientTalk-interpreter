@@ -39,6 +39,7 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
 
 import java.lang.reflect.Method;
 
@@ -135,6 +136,6 @@ public class NativeField extends NATNil implements ATField {
      * within the correct actor and scope.
      */
     public ATObject meta_pass(ATFarObject client) throws InterpreterException {
-    		return meta_getActor().base_reference_for_(this, client);
+    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
     }
 }

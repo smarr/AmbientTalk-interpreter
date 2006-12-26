@@ -27,14 +27,10 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarObject;
-import edu.vub.at.actors.natives.ActorThread;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.NATException;
-import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -53,6 +49,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -80,17 +77,19 @@ public class NATNil implements ATNil {
       * -- Message Sending Protocol --
       * ------------------------------ */
 
-    /**
-     * The meta_send operation is invoked on the sender of an asynchronous message, i.e.
-     * the object bound to self when the message was created. Under normal circumstances
-     * the only possible type for this pseudovariable is a NATObject. 
+	/**
+     * Asynchronous messages ( o<-m( args )) sent in the context of an object o (i.e. 
+     * sent in a method or closure where the self pseudovariable is bound to o)  are 
+     * delegated to the base-level send method of the actor in which the object o is 
+     * contained.
      */
     public ATObject meta_send(ATAsyncMessage message) throws InterpreterException {
-    		throw new XIllegalArgument("Cannot send an asynchronous message from a sender " + this + " (type: " + Evaluator.valueNameOf(this.getClass()) + "), expected " + Evaluator.valueNameOf(ATObject.class));
+    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_send(message);
     }
 
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
-    		return meta_invoke(message.base_getReceiver(), message.base_getSelector(), message.base_getArguments());
+    	ATObject rcvr = message.base_getReceiver();
+    	return rcvr.meta_invoke(rcvr, message.base_getSelector(), message.base_getArguments());
     }
     
     /**
@@ -341,20 +340,6 @@ public class NATNil implements ATNil {
         return NATNil._INSTANCE_;
     }
 
-    public ATActor meta_getActor() throws InterpreterException {
-    		Thread current = Thread.currentThread();
-    		try {
-			if (current instanceof ActorThread) {
-				ActorThread actorTread = (ActorThread) current;
-				return (ATActor)actorTread.currentlyServing();
-			};
-		// on error | if current thread is not an ActorThread throw XIllegalOperation
-		} catch (ClassCastException e) { }
-    		throw new XIllegalOperation("Asked for current actor when none was active");
-
-    }
-    
-
     /* ---------------------------------
       * -- Value Conversion Protocol   --
       * --------------------------------- */
@@ -383,6 +368,10 @@ public class NATNil implements ATNil {
         return false;
     }
 
+    public boolean base_isVariableAssignment() {
+        return false;
+    }
+    
     public boolean base_isSplice() {
         return false;
     }
@@ -498,6 +487,10 @@ public class NATNil implements ATNil {
         throw new XTypeMismatch(ATUnquoteSplice.class, this);
     }
 
+    public ATAssignVariable base_asVariableAssignment() throws XTypeMismatch {
+        throw new XTypeMismatch(ATAssignVariable.class, this);
+    }
+    
     public ATSplice base_asSplice() throws XTypeMismatch {
         throw new XTypeMismatch(ATSplice.class, this);
     }

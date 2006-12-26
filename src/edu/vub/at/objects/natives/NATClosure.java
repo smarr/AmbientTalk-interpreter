@@ -236,6 +236,6 @@ public class NATClosure extends NATNil implements ATClosure {
      * within the correct actor and scope.
      */
     public ATObject meta_pass(ATFarObject client) throws InterpreterException {
-    		return meta_getActor().base_reference_for_(this, client);
+    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
     }
 }
