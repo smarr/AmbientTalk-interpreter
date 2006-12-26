@@ -65,8 +65,13 @@ public class TestParameterBinding extends AmbientTalkTest {
 	 * def name(parameters) { nil }
 	 */
 	private NATMethod makeTestMethod(String nam, NATTable pars) {
-		return new NATMethod(AGSymbol.jAlloc(nam), pars,
+		try {
+			return new NATMethod(AGSymbol.jAlloc(nam), pars,
 				new AGBegin(NATTable.atValue(new ATObject[] { NATNil._INSTANCE_ })));
+		} catch (InterpreterException e) {
+			fail("unexpected exception while creating test fixture: " + e.getMessage());
+			return null;
+		}
 	}
 	
 	private NATContext bindCtx_;
@@ -104,26 +109,11 @@ public class TestParameterBinding extends AmbientTalkTest {
 	// def fun7(@rest) { nil }
 	private NATMethod fun7 = makeTestMethod("fun7", NATTable.atValue(new ATObject[] { new AGSplice(at_rest) }));
 
-	// ILLEGAL TEST FUNCTIONS
-	
-	// def fun8(x:=0, a) { nil }
-	private NATMethod fun8 = makeTestMethod("fun8",
-	    NATTable.atValue(new ATObject[] { new AGAssignVariable(at_x, NATNumber.ZERO), at_a }));
 
-	// def fun9(@rest, a) { nil }
-	private NATMethod fun9 = makeTestMethod("fun9",
-	    NATTable.atValue(new ATObject[] { new AGSplice(at_rest), at_a }));
-
-	// def fun10(@rest, x := 0) { nil }
-	private NATMethod fun10 = makeTestMethod("fun10",
-	    NATTable.atValue(new ATObject[] { new AGSplice(at_rest), new AGAssignVariable(at_x, NATNumber.ZERO) }));
-	
-	
 	public void setUp() throws InterpreterException {
 		bindScope_ = new NATObject();
 		bindCtx_ = new NATContext(bindScope_, bindScope_, bindScope_.meta_getDynamicParent());
 	}
-
 	
 	/**
 	 * Tests parameter binding for 0-arity methods
@@ -312,15 +302,18 @@ public class TestParameterBinding extends AmbientTalkTest {
 		ensureBoundToTable(at_rest, new ATObject[] { NATNumber.ZERO });
 	}
 	
+	
 	/**
 	 * Tests whether mandatory arguments specified after optional arguments
 	 * results in a proper XIllegalParameter exception.
 	 */
 	public void testIllegalMandatoryAfterOptional() throws InterpreterException {
-		// fun8(0,1)
+        // def fun8(x:=0, a) { nil }
 		try {
-			fun8.base_applyInScope(NATTable.atValue(new ATObject[] { NATNumber.ZERO, NATNumber.ONE }), bindCtx_);
-			fail("Expected XIllegalParameter exception");
+		    new NATMethod(AGSymbol.jAlloc("fun8"),
+				NATTable.atValue(new ATObject[] { new AGAssignVariable(at_x, NATNumber.ZERO), at_a }),
+				new AGBegin(NATTable.atValue(new ATObject[] { NATNil._INSTANCE_ })));
+		    fail("Expected XIllegalParameter exception");
 		} catch(XIllegalParameter e) { }
 	}
 	
@@ -329,10 +322,12 @@ public class TestParameterBinding extends AmbientTalkTest {
 	 * results in a proper XIllegalParameter exception.
 	 */
 	public void testIllegalMandatoryAfterRest() throws InterpreterException {
-		// fun9(0,1)
+        // def fun8(x:=0, a) { nil }
 		try {
-			fun9.base_applyInScope(NATTable.atValue(new ATObject[] { NATNumber.ZERO, NATNumber.ONE }), bindCtx_);
-			fail("Expected XIllegalParameter exception");
+		    new NATMethod(AGSymbol.jAlloc("fun9"),
+				NATTable.atValue(new ATObject[] { new AGSplice(at_rest), at_a }),
+				new AGBegin(NATTable.atValue(new ATObject[] { NATNil._INSTANCE_ })));
+		    fail("Expected XIllegalParameter exception");
 		} catch(XIllegalParameter e) { }
 	}
 	
@@ -341,10 +336,12 @@ public class TestParameterBinding extends AmbientTalkTest {
 	 * results in a proper XIllegalParameter exception.
 	 */
 	public void testIllegalOptionalAfterRest() throws InterpreterException {
-		// fun10(0,1)
+        // def fun8(x:=0, a) { nil }
 		try {
-			fun10.base_applyInScope(NATTable.atValue(new ATObject[] { NATNumber.ZERO, NATNumber.ONE }), bindCtx_);
-			fail("Expected XIllegalParameter exception");
+		    new NATMethod(AGSymbol.jAlloc("fun10"),
+				NATTable.atValue(new ATObject[] { new AGSplice(at_rest), new AGAssignVariable(at_x, NATNumber.ZERO) }),
+				new AGBegin(NATTable.atValue(new ATObject[] { NATNil._INSTANCE_ })));
+		    fail("Expected XIllegalParameter exception");
 		} catch(XIllegalParameter e) { }
 	}
 	
@@ -361,4 +358,5 @@ public class TestParameterBinding extends AmbientTalkTest {
 		ensureBound(at_x, NATNumber.ONE);
 		ensureBoundToTable(at_rest, new ATObject[] { NATNumber.atValue(2)});
 	}
+
 }

@@ -53,7 +53,7 @@ public final class NATClosureMethod extends NATMethod {
 	
 	private final ATObject lexicalScope_;
 	
-	public NATClosureMethod(ATObject scope, ATSymbol name, ATTable parameters, ATBegin body) {
+	public NATClosureMethod(ATObject scope, ATSymbol name, ATTable parameters, ATBegin body) throws InterpreterException {
 		super(name, parameters, body);
 		lexicalScope_ = scope;
 	}

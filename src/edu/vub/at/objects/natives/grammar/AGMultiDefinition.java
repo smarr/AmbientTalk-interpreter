@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.actors.ATFarObject;
-import edu.vub.at.eval.Evaluator;
+import edu.vub.at.eval.PartialBinder;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -48,9 +48,12 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
 	private final ATTable parameters_;
 	private final ATExpression valueExp_;
 	
-	public AGMultiDefinition(ATTable par, ATExpression val) {
+	private final PartialBinder binderPartialFunction_;
+	
+	public AGMultiDefinition(ATTable par, ATExpression val) throws InterpreterException {
 		parameters_ = par;
 		valueExp_ = val;
+		binderPartialFunction_ = PartialBinder.calculateResidual("multi-definition", par);
 	}
 
 	public ATTable base_getParameters() { return parameters_; }
@@ -67,7 +70,7 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
 	 * @return NIL
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		Evaluator.defineParamsForArgs("multi-definition", ctx, parameters_, valueExp_.meta_eval(ctx).base_asTable());
+		PartialBinder.defineParamsForArgs(binderPartialFunction_, ctx, valueExp_.meta_eval(ctx).base_asTable());
 		return NATNil._INSTANCE_;
 	}
 

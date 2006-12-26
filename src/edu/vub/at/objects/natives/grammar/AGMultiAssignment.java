@@ -28,7 +28,7 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.actors.ATFarObject;
-import edu.vub.at.eval.Evaluator;
+import edu.vub.at.eval.PartialBinder;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -48,9 +48,12 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 	private final ATTable parameters_;
 	private final ATExpression valueExp_;
 	
-	public AGMultiAssignment(ATTable par, ATExpression val) {
+	private final PartialBinder binderPartialFunction_;
+	
+	public AGMultiAssignment(ATTable par, ATExpression val) throws InterpreterException {
 		parameters_ = par;
 		valueExp_ = val;
+		binderPartialFunction_ = PartialBinder.calculateResidual("multi-assignment", par);
 	}
 
 	public ATTable base_getParameters() { return parameters_; }
@@ -67,7 +70,7 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 	 * @return NIL
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		Evaluator.assignArgsToParams("multi-assignment", ctx, parameters_, valueExp_.meta_eval(ctx).base_asTable());
+		PartialBinder.assignArgsToParams(binderPartialFunction_, ctx, valueExp_.meta_eval(ctx).base_asTable());
 		return NATNil._INSTANCE_;
 	}
 

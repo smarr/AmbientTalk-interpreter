@@ -44,6 +44,7 @@ import edu.vub.at.objects.natives.NATObjectTest;
 import edu.vub.at.objects.natives.PrimitivesTest;
 import edu.vub.at.objects.natives.TestFieldMap;
 import edu.vub.at.objects.natives.grammar.TestEval;
+import edu.vub.at.objects.natives.grammar.TestParameterBinding;
 import edu.vub.at.objects.symbiosis.SymbiosisTest;
 
 import junit.framework.Test;
@@ -80,6 +81,7 @@ public class InterpreterTests {
 		suite.addTestSuite(MirrorsOnNativesTest.class);
 		suite.addTestSuite(SymbiosisTest.class);
 		suite.addTestSuite(CustomFieldsTest.class);
+		suite.addTestSuite(TestParameterBinding.class);
 		//$JUnit-END$
 		return suite;
 	}

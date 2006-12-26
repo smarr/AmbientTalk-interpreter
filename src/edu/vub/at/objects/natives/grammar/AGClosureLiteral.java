@@ -67,7 +67,7 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 	 * 
 	 * @return a native closure closing over the current evaluation context.
 	 */
-	public ATObject meta_eval(ATContext ctx) {
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		return new NATClosure(new NATMethod(Evaluator._LAMBDA_, arguments_, body_), ctx);
 	}
 

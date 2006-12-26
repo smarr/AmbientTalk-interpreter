@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.eval.Evaluator;
+import edu.vub.at.eval.PartialBinder;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -49,11 +49,16 @@ public class NATMethod extends NATNil implements ATMethod {
 	private final ATTable 	parameters_;
 	private final ATBegin	body_;
 	
+	private final PartialBinder parameterBindingFunction_;
 	
-	public NATMethod(ATSymbol name, ATTable parameters, ATBegin body) {
+	public NATMethod(ATSymbol name, ATTable parameters, ATBegin body) throws InterpreterException {
 		name_ 		= name;
 		parameters_ = parameters;
 		body_ 		= body;
+		
+		// calculate the parameter binding strategy to use using partial evaluation
+		parameterBindingFunction_ =
+			PartialBinder.calculateResidual(name_.base_getText().asNativeText().javaValue, parameters);
 	}
 
 	public ATSymbol base_getName() {
@@ -86,10 +91,7 @@ public class NATMethod extends NATNil implements ATMethod {
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 		NATCallframe cf = new NATCallframe(ctx.base_getLexicalScope());
 		ATContext evalCtx = ctx.base_withLexicalEnvironment(cf);
-		Evaluator.defineParamsForArgs(
-				name_.base_getText().asNativeText().javaValue, 
-				evalCtx, 
-				parameters_, arguments);
+		PartialBinder.defineParamsForArgs(parameterBindingFunction_, evalCtx, arguments);
 		return body_.meta_eval(evalCtx);
 	}
 	
@@ -105,10 +107,7 @@ public class NATMethod extends NATNil implements ATMethod {
 	 * @return the value of evaluating the function body
 	 */
 	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
-		Evaluator.defineParamsForArgs(
-				name_.base_getText().asNativeText().javaValue, 
-				ctx, 
-				parameters_, arguments);
+		PartialBinder.defineParamsForArgs(parameterBindingFunction_, ctx, arguments);
 		return body_.meta_eval(ctx);
 	}
 	

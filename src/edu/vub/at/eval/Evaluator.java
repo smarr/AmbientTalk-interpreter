@@ -171,6 +171,8 @@ public final class Evaluator {
 	 * An actual argument list is defined as:
 	 * (actual arg: ATObject)*
 	 * 
+	 * @deprecated use partial evalation using {@link PartialBinder#bind(ATObject[], ATContext, edu.vub.at.eval.PartialBinder.BindClosure)} instead. 
+	 * 
 	 * @param funnam the name of the function for which to bind these elements, for debugging purposes only
 	 * @param context the context whose lexical scope denotes the frame in which to store the bindings
 	 * The context is also the context in which to evaluate optional argument expressions.
@@ -284,6 +286,7 @@ public final class Evaluator {
 	/**
 	 * Bind all of the given parameters as newly defined slots in the given scope to the given arguments.
 	 * The scope is defined as the lexical scope of the given context.
+	 * @deprecated use partial evalation using {@link PartialBinder#bind(ATObject[], ATContext, edu.vub.at.eval.PartialBinder.BindClosure)} instead.
 	 */
 	public static final void defineParamsForArgs(String funnam, ATContext context, ATTable parameters, ATTable arguments) throws InterpreterException {
 		bindArguments(funnam, context, parameters, arguments, new BindClosure() {
@@ -295,6 +298,8 @@ public final class Evaluator {
 	
 	/**
 	 * Assign all of the formal parameter names in the scope object to the given arguments
+	 * The scope is defined as the lexical scope of the given context.
+	 * @deprecated use partial evalation using {@link PartialBinder#bind(ATObject[], ATContext, edu.vub.at.eval.PartialBinder.BindClosure)} instead.
 	 */
 	public static final void assignArgsToParams(String funnam, ATContext context, ATTable parameters, ATTable arguments) throws InterpreterException {
 		bindArguments(funnam, context, parameters, arguments, new BindClosure() {
