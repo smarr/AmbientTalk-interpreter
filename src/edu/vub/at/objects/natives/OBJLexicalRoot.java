@@ -248,6 +248,29 @@ public final class OBJLexicalRoot extends NATNil {
 		return condition.base_ifFalse_(body);
 	}
 	
+	/**
+	 * The let: primitive, which allows for the easy creation of temporary local variables.
+	 * This primitive should be used in conjunction with a closure that declares optional
+	 * parameters. Because the closure will be invoked with zero arguments, all of the
+	 * parameters will be given their corresponding default initial value. The parameters
+	 * are defined local to the closure's body.
+	 * 
+	 * Note: this let behaves like Scheme's let* and letrec, i.e. the following is legal:
+	 * let: { |var1 := value1, var2 := var1, var3 := { ... var3() ... } | ... }
+	 * 
+	 * usage:
+	 *  let: { |var := value| body }
+	 * 
+	 * pseudo-implementation:
+	 *  def let: closure { closure() }
+	 * 
+	 * @param body a closure which is supposed to declare some optional parameters
+	 * @return the result of invoking the body closure
+	 * @throws InterpreterException if raised inside the body block.
+	 */
+	public ATObject base_let_(ATClosure body) throws InterpreterException {
+		return body.base_apply(NATTable.EMPTY);
+	}
 	
 	/* ------------------------------------------
 	 * -- Actor Creation and accessing Methods --
