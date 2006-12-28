@@ -28,7 +28,7 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -134,7 +134,7 @@ public interface ATObject extends ATConversions {
      * @return Objects may choose to return themselves, a clone or a proxy representation
      * @throws InterpreterException - when overridden by the user
      */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException;
+    public ATObject meta_pass(ATFarReference client) throws InterpreterException;
 
     /**
      * Invoked when an object is received as part of an asynchronous message sent from 

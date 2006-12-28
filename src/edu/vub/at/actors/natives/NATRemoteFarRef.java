@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATDevice.java created on Aug 21, 2006
+ * NATRemoteFarRef.java created on 22-dec-2006 at 11:35:01
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,17 +25,39 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
+package edu.vub.at.actors.natives;
 
-package edu.vub.at.actors;
-
+import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.natives.NATNil;
 
 /**
- * Devices represent physical entities in the network.
- * @deprecated currently not used
+ * Instances of NATRemoteFarRef represent far references to physically remote actors.
+ * By 'physically remote', we mean in a separate address space.
+ *
+ * @author tvcutsem
  */
-public interface ATDevice {
+public class NATRemoteFarRef extends NATFarReference {
 
-    public ATObject base_getProperties();
-    
+	private final ELFarReference sendLoop_;
+
+	public NATRemoteFarRef(ATObjectID objectId) {
+		super(objectId);
+		sendLoop_ = new ELFarReference(this);
+	}
+	
+	protected ATObject transmit(ATAsyncMessage message) throws InterpreterException {
+		sendLoop_.event_transmit(message);
+		return NATNil._INSTANCE_;
+	}
+	
+	public ATNil meta_transmit(final ATClosure processor) throws InterpreterException {
+		sendLoop_.event_accessOutbox(processor);
+		return NATNil._INSTANCE_;
+	}
+
 }

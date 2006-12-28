@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
 
-import edu.vub.at.actors.ATActor;
+import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATMailbox;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -65,19 +65,28 @@ public class NATMailbox extends NATObservable implements ATMailbox {
 	public static final ATSymbol _DELETE_ = AGSymbol.jAlloc("uponDeletionDo:");
 	
 	private LinkedList elements_ = new LinkedList();
-	private final ATActor owner_;
+	private final ATActorMirror owner_;
 	private final ATSymbol name_;
 	
-	public NATMailbox(ATActor owner, ATSymbol name) {
+	public static NATMailbox reify(Vector elements) {
+		// TODO: owner and name
+		return new NATMailbox(null, null, new LinkedList(elements));
+	}
+	
+	public NATMailbox(ATActorMirror owner, ATSymbol name) {
 		owner_ = owner;
 		name_ = name;
 	}
 
 	// used to clone a mailbox as well as to create mapped equivalents
-	private NATMailbox(ATActor owner, ATSymbol name, LinkedList elements) {
+	private NATMailbox(ATActorMirror owner, ATSymbol name, LinkedList elements) {
 		owner_ = owner;
 		name_ = name;
 		elements_ = elements;
+	}
+	
+	public Vector deify() {
+		return new Vector(elements_);
 	}
 	
 	public ATClosure base_uponAdditionDo(ATClosure additionObserver) {
@@ -86,10 +95,6 @@ public class NATMailbox extends NATObservable implements ATMailbox {
 
 	public ATClosure base_uponDeletionDo(ATClosure deletionObserver) {
 		return base_upon_do_(_DELETE_, deletionObserver);
-	}
-
-	public ATActor meta_getActor() {
-		return owner_;
 	}
 
 	public ATSymbol base_getName() {
@@ -225,6 +230,17 @@ public class NATMailbox extends NATObservable implements ATMailbox {
 	public ATTable base_filter_(ATClosure clo) throws InterpreterException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public ATTable base_flush() throws InterpreterException {
+		ATObject[] current = new ATObject[elements_.size()];
+		int idx = 0;
+		for (Iterator it = elements_.iterator(); it.hasNext();) {
+			ATObject element = (ATObject) it.next();
+			current[++idx] = element;
+		}
+		elements_.clear();
+		return NATTable.atValue(current);
 	}
 
 }

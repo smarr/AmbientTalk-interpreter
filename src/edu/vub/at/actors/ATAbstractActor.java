@@ -27,7 +27,7 @@
  */
 package edu.vub.at.actors;
 
-import edu.vub.at.objects.ATNil;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 
 /**
@@ -36,15 +36,21 @@ import edu.vub.at.objects.ATObject;
  * continually consume meta-level events from a synchronized event queue. Communication
  * between all processes is thus strictly organized by passing events.
  *
+ * @deprecated abstract actors are no longer reified
  * @author smostinc
  */
 public interface ATAbstractActor extends ATObservable {
 
 	/**
-	 * Schedules a meta-level message in the actors event queue.
-	 * @param event the event to be scheduled.
-	 * @return nil
+	 * Accept an incoming asynchronous message. By default, such messages are scheduled
+	 * in an inbox.
+	 * @param message - the async base-level message to accept
 	 */
-	public abstract ATNil base_scheduleEvent(ATAsyncMessage event);
+	public ATObject base_accept(ATAsyncMessage message) throws InterpreterException;
+
+	/**
+	 * Processes a message from the base-level inbox if it is non-empty.
+	 */
+	public ATObject base_process() throws InterpreterException;
 
 }

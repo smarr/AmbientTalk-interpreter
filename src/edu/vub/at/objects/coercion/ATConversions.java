@@ -28,7 +28,8 @@
 package edu.vub.at.objects.coercion;
 
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
@@ -82,6 +83,7 @@ public interface ATConversions {
 	public boolean base_isMethod() throws InterpreterException;
 	public boolean base_isMessageCreation() throws InterpreterException;
 	public boolean base_isMirror() throws InterpreterException;
+	public boolean base_isFarReference() throws InterpreterException;
 	
 	public ATClosure   base_asClosure() throws XTypeMismatch;
 	public ATSymbol    base_asSymbol() throws XTypeMismatch;
@@ -93,6 +95,8 @@ public interface ATConversions {
 	public ATMethod    base_asMethod() throws XTypeMismatch;
 	public ATMirror    base_asMirror() throws XTypeMismatch;
 	public ATHandler   base_asHandler() throws XTypeMismatch;
+	public ATFarReference base_asFarReference() throws XTypeMismatch;
+	public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch;
 	
 	// Abstract Grammar Elements
 	
@@ -104,12 +108,6 @@ public interface ATConversions {
 	public ATUnquoteSplice 		base_asUnquoteSplice() throws XTypeMismatch;
 	public ATAssignVariable 	base_asVariableAssignment() throws InterpreterException;
 	public ATSplice 			base_asSplice() throws XTypeMismatch;
-	
-	// Concurrency and Distribution related values
-	public ATBoolean 		base_isFarReference();
-	
-	public ATFarObject		base_asFarReference() throws XTypeMismatch;
-	public ATAsyncMessage	base_asAsyncMessage() throws XTypeMismatch;
 
 	// Native Value Elements
 	
@@ -127,6 +125,7 @@ public interface ATConversions {
 	public NATBoolean  asNativeBoolean() throws XTypeMismatch;
 	public NATNumeric  asNativeNumeric() throws XTypeMismatch;
 	public NATException asNativeException() throws XTypeMismatch;
+	public NATFarReference asNativeFarReference() throws XTypeMismatch;
 	
 	public JavaObject  asJavaObjectUnderSymbiosis() throws XTypeMismatch;
 	public JavaClass   asJavaClassUnderSymbiosis() throws XTypeMismatch;

@@ -27,6 +27,7 @@
  */
 package edu.vub.at.actors;
 
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 
@@ -52,5 +53,14 @@ public interface ATAsyncMessage extends ATMessage {
      * @return the receiver of the message
      */
     public ATObject base_getReceiver();
+    
+    /**
+     * This method is responsible for processing the message in a certain actor.
+     * By default, process dispatches to the actor by means of receive. In pseudo-code:
+     *  def process(act) {
+     *    (reflect: act).receive(self)
+     *  }
+     */
+    public ATObject base_process(ATActorMirror inActor) throws InterpreterException;
 
 }

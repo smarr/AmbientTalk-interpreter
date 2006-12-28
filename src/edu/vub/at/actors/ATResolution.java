@@ -35,7 +35,7 @@ import edu.vub.at.objects.ATObject;
  */
 public interface ATResolution extends ATObject {
 
-    public ATActor base_getActor();
+    public ATActorMirror base_getActor();
 
     public ATObject base_getServiceDescription();
 

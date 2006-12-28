@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * NATFarObject.java created on Dec 6, 2006 at 9:53:20 AM
+ * NATFarReference.java created on Dec 6, 2006 at 9:53:20 AM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,16 +27,14 @@
  */
 package edu.vub.at.actors.natives;
 
-import java.net.InetSocketAddress;
-
-import edu.vub.at.actors.ATActor;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarObject;
-import edu.vub.at.actors.natives.events.ActorEmittedEvents;
-import edu.vub.at.actors.natives.events.VMEmittedEvents;
+import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.events.ActorEmittedEvents;
+import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -48,59 +46,73 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+
+import java.lang.ref.WeakReference;
+import java.util.Hashtable;
 
 /**
  * 
- * TODO document the class NATFarObject
+ * TODO document the class NATFarReference
  *
  * @author smostinc
  */
-public class NATFarObject extends NATNil implements ATFarObject {
+public abstract class NATFarReference extends NATNil implements ATFarReference {
 	
 	public static final ATSymbol _OUT_ = AGSymbol.jAlloc("outbox");
 	
-	// Contains the messages buffered by the far object reference, waiting for transmission by the virtual machine
-	private final NATMailbox buffered_;
+	// encodes the identity of the far object pointed at
+	private final ATObjectID objectId_;
 	
-	// Virtual Machines are identified by IP address + port
-	private final InetSocketAddress virtualMachineId_;
+	// TODO: this map is not garbage-collected: obsolete entries are never removed
+	// TODO: these maps should be local to each actor!
+	private static final Hashtable _REMOTE_REF_POOL_ = new Hashtable();
+	private static final Hashtable _FAR_REF_POOL_ = new Hashtable();
 	
-	// Inside a Virtual Machine actors (which accept the messages for this far object) are denoted by their hashcode
-	private final int actorId_;
+	public static NATRemoteFarRef createRemoteFarRef(ATObjectID objectId) {
+		NATRemoteFarRef farref;
+		WeakReference pooled = (WeakReference) _REMOTE_REF_POOL_.get(objectId);
+		if (pooled != null) {
+			farref = (NATRemoteFarRef) pooled.get();
+			if (farref != null) {
+				return farref;
+			}
+		}
+		farref = new NATRemoteFarRef(objectId);
+		_REMOTE_REF_POOL_.put(objectId, new WeakReference(farref));
+		return farref;
+	}
 	
-	// Inside an Actor, objects are denoted by their hashcode
-	private final int objectId_;
-	
-	public NATFarObject(ATActor actor, int objectId) {
-		
-		buffered_ = new NATMailbox(actor, _OUT_);
-		
-		virtualMachineId_ = null /* actor.base_getVirtualMachine(). */;
-		actorId_ = actor.hashCode();
+	public static NATLocalFarRef createLocalFarRef(NATActorMirror actor, ATObjectID objectId) {
+		NATLocalFarRef farref;
+		WeakReference pooled = (WeakReference) _FAR_REF_POOL_.get(objectId);
+		if (pooled != null) {
+			farref = (NATLocalFarRef) pooled.get();
+			if (farref != null) {
+				return farref;
+			}
+		}
+
+		farref = new NATLocalFarRef(actor.getProcessor(), objectId);
+		_FAR_REF_POOL_.put(objectId, new WeakReference(farref));
+		return farref;
+	}
+
+	protected NATFarReference(ATObjectID objectId) {
 		objectId_ = objectId;
 	}
 	
-	public ATNil meta_flush(ATObject destination) {
-		// TODO(new conc model) implement flushing of the far object buffer
-		return NATNil._INSTANCE_;		
+	public ATObjectID getObjectId() {
+		return objectId_;
+	}
+	
+	public NATFarReference asNativeFarReference() throws XTypeMismatch {
+		return this;
 	}
 	
 	public ATObject meta_resolve() throws InterpreterException {
-		
-		ATObject resolved = super.meta_getActor().base_resolveFarReference(this);
-		
-		if(resolved.base_isFarReference().asNativeBoolean().javaValue) {
-			super.meta_getActor().base_registerFarReference(resolved.base_asFarReference());
-		}
-		
-		return resolved;		
-	}
-	
-	public ATBoolean meta_isHostedBy_(ATActor host) throws InterpreterException {
-		// TODO(implement) far actors
-//		return NATBoolean.atValue(meta_getActor().equals(far));
-		return NATBoolean._FALSE_;
+		return OBJLexicalRoot._INSTANCE_.base_getActor().base_resolveFarReference(this);	
 	}
 
 	/* ------------------------------
@@ -108,28 +120,18 @@ public class NATFarObject extends NATNil implements ATFarObject {
      * ------------------------------ */
 
 	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
-		message = message.meta_pass(this).base_asAsyncMessage();
-		
-		buffered_.base_enqueue(message);
-		
-		// TODO(new conc model) document
-		// NOTE This event is emitted by both the VM and far objects on behalf of 
-		// the actors themselves - for 
-		// clarity the definition belongs to VMEmittedEvents as the VM will use this
-		// event whenever detecting the presence of an actor. It's presence is also
-		// documented in ActorEmittedEvents in the Actor to Self Protocol section.
-		// super.meta_getActor().base_scheduleEvent(VMEmittedEvents.attemptTransmission(meta_getActor()));
-		
-		return NATNil._INSTANCE_;
+		return this.transmit(message.meta_pass(this).base_asAsyncMessage());
 	}
 	
+	protected abstract ATObject transmit(ATAsyncMessage passedMessage) throws InterpreterException;
+
 	/**
 	 * When passing a far reference to another actor, notify the surrounding actor to
 	 * allow for implementing a distributed garbage collection strategy.
 	 */
-	public ATObject meta_pass(ATFarObject client) throws InterpreterException {
-		if(client.base_isFarReference().asNativeBoolean().javaValue)
-			super.meta_getActor().base_scheduleEvent(ActorEmittedEvents.passingFarReference(this, client.base_asFarReference()));
+	public ATObject meta_pass(ATFarReference client) throws InterpreterException {
+		if(client.base_isFarReference())
+			OBJLexicalRoot._INSTANCE_.base_getActor().meta_receive(ActorEmittedEvents.passingFarReference(this, client.base_asFarReference()));
 		return this;
 	}
 
@@ -137,7 +139,7 @@ public class NATFarObject extends NATNil implements ATFarObject {
 	 * @throws XIllegalOperation Cannot synchronously invoke a method on a far reference
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
-		throw new XIllegalOperation("Cannot synchronously invoke a method on a far reference");
+		throw new XIllegalOperation("Cannot invoke " + atSelector + " on far reference " + this);
 	}
 
 	/**
@@ -167,7 +169,7 @@ public class NATFarObject extends NATNil implements ATFarObject {
 	 * TODO(discuss) clone: farObject may create a clone on the other actor.
 	 */
 	public ATObject meta_clone() throws InterpreterException {
-		throw new XIllegalOperation("Cannot clone a far reference to an object");
+		throw new XIllegalOperation("Cannot clone far reference " + this);
 	}
 
 	/**
@@ -176,7 +178,7 @@ public class NATFarObject extends NATNil implements ATFarObject {
 	 * or by invoking newInstance on a farMirror, which will send the call as well. 
 	 */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-		throw new XIllegalOperation("Cannot create a new instance from a far reference");
+		throw new XIllegalOperation("Cannot create new instance of far reference " + this);
 	}
 
 	/**
@@ -186,7 +188,7 @@ public class NATFarObject extends NATNil implements ATFarObject {
 	 * invocations are made by the child.
 	 */
 	public ATObject meta_extend(ATClosure code) throws InterpreterException {
-		throw new XIllegalOperation("Extending a far reference is currently not supported.");
+		throw new XIllegalOperation("Cannot extend far reference " + this + " with " + code);
 	}
 
 	/**
@@ -196,7 +198,7 @@ public class NATFarObject extends NATNil implements ATFarObject {
 	 * invocations are made by the child.
 	 */
 	public ATObject meta_share(ATClosure code) throws InterpreterException {
-		throw new XIllegalOperation("Sharing a far reference is currently not supported.");
+		throw new XIllegalOperation("Cannot share far reference " + this + " with " + code);
 	}
 	
 	/* ------------------------------------------
@@ -207,35 +209,35 @@ public class NATFarObject extends NATNil implements ATFarObject {
 	 * @throws XIllegalOperation - cannot select in objects hosted by another actor.
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-		throw new XIllegalOperation("Cannot select variables or methods on an object of type " + this.getClass().getName());
+		throw new XIllegalOperation("Cannot select " + selector + " from far reference " + this);
 	}
 
 	/**
 	 * @throws XIllegalOperation - cannot lookup in objects hosted by another actor.
 	 */
 	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
-		throw new XIllegalOperation("Cannot lookup variables or methods on an object of type " + this.getClass().getName());
+		throw new XIllegalOperation("Cannot lookup " + selector + " from far reference " + this);
 	}
 
 	/**
 	 * @throws XIllegalOperation - cannot define in objects hosted by another actor.
 	 */
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
-		throw new XIllegalOperation("Cannot define variables in an object of type " + this.getClass().getName());
+		throw new XIllegalOperation("Cannot define field " + name + " in far reference " + this);
 	}
 
 	/**
 	 * @throws XIllegalOperation - cannot assign in objects hosted by another actor.
 	 */
 	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-		throw new XIllegalOperation("Cannot assign fields on an object of type " + this.getClass().getName());
+		throw new XIllegalOperation("Cannot assign field " + name + " in far reference " + this);
 	}
 
 	/**
 	 * @throws XIllegalOperation - cannot assign in objects hosted by another actor.
 	 */
 	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
-		throw new XIllegalOperation("Cannot assign fields on an object of type " + this.getClass().getName());
+		throw new XIllegalOperation("Cannot assign variable " + name + " in far reference " + this);
 	}
 
     /* ----------------------------------------
@@ -308,7 +310,7 @@ public class NATFarObject extends NATNil implements ATFarObject {
      * ---------------------- */
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<far reference:"+this.hashCode()+">");
+		return NATText.atValue("<far ref:"+objectId_+">");
 	}
 	
     /* --------------------
@@ -323,27 +325,12 @@ public class NATFarObject extends NATNil implements ATFarObject {
 		throw new XSelectorNotFound(AGSymbol.jAlloc("lexicalParent"), this);
 	}
 	
-	public ATActor meta_getActor() {
-		// TODO(implement) far actors, so a far object can return one
-		// FIXME return actor_;
-		return null;
+	public boolean base_isFarReference() {
+		return true;
 	}
 
+    public ATFarReference base_asFarReference() throws XTypeMismatch {
+  	    return this;
+  	}
 	
-	/* -----------------------
-	 * -- Structural Access --
-	 * ----------------------- */
-	
-	public int getActorId() {
-		return actorId_;
-	}
-
-	public int getObjectId() {
-		return objectId_;
-	}
-
-	public InetSocketAddress getVirtualMachineId() {
-		return virtualMachineId_;
-	}
-
 }

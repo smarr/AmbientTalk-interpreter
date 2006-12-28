@@ -54,8 +54,14 @@ an operator = which defines structural equality
 e.g. [2,3] is not == to [2,3] but [2,3] = [2,3]
 likewise: object: { def a := 1 } is not == to another such object (only == to itself)
 but = could by default do a field-wise comparison
+deep equality.
+
+Apart from an = and == operator, we could also introduce a <: operator
+which defines a kind of subtype relationship in terms of the public fields or methods
+of an object
+
 e.g.
-boolean NATNil.base__opeql_(ATObject other) {
+boolean NATNil.base__opltx__(ATObject other) {
   foreach field | method selector of this {
     if (other.meta_respondsTo(selector) {
        continue;

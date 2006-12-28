@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -99,7 +99,7 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
      * Passing a mutable and compound object implies making a new instance of the 
      * object while invoking pass on all its constituents.
      */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
     		return new AGBegin(statements_.meta_pass(client).base_asTable());
     }
     

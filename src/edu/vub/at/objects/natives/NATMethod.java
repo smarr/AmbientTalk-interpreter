@@ -42,6 +42,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * for a name, a table of arguments and a body.
  * 
  * @author smostinc
+ * @author tvcutsem
  */
 public class NATMethod extends NATNil implements ATMethod {
 
@@ -49,6 +50,7 @@ public class NATMethod extends NATNil implements ATMethod {
 	private final ATTable 	parameters_;
 	private final ATBegin	body_;
 	
+	// partial function denoting a parameter binding algorithm specialized for this method's parameter list
 	private final PartialBinder parameterBindingFunction_;
 	
 	public NATMethod(ATSymbol name, ATTable parameters, ATBegin body) throws InterpreterException {

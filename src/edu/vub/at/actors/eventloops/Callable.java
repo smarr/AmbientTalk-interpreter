@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATDevice.java created on Aug 21, 2006
+ * Callable.java created on 28-dec-2006 at 12:35:38
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,17 +25,15 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-
-package edu.vub.at.actors;
-
-import edu.vub.at.objects.ATObject;
+package edu.vub.at.actors.eventloops;
 
 /**
- * Devices represent physical entities in the network.
- * @deprecated currently not used
+ * A generic interface representing a 'closure' that may return values and throw exceptions.
+ *
+ * @author tvcutsem
  */
-public interface ATDevice {
+public interface Callable {
+	
+	public Object call(Object argument) throws Exception;
 
-    public ATObject base_getProperties();
-    
 }

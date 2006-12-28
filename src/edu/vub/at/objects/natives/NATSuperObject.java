@@ -29,7 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -215,7 +215,7 @@ public class NATSuperObject extends NATNil implements ATObject {
      * reference for them, so that their methods can only be invoked asynchronously but
      * within the correct actor and scope.
      */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
     	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
     }
 

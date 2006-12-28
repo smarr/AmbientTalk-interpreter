@@ -44,4 +44,11 @@ public interface ATMailbox extends ATTable {
 
 	public ATObject base_dequeue() throws InterpreterException;
 
+	/**
+	 * Clears the content of the mailbox (i.e. mailbox becomes empty)
+	 * and return all current messages in a fresh table, which is no longer
+	 * causally connected to this mailbox.
+	 */
+	public ATTable  base_flush() throws InterpreterException;
+	
 }

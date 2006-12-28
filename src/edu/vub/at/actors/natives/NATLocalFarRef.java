@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * CommonEmittedEvents.java created on Dec 16, 2006 at 11:29:34 PM
+ * NATLocalFarRef.java created on 22-dec-2006 at 11:34:15
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,28 +25,50 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors.natives.events;
+package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATAsyncMessage;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.natives.NATTable;
 
 /**
- * 
- * TODO document the class CommonEmittedEvents
+ * Instances of NATLocalFarRef denote far references to objects 'local' to this address space.
+ * That is, the far object is hosted by a local actor and hence message transmission is not subject
+ * to network routing or partial failure and messages may be immediately scheduled in the inbox of
+ * the recipient object's host actor.
  *
- * @author smostinc
+ * @author tvcutsem
  */
-public class CommonEmittedEvents {
+public class NATLocalFarRef extends NATFarReference {
 
-	public static final ATSymbol _INIT_ = AGSymbol.jAlloc("init");
+	private final ELActor farObjectHost_;
 	
-	public static ATAsyncMessage initializeObject(ATObject receiver, ATTable initArgs) throws InterpreterException {
-		return new NATAsyncMessage(NATNil._INSTANCE_, receiver, _INIT_, initArgs);
+	public NATLocalFarRef(ELActor farObjectHost, ATObjectID objectId) {
+		super(objectId);
+		farObjectHost_ = farObjectHost;
 	}
+
+	protected ATObject transmit(ATAsyncMessage passedMessage) throws InterpreterException {
+		farObjectHost_.event_accept(passedMessage);
+		return NATNil._INSTANCE_;
+	}
+	
+	/**
+	 * The 'outbox' of a far reference into a local actor is always empty.
+	 */
+	public ATNil meta_transmit(ATClosure processor) throws InterpreterException {
+		this.meta_send(new NATAsyncMessage(this, processor, Evaluator._APPLY_, NATTable.EMPTY));
+		return NATNil._INSTANCE_;
+	}
+	
+	public ELActor getFarHost() {
+		return farObjectHost_;
+	}
+
 }

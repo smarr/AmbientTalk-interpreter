@@ -27,13 +27,8 @@
  */
 package edu.vub.at.actors.natives;
 
-import java.util.Iterator;
-import java.util.Set;
-
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.ATObservable;
-import edu.vub.at.actors.natives.events.ActorEmittedEvents;
-import edu.vub.at.actors.natives.events.VMEmittedEvents;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
@@ -42,11 +37,13 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
-import edu.vub.at.objects.natives.NATAsyncMessage;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.util.MultiMap;
+
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * NATObservable is the superclass of all AmbientTalk objects which need to be equipped 
@@ -96,9 +93,7 @@ public class NATObservable extends NATNil implements ATObservable {
 			if(eventObservers != null) {
 				for (Iterator iter = eventObservers.iterator(); iter.hasNext();) {
 					ATClosure observer = (ATClosure) iter.next();
-					this.meta_getActor().base_scheduleEvent(
-							ActorEmittedEvents.notifyObservers(
-									new NATAsyncMessage(this, observer, Evaluator._APPLY_, NATTable.atValue( new ATObject[] { arguments }))));
+					this.meta_send(new NATAsyncMessage(this, observer, Evaluator._APPLY_, arguments));
 				}
 			}
 		}
@@ -112,7 +107,7 @@ public class NATObservable extends NATNil implements ATObservable {
     /**
      * TODO Proper semantics
      */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
     		throw new RuntimeException("Attempting to pass an observable - not yet implemented");
     }
 }

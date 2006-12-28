@@ -1,14 +1,13 @@
 package edu.vub.at.actors.natives;
 
 import junit.framework.TestCase;
-import edu.vub.at.actors.ATActor;
-import edu.vub.at.actors.ATFarObject;
-import edu.vub.at.actors.natives.events.VMEmittedEvents;
+import edu.vub.at.actors.ATActorMirror;
+import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.events.VMEmittedEvents;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.NativeClosure;
-import edu.vub.at.objects.natives.NATAsyncMessage;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
@@ -23,17 +22,17 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  */
 public class VirtualMachineTest extends TestCase {
 
-	private NATVirtualMachine testVM_;
+	private ELVirtualMachine testVM_;
 	
 	public void setUp() throws Exception {
-		testVM_ = new NATVirtualMachine(NATText.atValue("/AmbientTalk/objects/"), NATText.atValue("/AmbientTalk/init/init.at"));
+		testVM_ = new ELVirtualMachine(NATText.atValue("/AmbientTalk/objects/"), NATText.atValue("/AmbientTalk/init/init.at"));
 	}
 	
 	/**
-	 * Actor creation is partially related to the virtual machine as an actor requires
+	 * NATActorMirror creation is partially related to the virtual machine as an actor requires
 	 * getObjectPathRoots() and getInitialisationCode() to return correct values. This
 	 * test thus addresses the correct use of the synchronization in those methods of 
-	 * NATVirtualMachine.
+	 * ELVirtualMachine.
 	 * 
 	 * TODO this test needs to be rewritten to not print on success, but more importantly
 	 * to not wait endlessly when something goes wrong in the initialisation.
@@ -41,10 +40,10 @@ public class VirtualMachineTest extends TestCase {
 	public void testActorCreation() throws Exception {
 		final Object lock = new Object();
 		
-		ATActor actor = new NATActor(testVM_, new NativeClosure(testVM_) {
+		ATActorMirror actor = new NATActorMirror(testVM_, new NativeClosure(testVM_) {
 			public ATObject base_apply(ATTable arguments) throws InterpreterException {
 				synchronized (lock) {
-					System.out.println("Actor Initialised...");
+					System.out.println("NATActorMirror Initialised...");
 					lock.notifyAll();
 					
 					return NATNil._INSTANCE_;
@@ -72,7 +71,7 @@ public class VirtualMachineTest extends TestCase {
 	public synchronized void notestAsyncMessageSending() throws Exception {
 		final Object lock = new Object();
 
-		ATActor actor = new NATActor(testVM_, new NativeClosure(testVM_) {
+		ATActorMirror actor = new NATActorMirror(testVM_, new NativeClosure(testVM_) {
 			public ATObject base_apply(ATTable arguments) throws InterpreterException {
 				return NATNil._INSTANCE_;
 			};
@@ -84,7 +83,7 @@ public class VirtualMachineTest extends TestCase {
 		
 		ATObject frontend = actor.base_getBehaviour();
 		
-		actor.base_upon_do_(NATActor._PROCESSED_, new NativeClosure(testVM_) {
+		actor.base_upon_do_(NATActorMirror._PROCESSED_, new NativeClosure(testVM_) {
 			public ATObject base_apply(ATTable arguments) throws InterpreterException {
 				System.out.println(arguments.meta_print().javaValue);
 				synchronized (lock) {

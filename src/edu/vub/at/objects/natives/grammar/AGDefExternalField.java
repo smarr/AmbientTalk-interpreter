@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -96,7 +96,7 @@ public class AGDefExternalField extends NATAbstractGrammar implements ATDefExter
      * Passing a mutable and compound object implies making a new instance of the 
      * object while invoking pass on all its constituents.
      */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
     		return new AGDefExternalField(rcvNam_.meta_pass(client).base_asSymbol(), name_.meta_pass(client).base_asSymbol(), valueExp_.meta_pass(client).base_asExpression());
     }
     

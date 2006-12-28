@@ -28,7 +28,8 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -139,7 +140,7 @@ public class NATNil implements ATNil {
      * TODO Note that compound objects such as tables should delegate to their parts and
      * scoped objects (objects and closures) will typically want to give out a reference.
      */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
     		return this;
     }
     
@@ -449,12 +450,12 @@ public class NATNil implements ATNil {
     }
 
     // Conversions for concurrency and distribution related object
-    public ATBoolean base_isFarReference() {
-    		return NATBoolean._FALSE_;
+    public boolean base_isFarReference() {
+    	return false;
     }
     
-    public ATFarObject base_asFarReference() throws XTypeMismatch {
-  	    throw new XTypeMismatch(ATFarObject.class, this);
+    public ATFarReference base_asFarReference() throws XTypeMismatch {
+  	    throw new XTypeMismatch(ATFarReference.class, this);
   	}
     
     public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch {
@@ -522,6 +523,10 @@ public class NATNil implements ATNil {
     
     public NATNumeric asNativeNumeric() throws XTypeMismatch {
         throw new XTypeMismatch(NATNumeric.class, this);
+    }
+    
+    public NATFarReference asNativeFarReference() throws XTypeMismatch {
+    	throw new XTypeMismatch(NATFarReference.class, this);
     }
 
     public JavaObject asJavaObjectUnderSymbiosis() throws XTypeMismatch {

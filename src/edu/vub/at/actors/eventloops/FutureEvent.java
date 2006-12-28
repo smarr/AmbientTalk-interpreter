@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATFarObject.java created on Dec 5, 2006 at 11:19:05 PM
+ * FutureEvent.java created on 27-dec-2006 at 15:50:33
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,27 +25,37 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors;
-
-import java.net.InetSocketAddress;
-
-import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATBoolean;
-import edu.vub.at.objects.ATNil;
-import edu.vub.at.objects.ATObject;
+package edu.vub.at.actors.eventloops;
 
 /**
- * ATFarObject is an object reference denoting an object hosted by another actor.
+ * A Future Event has an associated Future object to which the event
+ * will pass the return value or exception of a certain computation to be
+ * specified by a subclass.
  *
- * @author smostinc
+ * @author tvcutsem
  */
-public interface ATFarObject extends ATObject {
+public abstract class FutureEvent extends Event {
 
-	public int getActorId();
-	public int getObjectId();
-	public InetSocketAddress getVirtualMachineId();
+	private final Future future_;
+
+	public FutureEvent(String description, Future reply) {
+		super(description);
+		future_ = reply;
+	}
 	
-	public ATBoolean meta_isHostedBy_(ATActor host) throws InterpreterException;
+	public FutureEvent(Future reply) {
+		future_ = reply;
+	}
 	
-	public ATNil meta_flush(ATObject destination) throws InterpreterException;
+	public void process(Object owner) {
+		try {
+			Object result = this.execute(owner);
+			future_.resolve(result);
+		} catch(Exception e) {
+			future_.ruin(e);
+		}
+	}
+	
+	public abstract Object execute(Object owner) throws Exception;
+
 }

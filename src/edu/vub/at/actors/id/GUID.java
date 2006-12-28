@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATDevice.java created on Aug 21, 2006
+ * GUID.java created on 21-dec-2006 at 13:43:24
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,17 +25,48 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
+package edu.vub.at.actors.id;
 
-package edu.vub.at.actors;
-
-import edu.vub.at.objects.ATObject;
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
- * Devices represent physical entities in the network.
- * @deprecated currently not used
+ * This class is used to generate globally unique identifiers.
+ * Implementation adapted from AmbientTalk/1.
+ * 
+ * @author tvcutsem
  */
-public interface ATDevice {
+public final class GUID implements Serializable {
 
-    public ATObject base_getProperties();
-    
+	private static final long serialVersionUID = -1876309467164128162L;
+	
+	//private InetAddress address_;
+	private String guid_;
+
+	public GUID() {
+		try {
+			InetAddress address = InetAddress.getLocalHost();
+			guid_ = String.valueOf(System.currentTimeMillis()) + address.toString();
+		} catch (UnknownHostException e) {
+			// should not occur for the local host
+			e.printStackTrace();
+			guid_ = "";
+		}
+	}
+
+	public String toString() {
+		return guid_;
+	}
+	
+	public int hashCode() {
+		return guid_.hashCode();
+	}
+	
+	public boolean equals(Object o) {
+		if (o instanceof GUID) {
+			return guid_.equals(((GUID)o).guid_);
+		}
+		return false;
+	}
 }

@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATAsyncMessageCreation.java created on Jul 24, 2006 at 7:30:17 PM
+ * Event.java created on 27-dec-2006 at 15:37:27
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,32 +25,39 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors.grammar;
-
-import edu.vub.at.objects.grammar.ATMessageCreation;
+package edu.vub.at.actors.eventloops;
 
 /**
- * An ATAsyncMessageCreation instance is created whenever an asynchronous message send 
- * <tt>o <- m()</tt> is performed, or when a first-class async msg is created using
- * code such as <tt><- m()</tt>.
- * 
- * This interface does not describe the interface to the actual first-class message (that is the ATAsyncMessage interface).
- * It only describes the interface to the AG component representing such a message.
- * 
- * @author smostinc
+ * An Event object is the main communication channel between different event loops.
+ * Events are the only kind of objects scheduled in event queues of the event loops.
+ *
+ * @author tvcutsem
  */
-public interface ATAsyncMessageCreation extends ATMessageCreation {
+public abstract class Event {
 
-    /**
-     * Messages always have a selector, a symbol denoting the field or method that
-     * needs to be sought for.
-     * @return a symbol denoting the selector
-     */
-    //public ATSymbol base_getSelector();
-
-    /**
-     * Messages may optionally have arguments if they represent invocations.
-     * @return the arguments passed to the invocation
-     */
-    //public ATTable base_getArguments();
+	/**
+	 * For debugging purposes only.
+	 */
+	private final String description_;
+	
+	public Event() {
+		description_ = "anonymous event: " + this;
+	}
+	
+	public Event(String description) {
+		description_ = "event: " + description;
+	}
+	
+	/**
+	 * This method <i>may</i> be invoked by the receiving event loop such that the
+	 * event can process itself.
+	 * 
+	 * @param owner the object designated by the receiving event loop to be the owner of this event.
+	 */
+	public abstract void process(Object owner);
+	
+	public String toString() {
+		return description_;
+	}
+	
 }

@@ -25,18 +25,20 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.natives;
+package edu.vub.at.actors.natives;
 
+import edu.vub.at.actors.ATActorMirror;
+import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarObject;
-import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.grammar.AGMultiAssignment;
+import edu.vub.at.objects.natives.NATMessage;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * Instances of the class NATAsyncMessage represent first-class asynchronous messages.
@@ -44,7 +46,7 @@ import edu.vub.at.objects.natives.grammar.AGMultiAssignment;
  * TODO: Possibly convert this class to a subclass of NATObject to allow adding methods and fields to it without having to make an object extension.
  * It is a primitive object which, for all other purposes, should be extensible like a regular object with extra fields and methods.
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 
@@ -74,16 +76,8 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
         return receiver_;
     }
     
-    // TODO proper comparison for messages (also far-near sensitive)
-    public ATBoolean base__opeql__opeql_(ATObject comparand) {
-    		if (comparand instanceof NATAsyncMessage) {
-			NATAsyncMessage msg = (NATAsyncMessage) comparand;
-			return NATBoolean.atValue(
-					(sender_ == msg.sender_) &&
-					(selector_ == msg.selector_));
-		} else {
-			return NATBoolean._FALSE_;
-		}
+    public ATObject base_process(ATActorMirror inActor) throws InterpreterException {
+    	return receiver_.meta_receive(this);
     }
 
     /**
@@ -114,11 +108,18 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      * Passing a mutable and compound object implies making a new instance of the 
      * object while invoking pass on all its constituents.
      */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
-    		return new NATAsyncMessage(sender_.meta_pass(client), receiver_.meta_pass(client), selector_.meta_pass(client).base_asSymbol(), arguments_.meta_pass(client).base_asTable());
+    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
+    	return new NATAsyncMessage(sender_.meta_pass(client),
+    			                   receiver_.meta_pass(client),
+    			                   selector_.meta_pass(client).base_asSymbol(),
+    			                   arguments_.meta_pass(client).base_asTable());
     }
 
     public ATObject meta_resolve() throws InterpreterException {
-		return new NATAsyncMessage(sender_.meta_resolve(), receiver_.meta_resolve(), selector_.meta_resolve().base_asSymbol(), arguments_.meta_resolve().base_asTable());
+		return new NATAsyncMessage(sender_.meta_resolve(),
+				                   receiver_.meta_resolve(),
+				                   selector_.meta_resolve().base_asSymbol(),
+				                   arguments_.meta_resolve().base_asTable());
 	}
+
 }

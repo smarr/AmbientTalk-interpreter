@@ -27,7 +27,7 @@
  */
 package edu.vub.at.objects.symbiosis;
 
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATField;
@@ -105,7 +105,7 @@ public final class JavaField extends NATNil implements ATField {
      * reference for them, so that their methods can only be invoked asynchronously but
      * within the correct actor and scope.
      */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
     	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
     }
     	

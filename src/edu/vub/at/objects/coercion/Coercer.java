@@ -27,6 +27,11 @@
  */
 package edu.vub.at.objects.coercion;
 
+import edu.vub.at.actors.eventloops.Callable;
+import edu.vub.at.actors.eventloops.EventLoop;
+import edu.vub.at.actors.eventloops.EventLoop.EventProcessor;
+import edu.vub.at.actors.natives.ELActor;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.mirrors.Reflection;
@@ -55,14 +60,18 @@ import java.lang.reflect.Proxy;
  * 
  * where principal is the original object 'coerced into' the given interface
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public final class Coercer implements InvocationHandler {
 	
 	private final NATObject principal_;
 	
+	// we have to remember which actor owned the principal
+	private final ELActor owningActor_;
+	
 	private Coercer(NATObject principal) {
 		principal_ = principal;
+		owningActor_ = (ELActor) EventLoop.currentEventLoop();
 	}
 	
 	public static final Object coerce(ATObject object, Class type) throws XTypeMismatch {
@@ -79,7 +88,7 @@ public final class Coercer implements InvocationHandler {
 		}
 	}
 
-	public Object invoke(Object receiver, Method method, Object[] arguments) throws Throwable {
+	public Object invoke(Object receiver, final Method method, Object[] arguments) throws Throwable {
 		// handle toString, hashCode and equals in a dedicated fashion
 		if (method.getDeclaringClass() == Object.class) {
 			// invoke these methods on the principal rather than on the proxy
@@ -92,8 +101,9 @@ public final class Coercer implements InvocationHandler {
 		} else if (method.getDeclaringClass() == SymbioticATObjectMarker.class) {
 			return principal_;
 		} else {
-			ATObject[] symbioticArgs;
-             // support for variable-arity invocations from within AmbientTalk
+			
+			final ATObject[] symbioticArgs;
+            // support for variable-arity invocations from within AmbientTalk
 			if ((arguments != null) && (arguments.length == 1) && (arguments[0] instanceof ATObject[])) {
 				// no need to convert arguments
 				symbioticArgs = (ATObject[]) arguments[0];
@@ -103,10 +113,31 @@ public final class Coercer implements InvocationHandler {
 					symbioticArgs[i] = Symbiosis.javaToAmbientTalk(arguments[i]);
 				}
 			}
-
-			ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);
-			// properly 'cast' the returned object into the appropriate interface
-			return Symbiosis.ambientTalkToJava(result, method.getReturnType());
+			
+			// if the current thread is not an actor thread, treat the Java invocation
+			// as a message send instead and enqueue it in my actor's thread
+			
+			if (!(Thread.currentThread() instanceof EventProcessor)) {
+				// because a message send is asynchronous and Java threads work synchronously,
+				// we'll have to make the Java thread wait for the result
+				return owningActor_.sync_event_symbioticInvocation(new Callable() {
+					public Object call(Object actorMirror) throws Exception {
+						ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);
+						return Symbiosis.ambientTalkToJava(result, method.getReturnType());
+					}
+				});
+			} else {
+				if (owningActor_ == EventLoop.currentEventLoop()) {
+				    // perform a synchronous invocation
+					ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);
+					// properly 'cast' the returned object into the appropriate interface
+					return Symbiosis.ambientTalkToJava(result, method.getReturnType());		
+				} else {
+					// another event loop has direct access to this object, this means
+					// an AT object has been shared between actors via Java, signal an error
+					throw new XIllegalOperation("Detected illegal invocation: sharing via Java level of object " + principal_);
+				}
+			}
 		}
 	}
 	

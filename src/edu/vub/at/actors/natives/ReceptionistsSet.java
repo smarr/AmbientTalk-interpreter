@@ -27,15 +27,17 @@
  */
 package edu.vub.at.actors.natives;
 
-import java.util.HashMap;
-
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.util.MultiMap;
 
+import java.util.HashMap;
+
 /**
- * An Actor's ReceptionistsSet keeps a mapping between identifiers and local objects
+ * An NATActorMirror's ReceptionistsSet keeps a mapping between identifiers and local objects
  * which allows resolving far objects to local ones. The ReceptionistsSet also stores
  * which actors refer to an object, which is the basis for a distributed garbage 
  * collection algorithm.
@@ -44,43 +46,56 @@ import edu.vub.util.MultiMap;
  */
 public class ReceptionistsSet {
 
-	HashMap hashcodeToObject_;	
+	/** object id (ATObjectID) -> local object (ATObject) */
+	HashMap exportedObjectsTable_;	
+	
+	/** local object (ATObject) -> remote clients pointing to this object (Set of ATFarReference) */
 	MultiMap objectToClients_;
 	
-	public ReceptionistsSet(int expectedSize) {
-		hashcodeToObject_ = new HashMap(expectedSize);
+	NATActorMirror owner_;
+	
+	public ReceptionistsSet(NATActorMirror forActor) {
+		exportedObjectsTable_ = new HashMap();
 		objectToClients_ = new MultiMap();
+		owner_ = forActor;
 	}
 	
-	
-	public int exportObject(ATObject object) {
-		int hashcode = object.hashCode();
-		
-		/*if object was not previously exported */ 
-		if(hashcodeToObject_.get(hashcodeToObject_) == null) {
-			hashcodeToObject_.put(new Integer(hashcode), object);
+	/**
+	 * Export a local object such that it now has a unique global identifier which
+	 * can be distributed to other actors. Only near references may be exported.
+	 * 
+	 * @param object - the local object to export to the outside world
+	 * @return a unique identifier denoting the local object
+	 * @throws XIllegalOperation - if object is a far reference
+	 */
+	public ATObjectID exportObject(ATObject object) throws InterpreterException {
+		if (object.base_isFarReference()) {
+			throw new XIllegalOperation("Cannot export a far reference to " + object);
 		}
 		
-		return hashcode;
-	}
-	
-	public ATObject resolveObject(ATFarObject farReference) throws InterpreterException {
-		Integer objectId = new Integer(farReference.getObjectId());
-		
-		/* 
-		 * check if we have an object matching the new incoming description. 
-		 * -> the object may be local and handed out using exportObject
-		 * -> the object may be remote and already have a unique local representation
-		 */
-		ATObject result = (ATObject)hashcodeToObject_.get(objectId);
+		// get the current VM
+		ELVirtualMachine currentVM = owner_.getProcessor().getHost();
 
-		if(result == null) { // This is a previously unknown object
-			// Store it as the unique representation of this object in this actor
-			hashcodeToObject_.put(objectId, farReference);
-			result = farReference;
+		// combine VM guid, actor hash and object hash into an ATObjectID
+		ATObjectID objId = new ATObjectID(currentVM.getGUID(), owner_.hashCode(), object.hashCode());
+		
+		// store the object if it was not previously exported */ 
+		if(!exportedObjectsTable_.containsKey(objId)) {
+		   exportedObjectsTable_.put(objId, object);
 		}
 		
-		return result;
+		return objId;
+	}
+	
+	/**
+	 * Try to resolve a remote object reference into a local (near) reference.
+	 * 
+	 * @param objectId the identifier of the remote object
+	 * @return either the local object corresponding to that identifier, or null if there is no match
+	 * @throws InterpreterException
+	 */
+	public ATObject resolveObject(ATObjectID objectId) throws InterpreterException {
+		return (ATObject) exportedObjectsTable_.get(objectId);
 	}
 	
 	/**
@@ -93,8 +108,8 @@ public class ReceptionistsSet {
 	 * This method is related to a simple reference listing strategy which should be 
 	 * the basis for a distributed garbage collector.
 	 */
-	public void addClient(ATObject service, ATFarObject client) throws InterpreterException {
-		objectToClients_.put(service, client.meta_getActor());
+	public void addClient(ATObject service, ATFarReference client) throws InterpreterException {
+		objectToClients_.put(service, client);
 	}
 
 	/**
@@ -102,7 +117,7 @@ public class ReceptionistsSet {
 	 * the conditions negotiated for the use of the service (e.g. its lease period)
 	 * have expired.
 	 */
-	public void removeClient(ATObject service, ATFarObject client) throws InterpreterException {
-		objectToClients_.removeValue(service, client.meta_getActor());
+	public void removeClient(ATObject service, ATFarReference client) throws InterpreterException {
+		objectToClients_.removeValue(service, client);
 	}
 }

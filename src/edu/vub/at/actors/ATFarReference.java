@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATDevice.java created on Aug 21, 2006
+ * ATFarReference.java created on Dec 5, 2006 at 11:19:05 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,17 +25,32 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-
 package edu.vub.at.actors;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 
 /**
- * Devices represent physical entities in the network.
- * @deprecated currently not used
+ * ATFarReference is an object reference denoting an object hosted by another actor.
+ *
+ * @author smostinc
  */
-public interface ATDevice {
+public interface ATFarReference extends ATObject {
 
-    public ATObject base_getProperties();
-    
+	/**
+	 * Transmits all of the outgoing messages buffered in this far object reference
+	 * by passing them in a table as argument to the given function.
+	 * The processor function is, however, applied asynchronously, as in:
+	 *  <code>processor<-apply(outbox)</code>
+	 *  
+	 * After this method has been invoked, the outgoing message queue of this far
+	 * reference will be empty.
+	 * 
+	 * @param processor a unary closure that will transmit the outbound messages.
+	 * @return nil
+	 */
+	public ATNil meta_transmit(ATClosure processor) throws InterpreterException;
+	
 }

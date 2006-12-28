@@ -27,11 +27,12 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.ATActor;
-import edu.vub.at.actors.natives.ActorThread;
-import edu.vub.at.actors.natives.NATActor;
-import edu.vub.at.actors.natives.NATVirtualMachine;
-import edu.vub.at.actors.util.BlockingFuture;
+import edu.vub.at.actors.ATActorMirror;
+import edu.vub.at.actors.eventloops.BlockingFuture;
+import edu.vub.at.actors.eventloops.EventLoop;
+import edu.vub.at.actors.natives.ELActor;
+import edu.vub.at.actors.natives.ELVirtualMachine;
+import edu.vub.at.actors.natives.NATActorMirror;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -273,22 +274,28 @@ public final class OBJLexicalRoot extends NATNil {
 	}
 	
 	/* ------------------------------------------
-	 * -- Actor Creation and accessing Methods --
+	 * -- NATActorMirror Creation and accessing Methods --
 	 * ------------------------------------------ */
 	
 	// FIXME: code should be deep-copied (meta-passed)! but closures normally by ref!?
 	public ATObject base_actor_(ATClosure code) throws InterpreterException {
 		//ATAbstractGrammar bhvCode = code.base_getMethod().base_getBodyExpression();
 		//ATAbstractGrammar passedCode = bhvCode.meta_pass(???);
-		BlockingFuture behaviourFuture = NATActor.atValue(NATVirtualMachine.currentVM(), code);
-		return behaviourFuture.get(); // blocks until far ref to behaviour has been constructed
+		BlockingFuture behaviourFuture = NATActorMirror.atValue(ELVirtualMachine.currentVM(), code);
+		
+		try {
+			// blocks until far ref to behaviour has been constructed
+			return (ATObject) behaviourFuture.get();
+		} catch (Exception e) {
+			throw (InterpreterException) e;
+		} 
 	}
 	
-	public ATActor base_getActor() throws InterpreterException {
-		Thread current = Thread.currentThread();
+	public ATActorMirror base_getActor() throws InterpreterException {
 		try {
-		  ActorThread actorTread = (ActorThread) current;
-	      return (ATActor) actorTread.currentlyServing();
+		  return ((ELActor) EventLoop.currentEventLoop()).getActorMirror();
+		} catch(IllegalStateException e) {
+			throw new XIllegalOperation("Asked for current actor when none was active", e);
 		} catch (ClassCastException e) {
 			// TODO: couple remote threads to their own actor which can e.g. be created lazily
 			System.err.println("Asked for current actor when none was active");

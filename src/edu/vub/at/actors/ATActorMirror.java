@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATActor.java created on Aug 21, 2006
+ * ATActorMirror.java created on Aug 21, 2006
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -29,9 +29,7 @@
 package edu.vub.at.actors;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -40,8 +38,8 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 /**
  *  
  */
-public interface ATActor extends ATAbstractActor
-{
+public interface ATActorMirror extends ATObject {
+	
 	public static final ATSymbol _IN_ = AGSymbol.jAlloc("inbox");
 
 	public static final ATSymbol _OUT_ = AGSymbol.jAlloc("outbox");
@@ -50,18 +48,29 @@ public interface ATActor extends ATAbstractActor
 
 	public static final ATSymbol _PROVIDED_ = AGSymbol.jAlloc("provided");
 
-    /* ------------------------------------------
-     * -- Language Construct to Actor Protocol --
-     * ------------------------------------------ */
+	/**
+	 * Accept an incoming asynchronous message. By default, such messages are scheduled
+	 * in an inbox.
+	 * @param message - the async base-level message to accept
+	 */
+	public ATObject base_accept(ATAsyncMessage message) throws InterpreterException;
+
+	/**
+	 * Processes a message from the base-level inbox if it is non-empty.
+	 */
+	public ATObject base_process() throws InterpreterException;
+	
+    /* ---------------------------------------------------
+     * -- Language Construct to NATActorMirror Protocol --
+     * --------------------------------------------------- */
 
 	/**
 	 * Creates a first-class message in the language. Note that upon creation the
-	 * message does not have a receiver yet. This field wield be set once the message
+	 * message does not have a receiver yet. This field will be set once the message
 	 * is actually being sent, a fact which can be intercepted by overriding the sendTo
 	 * base-level method.
 	 */
 	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments);
-
 	
 	/**
 	 * This method implements the default asynchronous message sending semantics for
@@ -70,7 +79,7 @@ public interface ATActor extends ATAbstractActor
 	 * programmer to modify the message sending semantics for all objects inside an 
 	 * actor. The default implementation ensures the correct passing of messages when
 	 * they transgress the boundaries of the sending actor. 
-	 * @throws InterpreterException 
+	 * @throws InterpreterException
 	 */
 	public ATObject base_send(ATAsyncMessage message) throws InterpreterException;
 	
@@ -79,14 +88,15 @@ public interface ATActor extends ATAbstractActor
 	 * a separate service description and an object offering the service. The return
 	 * value is a closure which allows cancelling the service offer.
 	 */
-	public ATClosure base_provide(ATServiceDescription description, ATObject service);
+	public ATClosure base_provide(ATServiceDescription description, ATObject service) throws InterpreterException;
 	
 	/**
 	 * This mechanism is the most basic mechanism to provide a service. It requires 
 	 * a separate service description and an object offering the service. The return
 	 * value is a closure which allows cancelling the service offer.
+	 * @throws InterpreterException 
 	 */
-	public ATClosure base_require(ATServiceDescription description, ATObject client);
+	public ATClosure base_require(ATServiceDescription description, ATObject client) throws InterpreterException;
 	
     /* -------------------------------------
      * -- Object Passing Protocol Support --
@@ -104,9 +114,9 @@ public interface ATActor extends ATAbstractActor
 	 * @param client the remote object to which it will be sent
 	 * @return a newly created far object reference
 	 * 
-	 * @see edu.vub.at.objects.ATObject#meta_pass(ATFarObject)
+	 * @see edu.vub.at.objects.ATObject#meta_pass(ATFarReference)
 	 */
-	public ATFarObject base_reference_for_(ATObject object, ATFarObject client) throws InterpreterException;
+	public ATFarReference base_reference_for_(ATObject object, ATFarReference client) throws InterpreterException;
 	
 	/**
 	 * This mechanism interacts with the built-in receptionists set of the actor to 
@@ -119,28 +129,9 @@ public interface ATActor extends ATAbstractActor
 	 * representative of the remote object. This object will contain the queue of 
 	 * messages to be transmitted to the remote object. 
 	 * 
-	 * @param farReference the reference to be resolved
+	 * @param farReference the far reference to be resolved
 	 * @return a local object | a unique far reference for this actor
 	 */
-	public ATObject base_resolveFarReference(ATFarObject farReference) throws InterpreterException;
+	public ATObject base_resolveFarReference(ATFarReference farReference) throws InterpreterException;
 
-	/**
-	 * Registers an object as a far reference denoting one or possibly more objects 
-	 * on another actor. Registering is required to be consulted whenever a try-to-
-	 * transmit command is issued by the virtual machine for a particular actor. The
-	 * far objects can then schedule messages for transmission by the virtual machine
-	 * provided that they claim to be hosted on the said actor.
-	 *  
-	 * @param farObject - object accumulating messages for an object hosted by another actor
-	 * @return nil
-	 */
-	public ATNil base_registerFarReference(ATFarObject farObject) throws InterpreterException;
-	
-	public ATVirtualMachine base_getVirtualMachine();
-
-    public ATObject base_getBehaviour();
-    
-    public ATBoolean base_isLocal();
-    public ATBoolean base_isRemote();
-    
 }

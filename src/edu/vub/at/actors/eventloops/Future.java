@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATDevice.java created on Aug 21, 2006
+ * Future.java created on 27-dec-2006 at 15:57:34
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,17 +25,34 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-
-package edu.vub.at.actors;
-
-import edu.vub.at.objects.ATObject;
+package edu.vub.at.actors.eventloops;
 
 /**
- * Devices represent physical entities in the network.
- * @deprecated currently not used
+ * A future is a placeholder for a 'return value' that is not yet computed.
+ * 
+ * A future can either be resolved into a value or it can be ruined by an exception.
+ * 
+ * @author tvcutsem
  */
-public interface ATDevice {
+public interface Future {
+	
+	/**
+	 * Used to resolve the future into the given result object.
+	 * This will notify any threads waiting for the value.
+	 */
+	public void resolve(Object result);
+	
+	/**
+	 * Used to ruin the future with the given exception.
+	 * This will notify any threads waiting for the value.
+	 */
+	public void ruin(Exception exception);
+	
+	/**
+	 * Used to retrieve the real value from the future.
+	 * @return the resolved value of the future, once it is available.
+	 * @throws Exception if the future has been ruined with an exception.
+	 */
+	public Object get() throws Exception;
 
-    public ATObject base_getProperties();
-    
 }

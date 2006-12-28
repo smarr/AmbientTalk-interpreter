@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ActorThread.java created on Nov 3, 2006 at 9:39:19 PM
+ * CommonEmittedEvents.java created on Dec 16, 2006 at 11:29:34 PM
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,52 +25,42 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors.natives;
+package edu.vub.at.actors.events;
 
+import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.natives.NATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
- * An ActorThread is a thread which is parametrised with an actor for which it will
- * continually process meta-messages from its synchronised queue.
+ * 
+ * TODO document the class CommonEmittedEvents
  *
  * @author smostinc
  */
-public final class ActorThread extends Thread {
+public class CommonEmittedEvents {
 
-	private NATAbstractActor		owner_;
-	private boolean				askedToStop_ = false;
+	public static final ATSymbol _INIT_ = AGSymbol.jAlloc("init");
+	public static final ATSymbol _ACCEPT_ = AGSymbol.jAlloc("accept");
 	
-	public ActorThread(NATAbstractActor owner) {
-		owner_ 		= owner;
-	}
-	
-	public NATAbstractActor currentlyServing() {
-		return owner_;
-	}
-	
-	public void stopProcessing() {
-		askedToStop_ = true;
-	}
-		
-	public void run() {
-		
-		while(! askedToStop_) {
-			
-			try {
-				ATAsyncMessage event = (ATAsyncMessage)owner_.eventQueue_.take();
-				
-				System.out.println("Handling an event: " + event.base_getSelector());
-				
-				owner_.meta_invoke(owner_, event.base_getSelector(), event.base_getArguments());
-				
-			} catch (InterruptedException e) {
-				// If interrupted, we may be asked to stop.
-				continue;
-			} catch (InterpreterException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+	/**
+	 * @see edu.vub.at.actors.natives.NATActorMirror#base_accept(ATAsyncMessage)
+	 */
+	public static final ATAsyncMessage acceptMessage(final ATAsyncMessage msg) {
+		return new NATAsyncMessage(msg.base_getSender(), msg.base_getReceiver(), _ACCEPT_,  NATTable.atValue(new ATObject[] { msg })) {
+			public ATObject base_process(ATActorMirror inActor) throws InterpreterException {
+				return inActor.base_accept(msg);
 			}
-		}
+		};
+	}
+	
+	public static ATAsyncMessage initializeObject(ATObject receiver, ATTable initArgs) throws InterpreterException {
+		return new NATAsyncMessage(NATNil._INSTANCE_, receiver, _INIT_, initArgs);
 	}
 }

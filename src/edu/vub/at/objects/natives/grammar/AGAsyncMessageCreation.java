@@ -27,13 +27,14 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
 
 /**
  * AGAsyncMessageCreation implements the ATAsyncMessageCreation interface natively. It is a container for the
@@ -56,7 +57,7 @@ public class AGAsyncMessageCreation extends AGMessageCreation {
 	 * @return a first-class asynchronous message
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return meta_getActor().base_createMessage(
+		return OBJLexicalRoot._INSTANCE_.base_getActor().base_createMessage(
 				ctx.base_getSelf(), this.base_getSelector(),
 				Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
 	}
@@ -75,7 +76,7 @@ public class AGAsyncMessageCreation extends AGMessageCreation {
      * Passing a mutable and compound object implies making a new instance of the 
      * object while invoking pass on all its constituents.
      */
-    public ATObject meta_pass(ATFarObject client) throws InterpreterException {
+    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
     		return new AGAsyncMessageCreation(selector_.meta_pass(client).base_asSymbol(), arguments_.meta_pass(client).base_asTable());
     }
 

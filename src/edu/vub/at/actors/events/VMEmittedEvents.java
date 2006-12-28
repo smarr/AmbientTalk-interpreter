@@ -25,14 +25,14 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors.natives.events;
+package edu.vub.at.actors.events;
 
-import edu.vub.at.actors.ATActor;
+import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATResolution;
+import edu.vub.at.actors.natives.NATAsyncMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATAsyncMessage;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -46,25 +46,17 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 public class VMEmittedEvents {
 
     /* ---------------------------
-     * -- VM to Actor  Protocol --
+     * -- VM to NATActorMirror  Protocol --
      * --------------------------- */
 	
-	public static final ATSymbol _ACCEPT_ = AGSymbol.jAlloc("accept");
+
 	public static final ATSymbol _DELIVERED_ = AGSymbol.jAlloc("delivered");
 	public static final ATSymbol _FAILED_DELIVERY_ = AGSymbol.jAlloc("failedDelivery");
 	public static final ATSymbol _FOUND_RESOLUTION_ = AGSymbol.jAlloc("foundResolution");
 	public static final ATSymbol _LOST_RESOLUTION_ = AGSymbol.jAlloc("lostResolution");
 	
-
 	/**
-	 * @see edu.vub.at.actors.natives.NATActor#base_accept(ATAsyncMessage)
-	 */
-	public static final ATAsyncMessage acceptMessage(ATAsyncMessage msg) {
-		return new NATAsyncMessage(msg.base_getSender(), _ACCEPT_,  NATTable.atValue(new ATObject[] { msg }));
-	}
-	
-	/**
-	 * @see edu.vub.at.actors.natives.NATActor#base_delivered(ATAsyncMessage)
+	 * @see edu.vub.at.actors.natives.NATActorMirror#base_delivered(ATAsyncMessage)
 	 */
 	public static final ATAsyncMessage deliveredMessage(ATAsyncMessage msg) {
 		return new NATAsyncMessage(msg.base_getReceiver(), _DELIVERED_,  NATTable.atValue(new ATObject[] { msg }));
@@ -72,28 +64,28 @@ public class VMEmittedEvents {
 	
 	/**
 	 * TODO(discuss) a table of messages?
-	 * @see edu.vub.at.actors.natives.NATActor#base_failedDelivery(ATAsyncMessage)
+	 * @see edu.vub.at.actors.natives.NATActorMirror#base_failedDelivery(ATAsyncMessage)
 	 */
-public static final ATAsyncMessage couldNotDeliverMessage(ATAsyncMessage msg) {
+	public static final ATAsyncMessage couldNotDeliverMessage(ATAsyncMessage msg) {
 		return new NATAsyncMessage(msg.base_getReceiver(), _FAILED_DELIVERY_,  NATTable.atValue(new ATObject[] { msg }));
 	}
 	
 	/**
-	 * @see edu.vub.at.actors.natives.NATActor#base_foundResolution(ATResolution)
+	 * @see edu.vub.at.actors.natives.NATActorMirror#base_foundResolution(ATResolution)
 	 */
 	public static final ATAsyncMessage foundResolution(ATResolution res) {
 		return new NATAsyncMessage(res.base_getActor(), _FOUND_RESOLUTION_,  NATTable.atValue(new ATObject[] { res }));
 	}
 	
 	/**
-	 * @see edu.vub.at.actors.natives.NATActor#base_lostResolution(ATResolution)
+	 * @see edu.vub.at.actors.natives.NATActorMirror#base_lostResolution(ATResolution)
 	 */
 	public static final ATAsyncMessage lostResolution(ATResolution res) {
 		return new NATAsyncMessage(res.base_getActor(), _LOST_RESOLUTION_,  NATTable.atValue(new ATObject[] { res }));
 	}
 	
     /* ----------------------------------
-     * -- Actor | VM to Actor Protocol --
+     * -- NATActorMirror | VM to NATActorMirror Protocol --
      * ---------------------------------- */
 	
 	public static final ATSymbol _ATTEMPT_TRANSMIT_ = AGSymbol.jAlloc("transmit");
@@ -101,9 +93,9 @@ public static final ATAsyncMessage couldNotDeliverMessage(ATAsyncMessage msg) {
 	/**
 	 * Sent by the VM upon detection of the presence of an actor and self-sent by the
 	 * actor when scheduling a message in the outbox.
-	 * @see edu.vub.at.actors.natives.NATActor#base_transmit(ATActor, ATObject)
+	 * @see edu.vub.at.actors.natives.NATActorMirror#base_transmit(ATActorMirror, ATObject)
 	 */
-	public static final ATAsyncMessage attemptTransmission(ATActor actor, ATObject handler) {
+	public static final ATAsyncMessage attemptTransmission(ATActorMirror actor, ATObject handler) {
 		return new NATAsyncMessage(actor, _ATTEMPT_TRANSMIT_, NATTable.atValue(new ATObject[] { actor, handler }));
 	}
 }

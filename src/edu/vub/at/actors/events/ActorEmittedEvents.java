@@ -25,15 +25,15 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors.natives.events;
+package edu.vub.at.actors.events;
 
-import edu.vub.at.actors.ATActor;
+import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarObject;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.ATServiceDescription;
+import edu.vub.at.actors.natives.NATAsyncMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATAsyncMessage;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -47,7 +47,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 public class ActorEmittedEvents {
 
     /* --------------------------
-     * -- Actor to VM Protocol --
+     * -- NATActorMirror to VM Protocol --
      * -------------------------- */
 	
 	public static final ATSymbol _NEW_ACTOR_ = AGSymbol.jAlloc("newActor");
@@ -58,82 +58,67 @@ public class ActorEmittedEvents {
 	public static final ATSymbol _CANCEL_SUBSCRIPTION_ = AGSymbol.jAlloc("cancelSubscription");
 	
 	/**
-	 * @see edu.vub.at.actors.natives.NATVirtualMachine#base_newActor(ATActor)
+	 * @see edu.vub.at.actors.natives.ELVirtualMachine#base_newActor(ATActorMirror)
 	 */
-	public static final ATAsyncMessage newlyCreated(ATActor actor) {
+	public static final ATAsyncMessage newlyCreated(ATActorMirror actor) {
 		return new NATAsyncMessage(actor, _NEW_ACTOR_, NATTable.atValue(new ATObject[] { actor }));
 	}
 
 	/**
-	 * @see edu.vub.at.actors.natives.NATVirtualMachine#base_transmit(ATAsyncMessage)
+	 * @see edu.vub.at.actors.natives.ELVirtualMachine#base_transmit(ATAsyncMessage)
 	 */
 	public static final ATAsyncMessage transmitMessage(ATAsyncMessage msg) {
 		return new NATAsyncMessage(msg.base_getSender(), _TRANSMIT_,  NATTable.atValue(new ATObject[] { msg }));
 	}
 		
 	/**
-	 * @see edu.vub.at.actors.natives.NATVirtualMachine#base_servicePublished(ATServiceDescription, ATObject)
+	 * @see edu.vub.at.actors.natives.ELVirtualMachine#base_servicePublished(ATServiceDescription, ATObject)
 	 */
 	public static final ATAsyncMessage publishService(ATServiceDescription description, ATObject service) {
 		return new NATAsyncMessage(service, _PUBLISH_,  NATTable.atValue(new ATObject[] { description, service }));
 	}
 	
 	/**
-	 * @see edu.vub.at.actors.natives.NATVirtualMachine#base_cancelPublishing(ATServiceDescription, ATObject)
+	 * @see edu.vub.at.actors.natives.ELVirtualMachine#base_cancelPublishing(ATServiceDescription, ATObject)
 	 */
 	public static final ATAsyncMessage cancelPublishedService(ATServiceDescription description, ATObject service) {
 		return new NATAsyncMessage(service, _CANCEL_PUBLISHING_,  NATTable.atValue(new ATObject[] { description, service }));
 	}
 	
 	/**
-	 * @see edu.vub.at.actors.natives.NATVirtualMachine#base_serviceSubscription(ATServiceDescription, ATObject)
+	 * @see edu.vub.at.actors.natives.ELVirtualMachine#base_serviceSubscription(ATServiceDescription, ATObject)
 	 */
 	public static final ATAsyncMessage subscribeToService(ATServiceDescription description, ATObject client) {
 		return new NATAsyncMessage(client, _SUBSCRIBE_,  NATTable.atValue(new ATObject[] { description, client }));
 	}
 	
 	/**
-	 * @see edu.vub.at.actors.natives.NATVirtualMachine#base_cancelSubscription(ATServiceDescription, ATObject)
+	 * @see edu.vub.at.actors.natives.ELVirtualMachine#base_cancelSubscription(ATServiceDescription, ATObject)
 	 */
 	public static final ATAsyncMessage cancelSubscription(ATServiceDescription description, ATObject client) {
 		return new NATAsyncMessage(client, _CANCEL_SUBSCRIPTION_,  NATTable.atValue(new ATObject[] { description, client }));
 	}
 	
     /* ----------------------------
-     * -- Actor to Self Protocol --
+     * -- NATActorMirror to Self Protocol --
      * ---------------------------- */
 	
 	public static final ATSymbol _PROCESS_ = AGSymbol.jAlloc("process");
-	public static final ATSymbol _PUBLISH_BEHAVIOUR_ = AGSymbol.jAlloc("publishBehaviour");
-	public static final ATSymbol _NOTIFICATION_ = AGSymbol.jAlloc("notifyObserver");
-	
+
 	/**
-	 * @see edu.vub.at.actors.natives.NATActor#base_process()
+	 * @see edu.vub.at.actors.natives.NATActorMirror#base_process()
 	 */
 	public static final ATAsyncMessage processMessage(ATAsyncMessage msg) {
 		return new NATAsyncMessage(msg.base_getReceiver(), _PROCESS_, NATTable.EMPTY);
 	}
 	
-	/*
-	 * Actors perform an asynchronous self-send of 'transmit when scheduling messages in the outbox.
-	 * @see edu.vub.at.actors.natives.events.VMEmittedEvents#attemptTransmission(ATActor)
-	 */
-	
-	public static final ATAsyncMessage publishBehaviour(ATActor newlyCreated) {
-		return new NATAsyncMessage(newlyCreated, _PUBLISH_BEHAVIOUR_, NATTable.EMPTY);
-	}
-	
-	public static final ATAsyncMessage notifyObservers(ATAsyncMessage notification) {
-		return new NATAsyncMessage(notification.base_getSender(), _NOTIFICATION_, NATTable.atValue(new ATObject[] { notification }));
-	}
-	
     /* ----------------------------------
-     * -- Far Object to Actor Protocol --
+     * -- Far Object to NATActorMirror Protocol --
      * ---------------------------------- */
 	
 	public static final ATSymbol _FAR_PASSED_ = AGSymbol.jAlloc("farReferencePassed");
 	
-	public static final ATAsyncMessage passingFarReference(ATFarObject ref, ATFarObject client) {
+	public static final ATAsyncMessage passingFarReference(ATFarReference ref, ATFarReference client) {
 		return new NATAsyncMessage(ref, _FAR_PASSED_, NATTable.atValue(new ATObject[] { ref, client }));
 	}
 }

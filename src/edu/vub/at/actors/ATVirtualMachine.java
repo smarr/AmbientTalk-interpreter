@@ -28,39 +28,25 @@
 
 package edu.vub.at.actors;
 
-import java.io.File;
-
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 
 /**
  * A virtual machine is deployed on top of a physical device and may host a set of actors.
+ * @deprecated VMs are no longer reified like this.
  */
 public interface ATVirtualMachine extends ATAbstractActor {
-	
-	
-    public ATDevice base_getDevice();
 
     /* --------------------------
-     * -- Actor Initialisation --
-     * -------------------------- */
-	
-	public File[] getObjectPathRoots();
-	
-	public ATAbstractGrammar getInitialisationCode();
-	
-    /* --------------------------
-     * -- Actor to VM Protocol --
+     * -- NATActorMirror to VM Protocol --
      * -------------------------- */
         
 	/**
 	 * Called indirectly (by scheduling an event) to signal the creation of a
 	 * new actor. This method then notifies possible observers.
 	 */
-	public ATNil base_newActor(ATActor actor);
+	public ATNil base_newActor(ATActorMirror actor) throws InterpreterException;
 
     /**
      * This method is implicitly called (by scheduling an event) whenever an actor 
