@@ -100,19 +100,4 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 				               ((message_.base_isMessageCreation()) ? "" : "<+") + message_.meta_print().javaValue);
 	}
 
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGMessageSend(rcvExp_.meta_pass().base_asExpression(), message_.meta_pass().base_asExpression());
-    }
-
-    public ATObject meta_resolve() throws InterpreterException {
-    		return new AGMessageSend(rcvExp_.meta_resolve().base_asExpression(), message_.meta_resolve().base_asExpression());
-    }
 }

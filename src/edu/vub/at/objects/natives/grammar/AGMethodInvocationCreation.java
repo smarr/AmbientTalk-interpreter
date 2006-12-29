@@ -66,19 +66,4 @@ public final class AGMethodInvocationCreation extends AGMessageCreation {
 	
 	protected String getMessageToken() { return "."; }
 
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGMethodInvocationCreation(selector_.meta_pass().base_asSymbol(), arguments_.meta_pass().base_asTable());
-    }
-
-    public ATObject meta_resolve() throws InterpreterException {
-    		return new AGMethodInvocationCreation(selector_.meta_resolve().base_asSymbol(), arguments_.meta_resolve().base_asTable());
-    }
 }

@@ -77,21 +77,5 @@ public class AGSplice extends AGExpression implements ATSplice {
 	public ATSplice base_asSplice() throws XTypeMismatch {
 		return this;
 	}
-	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGSplice(splExp_.meta_pass().base_asExpression());
-    }
-
-    public ATObject meta_resolve() throws InterpreterException {
-    		return new AGSplice(splExp_.meta_resolve().base_asExpression());
-    }
 
 }

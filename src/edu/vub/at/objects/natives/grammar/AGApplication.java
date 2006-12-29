@@ -94,20 +94,5 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(funExp_.meta_print().javaValue + Evaluator.printAsList(arguments_).javaValue);
 	}
-	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
 
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    	return new AGApplication(funExp_.meta_pass().base_asExpression(), arguments_.meta_pass().base_asTable());
-    }
-
-    public ATObject meta_resolve() throws InterpreterException {
-		return new AGApplication(funExp_.meta_resolve().base_asExpression(), arguments_.meta_resolve().base_asTable());
-    }
 }

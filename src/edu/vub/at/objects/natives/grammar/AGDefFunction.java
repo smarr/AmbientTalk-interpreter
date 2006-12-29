@@ -117,19 +117,4 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 				" { " + bodyStmts_.meta_print().javaValue + " }");
 	}
 
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGDefFunction(selectorExp_.meta_pass().base_asSymbol(), argumentExps_.meta_pass().base_asTable(), bodyStmts_.meta_pass().base_asBegin());
-    }
-    
-    public ATObject meta_resolve() throws InterpreterException {
-    		return new AGDefFunction(selectorExp_.meta_resolve().base_asSymbol(), argumentExps_.meta_resolve().base_asTable(), bodyStmts_.meta_resolve().base_asBegin());
-    }
 }

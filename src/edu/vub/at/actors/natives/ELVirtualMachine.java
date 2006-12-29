@@ -108,10 +108,10 @@ public final class ELVirtualMachine extends EventLoop {
 	/**
 	 * Event that signals the creation of a new actor on this virtual machine.
 	 */
-	public void event_actorCreated(final NATActorMirror actor) {
+	public void event_actorCreated(final ELActor actor) {
 		this.receive(new Event("actorCreated("+actor+")") {
 			public void process(Object myself) {
-				localActors_.put(new Integer(actor.hashCode()), actor.getProcessor());
+				localActors_.put(new Integer(actor.hashCode()), actor);
 			}
 		});
 	}

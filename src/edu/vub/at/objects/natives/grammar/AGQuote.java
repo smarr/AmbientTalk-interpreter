@@ -72,19 +72,4 @@ public final class AGQuote extends AGExpression implements ATQuote {
 		return NATText.atValue("`("+ stmt_.meta_print().javaValue + ")");
 	}
 
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGQuote(stmt_.meta_pass().base_asStatement());
-    }
-    
-    public ATObject meta_resolve() throws InterpreterException {
-		return new AGQuote(stmt_.meta_resolve().base_asStatement());
-}
 }

@@ -81,19 +81,4 @@ public final class AGSelection extends AGExpression implements ATSelection {
 		return NATText.atValue(rcvExp_.meta_print().javaValue + "." + selector_.meta_print().javaValue);
 	}
 
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGSelection(rcvExp_.meta_pass().base_asExpression(), selector_.meta_pass().base_asSymbol());
-    }
-
-    public ATObject meta_resolve() throws InterpreterException {
-    		return new AGSelection(rcvExp_.meta_resolve().base_asExpression(), selector_.meta_resolve().base_asSymbol());
-    }
 }

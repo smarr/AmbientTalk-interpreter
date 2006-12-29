@@ -72,20 +72,4 @@ public final class AGUnquote extends AGExpression implements ATUnquote {
 		return NATText.atValue("#("+ unqExp_.meta_print().javaValue + ")");
 	}
 	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-	public ATObject meta_pass() throws InterpreterException {
-		return new AGUnquote(unqExp_.meta_pass().base_asExpression());
-	}
-
-    public ATObject meta_resolve() throws InterpreterException {
-    		return new AGUnquote(unqExp_.meta_resolve().base_asExpression());
-    }
-	
 }

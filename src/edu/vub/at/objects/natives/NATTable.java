@@ -236,4 +236,11 @@ public final class NATTable extends AGExpression implements ATTable {
 	    return union;
 	}
 	
+	public ATObject meta_resolve() throws InterpreterException {
+		if (elements_.length == 0)
+			return NATTable.EMPTY;
+		else
+			return this;
+	}
+	
 }

@@ -127,21 +127,22 @@ public interface ATObject extends ATConversions {
      * ----------------------------- */
 
     /**
-     * Allows objects to specify how they should be passed when going beyond the 
-     * boundaries of a single actor. 
+     * Allows objects to specify how they should be passed when passed as an argument
+     * in a message sent to another actor.
+     * 
      * @return Objects may choose to return themselves, a clone or a proxy representation
-     * @throws InterpreterException - when overridden by the user
+     * @throws InterpreterException - when overridden by the programmer
      */
     public ATObject meta_pass() throws InterpreterException;
 
     /**
-     * Invoked when an object is received as part of an asynchronous message sent from 
-     * another actor than the one that will handle the message. This is achieved by 
-     * ensuring meta_pass is only invoked on messages that leave the actor. Then when
-     * a message is received upon which no pass was invoked, resolve is a nil operation.
+     * When an object is deserialized after it has been passed to another actor, it is
+     * given a chance to tell the interpreter which object it represents. Normally,
+     * by copy objects just return 'this' because they represent themselves. Far references,
+     * however, will try to 'resolve' themselves into a near reference when possible.
      *  
-     * @return
-     * @throws InterpreterException
+     * @return the object represented by this deserialized object
+     * @throws XIllegalOperation when by-reference objects are resolved or when overridden by programmer
      */
     public ATObject meta_resolve() throws InterpreterException;
     

@@ -80,20 +80,5 @@ public final class AGDefField extends NATAbstractGrammar implements ATDefField {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("def " + name_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
-	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
 
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGDefField(name_.meta_pass().base_asSymbol(), valueExp_.meta_pass().base_asExpression());
-    }
-    
-    public ATObject meta_resolve() throws InterpreterException {
-		return new AGDefField(name_.meta_resolve().base_asSymbol(), valueExp_.meta_resolve().base_asExpression());
-    }
 }

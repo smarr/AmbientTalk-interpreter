@@ -84,19 +84,4 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
 		return NATText.atValue("def " + parameters_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
 
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGMultiDefinition(parameters_.meta_pass().base_asTable(), valueExp_.meta_pass().base_asExpression());
-    }
-
-    public ATObject meta_resolve() throws InterpreterException {
-    		return new AGMultiDefinition(parameters_.meta_resolve().base_asTable(), valueExp_.meta_resolve().base_asExpression());
-    }
 }

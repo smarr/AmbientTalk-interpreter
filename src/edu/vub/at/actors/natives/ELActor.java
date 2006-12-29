@@ -152,16 +152,17 @@ public final class ELActor extends EventLoop {
 	 * be it 'self-sends' or external sends.
 	 * @param msg the asynchronous AmbientTalk base-level message to enqueue
 	 */
-	public void event_accept(final String msgName, final byte[] serializedMessage) {
-		receive(new Event("accept("+msgName+")") {
+	public void event_accept(final Packet serializedMessage) {
+		receive(new Event("accept("+serializedMessage.getDescription()+")") {
 			public void process(Object myActorMirror) {
 				try {
+					ATAsyncMessage msg = serializedMessage.unpack().base_asAsyncMessage();
 					ATObject result = msg.base_process(mirror_);
 					// TODO what to do with return value?
-					System.err.println("accept("+msgName+") returned " + result);
+					System.err.println("accept("+serializedMessage.getDescription()+") returned " + result);
 				} catch (InterpreterException e) {
 					// TODO what to do with exception?
-					System.err.println("accept("+msgName+") failed with " + e.getMessage());
+					System.err.println("accept("+serializedMessage.getDescription()+") failed with " + e.getMessage());
 				}
 			}
 		});

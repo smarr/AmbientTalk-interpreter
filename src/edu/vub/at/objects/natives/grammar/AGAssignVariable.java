@@ -82,22 +82,6 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(variableName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
-
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGAssignVariable(variableName_.meta_pass().base_asSymbol(), valueExp_.meta_pass().base_asExpression());
-    }
-
-    public ATObject meta_resolve(ATObject client) throws InterpreterException {
-		return new AGAssignVariable(variableName_.meta_resolve().base_asSymbol(), valueExp_.meta_resolve().base_asExpression());
-    }
     
     public boolean base_isVariableAssignment() {
         return true;

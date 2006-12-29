@@ -95,19 +95,4 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 				}).asNativeText();
 	}
 	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-	public ATObject meta_pass() throws InterpreterException {
-		return new AGClosureLiteral(arguments_.meta_pass().base_asTable(), body_.meta_pass().base_asBegin());
-	}
-    
-    public ATObject meta_resolve() throws InterpreterException {
-    		return new AGClosureLiteral(arguments_.meta_resolve().base_asTable(), body_.meta_resolve().base_asBegin());
-    }
 }

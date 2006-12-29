@@ -85,19 +85,4 @@ public class AGUnquoteSplice extends AGExpression implements ATUnquoteSplice {
 		return this;
 	}
 
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGUnquoteSplice(uqsExp_.meta_pass().base_asExpression());
-    }
-    
-    public ATObject meta_resolve() throws InterpreterException {
-    		return new AGUnquoteSplice(uqsExp_.meta_resolve().base_asExpression());
-    }
 }

@@ -111,21 +111,5 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 				sizExp_.meta_print().javaValue + "] { " +
 				initExp_.meta_print().javaValue + "}");
 	}
-	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    		return new AGDefTable(tblName_.meta_pass().base_asSymbol(), sizExp_.meta_pass().base_asExpression(), initExp_.meta_pass().base_asExpression());
-    }
-    
-    public ATObject meta_resolve() throws InterpreterException {
-		return new AGDefTable(tblName_.meta_resolve().base_asSymbol(), sizExp_.meta_resolve().base_asExpression(), initExp_.meta_resolve().base_asExpression());
-}
 
 }

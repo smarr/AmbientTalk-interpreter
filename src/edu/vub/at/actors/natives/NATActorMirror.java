@@ -135,7 +135,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		});
 		
 		// notify host VM about my creation
-		processor_.host_.event_actorCreated(this);
+		processor_.host_.event_actorCreated(processor_);
 	}
 	
     /* ------------------------------------------
