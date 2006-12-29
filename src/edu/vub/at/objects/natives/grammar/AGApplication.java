@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.InterpreterException;
@@ -104,8 +103,8 @@ public final class AGApplication extends AGExpression implements ATApplication {
      * Passing a mutable and compound object implies making a new instance of the 
      * object while invoking pass on all its constituents.
      */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    		return new AGApplication(funExp_.meta_pass(client).base_asExpression(), arguments_.meta_pass(client).base_asTable());
+    public ATObject meta_pass() throws InterpreterException {
+    	return new AGApplication(funExp_.meta_pass().base_asExpression(), arguments_.meta_pass().base_asTable());
     }
 
     public ATObject meta_resolve() throws InterpreterException {

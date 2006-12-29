@@ -174,4 +174,13 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 		return NATText.atValue("<mirror on:"+principal_.meta_print().javaValue+">");
 	}
 	
+	// TODO: unsure about implementation
+    public ATObject meta_pass() throws InterpreterException {
+    	return principal_;
+    }
+    
+    public ATObject meta_resolve() throws InterpreterException {
+    	return principal_;
+    }
+	
 }

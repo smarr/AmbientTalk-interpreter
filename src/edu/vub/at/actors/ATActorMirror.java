@@ -111,12 +111,11 @@ public interface ATActorMirror extends ATObject {
 	 * in the meta_pass method of scoped objects such as closures, objects and fields.
 	 * 
 	 * @param object the local object to be given a reference to
-	 * @param client the remote object to which it will be sent
 	 * @return a newly created far object reference
 	 * 
 	 * @see edu.vub.at.objects.ATObject#meta_pass(ATFarReference)
 	 */
-	public ATFarReference base_reference_for_(ATObject object, ATFarReference client) throws InterpreterException;
+	//public ATFarReference base_export(ATObject object) throws InterpreterException;
 	
 	/**
 	 * This mechanism interacts with the built-in receptionists set of the actor to 
@@ -132,6 +131,6 @@ public interface ATActorMirror extends ATObject {
 	 * @param farReference the far reference to be resolved
 	 * @return a local object | a unique far reference for this actor
 	 */
-	public ATObject base_resolveFarReference(ATFarReference farReference) throws InterpreterException;
+	//public ATObject base_resolve(ATFarReference farReference) throws InterpreterException;
 
 }

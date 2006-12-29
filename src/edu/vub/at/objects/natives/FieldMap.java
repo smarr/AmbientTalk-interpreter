@@ -29,6 +29,8 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.objects.grammar.ATSymbol;
 
+import java.io.Serializable;
+
 /**
  * Instances of this class implement a so-called 'map' for an AmbientTalk object's fields.
  * The terminology stems from the language Self. A 'map' maps variable names to an integer index.
@@ -42,7 +44,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * 
  * @author tvc
  */
-public final class FieldMap {
+public final class FieldMap implements Serializable {
 
 	private static final int _DEFAULT_SIZE_ = 5;
 	

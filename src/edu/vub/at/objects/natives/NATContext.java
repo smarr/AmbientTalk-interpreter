@@ -38,7 +38,7 @@ import edu.vub.at.objects.ATObject;
  * 
  * @author smostinc
  */
-public class NATContext extends NATNil implements ATContext {
+public class NATContext extends NATByCopy implements ATContext {
 
 	private final ATObject scope_;
 	private final ATObject self_;

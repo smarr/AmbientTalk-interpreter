@@ -48,6 +48,7 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
 
@@ -319,6 +320,32 @@ public final class JavaObject extends NATObject implements ATObject {
 
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<java:"+wrappedObject_.toString()+">");
+	}
+	
+	/**
+	 * Passing a Java Object wrapper to another actor has the following effect:
+	 *  - if the wrapped Java object is serializable, the symbiotic AmbientTalk object
+	 *    is treated as by copy (i.e. as an isolate).
+	 *  - if the wrapped Java object is not serializable, the symbiotic AmbientTalk object
+	 *    is treated as by reference and a far reference will be passed instead.
+	 */
+	public ATObject meta_pass() throws InterpreterException {
+		if (wrappedObject_ instanceof Serializable) {
+			return this;
+		} else {
+			return super.meta_pass();
+		}
+	}
+	
+	/**
+	 * If the wrapped object was serializable, we may be asked to resolve ourselves.
+	 */
+	public ATObject meta_resolve() throws InterpreterException {
+		if (wrappedObject_ instanceof Serializable) {
+			return this;
+		} else {
+			return super.meta_resolve();
+		}
 	}
 	
 }

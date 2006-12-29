@@ -48,6 +48,8 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
+import java.io.ObjectStreamException;
+import java.io.WriteAbortedException;
 import java.util.LinkedList;
 import java.util.Vector;
 
@@ -442,7 +444,17 @@ public class NATMirage extends NATObject {
 		return Reflection.downObject(mirror_.meta_select(
 				mirror_,
 				AGSymbol.jAlloc("lexicalParent")));
-	}	
+	}
+	
+    public ATObject meta_pass() throws InterpreterException {
+    	return Reflection.downObject(mirror_.meta_invoke(
+				mirror_, AGSymbol.jAlloc("pass"), NATTable.EMPTY));
+    }
+    
+    public ATObject meta_resolve() throws InterpreterException {
+    	return Reflection.downObject(mirror_.meta_invoke(
+				mirror_, AGSymbol.jAlloc("resolve"), NATTable.EMPTY));
+    }
 	
 	public boolean base_isMirror() {
 		return false;
@@ -452,5 +464,24 @@ public class NATMirage extends NATObject {
 		return NATNil._INSTANCE_.base_asMirror();
 	}
 	
+	// when passing a mirage as a parameter in an asynchronous message send,
+	// make the mirror decide what object to read or write
+	
+	public Object writeReplace() throws ObjectStreamException {
+		try {
+			// TODO: what to pass as client?
+			return meta_pass();
+		} catch (InterpreterException e) {
+			throw new WriteAbortedException("Mirage's mirror failed to pass", e);
+		}
+	}
+	
+	public Object readResolve() throws ObjectStreamException {
+		try {
+			return meta_resolve();
+		} catch (InterpreterException e) {
+			throw new WriteAbortedException("Mirage's mirror failed to resolve", e);
+		}
+	}
 	
 }

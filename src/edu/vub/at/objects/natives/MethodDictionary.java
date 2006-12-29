@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +45,7 @@ import java.util.Set;
  *
  * @author smostinc
  */
-public class MethodDictionary implements Map, Cloneable {
+public class MethodDictionary implements Map, Cloneable, Serializable {
 
 	private static final int _DEFAULT_SIZE_ = 5;
 	

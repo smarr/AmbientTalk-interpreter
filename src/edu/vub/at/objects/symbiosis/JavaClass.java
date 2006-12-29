@@ -42,8 +42,8 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATIsolate;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -66,7 +66,7 @@ import java.util.HashMap;
  *  
  * @author tvcutsem
  */
-public final class JavaClass extends NATObject {
+public final class JavaClass extends NATIsolate {
 	
 	/**
 	 * A thread-local hashmap pooling all of the JavaClass wrappers for
@@ -325,4 +325,11 @@ public final class JavaClass extends NATObject {
 		return NATText.atValue("<java:"+wrappedClass_.toString()+">");
 	}
 
+	/**
+     * A Java Class object remains unique within an actor.
+     */
+    public ATObject meta_resolve() throws InterpreterException {
+    	return wrapperFor(wrappedClass_);
+    }
+	
 }

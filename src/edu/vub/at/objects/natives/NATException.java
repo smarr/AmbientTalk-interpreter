@@ -42,7 +42,7 @@ import edu.vub.at.objects.mirrors.Reflection;
  *
  * @author smostinc
  */
-public class NATException extends NATNil {
+public class NATException extends NATByCopy {
 	
 	private final InterpreterException wrappedException_;
 	

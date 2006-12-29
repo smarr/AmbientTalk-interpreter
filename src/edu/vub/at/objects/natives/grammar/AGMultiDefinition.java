@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.eval.PartialBinder;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
@@ -93,8 +92,8 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
      * Passing a mutable and compound object implies making a new instance of the 
      * object while invoking pass on all its constituents.
      */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    		return new AGMultiDefinition(parameters_.meta_pass(client).base_asTable(), valueExp_.meta_pass(client).base_asExpression());
+    public ATObject meta_pass() throws InterpreterException {
+    		return new AGMultiDefinition(parameters_.meta_pass().base_asTable(), valueExp_.meta_pass().base_asExpression());
     }
 
     public ATObject meta_resolve() throws InterpreterException {

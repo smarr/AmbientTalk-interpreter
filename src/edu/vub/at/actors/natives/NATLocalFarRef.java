@@ -47,7 +47,8 @@ import edu.vub.at.objects.natives.NATTable;
  */
 public class NATLocalFarRef extends NATFarReference {
 
-	private final ELActor farObjectHost_;
+	/** when serializing a far reference, the event loop stays home */
+	private transient final ELActor farObjectHost_;
 	
 	public NATLocalFarRef(ELActor farObjectHost, ATObjectID objectId) {
 		super(objectId);

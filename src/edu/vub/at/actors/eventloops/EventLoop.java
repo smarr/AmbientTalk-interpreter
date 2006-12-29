@@ -184,6 +184,9 @@ public abstract class EventLoop {
 				} catch (InterruptedException e) {
 					// If interrupted, we may be asked to stop
 				}
+				
+				// give other event loops a chance to process an event
+				Thread.yield();
 			}
 		}
 		protected EventLoop serving() { return owner(); }

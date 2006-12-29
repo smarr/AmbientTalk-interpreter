@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -46,7 +47,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  *
  * @author smostinc
  */
-public class OBJMirrorRoot extends NATNil {
+public class OBJMirrorRoot extends NATByCopy {
 	
 	public static final ATSymbol _MIRROR_ = AGSymbol.jAlloc("mirror");
 	public static final OBJMirrorRoot _INSTANCE_ = new OBJMirrorRoot();
@@ -200,4 +201,12 @@ public class OBJMirrorRoot extends NATNil {
 		
 		return NATNil._INSTANCE_;
 	}
+	
+	/**
+	 * After deserialization, ensure that the mirror root remains unique.
+	 */
+	public ATObject meta_resolve() throws InterpreterException {
+		return OBJMirrorRoot._INSTANCE_;
+	}
+	
 }

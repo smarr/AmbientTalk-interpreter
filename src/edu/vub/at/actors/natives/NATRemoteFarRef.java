@@ -43,7 +43,12 @@ import edu.vub.at.objects.natives.NATNil;
  */
 public class NATRemoteFarRef extends NATFarReference {
 
-	private final ELFarReference sendLoop_;
+	/**
+	 * When a remote far reference is passed on to another virtual machine, the event loop
+	 * is not taken with it. At the remote end, a new far reference will be created with the
+	 * appropriate event loop.
+	 */
+	private transient final ELFarReference sendLoop_;
 
 	public NATRemoteFarRef(ATObjectID objectId) {
 		super(objectId);

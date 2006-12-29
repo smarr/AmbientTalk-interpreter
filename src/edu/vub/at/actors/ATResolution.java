@@ -31,7 +31,7 @@ package edu.vub.at.actors;
 import edu.vub.at.objects.ATObject;
 
 /**
- *  
+ *  @deprecated currently not in use
  */
 public interface ATResolution extends ATObject {
 

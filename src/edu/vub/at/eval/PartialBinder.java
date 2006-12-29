@@ -37,6 +37,8 @@ import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 
+import java.io.Serializable;
+
 /**
  * Instances of the class PartialBinder represent 'partial functions' whose task it is
  * to bind the formal parameters of a function to the actual arguments upon function application.
@@ -73,7 +75,7 @@ import edu.vub.at.objects.natives.NATTable;
  *
  * @author tvcutsem
  */
-public abstract class PartialBinder {
+public abstract class PartialBinder implements Serializable {
 	
 	/**
 	 * Bind the given actual arguments to the formal parameters encapsulated by this partial bind function.

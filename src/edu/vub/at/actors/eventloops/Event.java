@@ -27,13 +27,15 @@
  */
 package edu.vub.at.actors.eventloops;
 
+import java.io.Serializable;
+
 /**
  * An Event object is the main communication channel between different event loops.
  * Events are the only kind of objects scheduled in event queues of the event loops.
  *
  * @author tvcutsem
  */
-public abstract class Event {
+public abstract class Event implements Serializable {
 
 	/**
 	 * For debugging purposes only.

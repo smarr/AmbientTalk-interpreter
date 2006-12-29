@@ -29,10 +29,13 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
+import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
@@ -49,14 +52,26 @@ import edu.vub.at.objects.natives.OBJLexicalRoot;
  * @author tvcutsem
  */
 public final class ELActor extends EventLoop {
+	
+	public static final ELActor currentActor() {
+		try {
+			return ((ELActor) EventLoop.currentEventLoop());
+		} catch (ClassCastException e) {
+			System.err.println("Asked for an actor in a non-event loop thread?");
+			e.printStackTrace();
+			throw new RuntimeException("Asked for an actor outside of an event loop");
+		}
+	}
 
 	private final ATActorMirror mirror_;
 	protected final ELVirtualMachine host_;
+	protected final ReceptionistsSet receptionists_;
 	
 	public ELActor(ATActorMirror mirror, ELVirtualMachine host) {
 		super("actor " + mirror.toString());
 		mirror_ = mirror;
 		host_ = host;
+		receptionists_ = new ReceptionistsSet(this);
 	}
 
 	/**
@@ -82,11 +97,42 @@ public final class ELActor extends EventLoop {
 	}
 	
 	/**
-	 * The main entry point for any asynchronous messages sent to this actor,
-	 * be it 'self-sends' or external sends.
-	 * @param msg the asynchronous AmbientTalk base-level message to enqueue
+	 * Export the given local object such that it is now remotely accessible via the
+	 * returned object id.
+	 * @param object a **near** reference to the object to export
+	 * @return a unique identifier by which this object can be retrieved via the resolve method.
+	 * @throws XIllegalOperation if the passed object is a far reference, i.e. non-local
 	 */
-	public void event_accept(final ATAsyncMessage msg) {
+	public ATFarReference export(ATObject object) throws InterpreterException {
+		// receptionist set will check whether ATObject is really local to me
+		return receptionists_.exportObject(object);
+	}
+	
+	/**
+	 * Resolve the given object id into a local reference. There are three cases to
+	 * consider:
+	 *  A) The given id designates an object local to this actor: the returned object
+	 *     will be a **near** reference to the object (i.e. the object itself)
+	 *  B) The given id designates a far (non-local) object that lives in the same
+	 *     address space as this actor: the returned object wil be a **far** reference
+	 *     to the object.
+	 *  C) The given id designates a far object that lives on a remote machine: the
+	 *     returned object will be a **far** and **remote** reference to the object.
+	 *     
+	 * @param id the identifier of the object to resolve
+	 * @return a near or far reference to the object, depending on where the designated object lives
+	 */
+	public ATObject resolve(ATObjectID id) {
+		return receptionists_.resolveObject(id);
+	}
+	
+	// Events to be processed by the actor event loop
+	
+	/**
+	 * The main entry point for any asynchronous self-sends.
+	 * Asynchronous self-sends do not undergo any form of parameter passing.
+	 */
+	public void event_acceptSelfSend(final ATAsyncMessage msg) {
 		receive(new Event("accept("+msg+")") {
 			public void process(Object myActorMirror) {
 				try {
@@ -96,6 +142,26 @@ public final class ELActor extends EventLoop {
 				} catch (InterpreterException e) {
 					// TODO what to do with exception?
 					System.err.println("accept("+msg+") failed with " + e.getMessage());
+				}
+			}
+		});
+	}
+	
+	/**
+	 * The main entry point for any asynchronous messages sent to this actor,
+	 * be it 'self-sends' or external sends.
+	 * @param msg the asynchronous AmbientTalk base-level message to enqueue
+	 */
+	public void event_accept(final String msgName, final byte[] serializedMessage) {
+		receive(new Event("accept("+msgName+")") {
+			public void process(Object myActorMirror) {
+				try {
+					ATObject result = msg.base_process(mirror_);
+					// TODO what to do with return value?
+					System.err.println("accept("+msgName+") returned " + result);
+				} catch (InterpreterException e) {
+					// TODO what to do with exception?
+					System.err.println("accept("+msgName+") failed with " + e.getMessage());
 				}
 			}
 		});

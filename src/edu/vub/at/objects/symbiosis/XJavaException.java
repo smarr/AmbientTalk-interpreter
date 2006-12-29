@@ -43,8 +43,8 @@ public final class XJavaException extends InterpreterException {
 	private static final long serialVersionUID = 328306238980169679L;
 
 	private final Throwable wrappedJavaException_;
-	private final Object originatingObject_;
-	private final Member originatingMethod_; // method or constructor in which exception originated
+	private final transient Object originatingObject_;
+	private final transient Member originatingMethod_; // method or constructor in which exception originated
 	
 	public XJavaException(Object jObj, Member jMeth, Throwable exc) {
 		wrappedJavaException_ = exc;

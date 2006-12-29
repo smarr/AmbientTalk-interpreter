@@ -27,7 +27,6 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.ATObservable;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -38,6 +37,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.util.MultiMap;
@@ -50,9 +50,11 @@ import java.util.Set;
  * with observer functionality. The installed observers are closures which are coupled
  * to a symbol describing the event they are interested in.
  *
+ * @deprecated currently not in use
+ *
  * @author smostinc
  */
-public class NATObservable extends NATNil implements ATObservable {
+public class NATObservable extends NATByCopy implements ATObservable {
 
 	protected final MultiMap observers_ = new MultiMap();
 	
@@ -100,14 +102,4 @@ public class NATObservable extends NATNil implements ATObservable {
 		return NATNil._INSTANCE_;
 	}
 
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * TODO Proper semantics
-     */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    		throw new RuntimeException("Attempting to pass an observable - not yet implemented");
-    }
 }

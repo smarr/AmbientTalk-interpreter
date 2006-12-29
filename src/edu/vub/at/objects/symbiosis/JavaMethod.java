@@ -37,7 +37,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
@@ -55,7 +55,7 @@ import java.lang.reflect.Method;
  *
  * @author tvcutsem
  */
-public final class JavaMethod extends NATNil implements ATMethod {
+public final class JavaMethod extends NATByRef implements ATMethod {
 	
 	protected final Method[] choices_;
 	

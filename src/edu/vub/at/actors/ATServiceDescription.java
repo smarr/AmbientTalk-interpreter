@@ -32,7 +32,7 @@ import edu.vub.at.objects.ATObject;
 
 /**
  * TODO document the class ATServiceDescription
- *
+ * @deprecated currently not in use
  * @author smostinc
  */
 public interface ATServiceDescription extends ATObject {

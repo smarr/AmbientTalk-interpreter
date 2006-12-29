@@ -39,7 +39,7 @@ import edu.vub.at.objects.ATObject;
  * 
  * @author smostinc
  */
-public abstract class NATBoolean extends NATNil implements ATBoolean {
+public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 	
 	/**
 	 * Returns the corresponding ATBoolean given a java truth value. This constructor

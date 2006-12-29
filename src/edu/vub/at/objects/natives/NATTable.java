@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIndexOutOfBounds;
@@ -237,33 +236,4 @@ public final class NATTable extends AGExpression implements ATTable {
 	    return union;
 	}
 	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-	public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-		ATObject[] passed = new ATObject[elements_.length];
-
-		for (int i = 0; i < elements_.length; i++) {
-			passed[i] = elements_[i].meta_pass(client);
-		}
-
-		return NATTable.atValue(passed);
-	}
-
-	public ATObject meta_resolve() throws InterpreterException {
-		ATObject[] resolved = new ATObject[elements_.length];
-
-		for (int i = 0; i < elements_.length; i++) {
-			resolved[i] = elements_[i].meta_resolve();
-		}
-
-		return NATTable.atValue(resolved);
-	}
-
-
 }

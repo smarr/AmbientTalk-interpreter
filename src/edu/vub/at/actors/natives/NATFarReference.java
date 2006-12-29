@@ -29,7 +29,6 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
-import edu.vub.at.actors.events.ActorEmittedEvents;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -44,13 +43,9 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-
-import java.lang.ref.WeakReference;
-import java.util.Hashtable;
 
 /**
  * 
@@ -58,46 +53,10 @@ import java.util.Hashtable;
  *
  * @author smostinc
  */
-public abstract class NATFarReference extends NATNil implements ATFarReference {
-	
-	public static final ATSymbol _OUT_ = AGSymbol.jAlloc("outbox");
+public abstract class NATFarReference extends NATByCopy implements ATFarReference {
 	
 	// encodes the identity of the far object pointed at
 	private final ATObjectID objectId_;
-	
-	// TODO: this map is not garbage-collected: obsolete entries are never removed
-	// TODO: these maps should be local to each actor!
-	private static final Hashtable _REMOTE_REF_POOL_ = new Hashtable();
-	private static final Hashtable _FAR_REF_POOL_ = new Hashtable();
-	
-	public static NATRemoteFarRef createRemoteFarRef(ATObjectID objectId) {
-		NATRemoteFarRef farref;
-		WeakReference pooled = (WeakReference) _REMOTE_REF_POOL_.get(objectId);
-		if (pooled != null) {
-			farref = (NATRemoteFarRef) pooled.get();
-			if (farref != null) {
-				return farref;
-			}
-		}
-		farref = new NATRemoteFarRef(objectId);
-		_REMOTE_REF_POOL_.put(objectId, new WeakReference(farref));
-		return farref;
-	}
-	
-	public static NATLocalFarRef createLocalFarRef(NATActorMirror actor, ATObjectID objectId) {
-		NATLocalFarRef farref;
-		WeakReference pooled = (WeakReference) _FAR_REF_POOL_.get(objectId);
-		if (pooled != null) {
-			farref = (NATLocalFarRef) pooled.get();
-			if (farref != null) {
-				return farref;
-			}
-		}
-
-		farref = new NATLocalFarRef(actor.getProcessor(), objectId);
-		_FAR_REF_POOL_.put(objectId, new WeakReference(farref));
-		return farref;
-	}
 
 	protected NATFarReference(ATObjectID objectId) {
 		objectId_ = objectId;
@@ -111,8 +70,13 @@ public abstract class NATFarReference extends NATNil implements ATFarReference {
 		return this;
 	}
 	
+	/**
+	 * After deserialization, ensure that only one unique remote reference exists for
+	 * my target.
+	 */
 	public ATObject meta_resolve() throws InterpreterException {
-		return OBJLexicalRoot._INSTANCE_.base_getActor().base_resolveFarReference(this);	
+		// it may be that the once local target object is now remote!
+		return ELActor.currentActor().resolve(getObjectId());
 	}
 
 	/* ------------------------------
@@ -120,20 +84,10 @@ public abstract class NATFarReference extends NATNil implements ATFarReference {
      * ------------------------------ */
 
 	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
-		return this.transmit(message.meta_pass(this).base_asAsyncMessage());
+		return this.transmit(message);
 	}
 	
 	protected abstract ATObject transmit(ATAsyncMessage passedMessage) throws InterpreterException;
-
-	/**
-	 * When passing a far reference to another actor, notify the surrounding actor to
-	 * allow for implementing a distributed garbage collection strategy.
-	 */
-	public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-		if(client.base_isFarReference())
-			OBJLexicalRoot._INSTANCE_.base_getActor().meta_receive(ActorEmittedEvents.passingFarReference(this, client.base_asFarReference()));
-		return this;
-	}
 
 	/**
 	 * @throws XIllegalOperation Cannot synchronously invoke a method on a far reference

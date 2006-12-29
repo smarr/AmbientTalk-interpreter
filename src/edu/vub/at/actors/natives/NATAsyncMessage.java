@@ -29,7 +29,6 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -99,27 +98,5 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch {
   	    return this;
   	}
-    
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing a mutable and compound object implies making a new instance of the 
-     * object while invoking pass on all its constituents.
-     */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    	return new NATAsyncMessage(sender_.meta_pass(client),
-    			                   receiver_.meta_pass(client),
-    			                   selector_.meta_pass(client).base_asSymbol(),
-    			                   arguments_.meta_pass(client).base_asTable());
-    }
-
-    public ATObject meta_resolve() throws InterpreterException {
-		return new NATAsyncMessage(sender_.meta_resolve(),
-				                   receiver_.meta_resolve(),
-				                   selector_.meta_resolve().base_asSymbol(),
-				                   arguments_.meta_resolve().base_asTable());
-	}
 
 }

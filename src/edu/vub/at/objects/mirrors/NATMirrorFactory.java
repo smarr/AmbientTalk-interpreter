@@ -27,9 +27,10 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATByCopy;
 
 /**
  * The NATMirrorFactory allows reifying an java-level implementation object which 
@@ -39,7 +40,7 @@ import edu.vub.at.objects.natives.NATNil;
  * 
  * @author smostinc
  */
-public class NATMirrorFactory extends NATNil {
+public class NATMirrorFactory extends NATByCopy {
 	
 	// FIXME : keep only _INSTANCE_ once _ is supported in AT.
 	public static final NATMirrorFactory INSTANCE;
@@ -62,6 +63,10 @@ public class NATMirrorFactory extends NATNil {
 		// return the newly created NATIntercessiveMirror, it needs to be upped explicitly.
 		// TODO: discuss with Stijn -> I removed the downing on base_ method invocations, explicit up no longer necessary
 		return createMirror(objectRepresentation);
+	}
+	
+	public ATObject meta_resolve() throws InterpreterException {
+		return NATMirrorFactory._INSTANCE_;
 	}
 	
 }

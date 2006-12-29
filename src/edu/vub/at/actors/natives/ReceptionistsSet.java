@@ -34,7 +34,9 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.util.MultiMap;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Hashtable;
 
 /**
  * An NATActorMirror's ReceptionistsSet keeps a mapping between identifiers and local objects
@@ -46,18 +48,63 @@ import java.util.HashMap;
  */
 public class ReceptionistsSet {
 
+    // TODO: these maps are not garbage-collected: obsolete entries are never removed
+	
 	/** object id (ATObjectID) -> local object (ATObject) */
-	HashMap exportedObjectsTable_;	
+	private final HashMap exportedObjectsTable_;	
 	
 	/** local object (ATObject) -> remote clients pointing to this object (Set of ATFarReference) */
-	MultiMap objectToClients_;
+	private final MultiMap objectToClients_;
 	
-	NATActorMirror owner_;
+	private final ELActor owner_;
 	
-	public ReceptionistsSet(NATActorMirror forActor) {
+	/**
+	 * a pool of remote object references: ensures that each ATObjectID is paired
+	 * with a unique remote object reference (and corresponding outbox)
+	 */
+	private final Hashtable remoteReferences_;
+	
+	/**
+	 * a pool of far object references: ensures that each ATObjectID is paired
+	 * with a unique far object reference
+	 */
+	private final Hashtable farReferences_;
+	
+	public ReceptionistsSet(ELActor forActor) {
+		owner_ = forActor;
 		exportedObjectsTable_ = new HashMap();
 		objectToClients_ = new MultiMap();
-		owner_ = forActor;
+		remoteReferences_ = new Hashtable();
+		farReferences_ = new Hashtable();
+	}
+	
+	private NATRemoteFarRef createRemoteFarRef(ATObjectID objectId) {
+		NATRemoteFarRef farref;
+		WeakReference pooled = (WeakReference) remoteReferences_.get(objectId);
+		if (pooled != null) {
+			farref = (NATRemoteFarRef) pooled.get();
+			if (farref != null) {
+				return farref;
+			}
+		}
+		farref = new NATRemoteFarRef(objectId);
+		remoteReferences_.put(objectId, new WeakReference(farref));
+		return farref;
+	}
+	
+	private NATLocalFarRef createLocalFarRef(ELActor actor, ATObjectID objectId) {
+		NATLocalFarRef farref;
+		WeakReference pooled = (WeakReference) farReferences_.get(objectId);
+		if (pooled != null) {
+			farref = (NATLocalFarRef) pooled.get();
+			if (farref != null) {
+				return farref;
+			}
+		}
+
+		farref = new NATLocalFarRef(actor, objectId);
+		farReferences_.put(objectId, new WeakReference(farref));
+		return farref;
 	}
 	
 	/**
@@ -68,13 +115,13 @@ public class ReceptionistsSet {
 	 * @return a unique identifier denoting the local object
 	 * @throws XIllegalOperation - if object is a far reference
 	 */
-	public ATObjectID exportObject(ATObject object) throws InterpreterException {
+	public ATFarReference exportObject(ATObject object) throws InterpreterException {
 		if (object.base_isFarReference()) {
 			throw new XIllegalOperation("Cannot export a far reference to " + object);
 		}
 		
 		// get the current VM
-		ELVirtualMachine currentVM = owner_.getProcessor().getHost();
+		ELVirtualMachine currentVM = owner_.getHost();
 
 		// combine VM guid, actor hash and object hash into an ATObjectID
 		ATObjectID objId = new ATObjectID(currentVM.getGUID(), owner_.hashCode(), object.hashCode());
@@ -84,18 +131,31 @@ public class ReceptionistsSet {
 		   exportedObjectsTable_.put(objId, object);
 		}
 		
-		return objId;
+		return createLocalFarRef(owner_, objId);
 	}
 	
 	/**
 	 * Try to resolve a remote object reference into a local (near) reference.
 	 * 
 	 * @param objectId the identifier of the remote object
-	 * @return either the local object corresponding to that identifier, or null if there is no match
+	 * @return either the local object corresponding to that identifier, or a far reference designating the id
 	 * @throws InterpreterException
 	 */
-	public ATObject resolveObject(ATObjectID objectId) throws InterpreterException {
-		return (ATObject) exportedObjectsTable_.get(objectId);
+	public ATObject resolveObject(ATObjectID objectId) {
+		ATObject localObject = (ATObject) exportedObjectsTable_.get(objectId);
+		if (localObject == null) {
+			// the resolved object is not local
+			if (objectId.isRemote()) {
+				// the designated object does not live in this VM
+				return createRemoteFarRef(objectId);
+			} else {
+				// the designated object lives in the same VM as this actor
+				ELActor localActor = owner_.getHost().getActor(objectId.getActorId());
+				return createLocalFarRef(localActor, objectId);
+			}
+		} else {
+			return localObject; // far ref now resolved to near ref
+		}
 	}
 	
 	/**

@@ -29,13 +29,11 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.eventloops.BlockingFuture;
-import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.natives.NATActorMirror;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -73,7 +71,7 @@ import edu.vub.at.parser.NATParser;
  * @author smostinc
  * @author tvcutsem
  */
-public final class OBJLexicalRoot extends NATNil {
+public final class OBJLexicalRoot extends NATByCopy {
 	
 	/**
 	 * The singleton instance of the sentinel lexical root
@@ -292,16 +290,7 @@ public final class OBJLexicalRoot extends NATNil {
 	}
 	
 	public ATActorMirror base_getActor() throws InterpreterException {
-		try {
-		  return ((ELActor) EventLoop.currentEventLoop()).getActorMirror();
-		} catch(IllegalStateException e) {
-			throw new XIllegalOperation("Asked for current actor when none was active", e);
-		} catch (ClassCastException e) {
-			// TODO: couple remote threads to their own actor which can e.g. be created lazily
-			System.err.println("Asked for current actor when none was active");
-			e.printStackTrace();
-			throw new XIllegalOperation("Asked for current actor when none was active", e);
-		}
+		return ELActor.currentActor().getActorMirror();
 	}
 	
 	
@@ -671,4 +660,12 @@ public final class OBJLexicalRoot extends NATNil {
     	    // root.new(@initargs)
 	    return Evaluator.getGlobalLexicalScope().base_new(initargs);
     }
+    
+	/**
+	 * After deserialization, ensure that the lexical root remains unique.
+	 */
+	public ATObject meta_resolve() throws InterpreterException {
+		return OBJLexicalRoot._INSTANCE_;
+	}
+    
 }

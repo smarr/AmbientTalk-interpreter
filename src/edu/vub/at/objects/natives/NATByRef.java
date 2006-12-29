@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * EActorCreate.java created on Aug 21, 2006
+ * NATByRef.java created on 29-dec-2006 at 15:57:37
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,11 +25,37 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
+package edu.vub.at.objects.natives;
 
-package edu.vub.at.actors.events;
+import edu.vub.at.actors.natives.ELActor;
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.objects.ATObject;
 
 /**
- *  
+ * This class is the abstract superclass of all AT/2 objects that require by-reference
+ * parameter passing semantics when passed between actors.
+ *
+ * @author tvcutsem
  */
-public interface EActorCreate extends ATEvent {
+public abstract class NATByRef extends NATNil {
+
+	/**
+	 * By reference objects serialize to a proxy representation. This proxy
+	 * representation takes the form of a far reference to the local object.
+	 */
+	public ATObject meta_pass() throws InterpreterException {
+		return ELActor.currentActor().export(this);
+	}
+	
+	/**
+	 * By reference objects cannot be deserialized, by definition.
+	 * It is an error to try to resolve an unserializable by reference object.
+	 * The object on which meta_resolve is normally invoked is the proxy
+	 * representation that was returned by this object's meta_pass method.
+	 */
+	public ATObject meta_resolve() throws InterpreterException {
+		throw new XIllegalOperation("Cannot deserialize a by reference object: " + this);
+	}
+	
 }

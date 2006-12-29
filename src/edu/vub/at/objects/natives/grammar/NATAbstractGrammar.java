@@ -29,7 +29,7 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -39,7 +39,7 @@ import edu.vub.at.objects.natives.NATText;
  * that represent abstract grammar parse tree elements. That is, any object that
  * can be returned as part of the AST produced by the native parser.
  */
-public abstract class NATAbstractGrammar extends NATNil implements ATAbstractGrammar {
+public abstract class NATAbstractGrammar extends NATByCopy implements ATAbstractGrammar {
 
 	// This is an empty superclass used only for proper documentation and
 	// to identify which native objects can be output by the parser.
@@ -49,6 +49,6 @@ public abstract class NATAbstractGrammar extends NATNil implements ATAbstractGra
 	
 	public NATText meta_print() throws InterpreterException {
         throw new RuntimeException("all subclasses of NATAbstractGrammar should override the default behaviour of NATNil");
-	} 
+	}
 	
 }

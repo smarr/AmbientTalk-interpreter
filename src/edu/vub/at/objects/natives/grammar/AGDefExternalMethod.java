@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
@@ -37,6 +36,7 @@ import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefExternalMethod;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosureMethod;
+import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
@@ -87,7 +87,7 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		rcvNam_.meta_eval(ctx).meta_addMethod(
-				new NATClosureMethod(ctx.base_getLexicalScope(), selectorExp_, argumentExps_, bodyStmts_));
+				new NATClosureMethod(ctx.base_getLexicalScope(), new NATMethod(selectorExp_, argumentExps_, bodyStmts_)));
 		return NATNil._INSTANCE_;
 	}
 
@@ -119,8 +119,8 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
      * Passing a mutable and compound object implies making a new instance of the 
      * object while invoking pass on all its constituents.
      */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    		return new AGDefExternalMethod(rcvNam_.meta_pass(client).base_asSymbol(), selectorExp_.meta_pass(client).base_asSymbol(), argumentExps_.meta_pass(client).base_asTable(), bodyStmts_.meta_pass(client).base_asBegin());
+    public ATObject meta_pass() throws InterpreterException {
+    		return new AGDefExternalMethod(rcvNam_.meta_pass().base_asSymbol(), selectorExp_.meta_pass().base_asSymbol(), argumentExps_.meta_pass().base_asTable(), bodyStmts_.meta_pass().base_asBegin());
     }
 
     public ATObject meta_resolve() throws InterpreterException {

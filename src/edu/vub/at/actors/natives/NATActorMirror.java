@@ -29,15 +29,12 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.ATMailbox;
 import edu.vub.at.actors.ATResolution;
 import edu.vub.at.actors.ATServiceDescription;
 import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.events.ActorEmittedEvents;
-import edu.vub.at.actors.events.CommonEmittedEvents;
-import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
@@ -51,6 +48,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNamespace;
 import edu.vub.at.objects.natives.NATNil;
@@ -73,7 +71,7 @@ import java.io.FilenameFilter;
  *
  * @author smostinc
  */
-public class NATActorMirror extends NATNil implements ATActorMirror {
+public class NATActorMirror extends NATByRef implements ATActorMirror {
 	
 	// Observable event name
 	public static final ATSymbol _PROCESSED_ = AGSymbol.jAlloc("messageProcessed");
@@ -97,8 +95,6 @@ public class NATActorMirror extends NATNil implements ATActorMirror {
 	final ATMailbox outbox_ = new NATMailbox(this, ATActorMirror._OUT_);
 	final ATMailbox providedbox_ = new NATMailbox(this, ATActorMirror._PROVIDED_);
 	final ATMailbox requiredbox_ = new NATMailbox(this, ATActorMirror._REQUIRED_);
-		
-	private final ReceptionistsSet receptionists_ = new ReceptionistsSet(this);
 	
 	private final ELActor processor_;
 	
@@ -125,8 +121,7 @@ public class NATActorMirror extends NATNil implements ATActorMirror {
 				
 				try {
 					// pass far ref to behaviour to creator actor who is waiting for this
-					ATObjectID behaviourId = receptionists_.exportObject(behaviour_);
-					f.resolve(NATFarReference.createLocalFarRef((NATActorMirror) byMyself, behaviourId));
+					f.resolve(processor_.receptionists_.exportObject(behaviour_));
 					
 					// go on to initialize the root and the behaviour
 					initLobbyUsingObjectPath();
@@ -174,7 +169,7 @@ public class NATActorMirror extends NATNil implements ATActorMirror {
 	}
 	
     /* --------------------------
-     * -- VM to NATActorMirror Protocol --
+     * -- VM to Actor Protocol --
      * -------------------------- */
 
 	public ATObject base_accept(ATAsyncMessage message) throws InterpreterException {
@@ -357,28 +352,36 @@ public class NATActorMirror extends NATNil implements ATActorMirror {
 	 * -- Object Passing Protocol --
 	 * ----------------------------- */
 	
-	public ATFarReference base_reference_for_(ATObject object, ATFarReference client) throws InterpreterException {
+	/*
+	
+	// TODO: what should the signature of base_export look like? with or without client parameter?
+	// returns far ref or ATObjectID?
+	// should it be implemented by NATActorMirror or ELActor? (native or reified?)
+	public ATFarReference base_export(ATObject object) throws InterpreterException {
 		// receptionist set will check whether ATObject is really local to me
-		ATObjectID localObjectId = receptionists_.exportObject(object);
+		ATObjectID localObjectId = processor_.receptionists_.exportObject(object);
 		ATFarReference farRef;
 		
 		if (client.asNativeFarReference().getObjectId().isRemote()) {
 			farRef = NATFarReference.createRemoteFarRef(localObjectId);
-			receptionists_.addClient(object, client);	
+			processor_.receptionists_.addClient(object, client);
 		} else {
 			farRef = NATFarReference.createLocalFarRef(this, localObjectId);
 		}
 		return farRef;
 	}
 	
-	public ATObject base_resolveFarReference(ATFarReference farReference) throws InterpreterException {
-		return receptionists_.resolveObject(farReference.asNativeFarReference().getObjectId());
+	public ATObject base_resolve(ATFarReference farReference) throws InterpreterException {
+		return processor_.receptionists_.resolveObject(farReference.asNativeFarReference().getObjectId());
 	}
 	
 	public ATNil base_farReferencePassed(ATFarReference passed, ATFarReference client) {
 		// TODO(dgc) store the new client of the object somehow...
 		return NATNil._INSTANCE_;
 	}
+	
+	
+	*/
 	
 	public ATObject getBehaviour() {
 		return behaviour_;
@@ -403,7 +406,7 @@ public class NATActorMirror extends NATNil implements ATActorMirror {
 	}
 	
 	public ATObject meta_receive(ATAsyncMessage msg) throws InterpreterException {
-		processor_.event_accept(msg);
+		processor_.event_acceptSelfSend(msg);
 		return NATNil._INSTANCE_;
 	}
 	

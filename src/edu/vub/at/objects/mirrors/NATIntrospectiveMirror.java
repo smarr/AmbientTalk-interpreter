@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -41,10 +40,10 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.OBJLexicalRoot;
 
 /**
  * <p>NATIntrospectiveMirror is a default mirror to represent an ambienttalk object 
@@ -70,7 +69,7 @@ import edu.vub.at.objects.natives.OBJLexicalRoot;
  * 
  * @author smostinc
  */
-public class NATIntrospectiveMirror extends NATNil implements ATMirror {
+public class NATIntrospectiveMirror extends NATByCopy implements ATMirror {
 
 	/**
 	 * The prototypical mirror object reflects on nil. This mirror (or in effect any
@@ -79,9 +78,9 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
 	 * for a call to the mirror factory. This is in accordance with the principle 
 	 * that all mirror creation happens through the mediation of the factory.
 	 */
-	public static NATIntrospectiveMirror _PROTOTYPE_ = new NATIntrospectiveMirror(NATNil._INSTANCE_);
+	public static final NATIntrospectiveMirror _PROTOTYPE_ = new NATIntrospectiveMirror(NATNil._INSTANCE_);
 	
-	protected ATObject principal_;
+	protected final ATObject principal_;
 	
 	
 	/**
@@ -324,11 +323,12 @@ public class NATIntrospectiveMirror extends NATNil implements ATMirror {
      * ----------------------------- */
 
     /**
-     * Passing an object with an attached (implicit) scope implies creating a far object
-     * reference for them, so that their methods can only be invoked asynchronously but
-     * within the correct actor and scope.
+     * When an introspective mirror is deserialized, it will become a mirror on
+     * its deserialized principal. This means that, if the principal is passed
+     * by copy, the mirror will be a mirror on the copy. If the principal is passed
+     * by reference, the mirror will be a mirror on the far reference.
      */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
+    public ATObject meta_resolve() throws InterpreterException {
+    	return NATMirrorFactory._INSTANCE_.base_createMirror(principal_);
     }
 }

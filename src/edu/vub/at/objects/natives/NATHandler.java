@@ -39,7 +39,7 @@ import edu.vub.at.objects.ATObject;
  *
  * @author smostinc
  */
-public class NATHandler extends NATNil implements ATHandler {
+public class NATHandler extends NATByRef implements ATHandler {
 
 	private final ATObject filter_;
 	private final ATClosure handler_;

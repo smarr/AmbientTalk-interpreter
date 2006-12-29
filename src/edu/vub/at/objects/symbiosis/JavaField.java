@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.symbiosis;
 
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATField;
@@ -36,10 +35,10 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.OBJLexicalRoot;
 
 import java.lang.reflect.Field;
 
@@ -48,7 +47,7 @@ import java.lang.reflect.Field;
  * 
  * @author tvcutsem
  */
-public final class JavaField extends NATNil implements ATField {
+public final class JavaField extends NATByRef implements ATField {
 
 	private final Object host_;
 	private final Field field_;
@@ -95,18 +94,5 @@ public final class JavaField extends NATNil implements ATField {
 			}
 		}
 	}
-	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing an object with an attached (implicit) scope implies creating a far object
-     * reference for them, so that their methods can only be invoked asynchronously but
-     * within the correct actor and scope.
-     */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
-    }
     	
 }

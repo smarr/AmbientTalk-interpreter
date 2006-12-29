@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * BHAsyncMessage.java created on Aug 21, 2006
+ * NATByCopy.java created on 29-dec-2006 at 16:58:23
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,11 +25,33 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
+package edu.vub.at.objects.natives;
 
-package edu.vub.at.actors.beholders;
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATObject;
 
 /**
- *  
+ * This class is the abstract superclass of all AT/2 object types which should
+ * be passed by copy when passed as a parameter between actors.
+ *
+ * @author tvcutsem
  */
-public interface BHAsyncMessage {
+public abstract class NATByCopy extends NATNil {
+
+    /**
+     * When a by-copy object is asked which object to serialize in its stead,
+     * the by-copy object returns itself, so that it itself will be serialized.
+     */
+    public ATObject meta_pass() throws InterpreterException {
+    	return this;
+    }
+	
+    /**
+     * When a by-copy object is asked which object it represents when it
+     * is deserialized, the object returns itself.
+     */
+    public ATObject meta_resolve() throws InterpreterException {
+    	return this;
+    }
+	
 }

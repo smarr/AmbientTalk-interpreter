@@ -120,5 +120,12 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 			return super.toString();
 		}
 	}
+	
+	/**
+	 * After deserialization, ensure that the symbol remains unique.
+	 */
+	public ATObject meta_resolve() throws InterpreterException {
+		return alloc(txt_);
+	}
 
 }

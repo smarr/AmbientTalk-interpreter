@@ -63,12 +63,16 @@ import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 
+import java.io.InvalidObjectException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
 /**
  * NATNil implements default semantics for all test and conversion methods.
  *
  * @author smostinc
  */
-public class NATNil implements ATNil {
+public class NATNil implements ATNil, Serializable {
 	
     protected NATNil() {};
 
@@ -128,30 +132,6 @@ public class NATNil implements ATNil {
      */
     public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
         throw new XSelectorNotFound(selector, this);
-    }
-
-    
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Standard objects such as nil, numbers, booleans and so on can be passed by copy.
-     * TODO Note that compound objects such as tables should delegate to their parts and
-     * scoped objects (objects and closures) will typically want to give out a reference.
-     */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    		return this;
-    }
-    
-    
-    /**
-     * Standard objects such as nil, numbers, booleans and so on can be passed by copy.
-     * TODO Note that compound objects such as tables should delegate to their parts and
-     * scoped objects (objects and closures) will typically want to give out a reference.
-     */
-    public ATObject meta_resolve() throws InterpreterException {
-    		return this;
     }
     
     /* ------------------------------------------
@@ -564,6 +544,50 @@ public class NATNil implements ATNil {
 
 	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
 		return this.meta_isCloneOf(object);
+	}
+	
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * This method allows objects to decide which object should be serialized in their
+     * stead when they are passed as argument in an asynchronous message send that
+     * crosses actor boundaries. By default, nil decides that it is safe to serialize
+     * the object itself. Special objects such as e.g. closures should override this
+     * method and return a far reference encoding instead.
+     */
+    public ATObject meta_pass() throws InterpreterException {
+    	return this;
+    }
+    
+    /**
+     * After deserialization, ensure that nil remains unique.
+     */
+    public ATObject meta_resolve() throws InterpreterException {
+    	return NATNil._INSTANCE_;
+    }
+	
+	/**
+	 * Delegate the responsibility of serialization to the AT/2 meta-level 
+	 */
+	public Object writeReplace() throws ObjectStreamException {
+		try {
+			return this.meta_pass();
+		} catch(InterpreterException e) {
+			throw new InvalidObjectException("Failed to pass object " + this + ": " + e.getMessage());
+		}
+	}
+    
+	/**
+	 * Delegate the responsibility of deserialization to the AT/2 meta-level 
+	 */
+	public Object readResolve() throws ObjectStreamException {
+		try {
+			return this.meta_resolve();
+		} catch(InterpreterException e) {
+			throw new InvalidObjectException("Failed to resolve object " + this + ": " + e.getMessage());
+		}
 	}
 
 }

@@ -34,6 +34,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
+import edu.vub.at.objects.natives.NATIsolate;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 
@@ -57,7 +58,7 @@ import java.util.Vector;
  *    
  * @author tvcutsem
  */
-public final class JavaPackage extends NATObject {
+public final class JavaPackage extends NATIsolate {
 
 	private static final String _PKG_SEP_ = ".";
 	

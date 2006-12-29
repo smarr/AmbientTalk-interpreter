@@ -28,7 +28,9 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
@@ -49,13 +51,14 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * 
  * @author tvcutsem
  */
-public final class NATClosureMethod extends NATMethod {
+public final class NATClosureMethod extends NATByRef implements ATMethod {
 	
 	private final ATObject lexicalScope_;
+	private final ATMethod method_;
 	
-	public NATClosureMethod(ATObject scope, ATSymbol name, ATTable parameters, ATBegin body) throws InterpreterException {
-		super(name, parameters, body);
+	public NATClosureMethod(ATObject scope, ATMethod method) throws InterpreterException {
 		lexicalScope_ = scope;
+		method_ = method;
 	}
 	
 	/**
@@ -72,9 +75,38 @@ public final class NATClosureMethod extends NATMethod {
 	 * @return the value of evaluating the function body
 	 */
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-		// should be: super.base_apply(arguments, ctx.base_withLexicalEnvironment(lexicalScope_),
+		// should be: method_.base_apply(arguments, ctx.base_withLexicalEnvironment(lexicalScope_),
 		// but this version is more efficient, as we immediately create the right context, rather than
-		// creating a temporary context which will in turn be modified by super.base_apply
-		return base_applyInScope(arguments, ctx.base_withLexicalEnvironment(new NATCallframe(lexicalScope_)));
+		// creating a temporary context which will in turn be modified by method_.base_apply
+		return method_.base_applyInScope(arguments, ctx.base_withLexicalEnvironment(new NATCallframe(lexicalScope_)));
 	}
+
+	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
+		return method_.base_applyInScope(arguments, ctx);
+	}
+
+	public ATBegin base_getBodyExpression() throws InterpreterException {
+		return method_.base_getBodyExpression();
+	}
+
+	public ATSymbol base_getName() throws InterpreterException {
+		return method_.base_getName();
+	}
+
+	public ATTable base_getParameters() throws InterpreterException {
+		return method_.base_getParameters();
+	}
+	
+	public NATText meta_print() throws InterpreterException {
+		return NATText.atValue("<method:"+method_.base_getName()+">");
+	}
+
+	public ATMethod base_asMethod() throws XTypeMismatch {
+		return this;
+	}
+
+	public boolean base_isMethod() {
+		return true;
+	}
+	
 }

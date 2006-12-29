@@ -30,6 +30,7 @@ package edu.vub.at.actors.beholders;
 
 /**
  * A beholder is an observer on an object's mirror
+ * @deprecated currently not in use
  */
 public interface ATBeholder {
 }

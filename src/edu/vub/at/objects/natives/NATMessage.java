@@ -38,7 +38,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * 
  * @author tvc
  */
-public abstract class NATMessage extends NATNil implements ATMessage {
+public abstract class NATMessage extends NATByCopy implements ATMessage {
 
 	protected final ATSymbol selector_;
 	protected ATTable  arguments_;

@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -64,7 +63,7 @@ import java.util.Vector;
  * @author tvcutsem
  * @author smostinc
  */
-public class NATCallframe extends NATNil implements ATObject {
+public class NATCallframe extends NATByRef implements ATObject {
 	
 	protected FieldMap 		variableMap_;
 	protected final Vector	stateVector_;
@@ -343,15 +342,6 @@ public class NATCallframe extends NATNil implements ATObject {
     /* -----------------------------
      * -- Object Passing protocol --
      * ----------------------------- */
-
-    /**
-     * Passing an object with an attached (implicit) scope implies creating a far object
-     * reference for them, so that their methods can only be invoked asynchronously but
-     * within the correct actor and scope.
-     */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
-    }
 	
 	// protected methods, only to be used by NATCallframe and NATObject
 

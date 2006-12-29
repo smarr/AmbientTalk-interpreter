@@ -27,9 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -47,10 +46,10 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  * 
  * @author smostinc
  */
-public class NATSuperObject extends NATNil implements ATObject {
+public class NATSuperObject extends NATByRef implements ATObject {
 
-    private ATObject receiver_;
-    private ATObject lookupFrame_;
+    private final ATObject receiver_;
+    private final ATObject lookupFrame_;
 
     public NATSuperObject(ATObject receiver, ATObject lookupFrame) {
         receiver_ = receiver;
@@ -209,14 +208,30 @@ public class NATSuperObject extends NATNil implements ATObject {
     /* -----------------------------
      * -- Object Passing protocol --
      * ----------------------------- */
-
-    /**
-     * Passing an object with an attached (implicit) scope implies creating a far object
-     * reference for them, so that their methods can only be invoked asynchronously but
-     * within the correct actor and scope.
-     */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
-    }
+    
+	/**
+	 * Normally, references to super are passed by reference, but if both
+	 * the parent and child are isolates, the super reference may be passed
+	 * by copy.
+	 */
+	public ATObject meta_pass() throws InterpreterException {
+		if ((receiver_ instanceof NATIsolate) && (lookupFrame_ instanceof NATIsolate)) {
+			return this;
+		} else {
+			return super.meta_pass();
+		}
+	}
+	
+	/**
+	 * If super is passed by copy because it connects two isolates, return
+	 * this super object itself upon deserialization.
+	 */
+	public ATObject meta_resolve() throws InterpreterException {
+		if ((receiver_ instanceof NATIsolate) && (lookupFrame_ instanceof NATIsolate)) {
+			return this;
+		} else {
+			return super.meta_resolve();
+		}
+	}
 
 }

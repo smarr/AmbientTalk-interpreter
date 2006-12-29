@@ -44,7 +44,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * @author smostinc
  * @author tvcutsem
  */
-public class NATMethod extends NATNil implements ATMethod {
+public class NATMethod extends NATByCopy implements ATMethod {
 
 	private final ATSymbol 	name_;
 	private final ATTable 	parameters_;

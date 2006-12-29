@@ -27,10 +27,12 @@
  */
 package edu.vub.at.actors.id;
 
+import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 
 /**
@@ -74,7 +76,7 @@ public class ATObjectID implements Serializable {
 	public boolean isRemote() {
 		return (!virtualMachineId_.equals(ELVirtualMachine.currentVM().getGUID()));
 	}
-
+	
 	/* -----------------------
 	 * -- Structural Access --
 	 * ----------------------- */

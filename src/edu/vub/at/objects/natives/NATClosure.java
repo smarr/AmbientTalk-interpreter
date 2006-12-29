@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.signals.SignalEscape;
@@ -50,7 +49,7 @@ import edu.vub.at.objects.mirrors.NativeClosure;
  * 
  * @author smostinc
  */
-public class NATClosure extends NATNil implements ATClosure {
+public class NATClosure extends NATByRef implements ATClosure {
 
 	// these instance variables are inherited and used by a NativeClosure as well.
 	protected ATMethod 	method_;
@@ -225,17 +224,5 @@ public class NATClosure extends NATNil implements ATClosure {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<closure:"+method_.base_getName()+">");
 	}
-	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * Passing an object with an attached (implicit) scope implies creating a far object
-     * reference for them, so that their methods can only be invoked asynchronously but
-     * within the correct actor and scope.
-     */
-    public ATObject meta_pass(ATFarReference client) throws InterpreterException {
-    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_reference_for_(this, client);
-    }
+    
 }
