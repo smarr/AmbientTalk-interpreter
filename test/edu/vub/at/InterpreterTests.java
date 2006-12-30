@@ -28,6 +28,7 @@
 
 package edu.vub.at;
 
+import edu.vub.at.actors.natives.SerializationTest;
 import edu.vub.at.objects.mirrors.CoercionTest;
 import edu.vub.at.objects.mirrors.InvocationTest;
 import edu.vub.at.objects.mirrors.MirageTest;
@@ -82,6 +83,7 @@ public class InterpreterTests {
 		suite.addTestSuite(SymbiosisTest.class);
 		suite.addTestSuite(CustomFieldsTest.class);
 		suite.addTestSuite(TestParameterBinding.class);
+		suite.addTestSuite(SerializationTest.class);
 		//$JUnit-END$
 		return suite;
 	}

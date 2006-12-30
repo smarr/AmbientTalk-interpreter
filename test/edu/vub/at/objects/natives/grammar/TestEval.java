@@ -188,18 +188,25 @@ public class TestEval extends AmbientTalkTest {
 		assertEquals(evalAndReturn("x.y").base_asClosure().base_getMethod(), y);
 	}
 	
-	public void testFirstClassMessages() throws InterpreterException {
+	public void testFirstClassMessage() throws InterpreterException {
 		ATMessage methInv = evalAndReturn(".m(3)").base_asMessage();
-		ATMessage asyncMsg = evalAndReturn("<-m(3)").base_asMessage();
 
 		assertEquals(atM_, methInv.base_getSelector());
 		assertEquals(atThree_, methInv.base_getArguments().base_at(NATNumber.ONE));
 		assertTrue(methInv instanceof ATMethodInvocation);
-		
-		assertEquals(atM_, asyncMsg.base_getSelector());
-		assertEquals(atThree_, asyncMsg.base_getArguments().base_at(NATNumber.ONE));
-		assertTrue(asyncMsg instanceof ATAsyncMessage);
-		assertEquals(ctx_.base_getSelf(), ((ATAsyncMessage) asyncMsg).base_getSender());
+	}
+	
+	public void testFirstClassAsyncMessage() throws Exception {
+		actorTest(new ActorTest() {
+			public void test() throws Exception {
+				ATMessage asyncMsg = evalAndReturn("<-m(3)").base_asMessage();
+				
+				assertEquals(atM_, asyncMsg.base_getSelector());
+				assertEquals(atThree_, asyncMsg.base_getArguments().base_at(NATNumber.ONE));
+				assertTrue(asyncMsg instanceof ATAsyncMessage);
+				assertEquals(ctx_.base_getSelf(), ((ATAsyncMessage) asyncMsg).base_getSender());	
+			}
+		});
 	}
 	
 	public void testMethodApplication() throws InterpreterException {

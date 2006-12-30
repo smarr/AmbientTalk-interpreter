@@ -51,7 +51,7 @@ import edu.vub.at.objects.natives.OBJLexicalRoot;
  *
  * @author tvcutsem
  */
-public final class ELActor extends EventLoop {
+public class ELActor extends EventLoop {
 	
 	public static final ELActor currentActor() {
 		try {
@@ -201,5 +201,14 @@ public final class ELActor extends EventLoop {
 		} catch (Exception e) {
 			throw (InterpreterException) e;
 		}
+	}
+	
+	
+	/**
+	 * This method should only be used for purposes of unit testing. It allows
+	 * arbitary code to be scheduled by external threads such as unit testing frameworks.
+	 */
+	public Object sync_event_performTest(final Callable c) throws Exception {
+		return (ATObject) receiveAndWait("performTest("+c+")", c);
 	}
 }

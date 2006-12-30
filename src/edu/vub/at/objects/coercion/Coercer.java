@@ -66,12 +66,12 @@ public final class Coercer implements InvocationHandler {
 	
 	private final NATObject principal_;
 	
-	// we have to remember which actor owned the principal
-	private final ELActor owningActor_;
+	// we have to remember which thread owned the principal
+	private final Thread wrappingThread_;
 	
 	private Coercer(NATObject principal) {
 		principal_ = principal;
-		owningActor_ = (ELActor) EventLoop.currentEventLoop();
+		wrappingThread_ = Thread.currentThread();
 	}
 	
 	public static final Object coerce(ATObject object, Class type) throws XTypeMismatch {
@@ -98,6 +98,7 @@ public final class Coercer implements InvocationHandler {
 				throw e.getTargetException();
 			}
 		// intercept access to the wrapped object for Java->AT value conversion
+		// or for serialization purposes
 		} else if (method.getDeclaringClass() == SymbioticATObjectMarker.class) {
 			return principal_;
 		} else {
@@ -117,26 +118,27 @@ public final class Coercer implements InvocationHandler {
 			// if the current thread is not an actor thread, treat the Java invocation
 			// as a message send instead and enqueue it in my actor's thread
 			
-			if (!(Thread.currentThread() instanceof EventProcessor)) {
+			if (Thread.currentThread() != wrappingThread_) {
+				if (Thread.currentThread() instanceof EventProcessor) {
+					// another event loop has direct access to this object, this means
+					// an AT object has been shared between actors via Java, signal an error
+					throw new XIllegalOperation("Detected illegal invocation: sharing via Java level of object " + principal_);
+				}
+				
 				// because a message send is asynchronous and Java threads work synchronously,
 				// we'll have to make the Java thread wait for the result
-				return owningActor_.sync_event_symbioticInvocation(new Callable() {
+				ELActor owningActor = (ELActor) EventLoop.toEventLoop(wrappingThread_);
+				return owningActor.sync_event_symbioticInvocation(new Callable() {
 					public Object call(Object actorMirror) throws Exception {
 						ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);
 						return Symbiosis.ambientTalkToJava(result, method.getReturnType());
 					}
 				});
 			} else {
-				if (owningActor_ == EventLoop.currentEventLoop()) {
-				    // perform a synchronous invocation
-					ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);
-					// properly 'cast' the returned object into the appropriate interface
-					return Symbiosis.ambientTalkToJava(result, method.getReturnType());		
-				} else {
-					// another event loop has direct access to this object, this means
-					// an AT object has been shared between actors via Java, signal an error
-					throw new XIllegalOperation("Detected illegal invocation: sharing via Java level of object " + principal_);
-				}
+				// perform a synchronous invocation
+				ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);
+				// properly 'cast' the returned object into the appropriate interface
+				return Symbiosis.ambientTalkToJava(result, method.getReturnType());		
 			}
 		}
 	}

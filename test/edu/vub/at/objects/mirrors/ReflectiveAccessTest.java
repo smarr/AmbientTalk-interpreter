@@ -127,17 +127,17 @@ public class ReflectiveAccessTest extends AmbientTalkTestCase {
 		
 		lexicalRoot.meta_defineField(AGSymbol.jAlloc("symIfTrue"), AGSymbol.jAlloc("ifTrue:"));
 		
-		ATObject mirrors = new NATObject(lexicalRoot);
-		mirrors.meta_defineField(AGSymbol.jAlloc("Factory"), NATMirrorFactory._INSTANCE_);
+		//ATObject mirrors = new NATObject(lexicalRoot);
+		//mirrors.meta_defineField(AGSymbol.jAlloc("Factory"), NATMirrorFactory._INSTANCE_);
 		
-		ATObject natives = new NATObject(lexicalRoot);
-		natives.meta_defineField(AGSymbol.jAlloc("Context"), NATMirrorFactory._INSTANCE_);
+		//ATObject natives = new NATObject(lexicalRoot);
+		//natives.meta_defineField(AGSymbol.jAlloc("Context"), NATMirrorFactory._INSTANCE_);
 		
-		ATObject at = new NATObject(lexicalRoot);
-		at.meta_defineField(AGSymbol.jAlloc("mirrors"), mirrors);
-		at.meta_defineField(AGSymbol.jAlloc("natives"), natives);
+		//ATObject at = new NATObject(lexicalRoot);
+		//at.meta_defineField(AGSymbol.jAlloc("mirrors"), mirrors);
+		//at.meta_defineField(AGSymbol.jAlloc("natives"), natives);
 		
-		lexicalRoot.meta_defineField(AGSymbol.jAlloc("at"), at);
+		//lexicalRoot.meta_defineField(AGSymbol.jAlloc("at"), at);
 		lexicalRoot.meta_defineField(AGSymbol.jAlloc("root"), lexicalRoot);
 		
 		lexicalRoot.meta_defineField(AGSymbol.jAlloc("unittest:"), unittest_);

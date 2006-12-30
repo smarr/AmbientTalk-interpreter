@@ -57,7 +57,9 @@ public class MirrorTest extends AmbientTalkTest {
 		evalAndReturn(
 				"def at := object: { \n" +
 				"  def mirrors := object: { \n" +
-				"    def Factory := jlobby.edu.vub.at.objects.mirrors.NATMirrorFactory.INSTANCE; \n" +
+				"    def Factory := object: {" +
+				"       def createMirror(o) { reflect: o }" +
+				"    }" +
 				"  }; \n" +
 				"  def unit := object: { \n" +
 				"    def XUnitFailed := object: { \n" +
@@ -149,13 +151,13 @@ public class MirrorTest extends AmbientTalkTest {
 			ATObject[] objects 		= new ATObject[] { 
 					NATNil._INSTANCE_, NATBoolean._TRUE_, NATNumber.ZERO, new NATObject(), 
 					new NATSuperObject(new NATObject(), Evaluator.getGlobalLexicalScope()),
-					NATTable.EMPTY, new NATIntrospectiveMirror(NATNil._INSTANCE_),
+					NATTable.EMPTY, NATIntrospectiveMirror.atValue(NATNil._INSTANCE_),
 					new NATIntercessiveMirror(Evaluator.getGlobalLexicalScope(), true)
 			};
 			ATMirror[] mirrors 		= new ATMirror[objects.length];
 			
 			for (int i = 0; i < objects.length; i++) {
-				mirrors[i] = NATMirrorFactory._INSTANCE_.createMirror(objects[i]);
+				mirrors[i] = NATIntrospectiveMirror.atValue(objects[i]);
 			}
 			
 			for (int i = 0; i < objects.length; i++) {
@@ -195,7 +197,7 @@ public class MirrorTest extends AmbientTalkTest {
 		
 	public void testJavaMirrorInvocation() {
 		try {
-			ATMirror trueMirror = NATMirrorFactory._INSTANCE_.createMirror(NATBoolean._TRUE_);
+			ATMirror trueMirror = NATIntrospectiveMirror.atValue(NATBoolean._TRUE_);
 			ATMirror responds = (ATMirror)trueMirror.meta_invoke(
 					trueMirror,
 					AGSymbol.jAlloc("respondsTo"),

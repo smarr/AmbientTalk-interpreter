@@ -35,6 +35,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATIsolate;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -380,10 +381,14 @@ public final class Evaluator {
 	}
 	
 	/**
-	 * A global scope has the sentinel instance as its lexical parent
+	 * A global scope has the sentinel instance as its lexical parent.
+	 * 
+	 * Note that the global lexical scope is an **isolate** object.
+	 * It serves as the lexical parent of both regular objects and isolates.
+	 * When isolates are passed by copy, this object always travels along with them.
 	 */
 	private static NATObject createGlobalLexicalScope() {
-		return new NATObject(OBJLexicalRoot._INSTANCE_);
+		return new NATIsolate(OBJLexicalRoot._INSTANCE_);
 	}
 	
     /**

@@ -68,29 +68,38 @@ import edu.vub.at.objects.natives.NATText;
  * </pre>
  * 
  * @author smostinc
+ * @author tvcutsem
  */
+
 public class NATIntrospectiveMirror extends NATByCopy implements ATMirror {
 
+	/** the object reflected on. This object is NOT a NATMirage */
+	private final ATObject principal_;
+	
 	/**
-	 * The prototypical mirror object reflects on nil. This mirror (or in effect any
-	 * mirror in the system) can be used to create mirrors on objects. However, it is
-	 * important to note that <code>mirror.new(object)</code> is merely a shorthand
-	 * for a call to the mirror factory. This is in accordance with the principle 
-	 * that all mirror creation happens through the mediation of the factory.
+	 * Return a mirror on the given native or custom AmbientTalk object.
+	 * 
+	 * @param objectRepresentation the object to reflect upon
+	 * @return either an introspective mirror (if the passed object is native), otherwise
+	 * a custom intercessive mirror.
 	 */
-	public static final NATIntrospectiveMirror _PROTOTYPE_ = new NATIntrospectiveMirror(NATNil._INSTANCE_);
-	
-	protected final ATObject principal_;
-	
+	public static final ATMirror atValue(ATObject objectRepresentation) {
+		if(objectRepresentation instanceof NATMirage)
+			return ((NATMirage)objectRepresentation).getMirror();
+		else
+			return new NATIntrospectiveMirror(objectRepresentation);		
+	}
 	
 	/**
-	 * A NATMirror is a wrapper which forwards a deified (upped) version of invoked 
+	 * An introspective mirror is a wrapper which forwards a deified (upped) version of invoked 
 	 * methods and field accesses to its principal. This principal is a Java object 
 	 * representing an ambienttalk object. The deificiation process implies that 
 	 * only the object's meta_level operations (implemented in Java) will be called
-	 * directly by the mirror. 
+	 * directly by the mirror.
+	 * 
+	 * @param representation - the object to reflect upon, which is *not* a NATMirage
 	 */
-	NATIntrospectiveMirror(ATObject representation) {
+	private NATIntrospectiveMirror(ATObject representation) {
 		principal_ = representation;
 	}
 	
@@ -133,7 +142,7 @@ public class NATIntrospectiveMirror extends NATByCopy implements ATMirror {
 		String jSelector = Reflection.upMetaLevelSelector(atSelector);
 		
 		try {
-			return NATMirrorFactory._INSTANCE_.createMirror(
+			return atValue(
 					Reflection.downObject(
 							Reflection.upInvocation(
 									principal_, // implementor and self
@@ -178,14 +187,14 @@ public class NATIntrospectiveMirror extends NATByCopy implements ATMirror {
 		
 		try {
 			jSelector = Reflection.upMetaFieldAccessSelector(atSelector);
-			return NATMirrorFactory._INSTANCE_.createMirror(
+			return atValue(
 					Reflection.downObject(Reflection.upFieldSelection(principal_, jSelector)));
 			
 		} catch (XSelectorNotFound e) {
 			try {
 				jSelector = Reflection.upMetaLevelSelector(atSelector);
 
-				return NATMirrorFactory._INSTANCE_.createMirror(
+				return atValue(
 						Reflection.downObject(
 								Reflection.upMethodSelection(
 										principal_, 
@@ -303,7 +312,7 @@ public class NATIntrospectiveMirror extends NATByCopy implements ATMirror {
 		ATObject[] initargs = init.asNativeTable().elements_;
 		if(initargs.length != 1) {
 			ATObject reflectee = initargs[0];
-			return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
+			return atValue(reflectee);
 		} else {
 			throw new XArityMismatch("init", 1, initargs.length);
 		}
@@ -318,17 +327,18 @@ public class NATIntrospectiveMirror extends NATByCopy implements ATMirror {
 		return NATText.atValue("<mirror on:"+principal_.meta_print().javaValue+">");
 	}
 	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
+	/**
+	 * An introspective mirror is pass-by-copy.
      * When an introspective mirror is deserialized, it will become a mirror on
      * its deserialized principal. This means that, if the principal is passed
-     * by copy, the mirror will be a mirror on the copy. If the principal is passed
-     * by reference, the mirror will be a mirror on the far reference.
-     */
-    public ATObject meta_resolve() throws InterpreterException {
-    	return NATMirrorFactory._INSTANCE_.base_createMirror(principal_);
-    }
+     * by copy, the mirror will be a local mirror on the copy. If the principal is passed
+     * by reference, the mirror will be a local mirror on the far reference.
+	 */
+	public ATObject meta_resolve() throws InterpreterException {
+		if(principal_ instanceof NATMirage)
+			return ((NATMirage)principal_).getMirror();
+		else
+			return this;
+	}
+
 }

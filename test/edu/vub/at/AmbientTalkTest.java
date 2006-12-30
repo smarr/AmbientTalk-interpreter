@@ -1,5 +1,11 @@
 package edu.vub.at;
 
+import edu.vub.at.actors.eventloops.BlockingFuture;
+import edu.vub.at.actors.eventloops.Callable;
+import edu.vub.at.actors.natives.ELActor;
+import edu.vub.at.actors.natives.ELVirtualMachine;
+import edu.vub.at.actors.natives.NATActorMirror;
+import edu.vub.at.actors.natives.NATLocalFarRef;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIOProblem;
@@ -7,6 +13,8 @@ import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
@@ -22,7 +30,28 @@ import junit.framework.TestCase;
 
 public abstract class AmbientTalkTest extends TestCase {
 
-	protected ATContext ctx_;
+	protected final ATContext ctx_;
+	
+	private ELActor evalActor_ = null;
+	
+	protected ELActor evalActor() {
+		if (evalActor_ == null) {
+			try {
+				ELVirtualMachine host = new ELVirtualMachine(new File[] { }, NATNil._INSTANCE_);
+				BlockingFuture f = NATActorMirror.atValue(host, new NativeClosure(NATNil._INSTANCE_) {
+					public ATObject base_apply(ATTable args) throws InterpreterException {
+						return NATNil._INSTANCE_;
+					}
+				});
+				evalActor_ = ((NATLocalFarRef) f.get()).getFarHost();
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+		return evalActor_;
+	}
 	
 	public AmbientTalkTest() {
 		ATObject supr = new NATObject();
@@ -79,6 +108,39 @@ public abstract class AmbientTalkTest extends TestCase {
 				ex.printStackTrace();
 				fail("Unexpected exception: "+ex.getMessage());
 			}
+		}
+	}
+	
+	public ATObject evalInActor(String input) {
+        try {
+			ATAbstractGrammar ptree = 
+				NATParser._INSTANCE_.base_parse(NATText.atValue(input));
+			return evalActor().sync_event_nativeEval(ptree);
+		} catch (XParseError e) {
+			fail("Parse error: "+e.getMessage());
+		} catch (InterpreterException e) {
+			e.printStackTrace();
+			fail("Eval error: "+e.getMessage());
+		}
+		return null;
+	}
+	
+	public static abstract class ActorTest implements Callable {
+		public Object call(Object arg) throws Exception {
+			test();
+			return null;
+		}
+		public abstract void test() throws Exception;
+	}
+	
+	public void actorTest(ActorTest test) throws Exception {
+        try {
+			evalActor().sync_event_performTest(test);
+		} catch (XParseError e) {
+			fail("Parse error: "+e.getMessage());
+		} catch (InterpreterException e) {
+			e.printStackTrace();
+			fail("Eval error: "+e.getMessage());
 		}
 	}
 	

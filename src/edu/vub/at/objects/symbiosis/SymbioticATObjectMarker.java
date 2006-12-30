@@ -29,6 +29,9 @@ package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.objects.natives.NATObject;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
 /**
  * This empty marker interface marks Java objects which actually represent wrappers around AmbientTalk
  * objects that 'pretend' to be a Java object of a certain interface type. It is used to properly
@@ -36,11 +39,16 @@ import edu.vub.at.objects.natives.NATObject;
  * 
  * @author tvcutsem
  */
-public interface SymbioticATObjectMarker {
+public interface SymbioticATObjectMarker extends Serializable {
 
 	/**
 	 * Accessor to unwrap the symbiotic object.
 	 */
 	public NATObject _returnNativeAmbientTalkObject();
+	
+	/**
+	 * Coercers implement writeReplace such that their principal is serialized as them instead.
+	 */
+	public Object writeReplace() throws ObjectStreamException;
 	
 }

@@ -82,6 +82,16 @@ public abstract class EventLoop {
 		return name_;
 	}
 	
+	public static EventLoop toEventLoop(Thread t) throws IllegalStateException {
+		try {
+		  EventProcessor processor = (EventProcessor) t;
+	      return processor.serving();
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+			throw new IllegalStateException("Asked to transform a non-event loop thread to an event loop");
+		}
+	}
+	
 	/**
 	 * Allows access to the currently running event loop.
 	 * @return the currently serving event loop

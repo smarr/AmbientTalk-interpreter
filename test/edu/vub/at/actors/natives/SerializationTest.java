@@ -31,6 +31,8 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.natives.NATIsolate;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGAssignField;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -41,8 +43,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
-import junit.framework.TestCase;
 
 /**
  * A test case for object serialization.
@@ -93,6 +93,21 @@ public class SerializationTest extends AmbientTalkTest {
 		ATObject o = p.unpack();
 		assertEquals(ag.toString(), o.toString());
 		assertFalse(ag == o);
+	}
+	
+	/**
+	 * Tests whether a coercer correctly implements writeReplace to return
+	 * the principal to serialize, instead of the coercer itself. Hence,
+	 * upon deserialization, we expect an object that is no longer wrapped
+	 * by a coercer.
+	 */
+	public void testCoercerSerialization() throws InterpreterException {
+		NATIsolate o = new NATIsolate();
+		ATTable coercer = o.base_asTable();
+		Packet p = new Packet("test", coercer);
+		ATObject obj = p.unpack();
+		assertEquals(NATIsolate.class, obj.getClass());
+		assertFalse(obj == o);
 	}
 	
 }

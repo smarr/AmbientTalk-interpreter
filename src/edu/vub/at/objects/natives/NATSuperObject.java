@@ -44,9 +44,16 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  * pseudovariable. It is parameterised by two objects, namely the super object in which
  * method lookup starts (lookupFrame_) and the late-bound receiver.
  * 
+ * Super is pass-by-copy. This may seem awkward when the decorated object is not
+ * an isolate, but the semantics of object/isolate are maintained because super
+ * is a proxy: using 'super.m()' when super was passed by copy will either
+ * succeed if the wrapped object is an isolate, but it will fail when the wrapped
+ * object is now a far reference.
+ * 
  * @author smostinc
+ * @author tvcutsem
  */
-public class NATSuperObject extends NATByRef implements ATObject {
+public class NATSuperObject extends NATByCopy implements ATObject {
 
     private final ATObject receiver_;
     private final ATObject lookupFrame_;
@@ -203,35 +210,6 @@ public class NATSuperObject extends NATByRef implements ATObject {
 
 	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
 		return lookupFrame_.meta_isRelatedTo(object);
-	}
-	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-    
-	/**
-	 * Normally, references to super are passed by reference, but if both
-	 * the parent and child are isolates, the super reference may be passed
-	 * by copy.
-	 */
-	public ATObject meta_pass() throws InterpreterException {
-		if ((receiver_ instanceof NATIsolate) && (lookupFrame_ instanceof NATIsolate)) {
-			return this;
-		} else {
-			return super.meta_pass();
-		}
-	}
-	
-	/**
-	 * If super is passed by copy because it connects two isolates, return
-	 * this super object itself upon deserialization.
-	 */
-	public ATObject meta_resolve() throws InterpreterException {
-		if ((receiver_ instanceof NATIsolate) && (lookupFrame_ instanceof NATIsolate)) {
-			return this;
-		} else {
-			return super.meta_resolve();
-		}
 	}
 
 }

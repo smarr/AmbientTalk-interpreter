@@ -44,8 +44,8 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.mirrors.NATIntercessiveMirror;
+import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
-import edu.vub.at.objects.mirrors.NATMirrorFactory;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
 import edu.vub.at.parser.NATParser;
 
@@ -370,7 +370,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a mirror reflecting the given object
 	 */
 	public ATObject base_reflect_(ATObject reflectee) throws InterpreterException {
-		return NATMirrorFactory._INSTANCE_.base_createMirror(reflectee);
+		return NATIntrospectiveMirror.atValue(reflectee);
 	}
 	
 	/**

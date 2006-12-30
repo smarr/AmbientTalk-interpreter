@@ -76,7 +76,7 @@ public class OBJMirrorRoot extends NATByCopy {
 		String jSelector = Reflection.upMagicLevelSelector(atSelector);
 		
 		try {
-			return NATMirrorFactory._INSTANCE_.createMirror(
+			return NATIntrospectiveMirror.atValue(
 					Reflection.upInvocation(
 									principal, // implementor and self
 									jSelector,
@@ -152,7 +152,7 @@ public class OBJMirrorRoot extends NATByCopy {
 		
 		try {
 			jSelector = Reflection.upMagicFieldAccessSelector(atSelector);
-			return NATMirrorFactory._INSTANCE_.createMirror(
+			return NATIntrospectiveMirror.atValue(
 					Reflection.downObject(
 							Reflection.upFieldSelection(
 									principal,
@@ -162,7 +162,7 @@ public class OBJMirrorRoot extends NATByCopy {
 			try {
 				jSelector = Reflection.upMagicLevelSelector(atSelector);
 
-				return NATMirrorFactory._INSTANCE_.createMirror(
+				return NATIntrospectiveMirror.atValue(
 						Reflection.downObject(
 								Reflection.upMethodSelection(
 										principal, 
