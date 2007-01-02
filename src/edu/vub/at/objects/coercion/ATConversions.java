@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.coercion;
 
+import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.natives.NATFarReference;
@@ -97,6 +98,7 @@ public interface ATConversions {
 	public ATHandler   base_asHandler() throws XTypeMismatch;
 	public ATFarReference base_asFarReference() throws XTypeMismatch;
 	public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch;
+	public ATActorMirror base_asActorMirror() throws XTypeMismatch;
 	
 	// Abstract Grammar Elements
 	

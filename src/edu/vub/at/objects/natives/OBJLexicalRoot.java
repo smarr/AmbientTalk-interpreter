@@ -28,10 +28,10 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.actors.ATActorMirror;
-import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.natives.NATActorMirror;
+import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
@@ -46,6 +46,7 @@ import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.mirrors.NATIntercessiveMirror;
 import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
 import edu.vub.at.parser.NATParser;
 
@@ -272,27 +273,55 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/* ------------------------------------------
-	 * -- NATActorMirror Creation and accessing Methods --
+	 * -- Actor Creation and accessing Methods --
 	 * ------------------------------------------ */
 	
-	// FIXME: code should be deep-copied (meta-passed)! but closures normally by ref!?
+	/**
+	 * actor: { code }
+	 *  == actor: { code } mirroredBy: <default actor mirror>
+	 */
 	public ATObject base_actor_(ATClosure code) throws InterpreterException {
-		//ATAbstractGrammar bhvCode = code.base_getMethod().base_getBodyExpression();
-		//ATAbstractGrammar passedCode = bhvCode.meta_pass(???);
-		BlockingFuture behaviourFuture = NATActorMirror.atValue(ELVirtualMachine.currentVM(), code);
-		
-		try {
-			// blocks until far ref to behaviour has been constructed
-			return (ATObject) behaviourFuture.get();
-		} catch (Exception e) {
-			throw (InterpreterException) e;
-		} 
+		ATObject isolate = base_isolate_(code);
+		Packet serializedIsolate = new Packet("behaviour", isolate);
+		ELVirtualMachine host = ELVirtualMachine.currentVM();
+		return NATActorMirror.atValue(host, serializedIsolate, new NATActorMirror(host));
 	}
 	
+	/**
+	 * actor: { code } mirroredBy: actorMirror
+	 *  => far reference to the behaviour of the new actor
+	 */
+	public ATObject base_actor_mirroredBy_(ATClosure code, ATActorMirror mirror) throws InterpreterException {
+		ATObject isolate = base_isolate_(code);
+		Packet serializedIsolate = new Packet("behaviour", isolate);
+		Packet serializedMirror = new Packet("mirror", mirror);
+		ELVirtualMachine host = ELVirtualMachine.currentVM();
+		return NATActorMirror.atValue(host, serializedIsolate, serializedMirror);
+	}
+	
+	/**
+	 * actor => a reference to a mirror on the current actor
+	 */
 	public ATActorMirror base_getActor() throws InterpreterException {
 		return ELActor.currentActor().getActorMirror();
 	}
 	
+	/**
+	 * isolate: { code }
+	 *  => create an isolate object
+	 */
+	public ATObject base_isolate_(ATClosure code) throws InterpreterException {
+		NATIsolate isolate = new NATIsolate();
+		// bindingsToCopy := code.method.parameters.filter: { |p| p.base_isSymbol() }
+		ATTable bindingsToCopy = code.base_getMethod().base_getParameters().base_filter_(
+		  new NativeClosure(this) {
+			public ATObject base_apply(ATTable args) throws InterpreterException {
+				return NATBoolean.atValue(args.base_at(NATNumber.ONE).base_isSymbol());
+			}
+		});
+		code.base_applyInScope(bindingsToCopy, isolate);
+		return isolate;
+	}
 	
 	/* -----------------------------
 	 * -- Object Creation Methods --

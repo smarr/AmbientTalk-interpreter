@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.natives.NATFarReference;
@@ -441,6 +442,10 @@ public class NATNil implements ATNil, Serializable {
     public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch {
   	    throw new XTypeMismatch(ATAsyncMessage.class, this);
   	}
+    
+    public ATActorMirror base_asActorMirror() throws XTypeMismatch {
+    	throw new XTypeMismatch(ATActorMirror.class, this);
+    }
     
     // Conversions for abstract grammar elements
 

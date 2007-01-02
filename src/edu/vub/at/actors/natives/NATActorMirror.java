@@ -33,33 +33,22 @@ import edu.vub.at.actors.ATMailbox;
 import edu.vub.at.actors.ATResolution;
 import edu.vub.at.actors.ATServiceDescription;
 import edu.vub.at.actors.eventloops.BlockingFuture;
-import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.events.ActorEmittedEvents;
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
-import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
-import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
-import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATByRef;
-import edu.vub.at.objects.natives.NATContext;
-import edu.vub.at.objects.natives.NATNamespace;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
-import edu.vub.at.objects.natives.NATObject;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-
-import java.io.File;
-import java.io.FilenameFilter;
 
 /**
  * The NATActorMirror class implements the concurrency model of ambienttalk. It continually
@@ -79,12 +68,6 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	// INSTANCE VARIABLES
 	
 	/*
-	 * This object is created when the actor is initialized: i.e. it is the object 
-	 * that results from evaluating the closure passed when the actor was constructed.
-	 */
-	private ATObject behaviour_; 
-	
-	/*
 	 * Actors have a classical combination of an inbox and outbox which reify the
 	 * future communication state of an actor. A reification of past communication
 	 * can be obtained by installing a custom <code>receivedbox</code> and <code>
@@ -96,46 +79,51 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	final ATMailbox providedbox_ = new NATMailbox(this, ATActorMirror._PROVIDED_);
 	final ATMailbox requiredbox_ = new NATMailbox(this, ATActorMirror._REQUIRED_);
 	
-	private final ELActor processor_;
+	private final ELVirtualMachine host_;
 	
-	public static BlockingFuture atValue(ELVirtualMachine host, ATClosure body) throws InterpreterException {
+	/**
+	 * Creates a new actor on the specified host Virtual Machine. The actor its behaviour
+	 * is intialized to the passed isolate. The calling thread is **blocked** until the
+	 * actor has been constructed. However, actor root initialization etc. is carried
+	 * out by the newly created actor itself.
+	 * 
+	 * @param host the VM hosting this actor - after creation, the actor registers itself with this VM
+	 * @param behaviourPkt the serialized version of this actor's behaviour
+	 * @param actorMirror this actor's mirror
+	 * @return a far reference to the behaviour of the actor
+	 * @throws InterpreterException
+	 */
+	public static NATLocalFarRef atValue(ELVirtualMachine host, Packet behaviourPkt, ATActorMirror actorMirror) throws InterpreterException {
 		BlockingFuture future = new BlockingFuture();
-	    NATActorMirror newActor = new NATActorMirror(future, host, body);
-		return future;
+		ELActor processor = new ELActor(actorMirror, host);
+		
+		// schedule special 'init' message which will:
+		// A) create a new behaviour and will unblock creating actor (by passing it a far ref via the future)
+		// B) initialize the behaviour with the given closure
+		processor.event_init(future, behaviourPkt);
+		
+		// notify host VM about my creation
+		host.event_actorCreated(processor);
+	    
+		try {
+			return (NATLocalFarRef) future.get();
+		} catch (Exception e) {
+			throw (InterpreterException) e;
+		}
 	}
+	
+	public static NATLocalFarRef atValue(ELVirtualMachine host, Packet behaviourPkt, Packet actorMirrorPkt) throws InterpreterException {
+		return NATActorMirror.atValue(host, behaviourPkt, actorMirrorPkt.unpack().base_asActorMirror());
+	}
+	
 	
 	/**
 	 * When initializing a new actor, do not forget that this constructor is still executed by the
 	 * creating actor, not by the created actor. To make the created actor perform something, it is
 	 * necessary to use meta_receive to send itself messages for later execution.
 	 */
-	private NATActorMirror(final BlockingFuture f, ELVirtualMachine host, final ATClosure body) throws InterpreterException {
-		processor_ = new ELActor(this, host);
-		
-		// schedule special 'init' message which will:
-		// A) create a new behaviour and will unblock creating actor (by passing it a far ref via the future)
-		// B) initialize the behaviour with the given closure
-		processor_.event_init(new Event("init("+body+")") {
-			public void process(Object byMyself) {
-				behaviour_ = new NATObject(); // behaviour is an empty object
-				
-				try {
-					// pass far ref to behaviour to creator actor who is waiting for this
-					f.resolve(processor_.receptionists_.exportObject(behaviour_));
-					
-					// go on to initialize the root and the behaviour
-					initLobbyUsingObjectPath();
-					initRootObject();
-					body.base_applyInScope(NATTable.EMPTY, behaviour_);
-				} catch (InterpreterException e) {
-					if (!f.isDetermined())
-					  f.ruin(e);
-				}
-			}
-		});
-		
-		// notify host VM about my creation
-		processor_.host_.event_actorCreated(processor_);
+	public NATActorMirror(ELVirtualMachine host) throws InterpreterException {
+		host_ = host;
 	}
 	
     /* ------------------------------------------
@@ -147,22 +135,22 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
 	public ATClosure base_provide(final ATServiceDescription description, final ATObject service) throws InterpreterException {
-		processor_.host_.event_servicePublished(this, service);
+		host_.event_servicePublished(this, service);
 		final NATActorMirror self = this;
 		return new NativeClosure(self) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
-				processor_.host_.event_cancelPublication(self, service);
+				host_.event_cancelPublication(self, service);
 				return NATNil._INSTANCE_;
 			}
 		};
 	}
 	
 	public ATClosure base_require(final ATServiceDescription description, final ATObject client) throws InterpreterException {
-		processor_.host_.event_clientSubscribed(this, client);
+		host_.event_clientSubscribed(this, client);
 		final NATActorMirror self = this;
 		return new NativeClosure(self) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
-				processor_.host_.event_cancelSubscription(self, client);
+				host_.event_cancelSubscription(self, client);
 				return NATNil._INSTANCE_;
 			}
 		};
@@ -255,93 +243,24 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return NATNil._INSTANCE_;		
 	}
 
-	protected NATNil base_dispose() throws InterpreterException {
-		// TODO(clean-up, gc) Revoke services published and subscribed, deal with references
-		return NATNil._INSTANCE_;
-	}
-	
-	/* -----------------------------
-	 * -- Initialisation Protocol --
-	 * ----------------------------- */
-	
-	/**
-	 * Initializes the lobby namespace with a slot for each directory in the object path.
-	 * The slot name corresponds to the last name of the directory. The slot value corresponds
-	 * to a namespace object initialized with the directory.
-	 * 
-	 * If the user did not specify an objectpath, the default is .;$AT_OBJECTPATH;$AT_HOME
-	 */
-	protected void initLobbyUsingObjectPath() throws InterpreterException {
-		File[] objectPathRoots = processor_.host_.getObjectPathRoots();
-		
-		NATObject lobby = Evaluator.getLobbyNamespace();
-		
-		// for each path to the lobby, add an entry for each directory in the path
-		for (int i = 0; i < objectPathRoots.length; i++) {
-			File pathRoot = objectPathRoots[i];
-							
-			File[] filesInDirectory = pathRoot.listFiles(new FilenameFilter() {
-				// filter out all hidden files (starting with .)
-				public boolean accept(File parent, String name) {
-					return !(name.startsWith("."));
-				}
-			});
-			for (int j = 0; j < filesInDirectory.length; j++) {
-				File subdir = filesInDirectory[j];
-				if (subdir.isDirectory()) {
-					// convert the filename into an AmbientTalk selector
-					ATSymbol selector = Reflection.downSelector(subdir.getName());
-					try {
-						lobby.meta_defineField(selector, new NATNamespace("/"+subdir.getName(), subdir));
-					} catch (XDuplicateSlot e) {
-						// TODO(review) Should throw dedicated exceptions (difference warning - abort)
-						// TODO(warn)
-						throw new XIllegalOperation("shadowed path on classpath: "+subdir.getAbsolutePath());
-					} catch (InterpreterException e) {
-						// should not happen as the meta_defineField is native
-						// TODO(abort)
-						throw new XIllegalOperation("Fatal error while constructing objectpath: " + e.getMessage());
-					}	
-				} else {
-					// TODO(warn)
-					//throw new XIllegalOperation("skipping non-directory file on classpath: " + subdir.getName());
-				}
-			}
-		}
-
-	}
-
-	/**
-	 * Initialises the root using the contents of the init file's contents stored by
-	 * the hosting virtual machine.
-	 * @throws InterpreterException
-	 */
-	protected void initRootObject() throws InterpreterException {
-		ATAbstractGrammar initialisationCode = processor_.host_.getInitialisationCode();
-		
-		// evaluate the initialization code in the context of the global scope
-		NATObject globalScope = Evaluator.getGlobalLexicalScope();
-		NATContext initCtx = new NATContext(globalScope, globalScope, globalScope.meta_getDynamicParent());
-		
-		initialisationCode.meta_eval(initCtx);
-	}
-
     public ATObject meta_clone() throws InterpreterException {
         throw new XIllegalOperation("Cannot clone actor " + toString());
     }
 
+    /**
+     * actor.new(behaviour)
+     *  => create a new actor with the given behaviour and mirror. Both should be isolates.
+     *  Similar to actor: { behaviour's code }
+     */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
 		int length = initargs.base_getLength().asNativeNumber().javaValue;
 		if(length != 1)
 			throw new XArityMismatch("newInstance", 1, length);
 		
-		// FIXME: passed closure should be deep-copied before handed to new actor!
-		BlockingFuture bhvFuture = NATActorMirror.atValue(processor_.host_, initargs.base_at(NATNumber.ONE).base_asClosure());
-		try {
-			return (ATObject) bhvFuture.get();
-		} catch (Exception e) {
-			throw (InterpreterException) e;
-		}
+		ATObject isolate = initargs.base_at(NATNumber.ONE);
+		Packet serializedIsolate = new Packet("behaviour", isolate);
+		ELVirtualMachine host = ELVirtualMachine.currentVM();
+		return NATActorMirror.atValue(host, serializedIsolate, new NATActorMirror(host));
 	}
 	
 	public NATText meta_print() throws InterpreterException {
@@ -383,14 +302,6 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	
 	*/
 	
-	public ATObject getBehaviour() {
-		return behaviour_;
-	}
-
-	public ELActor getProcessor() {
-		return processor_;
-	}
-	
 	/**
 	 * To send a message msg to a receiver object rcv:
 	 *  - if rcv is a local reference, schedule accept(msg) in my incoming event queue
@@ -406,7 +317,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
 	public ATObject meta_receive(ATAsyncMessage msg) throws InterpreterException {
-		processor_.event_acceptSelfSend(msg);
+		ELActor.currentActor().event_acceptSelfSend(msg);
 		return NATNil._INSTANCE_;
 	}
 	
@@ -422,5 +333,9 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	public ATObject base_send(ATAsyncMessage message) throws InterpreterException {
 		return meta_send(message);
 	}
+	
+    public ATActorMirror base_asActorMirror() throws XTypeMismatch {
+    	return this;
+    }
 		
 }

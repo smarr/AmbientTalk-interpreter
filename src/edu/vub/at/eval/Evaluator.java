@@ -309,8 +309,7 @@ public final class Evaluator {
 			}
 		});
 	}
-			
-
+	
 	/**
 	 * Returns the raw contents of a file in a String (using this JVM's default character encoding)
 	 */

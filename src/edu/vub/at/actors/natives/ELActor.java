@@ -30,15 +30,26 @@ package edu.vub.at.actors.natives;
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.NATContext;
+import edu.vub.at.objects.natives.NATNamespace;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
+
+import java.io.File;
+import java.io.FilenameFilter;
 
 /**
  * An instance of the class ELActor represents a programmer-defined
@@ -51,7 +62,7 @@ import edu.vub.at.objects.natives.OBJLexicalRoot;
  *
  * @author tvcutsem
  */
-public class ELActor extends EventLoop {
+public final class ELActor extends EventLoop {
 	
 	public static final ELActor currentActor() {
 		try {
@@ -66,6 +77,12 @@ public class ELActor extends EventLoop {
 	private final ATActorMirror mirror_;
 	protected final ELVirtualMachine host_;
 	protected final ReceptionistsSet receptionists_;
+	
+	/*
+	 * This object is created when the actor is initialized: i.e. it is the passed
+	 * version of the isolate that was passed to the actor: primitive by the creating actor.
+	 */
+	private ATObject behaviour_; 
 	
 	public ELActor(ATActorMirror mirror, ELVirtualMachine host) {
 		super("actor " + mirror.toString());
@@ -86,14 +103,6 @@ public class ELActor extends EventLoop {
 
 	public ELVirtualMachine getHost() {
 		return host_;
-	}
-	
-	/**
-	 * The initial event sent by the actor mirror to its event loop to intialize itself.
-	 * @param e
-	 */
-	public void event_init(Event e) {
-		receive(e);
 	}
 	
 	/**
@@ -126,7 +135,100 @@ public class ELActor extends EventLoop {
 		return receptionists_.resolveObject(id);
 	}
 	
+	
+	
+	/* -----------------------------
+	 * -- Initialisation Protocol --
+	 * ----------------------------- */
+	
+	/**
+	 * Initializes the lobby namespace with a slot for each directory in the object path.
+	 * The slot name corresponds to the last name of the directory. The slot value corresponds
+	 * to a namespace object initialized with the directory.
+	 * 
+	 * If the user did not specify an objectpath, the default is .;$AT_OBJECTPATH;$AT_HOME
+	 */
+	protected void initLobbyUsingObjectPath() throws InterpreterException {
+		File[] objectPathRoots = host_.getObjectPathRoots();
+		
+		NATObject lobby = Evaluator.getLobbyNamespace();
+		
+		// for each path to the lobby, add an entry for each directory in the path
+		for (int i = 0; i < objectPathRoots.length; i++) {
+			File pathRoot = objectPathRoots[i];
+							
+			File[] filesInDirectory = pathRoot.listFiles(new FilenameFilter() {
+				// filter out all hidden files (starting with .)
+				public boolean accept(File parent, String name) {
+					return !(name.startsWith("."));
+				}
+			});
+			for (int j = 0; j < filesInDirectory.length; j++) {
+				File subdir = filesInDirectory[j];
+				if (subdir.isDirectory()) {
+					// convert the filename into an AmbientTalk selector
+					ATSymbol selector = Reflection.downSelector(subdir.getName());
+					try {
+						lobby.meta_defineField(selector, new NATNamespace("/"+subdir.getName(), subdir));
+					} catch (XDuplicateSlot e) {
+						// TODO(review) Should throw dedicated exceptions (difference warning - abort)
+						// TODO(warn)
+						throw new XIllegalOperation("shadowed path on classpath: "+subdir.getAbsolutePath());
+					} catch (InterpreterException e) {
+						// should not happen as the meta_defineField is native
+						// TODO(abort)
+						throw new XIllegalOperation("Fatal error while constructing objectpath: " + e.getMessage());
+					}	
+				} else {
+					// TODO(warn)
+					//throw new XIllegalOperation("skipping non-directory file on classpath: " + subdir.getName());
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * Initialises the root using the contents of the init file's contents stored by
+	 * the hosting virtual machine.
+	 * @throws InterpreterException
+	 */
+	protected void initRootObject() throws InterpreterException {
+		ATAbstractGrammar initialisationCode = host_.getInitialisationCode();
+		
+		// evaluate the initialization code in the context of the global scope
+		NATObject globalScope = Evaluator.getGlobalLexicalScope();
+		NATContext initCtx = new NATContext(globalScope, globalScope, globalScope.meta_getDynamicParent());
+		
+		initialisationCode.meta_eval(initCtx);
+	}
+	
+	
 	// Events to be processed by the actor event loop
+	
+	/**
+	 * The initial event sent by the actor mirror to its event loop to intialize itself.
+	 * @param e
+	 */
+	protected void event_init(final BlockingFuture future, final Packet behaviourPkt) {
+		receive(new Event("init("+this+")") {
+			public void process(Object byMyself) {
+				try {
+					behaviour_ = behaviourPkt.unpack();
+					
+					// pass far ref to behaviour to creator actor who is waiting for this
+					future.resolve(receptionists_.exportObject(behaviour_));
+					
+					// go on to initialize the root and the behaviour
+					initLobbyUsingObjectPath();
+					initRootObject();
+				} catch (InterpreterException e) {
+					if (!future.isDetermined())
+					  future.ruin(e);
+				}
+			}
+		});
+	}
 	
 	/**
 	 * The main entry point for any asynchronous self-sends.
@@ -184,18 +286,16 @@ public class ELActor extends EventLoop {
 	 * This method should only be used for purposes such as the IAT shell or unit testing.
 	 * It allows an external thread to make this actor evaluate an arbitrary expression.
 	 * 
-	 * This method currently *only* works for native actors.
-	 * 
 	 * @param ast an abstract syntax tree to be evaluated by the receiving actor (in the
 	 * scope of its behaviour).
 	 * @return the result of the evaluation
 	 * @throws InterpreterException if the evaluation fails
 	 */
-	public ATObject sync_event_nativeEval(final ATAbstractGrammar ast) throws InterpreterException {
+	public ATObject sync_event_eval(final ATAbstractGrammar ast) throws InterpreterException {
 		try {
 			return (ATObject) receiveAndWait("nativeEval("+ast+")", new Callable() {
 				public Object call(Object inActor) throws Exception {
-				    return OBJLexicalRoot._INSTANCE_.base_eval_in_(ast, ((NATActorMirror) mirror_).getBehaviour());
+				    return OBJLexicalRoot._INSTANCE_.base_eval_in_(ast, behaviour_);
 				}
 			});
 		} catch (Exception e) {

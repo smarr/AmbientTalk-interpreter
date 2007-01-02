@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.actors.ATActorMirror;
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
@@ -597,6 +599,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	public ATSymbol base_asSymbol() throws XTypeMismatch { return (ATSymbol) Coercer.coerce(this, ATSymbol.class); }
 	public ATTable base_asTable() throws XTypeMismatch { return (ATTable) Coercer.coerce(this, ATTable.class); }
 	public ATUnquoteSplice base_asUnquoteSplice() throws XTypeMismatch { return (ATUnquoteSplice) Coercer.coerce(this, ATUnquoteSplice.class); }
+    public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch { return (ATAsyncMessage) Coercer.coerce(this, ATAsyncMessage.class);}
+    public ATActorMirror base_asActorMirror() throws XTypeMismatch { return (ATActorMirror) Coercer.coerce(this, ATActorMirror.class); }
 	
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
@@ -615,5 +619,5 @@ public class NATObject extends NATCallframe implements ATObject {
 	public boolean base_isSymbol() { return true; }
 	public boolean base_isTable() { return true; }
 	public boolean base_isUnquoteSplice() { return true; }
-	
+    
 }

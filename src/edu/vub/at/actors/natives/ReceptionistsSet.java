@@ -120,7 +120,7 @@ public class ReceptionistsSet {
 			throw new XIllegalOperation("Cannot export a far reference to " + object);
 		}
 		
-		// get the current VM
+		// get the host VM
 		ELVirtualMachine currentVM = owner_.getHost();
 
 		// combine VM guid, actor hash and object hash into an ATObjectID
