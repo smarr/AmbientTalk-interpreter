@@ -1,67 +1,97 @@
 === TODO ===
 
-checklist:
-- nadenken over modulair uitbreiden van de code met standard libraries (bvb. at.exceptions.interpreter)
-=> zoveel mogelijk in AT zelf schrijven => symbiose mogelijke uitweg voor de nodige native code snippets?
+------------------
+Conceptual issues:
+------------------
 
-- zorgen dat alle AT interfaces alleen nog base_ / meta_ methoden hebben die InterpreterException throwen
-en die alleen AT args of convertible args returnen / nemen
-violators:
-NATText meta_print() throws InterpreterException;
-alle isXXX() methods => returnen boolean
-ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException;
-en varianten: nemen expliciet een NATIntercessiveMirror ipv een ATMirror
-		
-- mirages + unit tests
+Meta-circular AmbientTalk:
+==========================
 
-- write AmbientTalk code: at.collections, at.unit, at.init, at.mirrors
+Goal: write as much as possible AT/2 code in AT/2 itself. A lot of NAT* classes, especially AG* classes
+can be written in AT/2 itself. Most NAT* classes are plain AT/2 objects with a custom mirror that overrides
+only a few operations.
 
-- concurrency: add actors(vats) + message queues + threading/concurrency control + async msg passing
-- distribution: add comm protocol, discovery protocol, remote actors (what about using a lightweight lib?)
+The only problem is that this makes the implementation much slower as a lot of NAT classes will then become
+NATMirages. We should make our implementation of NATMirage as efficient as possible. We need some kind of
+'partial behavioural reflection' in order to pay only for the reflection that we need.
+This means that as much meta_* methods should remain hard-wired even for certain mirages, because they are not overridden
+by the mirror.
 
-- Symbiosis:
-=> Solve overloading by being able to annotate a method invocation => future work
-=> Threads -> currently 'you're on your own'? or consider wrapping each ATObject in a coercer that also acts as a far ref
-    => converts invocations into enqueues, but this requires futures to block the waiting Java Thread
-om callbacks Java -> AT en Java Threads deftig te ondersteunen zou elke externe java thread
-(i.e. elke java thread behalve de thread die de actor zelf voorstelt) AT objecten alleen async mogen invokeren
-dit kan makkelijk in coercer.invoke:
-if (currentthread == actorthread)
-   do invoke synchronously
-else
-   schedule msg + future in actor queue
-   future.wait()
-=> actor thread moet msg.resultComputed(res) oproepen hetgeen dan voor dit soort msges de thread kan doen unblocken
+For those NAT classes that need access to native Java objects, we might be able to use the Symbiosis.
+As such we may be able to confine the AT/2 kernel to only a handful of classes (NATNil, NATObject, JavaObject)
 
-=> Implementation can be sped up a bit using caching. Currently, only methods are cached, could also
-cache Constructors if we introduce a JavaConstructor class? This could also be used to solve problem of
-casting for constructors. E.g. if aClass.new returns a JavaConstructor which is a special kind of JavaClosure,
-then we can do aClass.new.cast(Type1, Type2)(a, b)
+Related to a proper meta-circular implementation of AmbientTalk is to allow as much custom AT objects in
+place of implementation-level objects. That is, we should remove as much .asNative...() casts from the code
+as possible. Each such cast precludes use of custom AT objects. Sometimes, the casting is inevitable (e.g. 1+2),
+sometimes, it is. E.g.: rather than casting an ATObject to a NATTable and looping over its elements_, one could write:
+if (obj instanceof NATTable) {
+  // perform immediate native behaviour
+  // loop over ((NATTable) obj).elements_ with for loop
+} else {
+  obj.base_asTable().base_each(new NativeClosure(this) {
+    // perform native behaviour inside of a native closure's apply method
+  });
+}
 
-=> representing array types in AT, i.e. how to access a wrapper for Type[] classes?
-Normally, arrays are represented as tables and vice versa, but for base_cast, requires explicit type wrapper for arrays
-=> casting for constructors
-=> methods with _ in Java: suggestion is to allow _ in AT identifiers, only disadvantage is that Java identifiers with _
-will be displayed using : in AT. However, an AT selector will not undergo such conversions when remaining within AT,
-so that should be ok. Can be made even cleaner if the _ -> : conversion is only performed for downSelector, and for symbiosis
-introduce another method named 'javaToATSelector'
+Conversions:
+============
+base_isXXX and base_asXXX methods must become meta_isXXX and meta_asXXX
+I.e. they should be moved to the mirror, in order to minimize the number of base-level methods of normal objects.
 
-- Reflection
-* isXXX and asXXX must become meta_isXXX and meta_asXXX
+At the base-level meta_isXXX and meta_asXXX should be exposed as natives in the
+root: def isNumber(x) { (reflect: x).isNumber() }
 
-- Next to the == operator, which defines equality through identity, we should introduce
-an operator = which defines structural equality
-e.g. [2,3] is not == to [2,3] but [2,3] = [2,3]
-likewise: object: { def a := 1 } is not == to another such object (only == to itself)
-but = could by default do a field-wise comparison
-deep equality.
+NATObject implementation should not implement all meta_asXXX methods by creating a coercer by default.
+Should only create a coercer if the object explicitly declares itself to be a number, mirror etc. via a stripe test or something?
 
-Apart from an = and == operator, we could also introduce a <: operator
-which defines a kind of subtype relationship in terms of the public fields or methods
-of an object
+Prototypes:
+===========
 
-e.g.
-boolean NATNil.base__opltx__(ATObject other) {
+We need to augment the standard AT/2 library with a namespace full of prototypes.
+E.g. especially exception prototypes such that native exceptions can be raised from within the language.
+at.exceptions.interpreter
+
+The Standard Library:
+=====================
+
+Written entirely in AmbientTalk itself. Accessible via 'lobby.at'
+We need:
+
+- at.init: an initialization file with useful default semantics for most things currently in the OBJLexicalRoot?
+Should also contain isNumber(x), isTable(x) , ... natives.
+- at.collections: a small collections library (binary tree, hashtable, vector, list, queue, set) implementing
+a uniform interface (iteration, collection, filtering, insertion, deletion, lookup)
+- at.unit: a unit testing framework along the lines of JUnit, the unit testing framework of Ruby etc:
+make a sub-object of the TestCase object and implement some methods whose name starts with test*. Running the program should run the tests.
+- at.mirrors: prototypical mirrors on all kinds of language values?
+- at.exceptions: prototype exception objects for native exception types that can be newed and raised.
+
+Identity and equality:
+======================
+
+Next to the == operator, which defines equality through identity, we should introduce
+an operator = which defines structural equality (cfr. eq? versus equal? in Scheme).
+e.g. [2,3] is not == to another [2,3] table, but [2,3] = [2,3]
+
+== is already implemented and falls back on Java's equals method, which in turn falls back on Java's == operator.
+Structural equality implies deep equality.
+For 'leaf' objects like symbols, numbers, etc., deep equality is identity.
+For 'compound' objects like tables, all elements of the tables must be deep equal.
+
+The same goes for objects. Objects can be considered as maps from symbols to values, so
+two objects are equal if they map the same symbols to equal values. The problem here
+is that performing deep equality like this is both
+A) very costly
+B) dangerous because it is a graph-traversal
+(have to keep track of already visited objects? even for tables, consider: t[1] := t)
+
+Another kind of comparison between objects that could be useful is 'substitutability'
+For example, obj1 '<:' obj2 if they have the same field names and method selectors
+(i.e. the 'range' of their conceptual 'map' is similar) such that obj2 can safely
+'replace' obj1.
+
+One can then define:
+boolean NATObject.base__opltx__opcol_(ATObject other) {
   foreach field | method selector of this {
     if (other.meta_respondsTo(selector) {
        continue;
@@ -71,31 +101,235 @@ boolean NATNil.base__opltx__(ATObject other) {
   }
   return dynamicParent_.base__opeql_(other.meta_getDynamicParent());
 }
-(NATObject/NATCallframe could have specialized implementation)
-NATTable also needs specialized impl.
 
-the default semantics of '=' is '=='? (e.g. numbers, etc.)
 Note that structural equivalence of objects is defined in terms of their public fields/methods
 + those of their dynamic parents. Lexical parents are not taken into consideration, as they are
 considered 'private' to the object.
 
-- Core language evaluator
-* remove as much .asNative...() casts from the code as possible. Each such cast precludes use of custom AT objects.
+Symbiosis:
+==========
 
-* find a suitable semantics for object 'instantiation'.
-problem: 'init' is not a 'normal' method, if it would be, and you would invoke obj.clone.init, you might
-invoke the 'init' method of a 'shares-a' parent object that did not get cloned!
-two solutions:
-1) remove 'shares-a' parents from the language ; you can still do parent sharing by invoking o.extend { ... } twice on the same object o
-the idea is that all delegation links will then be is-a, so you don't have the 'init' problem anymore: you can search up to the root for 'init'.
-2) make 'object initialization' a dedicated meta-level operation (i.e. meta_init). meta_init(args) is almost the same as meta_invoke("init", args),
-except that the lookup for init does not traverse shares-a links...
-The one 'problem' remaining is that init can always be invoked on a 'live' (already initialized) object... unless meta_invoke is modified as
-to give an error when invoking 'init' (i.e. 'init' should only be invoked via meta_init and never via meta_invoke("init"), then you can
-make sure it's called only once.
-Perhaps a cleaner meta-level interface is having meta_clone and meta_new => clone makes a clone without initializing it, new also does initialization.
-The reason being that explicitly providing meta_init allows base-level code to re-initialize a live object at the meta-level.
-update: why not introduce syntax: new <expression>(arguments) , which is equivalent to: (reflect: <expression>).new(arguments)
+- First-class constructors: jClass.new or jObject.new should wrap a JavaConstructor class,
+such that casting works for constructors as well.
+=> Implementation can be sped up a bit using caching. Currently, only methods are cached, could also
+cache Constructors if we introduce a JavaConstructor class? This could also be used to solve problem of
+casting for constructors. E.g. if aClass.new returns a JavaConstructor which is a special kind of JavaClosure,
+then we can do aClass.new.cast(Type1, Type2)(a, b)
 
-* zoveel mogelijk native methods vervangen door code gedumpt in de init.at file
-bvb. alle controlestructuren, isXXX: methoden, ...
+- Solve overloading by being able to annotate a method invocation => future work?
+
+- methods whose selector contains '_' in Java: we should allow _ in AT identifiers.
+Only disadvantage is that Java identifiers with '_' will be displayed using ':' in AT.
+However, an AT selector will not undergo such conversions when remaining within AT.
+Can be made even cleaner if the _ -> : conversion is only performed for downSelector,
+and for symbiosis introduce another method named 'javaToATSelector'
+
+Invocation and Delegation:
+==========================
+
+Currently, meta_invoke has an ugly interface: it has a receiver, a selector and arguments.
+The receiver argument is used to implement delegation. I suggest the following refactoring:
+
+split meta_invoke(rcv, sel, arg) into two operations:
+- meta_invoke(sel, arg) : default implementation is meta_delegate(this, sel, arg)
+- meta_delegate(rcv, sel, arg) : does what meta_invoke used to do
+
+With this new 'delegate' meta-level operation in place, we could introduce a new kind of
+message send in the language, a 'delegating send', e,g.
+
+obj^msg(args) => delegate msg to obj, with 'self' remaining bound to the current 'self'
+= (reflect: obj).delegate(self, `msg, args)
+
+With such a new kind of send admitted into the language, we can do away with the very
+complex semantics for 'super' as a proxy for the real super which remembers the self.
+We can just admit 'super' as a plain reference to the parent (just as 'self' is a plain
+reference to self). A super-send is then:
+
+super^msg(args)
+
+Note that super remains first-class, but without any complex semantics.
+Moreover, a useful new operation can be added, which is useful for things other than
+super-sends alone (think template methods: normally you have to express those as
+superclass-subclass, now you can implement them as implementingclass-invokingclass).
+
+The only 'issue' here is that 'self' is not necessarily restricted to child objects
+any more, as anyone can delegate to an object. This does not introduce any new
+'encapsulation breaches', however, as any object could freely extend another object
+anyhow, so 'self' was deemed 'unsafe' already. Use lexical scoping to ensure safety.
+
+Keywords and Optional/Varargs:
+==============================
+
+Remember that we wanted some kind of keyworded message sends that
+were matched against a kind of 'regular expression' for stuff like
+try-catch and when-catch, such that e.g. the following invocations
+all trigger the same language construct:
+when: f becomes: { |v| ... }
+when: f becomes: { |v| ... } due: 1000
+when: f becomes: { |v| ... } catch: { #Exc1 |e| ... } catch: { #Exc2 |e| ... }
+
+This could be done using optional and vararg parameters with keywords:
+def when: future becomes: block due: time := default catch: @blocks {
+  ...
+}
+This method actually has a selector when:becomes:[due:](catch:)*
+and regexp matching could be used to match invocation with definition.
+
+We really need this kind of semantics if we want to make optional
+arguments and varargs work for keywords.
+
+Meta-send (send-to-mirror):
+===========================
+
+Consider introducing another message passing operator (.µ) which sends a message
+to an object's mirror rather than to the object itself.
+
+obj.µmsg(args) == (reflect: obj).msg(args).base
+
+The advantage is that the meta-variant does not require the creation of temporary mirrors.
+i.e.
+public ATObject meta_meta_invoke(selector, args) {
+  return this.meta_invoke(selector, args);
+}
+
+The reflect: variant is much more expensive; it requires creating a mirror on obj
+and a mirror on the result, which are usually immediately discarded.
+
+Next to efficiency considerations, the meta-send is also a more concise way
+of sending messages to mirrors.
+
+Annotations:
+============
+
+Annotations or stripes or types are necessary for multiple reasons:
+- For object classification (e.g. allow objects to categorize themselves
+into domain-specific categories, or tell to the interpreter that they represent
+a table, a function, a number, etc. -> for better coercion)
+- For symbiosis with Java (e.g. objects should tell AmbientTalk which Java
+interfaces they implement)
+- For exception handling (catch only objects of a certain kind)
+- For service discovery: need a topic hierarchy to allow interpreter
+to rapidly filter/route discovery events)
+
+All of these require 'subtyping' semantics
+(i.e. an annotation/stripe/type can have 0 or more supertypes)
+
+Apart from the above requirements to tag *objects*, sometimes it would be
+interesting to also tag *fields*, *methods*, *message sends* or event *closures*
+Here, these annotations represent declarative directives to the meta-level, which
+e.g. alter field access, method invocation, message dispatch
+Especially interesting for introducing proxies (cfr. the 'function transformations' from dPico)
+(custom fields, method wrappers)
+A requirement for these annotations is that they should carry arguments, like:
+obj.msg(a,b,c)#annotation(arg)
+e.g. obj<-msg(a,b,c)#delay(1000)
+
+Such annotations could e.g. be used to solve overloading problems with the Java symbiosis:
+javaobject.method(a#type1, b#type2, c#type3)
+or one could pass an object tagged with a correct type
+
+----------------------
+Implementation issues:
+----------------------
+
+Native method sanity check:
+===========================
+- zorgen dat alle AT interfaces alleen nog base_ / meta_ methoden hebben die InterpreterException throwen
+en die alleen AT args of convertible args returnen / nemen
+violators:
+NATText meta_print() throws InterpreterException;
+alle isXXX() methods => returnen boolean
+ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException;
+en varianten: nemen expliciet een NATIntercessiveMirror ipv een ATMirror
+
+Distributed Computation:
+========================
+
+Using JGroups to implement the low-level discovery and communication protocol.
+
+Native Base-level Methods:
+==========================
+
+The methods base_new, base_init and base_== have strange semantics because they are
+implemented natively. They do not entirely behave like real methods because of native lookup.
+
+For example, performing a super-send inside a custom init will trigger the 'native' implementation in the object's class
+(if the object delegates to nil). This is OK because currently all NAT classes have the same implementation of base_init.
+Once they start to differ, this may begin to give problems.
+
+We should implement base_ methods for NATObjects differently, such that they become real methods.
+Also, do mirrors correctly reflect upon new, init and ==?
+
+B.t.w.: maybe <+ should not be a base_ method and should be a built-in operator? (like dot)
+
+Static Variables:
+=================
+
+We must ensure the integrity of all static variables in the AT/2 implementation with respect
+to race conditions! Static variables are shared by multiple actors. This means that they
+should definitely be final + that the datastructure they point at is immutable. If not,
+e.g. the string pool for symbols, access should be synchronized!
+
+
+Native Method Refactoring:
+==========================
+
+Goal is to get rid of most methods from the JavaInterfaceAdaptor and Reflection classes,
+and to make native AmbientTalk methods accessible without having to perform a reflective
+Java method invocation.
+
+Primary goal: to remove all reflective invocations of base_ methods from the implementation.
+Instead, we want to represent native methods more closely as AmbientTalk methods.
+Like this:
+- we don't need to convert AT selectors into Java identifiers,
+- we can reuse AT's parameter passing mechanism for native methods (e.g. varargs)
+- we don't have to perform a reflective Java method invocation.
+
+To change:
+- every NAT class should have a static final HashTable that represents
+the method dictionary of all objects of that NAT type.
+
+- at startup time, this HashTable should be filled with the native
+methods of that NAT type. Native methods are represented as anonymous
+classes that implement a kind of native_apply method, which is parameterized
+by:
+- the Java 'this' (because native methods are static and shared by all
+instances, they are selfless, which should be of the proper NAT type
+[- the AmbientTalk 'self' (necessary if a native method needs late binding))]
+- a call frame that binds formals to actuals
+
+- meta_invoke on native objects (e.g. NATNil) should query the class-level
+hashtable for the appropriate native method corresponding to the selector,
+and apply the native method. Alternatively, meta_invoke could become a large
+switch statement, but this is harder to maintain + would lead to code duplication
+in between meta_invoke, meta_delegate, meta_select.
+
+Consider for example the method '+' in NatNumber:
+class NATNumber extends NATNumeric {
+  private final int javaValue_;
+  private static final HashTable _NATNumber_METHODS_ = new HashTable();
+  static {
+    _NATNumber_METHODS_.put(AGSymbol.alloc("+"), new NativeMethod("+",new ATObject[]{AGSymbol("other")}) {
+      public ATObject native_apply(NATNumber ths, ATObject slf, NATCallframe args) {
+        ATObject other = args.meta_select(AGSymbol.alloc("other")); // alternatively, do args.at(0)
+        return ths.base_plus(other.meta_asNumber());
+      }
+    }
+  }
+  public ATNumber base_plus(ATNumber other) { ... }
+}
+
+Alternatively, to speed up lookup of native methods,
+each native method's selector could be assigned a number, and
+lookup can occur in O(1) by storing the methods in an array where
+the indices correspond to the selector's number.
+
+
+Introspective mirrors need to be adapted similarly:
+They should implement native methods with selectors "invoke", "select", etc.
+e.g.
+new NativeMethod("invoke",new ATObject[] { AGSymbol("selector"), AGSymbol("args") }) {
+  public ATObject native_apply(NATMirror m, ATObject self, NATCallframe args) {
+     return up(m.base.meta_invoke(args.at("selector").meta_asSelector(), args.at("args").meta_asTable()));
+  }
+}
