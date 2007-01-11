@@ -33,7 +33,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATDefExternalField;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -61,14 +60,16 @@ public class AGDefExternalField extends NATAbstractGrammar implements ATDefExter
 	public ATExpression base_getValueExpression() { return valueExp_; }
 	
 	/**
-	 * Defines a new field in the object denoted by the receiver symbol. The return value is NIL.
+	 * Defines a new field in the object denoted by the receiver symbol.
+	 * The return value is the value of the field.
 	 * 
 	 * AGDEFEXTFLD(rcv,nam,val).eval(ctx) =
 	 *   rcv.eval(ctx).addField(nam, val.eval(ctx))
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		rcvNam_.meta_eval(ctx).meta_defineField(name_, valueExp_.meta_eval(ctx));
-		return NATNil._INSTANCE_;
+		ATObject val = valueExp_.meta_eval(ctx);
+		rcvNam_.meta_eval(ctx).meta_defineField(name_, val);
+		return val;
 	}
 
 	/**

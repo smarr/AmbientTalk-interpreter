@@ -98,7 +98,7 @@ public final class NATClosureMethod extends NATByRef implements ATMethod {
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<method:"+method_.base_getName()+">");
+		return NATText.atValue("<closure:"+method_.base_getName()+">");
 	}
 
 	public ATMethod base_asMethod() throws XTypeMismatch {

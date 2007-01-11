@@ -36,7 +36,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignTable;
 import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -70,7 +69,7 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 	 * AGASSTABLE(tbl,idx,val).eval(ctx) =
 	 *  tbl.eval(ctx).atPut(idx.eval(ctx), val.eval(ctx))
 	 * 
-	 * @return NIL (table assignment is not an expression)
+	 * @return the value stored in the table
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATTable tab = tblExp_.meta_eval(ctx).base_asTable();
@@ -80,8 +79,9 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 		} catch (XTypeMismatch e) {
 			throw new XIllegalIndex(e.getMessage());
 		}
-		tab.base_atPut(idx, valExp_.meta_eval(ctx));
-		return NATNil._INSTANCE_;
+		ATObject val = valExp_.meta_eval(ctx);
+		tab.base_atPut(idx, val);
+		return val;
 	}
 
 	/**

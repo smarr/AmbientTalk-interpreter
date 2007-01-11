@@ -37,7 +37,6 @@ import edu.vub.at.objects.grammar.ATDefExternalMethod;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosureMethod;
 import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -80,15 +79,16 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 	 * Such a closure captures the current lexical scope, but not the values for 'self' and 'super'.
 	 * For an explanation of this rationale, see my interface description in ATDefExternalMethod.
 	 * 
-	 * The return value of an external method definition is always NIL.
+	 * The return value of an external method definition is always the external method itself.
 	 * 
 	 * AGDEFEXTMTH(rcv,nam,par,bdy).eval(ctx) =
 	 *   rcv.eval(ctx).defineField(nam, NATCLOMTH(ctx.cur,nam,par,bdy))
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		rcvNam_.meta_eval(ctx).meta_addMethod(
-				new NATClosureMethod(ctx.base_getLexicalScope(), new NATMethod(selectorExp_, argumentExps_, bodyStmts_)));
-		return NATNil._INSTANCE_;
+		NATClosureMethod extMethod = new NATClosureMethod(ctx.base_getLexicalScope(),
+				                           new NATMethod(selectorExp_, argumentExps_, bodyStmts_));
+		rcvNam_.meta_eval(ctx).meta_addMethod(extMethod);
+		return extMethod;
 	}
 
 	/**

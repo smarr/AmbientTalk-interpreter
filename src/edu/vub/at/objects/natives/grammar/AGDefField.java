@@ -33,7 +33,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATDefField;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -58,14 +57,16 @@ public final class AGDefField extends NATAbstractGrammar implements ATDefField {
 	public ATExpression base_getValueExpression() { return valueExp_; }
 	
 	/**
-	 * Defines a new field in the current scope. The return value is NIL.
+	 * Defines a new field in the current scope. The return value is
+	 * the evaluated value.
 	 * 
 	 * AGDEFFIELD(nam,val).eval(ctx) =
 	 *   ctx.scope.addField(nam, val.eval(ctx))
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ctx.base_getLexicalScope().meta_defineField(name_, valueExp_.meta_eval(ctx));
-		return NATNil._INSTANCE_;
+		ATObject val = valueExp_.meta_eval(ctx);
+		ctx.base_getLexicalScope().meta_defineField(name_, val);
+		return val;
 	}
 
 	/**

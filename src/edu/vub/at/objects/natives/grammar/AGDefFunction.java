@@ -37,7 +37,6 @@ import edu.vub.at.objects.grammar.ATDefMethod;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -77,26 +76,25 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 * is executed in the context of a call frame (i.e. its definition
 	 * is nested within a method/function) then a closure is created instead.
 	 * 
-	 * The return value of a function definition is always NIL.
+	 * The return value of a function definition is always a closure encapsulating the function.
 	 * 
 	 * AGDEFFUN(nam,par,bdy).eval(ctx) =
 	 *   if ctx.scope.isCallFrame
 	 *      ctx.scope.addFunction(nam, AGCLO(AGMTH(nam,par,bdy), ctx))
 	 *   else
 	 *      ctx.scope.addMethod(nam, AGMTH(nam,par,bdy))
-	 *      
-	 * TODO LATER(final fields) closure definition: should they really be fields? fields are mutable?
+	 * 
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		if (ctx.base_getLexicalScope().base_isCallFrame()) {
-			ctx.base_getLexicalScope().meta_defineField(
-					selectorExp_,
-					new NATClosure(new NATMethod(selectorExp_, argumentExps_, bodyStmts_),
-							      ctx));
+		ATObject current = ctx.base_getLexicalScope();
+		if (current.base_isCallFrame()) {
+			NATClosure clo = new NATClosure(new NATMethod(selectorExp_, argumentExps_, bodyStmts_), ctx);
+			current.meta_defineField(selectorExp_, clo);
+			return clo;
 		} else {
-			ctx.base_getLexicalScope().meta_addMethod(new NATMethod(selectorExp_, argumentExps_, bodyStmts_));
+			current.meta_addMethod(new NATMethod(selectorExp_, argumentExps_, bodyStmts_));
+			return current.meta_select(current, selectorExp_);
 		}
-		return NATNil._INSTANCE_;
 	}
 
 	/**

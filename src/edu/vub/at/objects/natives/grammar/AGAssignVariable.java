@@ -34,7 +34,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -65,11 +64,12 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 	 * 
 	 * AGASSVAR(nam,val).eval(ctx) = ctx.scope.assignVariable(nam, val.eval(ctx))
 	 * 
-	 * @return NIL
+	 * @return the value assigned to the variable
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ctx.base_getLexicalScope().meta_assignVariable(variableName_, valueExp_.meta_eval(ctx));
-		return NATNil._INSTANCE_;
+		ATObject val = valueExp_.meta_eval(ctx);
+		ctx.base_getLexicalScope().meta_assignVariable(variableName_, val);
+		return val;
 	}
 
 	/**

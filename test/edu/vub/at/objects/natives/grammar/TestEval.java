@@ -48,12 +48,12 @@ public class TestEval extends AmbientTalkTest {
 	// definitions
 	
 	public void testDefField() throws InterpreterException {
-        evalAndCompareTo("def x := 3", NATNil._INSTANCE_);
+        evalAndCompareTo("def x := 3", atThree_);
         assertEquals(atThree_, ctx_.base_getLexicalScope().meta_lookup(atX_));
 	}
 	
 	public void testDefFunction() throws InterpreterException {
-        evalAndCompareTo("def x() { 3 }", NATNil._INSTANCE_);
+        evalAndCompareTo("def x() { 3 }", "<closure:x>");
         try {
         	  ATClosure clo = ctx_.base_getLexicalScope().meta_lookup(atX_).base_asClosure();
         	  assertEquals(atX_, clo.base_getMethod().base_getName());
@@ -63,7 +63,7 @@ public class TestEval extends AmbientTalkTest {
 	}
 	
 	public void testDefTable() throws InterpreterException {
-        evalAndCompareTo("def x[3] { 3 }", NATNil._INSTANCE_);
+        evalAndCompareTo("def x[3] { 1; 2; 3 }", "[3, 3, 3]");
         try {
         	  ATObject tab = ctx_.base_getLexicalScope().meta_lookup(atX_);
         	  assertEquals(atThree_, tab.base_asTable().base_getLength());
@@ -77,7 +77,7 @@ public class TestEval extends AmbientTalkTest {
 		ATObject rcvr = new NATObject();
 		AGSymbol rcvnam = AGSymbol.jAlloc("o");
 		ctx_.base_getLexicalScope().meta_defineField(rcvnam, rcvr);
-        evalAndCompareTo("def o.x() { self }", NATNil._INSTANCE_);
+        evalAndCompareTo("def o.x() { self }", "<closure:x>");
         try {
         	  ATClosure clo = rcvr.meta_lookup(atX_).base_asClosure();
         	  assertEquals(atX_, clo.base_getMethod().base_getName());
@@ -91,7 +91,7 @@ public class TestEval extends AmbientTalkTest {
 		ATObject rcvr = new NATObject();
 		AGSymbol rcvnam = AGSymbol.jAlloc("o2");
 		ctx_.base_getLexicalScope().meta_defineField(rcvnam, rcvr);
-        evalAndCompareTo("def o2.x := 3", NATNil._INSTANCE_);
+        evalAndCompareTo("def o2.x := 3", atThree_);
         try {
         	  assertEquals(atThree_, rcvr.meta_select(rcvr, atX_));
         } catch(XUndefinedField e) {
@@ -105,7 +105,7 @@ public class TestEval extends AmbientTalkTest {
 		// def x := nil
 		ctx_.base_getLexicalScope().meta_defineField(atX_, NATNil._INSTANCE_);
 		
-        evalAndCompareTo("x := 3", NATNil._INSTANCE_);
+        evalAndCompareTo("x := 3", atThree_);
         assertEquals(atThree_, ctx_.base_getLexicalScope().meta_lookup(atX_));
 	}
 	
@@ -114,7 +114,7 @@ public class TestEval extends AmbientTalkTest {
 		ATTable table = NATTable.atValue(new ATObject[] { NATNil._INSTANCE_, NATNil._INSTANCE_ });
 		ctx_.base_getLexicalScope().meta_defineField(atX_, table);
 		
-        evalAndCompareTo("x[1] := 3", NATNil._INSTANCE_);
+        evalAndCompareTo("x[1] := 3", atThree_);
         assertEquals(atThree_, table.base_at(NATNumber.ONE));
 	}
 	
@@ -124,16 +124,16 @@ public class TestEval extends AmbientTalkTest {
 		x.meta_defineField(atY_, NATNumber.ZERO);
 		ctx_.base_getLexicalScope().meta_defineField(atX_, x);
 		
-         evalAndCompareTo("x.y := 3", NATNil._INSTANCE_);
+         evalAndCompareTo("x.y := 3", atThree_);
          assertEquals(atThree_, x.meta_select(x, atY_));
 	}
 	
-	public void testMultiAssginment() throws InterpreterException {
+	public void testMultiAssignment() throws InterpreterException {
 		// def x := 1; def y := 3
 		ctx_.base_getLexicalScope().meta_defineField(atX_, NATNumber.ONE);
 		ctx_.base_getLexicalScope().meta_defineField(atY_, atThree_);
 		
-         evalAndCompareTo("[x, y] := [ y, x ]", NATNil._INSTANCE_);
+         evalAndCompareTo("[x, y] := [ y, x ]", "[3, 1]");
          assertEquals(atThree_, ctx_.base_getLexicalScope().meta_lookup(atX_));
          assertEquals(NATNumber.ONE, ctx_.base_getLexicalScope().meta_lookup(atY_));
 	}
@@ -300,7 +300,7 @@ public class TestEval extends AmbientTalkTest {
 	public void testVariableMultiDefinition() throws InterpreterException {
 		// def [x, @y ] := [1, 2, 3, @[4, 5]
 		// => x = 1; y = [2, 3, 4, 5]
-		evalAndCompareTo("def [x, @y ] := [1, 2, 3, @[4, 5]]", NATNil._INSTANCE_);
+		evalAndCompareTo("def [x, @y ] := [1, 2, 3, @[4, 5]]", "[1, 2, 3, 4, 5]");
 		assertEquals(NATNumber.ONE, ctx_.base_getLexicalScope().meta_lookup(atX_));
 		assertEquals("[2, 3, 4, 5]", ctx_.base_getLexicalScope().meta_lookup(atY_).meta_print().javaValue);
 	}

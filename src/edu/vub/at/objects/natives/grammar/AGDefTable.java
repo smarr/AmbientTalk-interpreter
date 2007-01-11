@@ -32,10 +32,11 @@ import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -48,9 +49,9 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 
 	private final ATSymbol tblName_;
 	private final ATExpression sizExp_;
-	private final ATExpression initExp_;
+	private final ATBegin initExp_;
 	
-	public AGDefTable(ATSymbol nam, ATExpression siz, ATExpression ini) {
+	public AGDefTable(ATSymbol nam, ATExpression siz, ATBegin ini) {
 		tblName_ = nam;
 		sizExp_ = siz;
 		initExp_ = ini;
@@ -60,21 +61,25 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 
 	public ATExpression base_getSizeExpression() { return sizExp_; }
 
-	public ATExpression base_getInitializationExpression() { return initExp_; }
+	public ATBegin base_getInitializer() { return initExp_; }
 
 	/**
 	 * Defining a table requires evaluating its index expression to a size s,
 	 * then allocating a new table of size s and finally initializing it
-	 * by evaluating its initialization expression s times. The return value is NIL.
+	 * by evaluating its initializer body s times. The return value is the defined table.
+	 * 
+	 * The initializer body is evaluated in a new scope, so definitions inside the initializer
+	 * are not visible to the outside (table defining) scope.
 	 * 
 	 * AGDEFTABLE(nam,siz,ini).eval(ctx) =
 	 *   s = siz.eval(ctx)
 	 *   t[s] = nil
+	 *   inictx = ctx[cur -> callframe(ctx.cur)]
 	 *   i.from: 0 to: s do: {
 	 *     t[i] := ini.eval(ctx)
 	 *   }
 	 *   ctx.scope.defineField(nam, AGTABLE(t))
-	 *   nil
+	 *   AGTABLE(t)
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		int siz = 0;
@@ -84,14 +89,17 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 			throw new XIllegalIndex(e.getMessage());
 		}
 		
+		NATCallframe initscope = new NATCallframe(ctx.base_getLexicalScope());
+		ATContext initctx = ctx.base_withLexicalEnvironment(initscope);
 		ATObject[] tab = new ATObject[siz];
 		for (int i = 0; i < tab.length; i++) {
-			tab[i] = initExp_.meta_eval(ctx);
+			tab[i] = initExp_.meta_eval(initctx);
 		}
 		
-		ctx.base_getLexicalScope().meta_defineField(tblName_, NATTable.atValue(tab));
+		NATTable tbl = NATTable.atValue(tab);
+		ctx.base_getLexicalScope().meta_defineField(tblName_, tbl);
 		
-		return NATNil._INSTANCE_;
+		return tbl;
 	}
 
 	/**
@@ -102,7 +110,7 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGDefTable(tblName_.meta_quote(ctx).base_asSymbol(),
 				              sizExp_.meta_quote(ctx).base_asExpression(),
-				              initExp_.meta_quote(ctx).base_asExpression());
+				              initExp_.meta_quote(ctx).base_asBegin());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

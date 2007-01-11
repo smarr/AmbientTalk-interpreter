@@ -34,7 +34,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMultiAssignment;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -64,13 +63,14 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 	 * and assign the parameters on the left hand side to the 'arguments' of the right hand side,
 	 * almost as if they were bound during a function call (the parameters are assigned instead of defined).
 	 * 
-	 * AGMULTIASS(par,val).eval(ctx) = assign(ctx.scope, par, val.eval(ctx)) ; nil
+	 * AGMULTIASS(par,val).eval(ctx) = assign(ctx.scope, par, val.eval(ctx))
 	 * 
-	 * @return NIL
+	 * @return the evaluated arguments table
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		PartialBinder.assignArgsToParams(binderPartialFunction_, ctx, valueExp_.meta_eval(ctx).base_asTable());
-		return NATNil._INSTANCE_;
+		ATTable args = valueExp_.meta_eval(ctx).base_asTable();
+		PartialBinder.assignArgsToParams(binderPartialFunction_, ctx, args);
+		return args;
 	}
 
 	/**

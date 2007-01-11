@@ -20,19 +20,6 @@ by the mirror.
 For those NAT classes that need access to native Java objects, we might be able to use the Symbiosis.
 As such we may be able to confine the AT/2 kernel to only a handful of classes (NATNil, NATObject, JavaObject)
 
-Related to a proper meta-circular implementation of AmbientTalk is to allow as much custom AT objects in
-place of implementation-level objects. That is, we should remove as much .asNative...() casts from the code
-as possible. Each such cast precludes use of custom AT objects. Sometimes, the casting is inevitable (e.g. 1+2),
-sometimes, it is. E.g.: rather than casting an ATObject to a NATTable and looping over its elements_, one could write:
-if (obj instanceof NATTable) {
-  // perform immediate native behaviour
-  // loop over ((NATTable) obj).elements_ with for loop
-} else {
-  obj.base_asTable().base_each(new NativeClosure(this) {
-    // perform native behaviour inside of a native closure's apply method
-  });
-}
-
 Conversions:
 ============
 base_isXXX and base_asXXX methods must become meta_isXXX and meta_asXXX
@@ -187,10 +174,6 @@ to an object's mirror rather than to the object itself.
 obj.µmsg(args) == (reflect: obj).msg(args).base
 
 The advantage is that the meta-variant does not require the creation of temporary mirrors.
-i.e.
-public ATObject meta_meta_invoke(selector, args) {
-  return this.meta_invoke(selector, args);
-}
 
 The reflect: variant is much more expensive; it requires creating a mirror on obj
 and a mirror on the result, which are usually immediately discarded.
@@ -207,17 +190,21 @@ into domain-specific categories, or tell to the interpreter that they represent
 a table, a function, a number, etc. -> for better coercion)
 - For symbiosis with Java (e.g. objects should tell AmbientTalk which Java
 interfaces they implement)
-- For exception handling (catch only objects of a certain kind)
+- For exception handling (catch only exception objects of a certain kind)
 - For service discovery: need a topic hierarchy to allow interpreter
 to rapidly filter/route discovery events)
 
 All of these require 'subtyping' semantics
-(i.e. an annotation/stripe/type can have 0 or more supertypes)
+(i.e. an annotation/stripe/type can have 0 or more supertypes and a subtype is substitutable for a supertype)
 
 Apart from the above requirements to tag *objects*, sometimes it would be
-interesting to also tag *fields*, *methods*, *message sends* or event *closures*
+interesting to also tag *fields*, *methods*, *message sends* or even *closures*
 Here, these annotations represent declarative directives to the meta-level, which
 e.g. alter field access, method invocation, message dispatch
+- fields: proxy objects that implement get and set
+- methods: proxy objects that implement apply and applyInScope
+- message: proxy implementing sendTo
+- closure: ?
 Especially interesting for introducing proxies (cfr. the 'function transformations' from dPico)
 (custom fields, method wrappers)
 A requirement for these annotations is that they should carry arguments, like:
@@ -228,9 +215,39 @@ Such annotations could e.g. be used to solve overloading problems with the Java 
 javaobject.method(a#type1, b#type2, c#type3)
 or one could pass an object tagged with a correct type
 
+It would be nice to integrate annotations consistently into the language and be able to
+use them both as directives to the meta-level *and* as types for objects.
+
+Transform annotations into message sends?
+def #foo x := 5 => def x := foo().decorateField(`x, 5) // of decorateField(<field object>)
+=> value? should be a custom field object!
+def #bar(1) meth(args) { ... } => def meth := bar(1).decorateMethod(<method object>) => method
+obj.msg(args)#foo => obj <+ foo().decorateMessage(<msg object>) => message
+{ #foo |args| body } => foo().decorateClosure({ |args| body }) => closure
+
+object: #foo { ... } => decorateParameter
+object: { #foo ... } => decorateClosure
+object: { ... }#foo => decorateParameter
+
 ----------------------
 Implementation issues:
 ----------------------
+
+Meta-circular AmbientTalk:
+==========================
+
+Related to a proper meta-circular implementation of AmbientTalk is to allow as much custom AT objects in
+place of implementation-level objects. That is, we should remove as much .asNative...() casts from the code
+as possible. Each such cast precludes use of custom AT objects. Sometimes, the casting is inevitable (e.g. 1+2),
+sometimes, it is. E.g.: rather than casting an ATObject to a NATTable and looping over its elements_, one could write:
+if (obj instanceof NATTable) {
+  // perform immediate native behaviour
+  // loop over ((NATTable) obj).elements_ with for loop
+} else {
+  obj.base_asTable().base_each(new NativeClosure(this) {
+    // perform native behaviour inside of a native closure's apply method
+  });
+}
 
 Native method sanity check:
 ===========================

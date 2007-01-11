@@ -99,7 +99,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		
 		// schedule special 'init' message which will:
 		// A) create a new behaviour and will unblock creating actor (by passing it a far ref via the future)
-		// B) initialize the behaviour with the given closure
+		// B) initialize the root and lobby objects of this actor
 		processor.event_init(future, behaviourPkt);
 		
 		// notify host VM about my creation
@@ -112,6 +112,9 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		}
 	}
 	
+	/**
+	 * Creates a new actor on the given host with the given behaviour and custom actor mirror.
+	 */
 	public static NATLocalFarRef atValue(ELVirtualMachine host, Packet behaviourPkt, Packet actorMirrorPkt) throws InterpreterException {
 		return NATActorMirror.atValue(host, behaviourPkt, actorMirrorPkt.unpack().base_asActorMirror());
 	}

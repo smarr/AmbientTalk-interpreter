@@ -36,6 +36,6 @@ public interface ATDefTable extends ATDefinition {
 
 	public ATSymbol base_getName();
 	public ATExpression base_getSizeExpression();
-	public ATExpression base_getInitializationExpression();
+	public ATBegin base_getInitializer();
 	
 }

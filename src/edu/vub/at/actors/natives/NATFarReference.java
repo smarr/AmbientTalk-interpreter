@@ -49,8 +49,21 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * 
- * TODO document the class NATFarReference
- *
+ * NATFarReference is the root of the native classes that represent native far references.
+ * The AmbientTalk/2 implementation distinguishes between two kinds of far references:
+ * local and remote far references. The former denote far references to objects hosted by
+ * actors on the same virtual machine. The latter ones denote far references to remote objects
+ * that are hosted on a separate virtual (and usually even physical) machine.
+ * 
+ * This abstract superclass encapsulates all of the code that these two kinds of far references
+ * have in common. The variabilities are delegated to the subclasses. Subclasses should implement
+ * an abstract method (transmit) which is invoked by this class when the far reference receives
+ * a message to be forwarded to the remote principal.
+ * 
+ * Note that far references are pass by copy and resolve to either a near or a new
+ * actor-local far reference.
+ * 
+ * @author tvcutsem
  * @author smostinc
  */
 public abstract class NATFarReference extends NATByCopy implements ATFarReference {

@@ -34,7 +34,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMultiDefinition;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -64,13 +63,14 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
 	 * and bind the parameters on the left hand side to the 'arguments' of the right hand side,
 	 * exactly as if they were bound during a function call.
 	 * 
-	 * AGMULTIDEF(par,val).eval(ctx) = bind(ctx.scope, par, val.eval(ctx)) ; nil
+	 * AGMULTIDEF(par,val).eval(ctx) = bind(ctx.scope, par, val.eval(ctx))
 	 * 
-	 * @return NIL
+	 * @return the evaluated arguments table
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		PartialBinder.defineParamsForArgs(binderPartialFunction_, ctx, valueExp_.meta_eval(ctx).base_asTable());
-		return NATNil._INSTANCE_;
+		ATTable args = valueExp_.meta_eval(ctx).base_asTable();
+		PartialBinder.defineParamsForArgs(binderPartialFunction_, ctx, args);
+		return args;
 	}
 
 	/**

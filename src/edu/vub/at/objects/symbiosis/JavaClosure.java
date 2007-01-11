@@ -34,8 +34,11 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATContext;
+import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.Vector;
 
@@ -82,7 +85,16 @@ public final class JavaClosure extends NATClosure implements ATJavaClosure {
 		// unwrap the JavaClass wrappers
 		Class[] actualTypes = new Class[types.length];
 		for (int i = 0; i < actualTypes.length; i++) {
-			actualTypes[i] = types[i].asJavaClassUnderSymbiosis().getWrappedClass();
+			// Array types may be represented as one-arg tables of a type: [Type]
+			// TODO: properly refactor the instanceof test
+			// problem: cannot do base_isTable because JavaObject/JavaClass objects will say yes!
+			if (types[i] instanceof NATTable) {
+				// Array.newInstance([Type][1],0).getClass()
+				actualTypes[i] = Array.newInstance(types[i].base_asTable().
+				    base_at(NATNumber.ONE).asJavaClassUnderSymbiosis().getWrappedClass(), 0).getClass();
+			} else {
+				actualTypes[i] = types[i].asJavaClassUnderSymbiosis().getWrappedClass();
+			}
 		}
 		Vector matchingMethods = new Vector();
 		
