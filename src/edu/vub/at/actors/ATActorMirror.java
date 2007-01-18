@@ -88,7 +88,7 @@ public interface ATActorMirror extends ATObject {
 	 * a separate service description and an object offering the service. The return
 	 * value is a closure which allows cancelling the service offer.
 	 */
-	public ATClosure base_provide(ATServiceDescription description, ATObject service) throws InterpreterException;
+	public ATClosure base_provide(ATSymbol topic, ATObject service) throws InterpreterException;
 	
 	/**
 	 * This mechanism is the most basic mechanism to provide a service. It requires 
@@ -96,7 +96,7 @@ public interface ATActorMirror extends ATObject {
 	 * value is a closure which allows cancelling the service offer.
 	 * @throws InterpreterException 
 	 */
-	public ATClosure base_require(ATServiceDescription description, ATObject client) throws InterpreterException;
+	public ATClosure base_require(ATSymbol topic, ATClosure handler) throws InterpreterException;
 	
     /* -------------------------------------
      * -- Object Passing Protocol Support --

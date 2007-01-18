@@ -53,9 +53,7 @@ public class MultiMap implements Map, Serializable, Cloneable {
 
 	public boolean equals(Object toBeCompared) {
 		if(toBeCompared instanceof MultiMap) {
-			if(toBeCompared != null) {
-				return internal_.equals(((MultiMap)toBeCompared).internal_);
-			}
+			return internal_.equals(((MultiMap)toBeCompared).internal_);
 		}
 		return false;
 	}

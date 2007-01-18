@@ -112,10 +112,10 @@ public class ReceptionistsSet {
 	 * can be distributed to other actors. Only near references may be exported.
 	 * 
 	 * @param object - the local object to export to the outside world
-	 * @return a unique identifier denoting the local object
+	 * @return a local remote reference denoting the local object
 	 * @throws XIllegalOperation - if object is a far reference
 	 */
-	public ATFarReference exportObject(ATObject object) throws InterpreterException {
+	public NATLocalFarRef exportObject(ATObject object) throws InterpreterException {
 		if (object.base_isFarReference()) {
 			throw new XIllegalOperation("Cannot export a far reference to " + object);
 		}

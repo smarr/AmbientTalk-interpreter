@@ -43,10 +43,10 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATIntercessiveMirror;
 import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
-import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
 import edu.vub.at.parser.NATParser;
 
@@ -312,15 +312,29 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_isolate_(ATClosure code) throws InterpreterException {
 		NATIsolate isolate = new NATIsolate();
-		// bindingsToCopy := code.method.parameters.filter: { |p| p.base_isSymbol() }
-		ATTable bindingsToCopy = code.base_getMethod().base_getParameters().base_filter_(
-		  new NativeClosure(this) {
-			public ATObject base_apply(ATTable args) throws InterpreterException {
-				return NATBoolean.atValue(args.base_at(NATNumber.ONE).base_isSymbol());
-			}
-		});
-		code.base_applyInScope(bindingsToCopy, isolate);
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				code.base_getMethod().base_getParameters(),
+				code.base_getContext());
+		code.base_applyInScope(copiedBindings, isolate);
 		return isolate;
+	}
+	
+	/**
+	 * export: object as: topic
+	 *  => object becomes discoverable by objects in other actors via topic
+	 * returns a closure that when applied, unexports the object
+	 */
+	public ATObject base_export_as_(ATObject object, ATSymbol topic) throws InterpreterException {
+		return ELActor.currentActor().getActorMirror().base_provide(topic, object);
+	}
+	
+	/**
+	 * when: topic discovered: { code }
+	 *  => when an object is exported by another actor under topic, trigger the code
+	 * returns a closure that when applied, stops the registration
+	 */
+	public ATObject base_when_discovered_(ATSymbol topic, ATClosure handler) throws InterpreterException {
+		return ELActor.currentActor().getActorMirror().base_require(topic, handler);
 	}
 	
 	/* -----------------------------

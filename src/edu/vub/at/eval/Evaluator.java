@@ -311,6 +311,34 @@ public final class Evaluator {
 	}
 	
 	/**
+	 * Given a formal parameter list, this auxiliary method returns a new table
+	 * consisting of the values of the bindings of the mandatory parameters of
+	 * formals within the context ctx.
+	 */
+	public static NATTable evalMandatoryPars(ATTable formals, ATContext ctx) throws InterpreterException {
+		if (formals == NATTable.EMPTY) {
+			return NATTable.EMPTY;
+		} else {
+			ATObject[] pars = formals.asNativeTable().elements_;
+			int numMandatory;
+			for (numMandatory = 0; numMandatory < pars.length; numMandatory++) {
+				if (!pars[numMandatory].base_isSymbol()) {
+					break;
+				}
+			}
+			if (numMandatory > 0) {
+				ATObject[] bindings = new ATObject[numMandatory];
+				for (int i = 0; i < bindings.length; i++) {
+					bindings[i] = pars[i].base_asSymbol().meta_eval(ctx);
+				}
+				return NATTable.atValue(bindings);
+			} else {
+				return NATTable.EMPTY;
+			}
+		}
+	}
+	
+	/**
 	 * Returns the raw contents of a file in a String (using this JVM's default character encoding)
 	 */
 	public static String loadContentOfFile(File file) throws IOException {

@@ -27,12 +27,11 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.GUID;
 import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 import java.io.File;
 import java.util.Hashtable;
@@ -64,12 +63,16 @@ public final class ELVirtualMachine extends EventLoop {
 	/** a table mapping actor IDs to local native actors (int -> ELActor) */
 	private final Hashtable localActors_;
 	
+	/** manages subscriptions and publications */
+	private final DiscoveryManager discoveryManager_;
+	
 	public ELVirtualMachine(File[] objectPathRoots, ATAbstractGrammar initCode) {
 		super("virtual machine");
 		objectPathRoots_ = objectPathRoots;
 		initialisationCode_ = initCode;
 		vmId_ = new GUID();
 		localActors_ = new Hashtable();
+		discoveryManager_ = new DiscoveryManager();
 	}
 	
 	public GUID getGUID() { return vmId_; }
@@ -124,13 +127,13 @@ public final class ELVirtualMachine extends EventLoop {
      * will send a foundResolution event to both involved actors. If the VM detects 
      * that one partner has become unavailable it will send the lostResolution event
      * 
-     * @param actor - the actor of the object being provided
-     * @param service - the object providing the service
+     * @param topic - the abstract category in which this service is published
+     * @param service - a far reference to object providing the service
      */
-	public void event_servicePublished(final ATActorMirror actor, final ATObject service) {
-		this.receive(new Event("servicePublished("+actor+","+service+")") {
+	public void event_servicePublished(final ATSymbol topic, final NATLocalFarRef service) {
+		this.receive(new Event("servicePublished("+topic+","+service+")") {
 			public void process(Object myself) {
-				
+				discoveryManager_.addPublication(topic, service);
 			}
 		});
 	}
@@ -143,13 +146,13 @@ public final class ELVirtualMachine extends EventLoop {
      * involved actors. If the VM detects that one partner has become unavailable it 
      * will send the lostResolution event
      * 
-     * @param actor - the actor of the object requesting the service
-     * @param client - the object requesting the service
+     * @param topic - the abstract category in which this service is published
+     * @param handler - a far reference to the closure acting as a callback upon discovery
      */
-	public void event_clientSubscribed(final ATActorMirror actor, final ATObject client) {
-		this.receive(new Event("clientSubcribed("+actor+","+client+")") {
+	public void event_clientSubscribed(final ATSymbol topic, final NATLocalFarRef handler) {
+		this.receive(new Event("clientSubscribed("+topic+","+handler+")") {
 			public void process(Object myself) {
-				
+				discoveryManager_.addSubscription(topic, handler);
 			}
 		});
 	}
@@ -160,14 +163,13 @@ public final class ELVirtualMachine extends EventLoop {
      * object is no longer discoverable to new clients. However, it will not send 
      * lostResolution events as these signal that an object has become unreachable.
      * 
-     * @param actor - the actor of the object providing the service to cancel
-     * @param service - the object providing the service to cancel
-     * @return nil
+     * @param topic - the abstract category in which this service is published
+     * @param service - a far reference to object providing the service
      */
-	public void event_cancelPublication(final ATActorMirror actor, final ATObject service) {
-		this.receive(new Event("cancelPublication("+actor+","+service+")") {
+	public void event_cancelPublication(final ATSymbol topic, final NATLocalFarRef service) {
+		this.receive(new Event("cancelPublication("+topic+","+service+")") {
 			public void process(Object myself) {
-				
+				discoveryManager_.deletePublication(topic, service);
 			}
 		});
 	}
@@ -178,13 +180,13 @@ public final class ELVirtualMachine extends EventLoop {
      * object will no longer discover new services. However, it will not send 
      * lostResolution events as these signal that the client has become unreachable.
      * 
-     * @param actor - the actor of the client losing interest
-     * @param client - the client whose subscription to cancel
+     * @param topic - the abstract category in which this service is published
+     * @param handler - a far reference to the closure acting as a callback upon discovery
      */
-	public void event_cancelSubscription(final ATActorMirror actor, final ATObject client) {
-		this.receive(new Event("cancelSubscription("+actor+","+client+")") {
+	public void event_cancelSubscription(final ATSymbol topic, final NATLocalFarRef handler) {
+		this.receive(new Event("cancelSubscription("+topic+","+handler+")") {
 			public void process(Object myself) {
-				
+				discoveryManager_.deleteSubscription(topic, handler);
 			}
 		});
 	}

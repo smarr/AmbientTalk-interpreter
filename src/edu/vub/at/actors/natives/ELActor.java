@@ -29,7 +29,6 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
@@ -112,7 +111,7 @@ public final class ELActor extends EventLoop {
 	 * @return a unique identifier by which this object can be retrieved via the resolve method.
 	 * @throws XIllegalOperation if the passed object is a far reference, i.e. non-local
 	 */
-	public ATFarReference export(ATObject object) throws InterpreterException {
+	public NATLocalFarRef export(ATObject object) throws InterpreterException {
 		// receptionist set will check whether ATObject is really local to me
 		return receptionists_.exportObject(object);
 	}

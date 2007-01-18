@@ -229,6 +229,12 @@ object: #foo { ... } => decorateParameter
 object: { #foo ... } => decorateClosure
 object: { ... }#foo => decorateParameter
 
+Asynchronous function invocation:
+=================================
+
+Introduce the shorthand syntax fun<-(a,b,c) to denote fun<-apply([a,b,c])
+such that remote references to closures are more easily invokable.
+
 ----------------------
 Implementation issues:
 ----------------------

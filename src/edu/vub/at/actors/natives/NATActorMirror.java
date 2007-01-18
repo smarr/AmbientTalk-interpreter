@@ -31,7 +31,6 @@ import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATMailbox;
 import edu.vub.at.actors.ATResolution;
-import edu.vub.at.actors.ATServiceDescription;
 import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.events.ActorEmittedEvents;
 import edu.vub.at.exceptions.InterpreterException;
@@ -137,23 +136,23 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return new NATAsyncMessage(sender, selector, arguments);
 	}
 	
-	public ATClosure base_provide(final ATServiceDescription description, final ATObject service) throws InterpreterException {
-		host_.event_servicePublished(this, service);
-		final NATActorMirror self = this;
-		return new NativeClosure(self) {
+	public ATClosure base_provide(final ATSymbol topic, final ATObject service) throws InterpreterException {
+		final NATLocalFarRef exportedService = ELActor.currentActor().export(service);
+		host_.event_servicePublished(topic, exportedService);
+		return new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
-				host_.event_cancelPublication(self, service);
+				host_.event_cancelPublication(topic, exportedService);
 				return NATNil._INSTANCE_;
 			}
 		};
 	}
 	
-	public ATClosure base_require(final ATServiceDescription description, final ATObject client) throws InterpreterException {
-		host_.event_clientSubscribed(this, client);
-		final NATActorMirror self = this;
-		return new NativeClosure(self) {
+	public ATClosure base_require(final ATSymbol topic, final ATClosure handler) throws InterpreterException {
+		final NATLocalFarRef exportedHandler = ELActor.currentActor().export(handler);
+		host_.event_clientSubscribed(topic, exportedHandler);
+		return new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
-				host_.event_cancelSubscription(self, client);
+				host_.event_cancelSubscription(topic, exportedHandler);
 				return NATNil._INSTANCE_;
 			}
 		};
@@ -181,60 +180,6 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 			return NATNil._INSTANCE_;
 		}
 	}
-	
-	// Notifications are different from ordinary messages in that they
-	// 1) do not trigger messageProcessed observers
-	// 2) are not put in the inbox of an actor (they are processed immediately)
-	public ATObject base_notifyObserver(ATAsyncMessage notification) throws InterpreterException {
-		notification = notification.meta_resolve().base_asAsyncMessage();
-		return notification.base_getReceiver().meta_receive(notification);
-	}
-	
-	/**
-	 * Signals the successful transmission of a message. Can be used to store messages
-	 * in for instance a sentbox. 
-	 */
-	public ATNil base_delivered(ATAsyncMessage message) throws InterpreterException {
-		return NATNil._INSTANCE_;
-	}
-
-	/**
-	 * Signals the inability of the interpreter to deliver a series of messages. The
-	 * default response to this event is to re-enqueue these messages in the outbox.
-	 * To preserve the correct order of message they need to be added to the front,
-	 * to ensure that any messages which were recently put in the outbox are after
-	 * the ones that the virtual machine already tried to send. As a consequence the
-	 * messages need to be batched as they will otherwise be added to the front one
-	 * after the other yielding an incorrect order.
-	 * 
-	 * TODO document this with a drawing in our report
-	 */
-	public ATNil base_failedDelivery(ATTable messages) throws InterpreterException {
-		// TODO Silently (without triggering observers) add table of messages to front of outbox
-		return null;
-	}
-
-	/**
-	 * Offers all far object references a chance to claim whether they are hosted by 
-	 * the given actor, thereby filtering out all messages that can be sent to the 
-	 * provided destination and schedule them for transmission with the VM
-	 * @param receiver - a host actor which has become available
-	 * @param destination - an object which will receive the forwarded messages
-	 */
-	/*public ATNil base_transmit(final ATActorMirror receiver, final ATObject destination) throws InterpreterException {
-		for (Iterator farObjectIterator = farObjects_.iterator(); farObjectIterator.hasNext();) {
-			ATFarReference farObject = (ATFarReference) farObjectIterator.next();
-			
-			farObject.meta_isHostedBy_(receiver).base_ifTrue_(
-					new NativeClosure(farObject) {
-						public ATObject base_apply(ATTable arguments) throws InterpreterException {
-							return scope_.base_asFarReference().meta_transmit(destination);
-						}
-					});
-		}
-
-		return NATNil._INSTANCE_;		
-	}*/
 
 	public ATNil base_foundResolution(ATResolution found) throws InterpreterException {
 		//TODO(service discovery) Implement this method
