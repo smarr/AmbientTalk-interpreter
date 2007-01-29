@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGMethodInvocationCreation.java created on 26-jul-2006 at 16:18:10
+ * AGDelegationCreation.java created on 29-jan-2007 at 16:22:25
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -33,37 +33,38 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATMethodInvocation;
+import edu.vub.at.objects.natives.NATDelegation;
 
 /**
- * @author tvcutsem
+ * The native implementation of a first-class delegating message send.
  *
- * The native implementation of a first-class message creation AG element.
+ * @author tvcutsem
  */
-public final class AGMethodInvocationCreation extends AGMessageCreation {
+public final class AGDelegationCreation extends AGMessageCreation {
 	
-	public AGMethodInvocationCreation(ATSymbol sel, ATTable args) {
+	public AGDelegationCreation(ATSymbol sel, ATTable args) {
 		super(sel, args);
 	}
 
 	/**
-	 * To evaluate a first-class synchronous message creation AG element, transform the selector
-	 * and evaluated arguments into a first-class MethodInvocation.
+	 * To evaluate a first-class delegation message creation AG element, transform the selector
+	 * and evaluated arguments into a first-class NATDelegation object.
 	 * It is important to note that the arguments are all eagerly evaluated.
 	 * 
-	 * AGMSG(sel,arg).eval(ctx) = NATMSG(sel, map eval(ctx) over arg )
+	 * AGDEL(sel,arg).eval(ctx) = NATDEL(sel, map eval(ctx) over arg )
 	 * 
-	 * @return a first-class method invocation
+	 * @return a first-class delegating message send
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return new NATMethodInvocation(this.base_getSelector(),
-				                      Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
+		return new NATDelegation(ctx.base_getSelf(), // the current 'self' is the delegator, to which 'self' should remain bound
+				                 this.base_getSelector(),
+				                 Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
 	}
 
 	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {
-		return new AGMethodInvocationCreation(quotedSel, quotedArgs);
+		return new AGDelegationCreation(quotedSel, quotedArgs);
 	}
 	
-	protected String getMessageToken() { return "."; }
+	protected String getMessageToken() { return "^"; }
 
 }

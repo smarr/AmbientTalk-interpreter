@@ -9,6 +9,7 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -245,6 +246,17 @@ public class TestEval extends AmbientTalkTest {
 		ctx_.base_getLexicalScope().meta_defineField(atX_, x);
 		
 		evalAndCompareTo("x.m(1)", atThree_);
+	}
+	
+	public void testDelegation() throws InterpreterException {
+        // def x := object: { def m() { self.y + 1 } } ; def y := 2
+		NATObject x = new NATObject(ctx_.base_getLexicalScope());
+		ATMethod m = evalAndReturn("def m() { self.y + 1 }").base_asClosure().base_getMethod();
+		x.meta_addMethod(m);
+		ctx_.base_getSelf().meta_defineField(atY_, NATNumber.atValue(2));
+		ctx_.base_getLexicalScope().meta_defineField(atX_, x);
+		
+		evalAndCompareTo("x^m()", atThree_);
 	}
 	
 	public void testQuotation() throws InterpreterException {

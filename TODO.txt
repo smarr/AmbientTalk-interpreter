@@ -114,6 +114,8 @@ and for symbiosis introduce another method named 'javaToATSelector'
 Invocation and Delegation:
 ==========================
 
+STATUS: IMPLEMENTED!
+
 Currently, meta_invoke has an ugly interface: it has a receiver, a selector and arguments.
 The receiver argument is used to implement delegation. I suggest the following refactoring:
 
@@ -143,6 +145,11 @@ The only 'issue' here is that 'self' is not necessarily restricted to child obje
 any more, as anyone can delegate to an object. This does not introduce any new
 'encapsulation breaches', however, as any object could freely extend another object
 anyhow, so 'self' was deemed 'unsafe' already. Use lexical scoping to ensure safety.
+
+In implementation: just provide ^ syntax 'AGDelegate'
+^m() -> AGDelegationCreation
+o^m() -> AGDelegate eval: obj.meta_invoke(ctx.self, sel, args)
+
 
 Keywords and Optional/Varargs:
 ==============================

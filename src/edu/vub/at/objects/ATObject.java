@@ -77,17 +77,14 @@ public interface ATObject extends ATConversions {
      * @return the return value of invoking the method corresponding to the message
      */
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException;
-    
+   
     /**
      * Invoke a method corresponding to the selector with the given arguments.
      * The selector is looked up along the dynamic delegation chain.
      *
-     * The first argument, 'receiver', denotes the original receiver of the method invocation.
-     * Initially, this argument equals the current receiver, 'this'.
-     * Via delegation, however, original and current receiver may differ and 'this' can be a
-     * dynamic parent of 'receiver'.
+     * The first argument, 'receiver', denotes the receiver of the method invocation.
      *
-     * @param receiver the original receiver of the invocation
+     * @param receiver the object to which 'self' is bound during execution of the method
      * @param selector the name of the method to be invoked
      * @param arguments the table of arguments passed to the method
      * @return return value of the method

@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGMethodInvocationCreation.java created on 26-jul-2006 at 16:18:10
+ * NATDelegation.java created on 29-jan-2007 at 16:24:59
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,45 +25,44 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.natives.grammar;
+package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATMethodInvocation;
 
 /**
+ * Instances of the class NATMethodInvocation represent first-class method invocations.
+ * They encapsulate a selector and arguments and may be turned into an actual invocation by invoking meta_sendTo.
+ * This method provides the invocation with a receiver to apply itself to.
+ * 
  * @author tvcutsem
- *
- * The native implementation of a first-class message creation AG element.
  */
-public final class AGMethodInvocationCreation extends AGMessageCreation {
+public final class NATDelegation extends NATMessage implements ATMethodInvocation {
+
+	private final ATObject delegator_;
 	
-	public AGMethodInvocationCreation(ATSymbol sel, ATTable args) {
-		super(sel, args);
+	public NATDelegation(ATObject delegator, ATSymbol sel, ATTable arg) {
+		super(sel, arg);
+		delegator_ = delegator;
 	}
 
 	/**
-	 * To evaluate a first-class synchronous message creation AG element, transform the selector
-	 * and evaluated arguments into a first-class MethodInvocation.
-	 * It is important to note that the arguments are all eagerly evaluated.
+	 * To evaluate a delegating message send, invoke the method corresponding to the encapsulated
+	 * selector with the encapsulated arguments. During execution of the method, 'self' should be
+	 * bound to the object that initiated the delegating method invocation.
 	 * 
-	 * AGMSG(sel,arg).eval(ctx) = NATMSG(sel, map eval(ctx) over arg )
-	 * 
-	 * @return a first-class method invocation
+	 * @return the return value of the invoked method.
 	 */
-	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return new NATMethodInvocation(this.base_getSelector(),
-				                      Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
-	}
-
-	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {
-		return new AGMethodInvocationCreation(quotedSel, quotedArgs);
+	public ATObject base_sendTo(ATObject receiver) throws InterpreterException {
+		return receiver.meta_invoke(delegator_, selector_, arguments_);
 	}
 	
-	protected String getMessageToken() { return "."; }
-
+	public NATText meta_print() throws InterpreterException {
+		return NATText.atValue("<delegation:"+selector_+Evaluator.printAsList(arguments_).javaValue+">");
+	}
+	
 }

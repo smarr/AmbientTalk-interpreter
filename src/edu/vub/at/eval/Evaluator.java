@@ -342,8 +342,8 @@ public final class Evaluator {
 	 * Returns the raw contents of a file in a String (using this JVM's default character encoding)
 	 */
 	public static String loadContentOfFile(File file) throws IOException {
-	    InputStream is = new FileInputStream(file);
-	
+		InputStream is = new FileInputStream(file);
+		
 	    // Get the size of the file
 	    long length = file.length();
 	

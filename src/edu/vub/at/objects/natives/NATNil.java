@@ -99,7 +99,7 @@ public class NATNil implements ATNil, Serializable {
     }
     
     /**
-     * The default behaviour of meta_invoke for primitive non-object ambienttalk language values is
+     * The default behaviour of 'delegate' for primitive non-object ambienttalk language values is
      * to check whether the requested functionality is provided by a native Java method
      * with the same selector, but prefixed with 'base_'.
      *

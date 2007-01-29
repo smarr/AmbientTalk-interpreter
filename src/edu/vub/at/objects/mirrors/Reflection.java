@@ -93,7 +93,6 @@ public final class Reflection {
 	 *   div -> /
 	 *   bsl -> \
 	 *   and -> &
-	 *   car -> ^
 	 *   not -> !
 	 *   gtx -> >
 	 *   ltx -> <
@@ -229,7 +228,6 @@ public final class Reflection {
 	 *   / -> div
 	 *   \ -> bsl
 	 *   & -> and
-	 *   ^ -> car
 	 *   ! -> not
 	 *   > -> gtx
 	 *   < -> ltx
@@ -754,7 +752,6 @@ public final class Reflection {
 		  case 'd': if (code.equals("div")) { return "/"; } else break;
 		  case 'b': if (code.equals("bsl")) { return "\\"; } else break;
 		  case 'a': if (code.equals("and")) { return "&"; } else break;
-		  case 'c': if (code.equals("car")) { return "^"; } else break;
 		  case 'n': if (code.equals("not")) { return "!"; } else break;
 		  case 'g': if (code.equals("gtx")) { return ">"; } else break;
 		  case 'l': if (code.equals("ltx")) { return "<"; } else break;
@@ -773,7 +770,6 @@ public final class Reflection {
 		  case '/': return "div";
 		  case '\\': return "bsl";
 		  case '&': return "and";
-		  case '^': return "car";
 		  case '!': return "not";
 		  case '>': return "gtx";
 		  case '<': return "ltx";

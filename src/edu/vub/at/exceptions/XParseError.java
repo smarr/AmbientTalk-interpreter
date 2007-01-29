@@ -27,6 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
+import java.io.InputStream;
+
 /**
  * XParseError is thrown when illegal input is parsed by the AmbientTalk parser.
  * 
@@ -36,7 +38,7 @@ public final class XParseError extends InterpreterException {
 
 	private static final long serialVersionUID = 3910243526236096495L;
 
-	private String erroneousCode_;
+	private InputStream erroneousCode_;
 	
 	// indicates the position of the parse error
 	private final String fileName_;
@@ -50,7 +52,7 @@ public final class XParseError extends InterpreterException {
 		column_ = 0;
 	}
 	
-	public XParseError(String erroneousCode,
+	public XParseError(InputStream erroneousCode,
 			          String message,
 			          String filename,
 			          int line,
@@ -87,7 +89,7 @@ public final class XParseError extends InterpreterException {
 	/**
 	 * @return Returns the erroneous code.
 	 */
-	public String getErroneousCode() {
+	public InputStream getErroneousCode() {
 		return erroneousCode_;
 	}
 
