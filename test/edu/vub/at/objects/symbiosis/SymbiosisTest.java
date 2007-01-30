@@ -679,8 +679,8 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testCustomInstanceCreation() {
 		try {
-			// def atTestClass.new(x,y) { def o := super.new(x); def o.ytest := y; o }
-			ATClosure newClo = evalAndReturn("def new(x,y) { def o := super.new(x); def o.ytest := y; o }; new").base_asClosure();
+			// def atTestClass.new(x,y) { def o := super^new(x); def o.ytest := y; o }
+			ATClosure newClo = evalAndReturn("def new(x,y) { def o := super^new(x); def o.ytest := y; o }; new").base_asClosure();
 			atTestClass.meta_addMethod(newClo.base_getMethod());
 			
 			// def instance := atTestClass.new(10, 11)

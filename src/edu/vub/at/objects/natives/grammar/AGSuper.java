@@ -30,7 +30,6 @@ package edu.vub.at.objects.natives.grammar;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.natives.NATSuperObject;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -54,7 +53,8 @@ public final class AGSuper extends AGSymbol {
 	 * AGSuper().eval(ctx) = AGSUPOBJ(ctx.self, ctx.super)
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return new NATSuperObject(ctx.base_getSelf(), ctx.base_getSuper());
+		//return new NATSuperObject(ctx.base_getSelf(), ctx.base_getSuper());
+		return ctx.base_getSuper();
 	}
 	
 	/**

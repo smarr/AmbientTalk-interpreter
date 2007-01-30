@@ -38,10 +38,10 @@ import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATIsolate;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
-import edu.vub.at.objects.natives.NATSuperObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -150,7 +150,7 @@ public class MirrorTest extends AmbientTalkTest {
 		try {
 			ATObject[] objects 		= new ATObject[] { 
 					NATNil._INSTANCE_, NATBoolean._TRUE_, NATNumber.ZERO, new NATObject(), 
-					new NATSuperObject(new NATObject(), Evaluator.getGlobalLexicalScope()),
+					new NATIsolate(),
 					NATTable.EMPTY, NATIntrospectiveMirror.atValue(NATNil._INSTANCE_),
 					new NATIntercessiveMirror(Evaluator.getGlobalLexicalScope(), true)
 			};

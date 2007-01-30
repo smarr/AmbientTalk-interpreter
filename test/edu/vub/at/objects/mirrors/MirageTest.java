@@ -50,7 +50,7 @@ public class MirageTest extends ReflectiveAccessTest {
 					"def cloningMirror := \n" +
 					"	mirror: { \n" +
 					"		def IAmAClone := false; \n" +
-					"		def clone() { IAmAClone := true;  super.clone() }; \n" +
+					"		def clone() { IAmAClone := true;  super^clone() }; \n" +
 					"		def doesNotUnderstand(@args) { \n" +
 					"			if: IAmAClone then: { \n" +
 					"				success(\"Field added after cloning was not visible\"); \n" +
@@ -102,7 +102,7 @@ public class MirageTest extends ReflectiveAccessTest {
 					"		def invoke(receiver, selector, args) {" +
 					"			echo: (spaces() + \"Invocation of method \" + selector + \" with arguments \" + args + \" on \" + receiver);" +
 					"			indentLevel := indentLevel + 1;" +
-					"			def result := super.invoke(receiver, selector, args);" +
+					"			def result := super^invoke(receiver, selector, args);" +
 					"			indentLevel := indentLevel - 1;" +
 					"			echo: (spaces() + \"Invocation of method \" + selector + \" yielded \" + result );" +
 					"			result;" +
@@ -120,7 +120,7 @@ public class MirageTest extends ReflectiveAccessTest {
 					"	with: {" +
 					"		def m() { " +
 					"			echo: \"My parent will start logging now\";" +
-					"			super.m();" +
+					"			super^m();" +
 					"		};" +
 					"	};" +
 					"" +
@@ -129,7 +129,7 @@ public class MirageTest extends ReflectiveAccessTest {
 					"	with: {" +
 					"		def n() { " +
 					"			echo: \"Indentation of this call should be correct as the lexical scope is shared by both mirrors\";" +
-					"			super.n();" +
+					"			super^n();" +
 					"		};" +
 					"	} mirroredBy: loggingMirror;" +
 					"" +

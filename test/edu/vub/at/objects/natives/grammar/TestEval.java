@@ -19,7 +19,6 @@ import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
-import edu.vub.at.objects.natives.NATSuperObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -174,9 +173,7 @@ public class TestEval extends AmbientTalkTest {
 	}
 	
 	public void testSuperReference() throws InterpreterException {
-        NATSuperObject supref = (NATSuperObject) evalAndReturn("super");
-        assertEquals(ctx_.base_getSelf(), supref.getReceiver());
-        assertEquals(ctx_.base_getSuper(), supref.getLookupFrame());
+        assertEquals(ctx_.base_getSuper(), evalAndReturn("super"));
 	}
 	
 	public void testSelection() throws InterpreterException {

@@ -157,9 +157,9 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 					"  mirror: { \n" +
 					"    def select( receiver, symbol ) { \n" +
 					"      try: { \n" +
-					"        super.select( receiver, symbol ); \n" +
+					"        super^select( receiver, symbol ); \n" +
 					"      } catch: doesNotUnderstandX using: { | e | \n" +
-					"        super.defineField( symbol, nil ); \n" +
+					"        super^defineField( symbol, nil ); \n" +
 					"      } \n" +
 					"    } \n" +
 					"  }; \n" +

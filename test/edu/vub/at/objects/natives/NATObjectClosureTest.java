@@ -83,7 +83,7 @@ public class NATObjectClosureTest extends TestCase {
 			// Is the current value of super consistent with our expectations
 			assertEquals(super_, ctx.base_getSuper());
 			// Is the expected value of super accessible through the pseudovariable
-			assertEquals(super_, ((NATSuperObject)AGSuper._INSTANCE_.meta_eval(ctx)).getLookupFrame());
+			assertEquals(super_, AGSuper._INSTANCE_.meta_eval(ctx));
 
 			return this;
 		}

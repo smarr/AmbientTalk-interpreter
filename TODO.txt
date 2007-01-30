@@ -111,10 +111,8 @@ However, an AT selector will not undergo such conversions when remaining within 
 Can be made even cleaner if the _ -> : conversion is only performed for downSelector,
 and for symbiosis introduce another method named 'javaToATSelector'
 
-Invocation and Delegation:
-==========================
-
-STATUS: IMPLEMENTED!
+[IMPLEMENTED] Invocation and Delegation:
+========================================
 
 Currently, meta_invoke has an ugly interface: it has a receiver, a selector and arguments.
 The receiver argument is used to implement delegation. I suggest the following refactoring:

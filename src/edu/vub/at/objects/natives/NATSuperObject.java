@@ -50,6 +50,8 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  * succeed if the wrapped object is an isolate, but it will fail when the wrapped
  * object is now a far reference.
  * 
+ * @deprecated because of first-class delegation message sends
+ * 
  * @author smostinc
  * @author tvcutsem
  */
