@@ -148,7 +148,7 @@ public class NATMirage extends NATObject {
 		return super.meta_defineField(name, value);
 	}
 
-	public ATObject magic_extend(ATClosure code, ATMirror mirror) throws InterpreterException {
+	public ATObject magic_extend(ATClosure code) throws InterpreterException {
 		return super.meta_extend(code);
 	}
 
@@ -184,7 +184,7 @@ public class NATMirage extends NATObject {
 		return super.meta_select(receiver, selector);
 	}
 
-	public ATObject magic_share(ATClosure code, ATMirror mirror) throws InterpreterException {
+	public ATObject magic_share(ATClosure code) throws InterpreterException {
 		return super.meta_share(code);
 	}
 
