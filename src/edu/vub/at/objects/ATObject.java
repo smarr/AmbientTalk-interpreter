@@ -259,7 +259,6 @@ public interface ATObject extends ATConversions {
      * The base-level code <obj.extend { code }> is represented at the meta-level by <mirror(obj).meta_extend(code)>
      *
      * Triggers the <tt>objectExtended</tt> event on this object's beholders (mirror observers).
-     *
      * @return a fresh object whose dynamic parent points to <this> with 'is-a' semantics.
      */
     public ATObject meta_extend(ATClosure code) throws InterpreterException;
@@ -270,7 +269,6 @@ public interface ATObject extends ATConversions {
      * <code>mirror(obj).meta_share(code)</code>
      *
      * Triggers the <tt>objectShared</tt> event on this object's beholders (mirror observers).
-     *
      * @return a fresh object whose dynamic parent points to <this> with 'shares-a' semantics.
      */
     public ATObject meta_share(ATClosure code) throws InterpreterException;

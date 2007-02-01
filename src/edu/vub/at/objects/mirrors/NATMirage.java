@@ -48,8 +48,6 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
-import java.io.ObjectStreamException;
-import java.io.WriteAbortedException;
 import java.util.LinkedList;
 import java.util.Vector;
 
@@ -57,6 +55,10 @@ import java.util.Vector;
  * A NATMirage is an object that forwards all meta-operations invoked upon it (at
  * the java-level) to its designated mirror object. To cut off infinite meta-regress
  * it also has magic_ variants of them which delegate to the default implementation.
+ *
+ * Mirages can currently only be created for 'objects', not for 'isolates'.
+ * Allowing isolates to be mirrored would require the introduction of 'isolate mirrors', since an isolate
+ * can only be copied if its mirror can be copied.
  *
  * @author smostinc
  */
@@ -146,7 +148,7 @@ public class NATMirage extends NATObject {
 		return super.meta_defineField(name, value);
 	}
 
-	public ATObject magic_extend(ATClosure code) throws InterpreterException {
+	public ATObject magic_extend(ATClosure code, ATMirror mirror) throws InterpreterException {
 		return super.meta_extend(code);
 	}
 
@@ -182,7 +184,7 @@ public class NATMirage extends NATObject {
 		return super.meta_select(receiver, selector);
 	}
 
-	public ATObject magic_share(ATClosure code) throws InterpreterException {
+	public ATObject magic_share(ATClosure code, ATMirror mirror) throws InterpreterException {
 		return super.meta_share(code);
 	}
 
@@ -231,7 +233,15 @@ public class NATMirage extends NATObject {
 
 	public ATObject magic_getLexicalParent() throws InterpreterException {
 		return super.meta_getLexicalParent();
-	}	
+	}
+	
+	public ATObject magic_pass() throws InterpreterException {
+		return super.meta_pass();
+	}
+	
+	public ATObject magic_resolve() throws InterpreterException {
+		return super.meta_resolve();
+	}
 
 	
 	// META Methods 
@@ -467,7 +477,7 @@ public class NATMirage extends NATObject {
 	// when passing a mirage as a parameter in an asynchronous message send,
 	// make the mirror decide what object to read or write
 	
-	public Object writeReplace() throws ObjectStreamException {
+	/*public Object writeReplace() throws ObjectStreamException {
 		try {
 			// TODO: what to pass as client?
 			return meta_pass();
@@ -482,6 +492,6 @@ public class NATMirage extends NATObject {
 		} catch (InterpreterException e) {
 			throw new WriteAbortedException("Mirage's mirror failed to resolve", e);
 		}
-	}
+	}*/
 	
 }

@@ -40,7 +40,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATByCopy;
+import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -71,7 +71,7 @@ import edu.vub.at.objects.natives.NATText;
  * @author tvcutsem
  */
 
-public class NATIntrospectiveMirror extends NATByCopy implements ATMirror {
+public class NATIntrospectiveMirror extends NATByRef implements ATMirror {
 
 	/** the object reflected on. This object is NOT a NATMirage */
 	private final ATObject principal_;
@@ -328,17 +328,24 @@ public class NATIntrospectiveMirror extends NATByCopy implements ATMirror {
 	}
 	
 	/**
+	 * OBSOLETE: introspective mirrors are now pass-by-reference.
+	 * This has the following repercussions:
+	 *  - when passing the mirror of an isolate, a remote ref to the mirror is passed instead.
+	 *    The isolate is not copied.
+	 *  - mirrors on far references can still be created, by passing the principal by ref
+	 *    and by reflecting on the obtained far reference
+	 * 
 	 * An introspective mirror is pass-by-copy.
      * When an introspective mirror is deserialized, it will become a mirror on
      * its deserialized principal. This means that, if the principal is passed
      * by copy, the mirror will be a local mirror on the copy. If the principal is passed
      * by reference, the mirror will be a local mirror on the far reference.
 	 */
-	public ATObject meta_resolve() throws InterpreterException {
+	/*public ATObject meta_resolve() throws InterpreterException {
 		if(principal_ instanceof NATMirage)
 			return ((NATMirage)principal_).getMirror();
 		else
 			return this;
-	}
+	}*/
 
 }

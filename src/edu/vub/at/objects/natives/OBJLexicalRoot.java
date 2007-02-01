@@ -453,6 +453,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 		return OBJMirrorRoot._INSTANCE_.meta_extend(code);
 	}
 	
+	/**
+	 * object: { code } mirroredBy: mirror
+	 *  => return an object mirage initialized with code
+	 */
 	public ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
 		
 		// Initialise a new pair of mirror-mirage : note that we don't use clone here
@@ -463,7 +467,6 @@ public final class OBJLexicalRoot extends NATByCopy {
 		code.base_applyInScope(NATTable.EMPTY, newMirage);
 		
 		return newMirage;
-
 	}
 	
 	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
@@ -476,7 +479,6 @@ public final class OBJLexicalRoot extends NATByCopy {
 		code.base_applyInScope(NATTable.EMPTY, newMirage);
 		
 		return newMirage;
-
 	}
 	
 	public ATObject base_share_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
@@ -489,7 +491,6 @@ public final class OBJLexicalRoot extends NATByCopy {
 		code.base_applyInScope(NATTable.EMPTY, newMirage);
 		
 		return newMirage;
-
 	}
 	
 	/* -------------------------------
