@@ -29,11 +29,9 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.id.ATObjectID;
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 
@@ -61,11 +59,10 @@ public class NATLocalFarRef extends NATFarReference {
 	}
 	
 	/**
-	 * The 'outbox' of a far reference into a local actor is always empty.
+	 * The 'outbox' of a far reference to a local actor is always empty.
 	 */
-	public ATNil meta_transmit(ATClosure processor) throws InterpreterException {
-		this.meta_send(new NATAsyncMessage(this, processor, Evaluator._APPLY_, NATTable.EMPTY));
-		return NATNil._INSTANCE_;
+	public ATTable meta_retractUnsentMessages() throws InterpreterException {
+		return NATTable.EMPTY;
 	}
 	
 	public ELActor getFarHost() {

@@ -53,12 +53,12 @@ public interface ATActorMirror extends ATObject {
 	 * in an inbox.
 	 * @param message - the async base-level message to accept
 	 */
-	public ATObject base_accept(ATAsyncMessage message) throws InterpreterException;
+	//public ATObject base_accept(ATAsyncMessage message) throws InterpreterException;
 
 	/**
 	 * Processes a message from the base-level inbox if it is non-empty.
 	 */
-	public ATObject base_process() throws InterpreterException;
+	//public ATObject base_process() throws InterpreterException;
 	
     /* ---------------------------------------------------
      * -- Language Construct to NATActorMirror Protocol --

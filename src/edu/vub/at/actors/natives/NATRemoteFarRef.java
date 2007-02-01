@@ -30,9 +30,8 @@ package edu.vub.at.actors.natives;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATNil;
 
 /**
@@ -60,9 +59,8 @@ public class NATRemoteFarRef extends NATFarReference {
 		return NATNil._INSTANCE_;
 	}
 	
-	public ATNil meta_transmit(final ATClosure processor) throws InterpreterException {
-		sendLoop_.event_accessOutbox(processor);
-		return NATNil._INSTANCE_;
+	public ATTable meta_retractUnsentMessages() throws InterpreterException {
+		return sendLoop_.sync_event_retractUnsentMessages();
 	}
 
 }

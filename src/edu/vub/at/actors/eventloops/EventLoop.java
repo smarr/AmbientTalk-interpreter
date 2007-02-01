@@ -157,16 +157,6 @@ public abstract class EventLoop {
 		return future.get();
 	}
 	
-	public final void withSnapshotDo(QueueTransformator transformator) {
-		// assert(Thread.currentThread() == processor_)
-		if (Thread.currentThread() != processor_) {
-			throw new IllegalStateException("withSnapshotDo not executed by the current event loop! Current = " + Thread.currentThread() + " expected = " + processor_);
-		}
-		Vector content = eventQueue_.flush();
-		Vector transformedContent = transformator.transform(content);
-		eventQueue_.merge(transformedContent);
-	}
-	
 	/**
 	 * Subclasses are responsible for defining a meaningful implementation
 	 * strategy to handle events from the event queue.

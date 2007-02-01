@@ -28,9 +28,8 @@
 package edu.vub.at.actors;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 
 /**
  * ATFarReference is an object reference denoting an object hosted by another actor.
@@ -40,17 +39,12 @@ import edu.vub.at.objects.ATObject;
 public interface ATFarReference extends ATObject {
 
 	/**
-	 * Transmits all of the outgoing messages buffered in this far object reference
-	 * by passing them in a table as argument to the given function.
-	 * The processor function is, however, applied asynchronously, as in:
-	 *  <code>processor<-apply(outbox)</code>
+	 * Retracts all of the outgoing messages buffered in this far object reference
+	 * by passing them in a table.
 	 *  
 	 * After this method has been invoked, the outgoing message queue of this far
 	 * reference will be empty.
-	 * 
-	 * @param processor a unary closure that will transmit the outbound messages.
-	 * @return nil
 	 */
-	public ATNil meta_transmit(ATClosure processor) throws InterpreterException;
+	public ATTable meta_retractUnsentMessages() throws InterpreterException;
 	
 }

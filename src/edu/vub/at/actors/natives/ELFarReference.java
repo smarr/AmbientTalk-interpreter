@@ -27,21 +27,12 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.eventloops.BlockingFuture;
+import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
-import edu.vub.at.actors.eventloops.QueueTransformator;
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATTable;
-
-import java.util.Vector;
 
 /**
  * An instance of the class ELFarReference represents the event loop processor for
@@ -75,39 +66,18 @@ public final class ELFarReference extends EventLoop {
 		});
 	}
 	
-	public void event_accessOutbox(final ATClosure processor) {
-		receive(new Event("accessOutbox("+processor+")") {
-			public void process(Object owner) {
-				final NATRemoteFarRef me = (NATRemoteFarRef) owner;
-				withSnapshotDo(new QueueTransformator() {
-					public Vector transform(Vector oldContent) {
-						NATMailbox outbox = NATMailbox.reify(oldContent);
-						final BlockingFuture barrier = new BlockingFuture();
-						final ATTable arg = NATTable.atValue(new ATObject[] { outbox });
-						
-						try {
-							processor.meta_receive(new NATAsyncMessage(me, processor, Evaluator._APPLY_, arg) {
-								public ATObject base_process(ATActorMirror inActor) throws InterpreterException {
-									try {
-										barrier.resolve(processor.base_apply(arg));
-									} catch (InterpreterException e) {
-										barrier.ruin(e);
-									}
-									return NATNil._INSTANCE_;
-								}
-							});
-						
-							// !! this makes this event loop WAIT for the closure's owner actor !!
-							barrier.get();
-						} catch (Exception e) {
-							
-						}
-						
-						return outbox.deify();
-					}
-				});
-			}
-		});
+	public ATTable sync_event_retractUnsentMessages() throws InterpreterException {
+		try {
+			return (ATTable) receiveAndWait("retractUnsentMessages()", new Callable() {
+				public Object call(Object owner) throws Exception {
+					final NATRemoteFarRef me = (NATRemoteFarRef) owner;
+					// TODO: return outgoing unsent messages
+					return null;
+				}
+			});
+		} catch (Exception e) {
+			throw (InterpreterException) e;
+		}
 	}
 
 }

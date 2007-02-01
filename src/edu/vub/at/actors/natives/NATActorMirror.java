@@ -29,16 +29,12 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATMailbox;
-import edu.vub.at.actors.ATResolution;
 import edu.vub.at.actors.eventloops.BlockingFuture;
-import edu.vub.at.actors.events.ActorEmittedEvents;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -47,7 +43,6 @@ import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * The NATActorMirror class implements the concurrency model of ambienttalk. It continually
@@ -61,22 +56,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  */
 public class NATActorMirror extends NATByRef implements ATActorMirror {
 	
-	// Observable event name
-	public static final ATSymbol _PROCESSED_ = AGSymbol.jAlloc("messageProcessed");
-
 	// INSTANCE VARIABLES
-	
-	/*
-	 * Actors have a classical combination of an inbox and outbox which reify the
-	 * future communication state of an actor. A reification of past communication
-	 * can be obtained by installing a custom <code>receivedbox</code> and <code>
-	 * sentbox</code> which are filled upon reception of the meta-level events 
-	 * <code>process</code> and <code>delivered</code> respectively.
-	 */
-	final ATMailbox inbox_ = new NATMailbox(this, ATActorMirror._IN_);
-	final ATMailbox outbox_ = new NATMailbox(this, ATActorMirror._OUT_);
-	final ATMailbox providedbox_ = new NATMailbox(this, ATActorMirror._PROVIDED_);
-	final ATMailbox requiredbox_ = new NATMailbox(this, ATActorMirror._REQUIRED_);
 	
 	private final ELVirtualMachine host_;
 	
@@ -162,35 +142,6 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
      * -- VM to Actor Protocol --
      * -------------------------- */
 
-	public ATObject base_accept(ATAsyncMessage message) throws InterpreterException {
-		inbox_.base_enqueue(message);
-		return meta_receive(ActorEmittedEvents.processMessage(message));
-	}
-
-	public ATObject base_process() throws InterpreterException {
-		if(! inbox_.base_isEmpty().asNativeBoolean().javaValue) {
-			ATAsyncMessage msg = inbox_.base_dequeue().base_asAsyncMessage();
-			
-			msg = msg.meta_resolve().base_asAsyncMessage();
-			ATObject result = msg.base_process(this);
-			
-			//base_fire_withArgs_(_PROCESSED_, NATTable.atValue(new ATObject[] { msg, result }));
-			return result;
-		} else {
-			return NATNil._INSTANCE_;
-		}
-	}
-
-	public ATNil base_foundResolution(ATResolution found) throws InterpreterException {
-		//TODO(service discovery) Implement this method
-		return NATNil._INSTANCE_;		
-	}
-
-	public ATNil base_lostResolution(ATResolution lost) throws InterpreterException {
-		//TODO(service discovery) Implement this method
-		return NATNil._INSTANCE_;		
-	}
-
     public ATObject meta_clone() throws InterpreterException {
         throw new XIllegalOperation("Cannot clone actor " + toString());
     }
@@ -218,37 +169,6 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	/* -----------------------------
 	 * -- Object Passing Protocol --
 	 * ----------------------------- */
-	
-	/*
-	
-	// TODO: what should the signature of base_export look like? with or without client parameter?
-	// returns far ref or ATObjectID?
-	// should it be implemented by NATActorMirror or ELActor? (native or reified?)
-	public ATFarReference base_export(ATObject object) throws InterpreterException {
-		// receptionist set will check whether ATObject is really local to me
-		ATObjectID localObjectId = processor_.receptionists_.exportObject(object);
-		ATFarReference farRef;
-		
-		if (client.asNativeFarReference().getObjectId().isRemote()) {
-			farRef = NATFarReference.createRemoteFarRef(localObjectId);
-			processor_.receptionists_.addClient(object, client);
-		} else {
-			farRef = NATFarReference.createLocalFarRef(this, localObjectId);
-		}
-		return farRef;
-	}
-	
-	public ATObject base_resolve(ATFarReference farReference) throws InterpreterException {
-		return processor_.receptionists_.resolveObject(farReference.asNativeFarReference().getObjectId());
-	}
-	
-	public ATNil base_farReferencePassed(ATFarReference passed, ATFarReference client) {
-		// TODO(dgc) store the new client of the object somehow...
-		return NATNil._INSTANCE_;
-	}
-	
-	
-	*/
 	
 	/**
 	 * To send a message msg to a receiver object rcv:

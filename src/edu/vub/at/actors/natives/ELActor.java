@@ -29,6 +29,7 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATResolution;
 import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
@@ -39,11 +40,13 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNamespace;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 
@@ -268,6 +271,16 @@ public final class ELActor extends EventLoop {
 			}
 		});
 	}
+	
+	
+	public void event_foundResolution(ATResolution found) throws InterpreterException {
+		//TODO(service discovery) Implement this method	
+	}
+
+	public void event_lostResolution(ATResolution lost) throws InterpreterException {
+		//TODO(service discovery) Implement this method	
+	}
+	
 	
 	/**
 	 * This method is invoked by a coercer in order to schedule a symbiotic invocation
