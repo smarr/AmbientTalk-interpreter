@@ -40,13 +40,11 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNamespace;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 
@@ -76,7 +74,7 @@ public final class ELActor extends EventLoop {
 		}
 	}
 
-	private final ATActorMirror mirror_;
+	private ATActorMirror mirror_;
 	protected final ELVirtualMachine host_;
 	protected final ReceptionistsSet receptionists_;
 	
@@ -84,7 +82,7 @@ public final class ELActor extends EventLoop {
 	 * This object is created when the actor is initialized: i.e. it is the passed
 	 * version of the isolate that was passed to the actor: primitive by the creating actor.
 	 */
-	private ATObject behaviour_; 
+	private ATObject behaviour_;
 	
 	public ELActor(ATActorMirror mirror, ELVirtualMachine host) {
 		super("actor " + mirror.toString());
@@ -103,6 +101,8 @@ public final class ELActor extends EventLoop {
 	
 	public ATActorMirror getActorMirror() { return mirror_; }
 
+	public void setActorMirror(ATActorMirror mirror) { mirror_ = mirror; }
+	
 	public ELVirtualMachine getHost() {
 		return host_;
 	}
@@ -200,7 +200,7 @@ public final class ELActor extends EventLoop {
 		
 		// evaluate the initialization code in the context of the global scope
 		NATObject globalScope = Evaluator.getGlobalLexicalScope();
-		NATContext initCtx = new NATContext(globalScope, globalScope, globalScope.meta_getDynamicParent());
+		NATContext initCtx = new NATContext(globalScope, globalScope);
 		
 		initialisationCode.meta_eval(initCtx);
 	}

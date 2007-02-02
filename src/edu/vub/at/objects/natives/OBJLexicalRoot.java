@@ -290,14 +290,15 @@ public final class OBJLexicalRoot extends NATByCopy {
 	/**
 	 * actor: { code } mirroredBy: actorMirror
 	 *  => far reference to the behaviour of the new actor
+	 * REPLACED BY install: primitive!
 	 */
-	public ATObject base_actor_mirroredBy_(ATClosure code, ATActorMirror mirror) throws InterpreterException {
+	/*public ATObject base_actor_mirroredBy_(ATClosure code, ATActorMirror mirror) throws InterpreterException {
 		ATObject isolate = base_isolate_(code);
 		Packet serializedIsolate = new Packet("behaviour", isolate);
 		Packet serializedMirror = new Packet("mirror", mirror);
 		ELVirtualMachine host = ELVirtualMachine.currentVM();
 		return NATActorMirror.atValue(host, serializedIsolate, serializedMirror);
-	}
+	}*/
 	
 	/**
 	 * actor => a reference to a mirror on the current actor
@@ -322,7 +323,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	/**
 	 * export: object as: topic
 	 *  => object becomes discoverable by objects in other actors via topic
-	 * returns a closure that when applied, unexports the object
+	 * returns a publication object that can be used to cancel the export
 	 */
 	public ATObject base_export_as_(ATObject object, ATSymbol topic) throws InterpreterException {
 		return ELActor.currentActor().getActorMirror().base_provide(topic, object);
@@ -331,7 +332,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	/**
 	 * when: topic discovered: { code }
 	 *  => when an object is exported by another actor under topic, trigger the code
-	 * returns a closure that when applied, stops the registration
+	 * returns a subscription object that can be used to cancel the handler
 	 */
 	public ATObject base_when_discovered_(ATSymbol topic, ATClosure handler) throws InterpreterException {
 		return ELActor.currentActor().getActorMirror().base_require(topic, handler);
@@ -668,7 +669,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * eval: ast in: obj => evaluates the given AST in the context of the given object, returning its value
 	 */
 	public ATObject base_eval_in_(ATAbstractGrammar ast, ATObject obj) throws InterpreterException {
-		return ast.meta_eval(new NATContext(obj, obj, obj.meta_getDynamicParent()));
+		return ast.meta_eval(new NATContext(obj, obj));
 	}
 
 	/**

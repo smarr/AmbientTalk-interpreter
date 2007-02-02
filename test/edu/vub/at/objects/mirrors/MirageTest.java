@@ -30,7 +30,6 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATContext;
-import edu.vub.at.objects.natives.NATNil;
 
 /**
  * MirageTest tests the creation of Mirages (objects with custom meta-behaviour) given
@@ -73,7 +72,7 @@ public class MirageTest extends ReflectiveAccessTest {
 					"echo: clone.sharedField; \n" +
 					"echo: original.nonSharedField; \n" +
 					"echo: clone.nonSharedField;"
-					, new NATContext(new NATCallframe(lexicalRoot), lexicalRoot, NATNil._INSTANCE_)
+					, new NATContext(new NATCallframe(lexicalRoot), lexicalRoot)
 					);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
@@ -136,7 +135,7 @@ public class MirageTest extends ReflectiveAccessTest {
 					"mirroredParent.m();"  +
 					"unmirroredChild.m();" +
 					"mirroredChild.m();"
-					, new NATContext(new NATCallframe(lexicalRoot), lexicalRoot, NATNil._INSTANCE_)
+					, new NATContext(new NATCallframe(lexicalRoot), lexicalRoot)
 					);
 		} catch (InterpreterException e) {
 			e.printStackTrace();

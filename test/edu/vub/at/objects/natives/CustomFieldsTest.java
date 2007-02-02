@@ -97,7 +97,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	 */
 	public void testFieldListing() throws Exception {
 		testHost_.meta_addField(testField_.meta_clone().base_asField());
-		assertEquals(2, testHost_.meta_listFields().base_getLength().asNativeNumber().javaValue);
+		assertEquals(3, testHost_.meta_listFields().base_getLength().asNativeNumber().javaValue);
 	}
 	
 	/**

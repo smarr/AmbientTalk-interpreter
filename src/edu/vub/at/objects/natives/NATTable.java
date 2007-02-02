@@ -181,6 +181,15 @@ public final class NATTable extends AGExpression implements ATTable {
 		return atValue((ATObject[]) matchingElements.toArray(new ATObject[matchingElements.size()]));
 	}
 	
+	public ATObject base_find_(ATClosure clo) throws InterpreterException {
+		for (int i = 0; i < elements_.length; i++) {
+			if (clo.base_apply(atValue(new ATObject[] { elements_[i] })).asNativeBoolean().javaValue) {
+				return NATNumber.atValue(i+1);
+			}
+		}
+		return NATNil._INSTANCE_;
+	}
+	
 	public ATText base_implode() throws InterpreterException {
 		StringBuffer buff = new StringBuffer("");
 		for (int i = 0; i < elements_.length; i++) {

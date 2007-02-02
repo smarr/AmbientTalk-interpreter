@@ -67,7 +67,7 @@ public final class JavaClosure extends NATClosure implements ATJavaClosure {
 	 */
 	public ATContext base_getContext() throws InterpreterException {
 		if (context_ == null)
-			context_ = new NATContext(scope_, scope_, scope_.meta_getDynamicParent());
+			context_ = new NATContext(scope_, scope_);
 		return context_;
 	}
 	

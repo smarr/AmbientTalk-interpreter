@@ -308,7 +308,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 * --------------------- */
 	
 	public ATObject meta_getDynamicParent() throws InterpreterException {
-		return NATNil._INSTANCE_;
+		return meta_select(this, NATObject._SUPER_NAME_);
 	};
 	
 	public ATObject meta_getLexicalParent() throws InterpreterException {

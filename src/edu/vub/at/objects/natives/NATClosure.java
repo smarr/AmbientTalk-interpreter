@@ -67,9 +67,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 				/* scope = implementor (to be extended with a callframe upon closure application) */
 				implementor, 
 				/* self = ` start of lookup ` */
-				receiver, 
-				/* super = implementor.getNext() */
-				implementor.meta_getDynamicParent()));
+				receiver));
 	}
 	
 	public NATClosure(ATMethod method, ATContext context) {
@@ -90,7 +88,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 	 * constructed from the scope object.
 	 */
 	public ATObject base_applyInScope(ATTable args, ATObject scope) throws InterpreterException {
-		return method_.base_applyInScope(args, new NATContext(scope, scope, scope.meta_getDynamicParent()));
+		return method_.base_applyInScope(args, new NATContext(scope, scope));
 	}
 	
 	/**

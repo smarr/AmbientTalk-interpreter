@@ -27,42 +27,46 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * Instances of the class NATMessage represent first-class messages.
  * A NATMessage is an abstract class, as it can be either a synchronous method invocation or an asynchronous message send.
  * 
+ * NATMessages subclass from NATIsolate, such that they represent true AmbientTalk objects.
+ * 
  * @author tvc
  */
-public abstract class NATMessage extends NATByCopy implements ATMessage {
+public abstract class NATMessage extends NATIsolate implements ATMessage {
 
-	protected final ATSymbol selector_;
-	protected ATTable  arguments_;
+	private final static AGSymbol _SELECTOR_ = AGSymbol.jAlloc("selector");
+	private final static AGSymbol _ARGUMENTS_ = AGSymbol.jAlloc("arguments");
 	
-	public NATMessage(ATSymbol sel, ATTable arg) {
-		selector_ = sel;
-		arguments_ = arg;
+	public NATMessage(ATSymbol sel, ATTable arg) throws InterpreterException {
+		super.meta_defineField(_SELECTOR_, sel);
+		super.meta_defineField(_ARGUMENTS_, arg);
 	}
 
-	public ATSymbol base_getSelector() {
-		return selector_;
+	public ATSymbol base_getSelector() throws InterpreterException {
+		return super.meta_select(this, _SELECTOR_).base_asSymbol();
 	}
 
-	public ATTable base_getArguments() {
-		return arguments_;
+	public ATTable base_getArguments() throws InterpreterException {
+		return super.meta_select(this, _ARGUMENTS_).base_asTable();
 	}
 	
-	public ATNil base_setArguments(ATTable arguments) {
-		arguments_ = arguments;
+	public ATNil base_setArguments(ATTable arguments) throws InterpreterException {
+		super.meta_assignField(this, _ARGUMENTS_, arguments);
 		return NATNil._INSTANCE_;
 	}
 	
 	public ATMessage base_asMessage() {
 		return this;
 	}
-
+	
 }

@@ -81,8 +81,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 						AGSymbol.jAlloc("nativeException"),
 						globalLexScope)));
 		
-		testCtx = new NATContext(
-				testScope, globalLexScope, globalLexScope.meta_getDynamicParent());
+		testCtx = new NATContext(testScope, globalLexScope);
 	}
 	
 	/**
@@ -148,8 +147,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 							AGSymbol.jAlloc("nativeException"),
 							globalLexScope)));
 			
-			ATContext testCtx = new NATContext(
-					testScope, globalLexScope, globalLexScope.meta_getDynamicParent());
+			ATContext testCtx = new NATContext(testScope, globalLexScope);
 			
 			//3. (PYTHON_OBJECT) AT Code catching an interpreter exception
 			evaluateInput(

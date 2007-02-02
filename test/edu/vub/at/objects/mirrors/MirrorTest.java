@@ -260,13 +260,13 @@ public class MirrorTest extends AmbientTalkTest {
 					"  def world() { \"world\" }; \n" +
 					"}; \n" +
 					"(reflect: test).listMethods(); \n",
-				"<mirror on:[<method:world>, <method:hello>]>");
+				"<mirror on:[<method:world>, <method:hello>, <primitive method:init>, <primitive method:new>, <primitive method:==>]>");
 		evalAndCompareTo(
 				"def testMirrored := object: { \n" +
 					"  def hello() { \"hello\" }; \n" +
 					"  def world() { \"world\" }; \n" +
 					"} mirroredBy: (mirror: { nil }); \n" +
 					"(reflect: testMirrored).listMethods();",
-				"<mirror on:[<method:world>, <method:hello>]>");
+				"<mirror on:[<method:world>, <method:hello>, <primitive method:init>, <primitive method:new>, <primitive method:==>]>");
 	}	
 }

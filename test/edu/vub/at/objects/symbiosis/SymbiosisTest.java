@@ -54,10 +54,6 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.natives.grammar.TestEval;
 
-import java.awt.event.ActionListener;
-
-import javax.swing.JTextField;
-
 /**
  * Tests the symbiosis with Java. This is primarily done by wrapping
  * the SymbiosisTest class and instances itself and invoking some of
@@ -161,14 +157,14 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// -- CLASS OBJECTS --
 			assertEquals(jTestClass, Symbiosis.ambientTalkToJava(atTestClass, Class.class));
 			// -- nil => NULL if converting to Java --
-			assertEquals(null, Symbiosis.ambientTalkToJava(NATNil._INSTANCE_, ActionListener.class));
+			assertEquals(null, Symbiosis.ambientTalkToJava(NATNil._INSTANCE_, Runnable.class));
 			// -- nil => nil if remaining within AT --
 			assertEquals(NATNil._INSTANCE_, Symbiosis.ambientTalkToJava(NATNil._INSTANCE_, ATObject.class));
 			// beware with types such as java.lang.Object that match both Java and AT types!
 			// if the ATObject can be assigned to the Java type, the ATObject will be kept
 			assertEquals(NATNil._INSTANCE_, Symbiosis.ambientTalkToJava(NATNil._INSTANCE_, Object.class));
 			// -- INTERFACE TYPES AND NAT CLASSES --
-			assertTrue(Symbiosis.ambientTalkToJava(new NATObject(), ActionListener.class) instanceof ActionListener);
+			assertTrue(Symbiosis.ambientTalkToJava(new NATObject(), Runnable.class) instanceof Runnable);
 			try {
 				Symbiosis.ambientTalkToJava(new NATObject(), Symbiosis.class);
 				fail();
@@ -201,7 +197,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals(NATNil._INSTANCE_, Symbiosis.javaToAmbientTalk(null));
 			// -- INTERFACE TYPES AND NAT CLASSES --
 			ATObject orig = new NATObject();
-			Object proxy = Symbiosis.ambientTalkToJava(orig, ActionListener.class);
+			Object proxy = Symbiosis.ambientTalkToJava(orig, Runnable.class);
 			assertEquals(orig, Symbiosis.javaToAmbientTalk(proxy));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -424,7 +420,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals("gettertest", result.base_getName().toString());
 			// assert (42 == result())
 			assertEquals(TEST_OBJECT_INIT, result.base_apply(NATTable.EMPTY,
-					new NATContext(atTestObject, atTestObject, atTestObject.meta_getDynamicParent())).asNativeNumber().javaValue);
+					new NATContext(atTestObject, atTestObject)).asNativeNumber().javaValue);
 			
 			// clo := atTestObject.gettertest
 			ATClosure clo = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("gettertest")).base_asClosure();
@@ -436,7 +432,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals("prefix", result.base_getName().toString());
 			// assert ("AmbientTalk" == result(""))
 			assertEquals(ytest, result.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue("") }),
-					new NATContext(atTestClass, atTestClass, atTestClass.meta_getDynamicParent())).asNativeText().javaValue);	
+					new NATContext(atTestClass, atTestClass)).asNativeText().javaValue);	
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -679,8 +675,9 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testCustomInstanceCreation() {
 		try {
-			// def atTestClass.new(x,y) { def o := super^new(x); def o.ytest := y; o }
-			ATClosure newClo = evalAndReturn("def new(x,y) { def o := super^new(x); def o.ytest := y; o }; new").base_asClosure();
+			// def orignew := atTestClass.new; def atTestClass.new(x,y) { def o := orignew(x); def o.ytest := y; o }
+			ATClosure newClo = evalAndReturn("def new(x,y) { def o := orignew(x); def o.ytest := y; o }; new").base_asClosure();
+			atTestClass.meta_defineField(AGSymbol.jAlloc("orignew"), atTestClass.meta_select(atTestClass, AGSymbol.jAlloc("new")));
 			atTestClass.meta_addMethod(newClo.base_getMethod());
 			
 			// def instance := atTestClass.new(10, 11)
@@ -754,16 +751,16 @@ public class SymbiosisTest extends AmbientTalkTest {
 	}
 	
 	/**
-	 * BUGFIX TEST: jlobby.javax.swing.JTextField.new(80) failed to discriminate between constructors
-	 * JTextField(String) and JTextField(int), reason was that anything native was convertible to
+	 * BUGFIX TEST: jlobby.java.lang.StringBuffer.new(10) failed to discriminate between constructors
+	 * StringBuffer(String) and StringBuffer(int), reason was that anything native was convertible to
 	 * NATText and also to String. Fixed by reimplementing asNativeText in NATNil to throw a type
 	 * exception as usual.
 	 */
 	public void testBugfixOverloadedConstructor() throws InterpreterException {
-		// def jTextField := jLobby.javax.swing.JTextField;
-		ATObject jTextField = JavaClass.wrapperFor(JTextField.class);
-		// jTextField.new(80)
-		jTextField.meta_invoke(jTextField, AGSymbol.jAlloc("new"), NATTable.atValue(new ATObject[] { NATNumber.atValue(80) }));
+		// def jStringBuffer := jLobby.java.lang.StringBuffer;
+		ATObject jStringBuffer = JavaClass.wrapperFor(StringBuffer.class);
+		// jStringBuffer.new(10)
+		jStringBuffer.meta_invoke(jStringBuffer, AGSymbol.jAlloc("new"), NATTable.atValue(new ATObject[] { NATNumber.atValue(10) }));
 	}
 	
 }

@@ -36,7 +36,6 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 import edu.vub.at.objects.natives.grammar.AGDefFunction;
 import edu.vub.at.objects.natives.grammar.AGSelf;
-import edu.vub.at.objects.natives.grammar.AGSuper;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import junit.framework.TestCase;
@@ -53,12 +52,10 @@ public class NATObjectClosureTest extends TestCase {
 		
 		private ATObject scope_;
 		private ATObject self_;
-		private ATObject super_;
 		
-		public AGScopeTest(ATObject scope, ATObject self, ATObject zuper) {
+		public AGScopeTest(ATObject scope, ATObject self) {
 			scope_ = scope;
 			self_ = self;
-			super_ = zuper;
 		}
 
 		public ATObject meta_eval(ATContext ctx) throws InterpreterException {
@@ -81,9 +78,9 @@ public class NATObjectClosureTest extends TestCase {
 			
 			// SUPER-tests
 			// Is the current value of super consistent with our expectations
-			assertEquals(super_, ctx.base_getSuper());
+			//assertEquals(super_, ctx.base_getSuper());
 			// Is the expected value of super accessible through the pseudovariable
-			assertEquals(super_, AGSuper._INSTANCE_.meta_eval(ctx));
+			//assertEquals(super_, AGSuper._INSTANCE_.meta_eval(ctx));
 
 			return this;
 		}
@@ -153,7 +150,7 @@ public class NATObjectClosureTest extends TestCase {
 					scopeTest, 
 					NATTable.EMPTY, 
 					new AGBegin(NATTable.atValue(new ATObject[] {
-							new AGScopeTest(object, object, object.meta_getDynamicParent())})));
+							new AGScopeTest(object, object)})));
 			object.meta_addMethod(scopeTestMethod);
 			
 			object.meta_invoke(object, scopeTest, NATTable.EMPTY);
@@ -182,7 +179,7 @@ public class NATObjectClosureTest extends TestCase {
 					lateBoundSelf, 
 					NATTable.EMPTY, 
 					new AGBegin(NATTable.atValue(new ATObject[] {
-							new AGScopeTest(parent, child, parent.meta_getDynamicParent())})));
+							new AGScopeTest(parent, child)})));
 			
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
 			ATMethod superSemanticsTestMethod = new NATMethod(
@@ -198,7 +195,7 @@ public class NATObjectClosureTest extends TestCase {
 //						}
 //					}
 					new AGBegin(NATTable.atValue(new ATObject[] {
-							new AGScopeTest(child, child, parent)})));
+							new AGScopeTest(child, child)})));
 			
 			parent.meta_addMethod(lateBoundSelfTestMethod);
 			child.meta_addMethod(superSemanticsTestMethod);
@@ -222,7 +219,7 @@ public class NATObjectClosureTest extends TestCase {
 			
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
 
-			AGScopeTest test = new AGScopeTest(null, null, parent);
+			AGScopeTest test = new AGScopeTest(null, null);
 			
 			NATObject child = (NATObject)parent.meta_extend(
 					new NATClosure(
@@ -242,7 +239,7 @@ public class NATObjectClosureTest extends TestCase {
 					lateBoundSelf, 
 					NATTable.EMPTY, 
 					new AGBegin(NATTable.atValue(new ATObject[] {
-							new AGScopeTest(parent, child, parent.meta_getDynamicParent())})));
+							new AGScopeTest(parent, child)})));
 			
 			parent.meta_addMethod(lateBoundSelfTestMethod);
 			

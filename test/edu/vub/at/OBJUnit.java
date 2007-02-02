@@ -60,8 +60,7 @@ public class OBJUnit extends NATNil {
 	
 	private ATContext ctx_ = new NATContext(
 			OBJUnit._INSTANCE_,
-			OBJUnit._INSTANCE_, 
-			NATNil._INSTANCE_);
+			OBJUnit._INSTANCE_);
 	
 	private OBJUnit() { }
 	
@@ -149,7 +148,7 @@ public class OBJUnit extends NATNil {
 				/* parent pointer type */
 				NATObject._SHARES_A_);
 		
-		clone.ctx_ = new NATContext(extension, extension, clone);
+		clone.ctx_ = new NATContext(extension, extension);
 		
 		code.base_applyInScope(NATTable.EMPTY, extension);
 		return extension;

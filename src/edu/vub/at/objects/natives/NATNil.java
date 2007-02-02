@@ -63,6 +63,7 @@ import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
+import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
@@ -113,7 +114,7 @@ public class NATNil implements ATNil, Serializable {
     public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
         try {
 			String jSelector = Reflection.upBaseLevelSelector(atSelector);
-			return Reflection.upInvocation(receiver, jSelector, arguments);
+			return Reflection.upInvocation(this, jSelector, arguments);
 		} catch (XSelectorNotFound e) {
 			return receiver.meta_doesNotUnderstand(atSelector).base_asClosure().base_apply(arguments);
 		}
@@ -535,11 +536,11 @@ public class NATNil implements ATNil, Serializable {
     }
     
     public ATObject base_new(ATObject[] initargs) throws InterpreterException {
-    	    return this.meta_newInstance(NATTable.atValue(initargs));
+    	return this.meta_newInstance(NATTable.atValue(initargs));
     }
     
     public ATObject base_init(ATObject[] initargs) throws InterpreterException {
-    	    return NATNil._INSTANCE_;
+    	return NATNil._INSTANCE_;
     }
 
 	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
@@ -592,6 +593,18 @@ public class NATNil implements ATNil, Serializable {
 			return this.meta_resolve();
 		} catch(InterpreterException e) {
 			throw new InvalidObjectException("Failed to resolve object " + this + ": " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * By default, two AmbientTalk objects are equal if they are the
+	 * same object, or one is a proxy for the same object.
+	 */
+	public boolean equals(Object other) {
+		if (other instanceof SymbioticATObjectMarker) {
+			return this.equals(((SymbioticATObjectMarker) other)._returnNativeAmbientTalkObject());
+		} else {
+			return super.equals(other);
 		}
 	}
 

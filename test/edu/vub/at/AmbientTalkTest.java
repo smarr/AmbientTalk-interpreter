@@ -54,7 +54,7 @@ public abstract class AmbientTalkTest extends TestCase {
 		ATObject self =
 			new NATObject(supr, NATObject._SHARES_A_); // self has root as lex parent and supr as dyn parent
 		ATObject scope = new NATObject(self); // scope has no dyn parent and is nested within self
-		ctx_ = new NATContext(scope, self, supr);
+		ctx_ = new NATContext(scope, self);
 	}
 
 	/**

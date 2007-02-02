@@ -43,7 +43,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  */
 public final class NATMethodInvocation extends NATMessage implements ATMethodInvocation {
 
-	public NATMethodInvocation(ATSymbol sel, ATTable arg) {
+	public NATMethodInvocation(ATSymbol sel, ATTable arg) throws InterpreterException {
 		super(sel, arg);
 	}
 
@@ -54,11 +54,11 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	 * @return the return value of the invoked method.
 	 */
 	public ATObject base_sendTo(ATObject receiver) throws InterpreterException {
-		return receiver.meta_invoke(receiver, selector_, arguments_);
+		return receiver.meta_invoke(receiver, base_getSelector(), base_getArguments());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<method invocation:"+selector_+Evaluator.printAsList(arguments_).javaValue+">");
+		return NATText.atValue("<method invocation:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
 	}
 	
 }

@@ -53,7 +53,7 @@ public class AmbientTalkTestCase extends TestCase {
 		
 		self.meta_defineField(AGSymbol.jAlloc("unit"), OBJUnit._INSTANCE_);
 				
-		ctx_ = new NATContext(scope, self, supr);
+		ctx_ = new NATContext(scope, self);
 	}
 	
 	protected void tearDown() throws Exception {

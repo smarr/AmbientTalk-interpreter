@@ -130,7 +130,7 @@ public final class ELVirtualMachine extends EventLoop {
      * @param topic - the abstract category in which this service is published
      * @param service - a far reference to object providing the service
      */
-	public void event_servicePublished(final ATSymbol topic, final NATLocalFarRef service) {
+	public void event_servicePublished(final ATSymbol topic, final NATFarReference service) {
 		this.receive(new Event("servicePublished("+topic+","+service+")") {
 			public void process(Object myself) {
 				discoveryManager_.addPublication(topic, service);
@@ -149,7 +149,7 @@ public final class ELVirtualMachine extends EventLoop {
      * @param topic - the abstract category in which this service is published
      * @param handler - a far reference to the closure acting as a callback upon discovery
      */
-	public void event_clientSubscribed(final ATSymbol topic, final NATLocalFarRef handler) {
+	public void event_clientSubscribed(final ATSymbol topic, final NATFarReference handler) {
 		this.receive(new Event("clientSubscribed("+topic+","+handler+")") {
 			public void process(Object myself) {
 				discoveryManager_.addSubscription(topic, handler);
@@ -166,7 +166,7 @@ public final class ELVirtualMachine extends EventLoop {
      * @param topic - the abstract category in which this service is published
      * @param service - a far reference to object providing the service
      */
-	public void event_cancelPublication(final ATSymbol topic, final NATLocalFarRef service) {
+	public void event_cancelPublication(final ATSymbol topic, final NATFarReference service) {
 		this.receive(new Event("cancelPublication("+topic+","+service+")") {
 			public void process(Object myself) {
 				discoveryManager_.deletePublication(topic, service);
@@ -183,7 +183,7 @@ public final class ELVirtualMachine extends EventLoop {
      * @param topic - the abstract category in which this service is published
      * @param handler - a far reference to the closure acting as a callback upon discovery
      */
-	public void event_cancelSubscription(final ATSymbol topic, final NATLocalFarRef handler) {
+	public void event_cancelSubscription(final ATSymbol topic, final NATFarReference handler) {
 		this.receive(new Event("cancelSubscription("+topic+","+handler+")") {
 			public void process(Object myself) {
 				discoveryManager_.deleteSubscription(topic, handler);

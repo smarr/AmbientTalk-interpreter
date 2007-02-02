@@ -69,8 +69,9 @@ public interface ATActorMirror extends ATObject {
 	 * message does not have a receiver yet. This field will be set once the message
 	 * is actually being sent, a fact which can be intercepted by overriding the sendTo
 	 * base-level method.
+	 * @throws InterpreterException 
 	 */
-	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments);
+	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments) throws InterpreterException;
 	
 	/**
 	 * This method implements the default asynchronous message sending semantics for
@@ -86,17 +87,30 @@ public interface ATActorMirror extends ATObject {
 	/**
 	 * This mechanism is the most basic mechanism to provide a service. It requires 
 	 * a separate service description and an object offering the service. The return
-	 * value is a closure which allows cancelling the service offer.
+	 * value is a publication object which allows cancelling the service offer.
 	 */
-	public ATClosure base_provide(ATSymbol topic, ATObject service) throws InterpreterException;
+	public ATObject base_provide(ATSymbol topic, ATObject service) throws InterpreterException;
 	
 	/**
 	 * This mechanism is the most basic mechanism to provide a service. It requires 
 	 * a separate service description and an object offering the service. The return
-	 * value is a closure which allows cancelling the service offer.
+	 * value is a subscription object which allows cancelling the service offer.
 	 * @throws InterpreterException 
 	 */
-	public ATClosure base_require(ATSymbol topic, ATClosure handler) throws InterpreterException;
+	public ATObject base_require(ATSymbol topic, ATClosure handler) throws InterpreterException;
+	
+	/**
+	 * def protocol := install: { code }
+	 * 
+	 * Installs a meta-object protocol into this actor. The given code
+	 * is executed in the context of a new object whose dynamic parent is the actor's old
+	 * mirror. Hence, in the context of code, 'super' can be used to invoke the old
+	 * meta-level behaviour.
+	 * 
+	 * @param code meta-level code that overrides an actor's MOP methods
+	 * @return a protocol object that allows to uninstall the MOP code
+	 */
+	public ATObject base_install_(ATClosure code) throws InterpreterException;
 	
     /* -------------------------------------
      * -- Object Passing Protocol Support --

@@ -111,7 +111,7 @@ public class NativeClosure extends NATClosure {
 	 */
 	public ATContext base_getContext() throws InterpreterException {
 		if (context_ == null)
-			context_ = new NATContext(scope_, scope_, scope_.meta_getDynamicParent());
+			context_ = new NATContext(scope_, scope_);
 		return context_;
 	}
 
@@ -138,7 +138,7 @@ public class NativeClosure extends NATClosure {
 			// this method is supposed to be overridden by an anonymous subclass
 			throw new RuntimeException("NativeClosure's base_applyInScope not properly overridden by " + scope_.getClass());
 		} else {
-			return method_.base_applyInScope(args, new NATContext(scope, scope, scope.meta_getDynamicParent()));
+			return method_.base_applyInScope(args, new NATContext(scope, scope));
 		}
 	}
 	

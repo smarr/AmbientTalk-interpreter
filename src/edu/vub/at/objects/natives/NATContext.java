@@ -42,12 +42,10 @@ public class NATContext extends NATByCopy implements ATContext {
 
 	private final ATObject scope_;
 	private final ATObject self_;
-	private final ATObject super_;
 	
-	public NATContext(ATObject scope, ATObject self, ATObject zuper) {
+	public NATContext(ATObject scope, ATObject self) {
 		scope_ = scope;
 		self_ = self;
-		super_ = zuper;
 	}
 
 	public ATObject base_getLexicalScope() {
@@ -58,28 +56,17 @@ public class NATContext extends NATByCopy implements ATContext {
 		return self_;
 	}
 
-	public ATObject base_getSuper() {
-		return super_;
-	}
-
 	public ATContext base_withLexicalEnvironment(ATObject scope) {
-		return new NATContext(scope, self_, super_);
+		return new NATContext(scope, self_);
 	}
 	
-	public ATContext base_withParentObject(ATObject zuper) {
-		return new NATContext(scope_, self_, zuper);
-	}
-	
-	public ATContext base_withDynamicReceiver(ATObject self, ATObject zuper) {
-		return new NATContext(scope_, self, zuper);		
+	public ATContext base_withDynamicReceiver(ATObject self) {
+		return new NATContext(scope_, self);		
 	}
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<context("+scope_.meta_print().javaValue+
-				                      ","+self_.meta_print().javaValue+
-				                      ","+super_.meta_print().javaValue+")>");
+				                      ","+self_.meta_print().javaValue+")>");
 	}
 
-	
-	// TODO(discuss) pass a context by far ref or a context of far refs??
 }

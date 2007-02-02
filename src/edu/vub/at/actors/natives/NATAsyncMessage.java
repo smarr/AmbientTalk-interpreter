@@ -38,45 +38,44 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATMessage;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * Instances of the class NATAsyncMessage represent first-class asynchronous messages.
- * 
- * TODO: Possibly convert this class to a subclass of NATObject to allow adding methods and fields to it without having to make an object extension.
- * It is a primitive object which, for all other purposes, should be extensible like a regular object with extra fields and methods.
  * 
  * @author tvcutsem
  */
 public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 
-    private final ATObject sender_;
-    private ATObject receiver_ = NATNil._INSTANCE_;
+	private final static AGSymbol _SENDER_ = AGSymbol.jAlloc("sender");
+	private final static AGSymbol _RECEIVER_ = AGSymbol.jAlloc("receiver");
 
     /**
      * @param sdr the sender of the asynchronous message
      * @param sel the selector of the asynchronous message
      * @param arg the arguments of the asynchronous message
      */
-    public NATAsyncMessage(ATObject sdr, ATSymbol sel, ATTable arg) {
+    public NATAsyncMessage(ATObject sdr, ATSymbol sel, ATTable arg) throws InterpreterException {
         super(sel, arg);
-        sender_ = sdr;
+        super.meta_defineField(_SENDER_, sdr);
+        super.meta_defineField(_RECEIVER_, NATNil._INSTANCE_);
     }
     
-    public NATAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg) {
+    public NATAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
         this(sdr, sel, arg);
-        receiver_ = rcv;
+        super.meta_assignField(this, _RECEIVER_, rcv);
     }
 
-    public ATObject base_getSender() {
-        return sender_;
+    public ATObject base_getSender() throws InterpreterException {
+        return super.meta_select(this, _SENDER_);
     }
 
-    public ATObject base_getReceiver() {
-        return receiver_;
+    public ATObject base_getReceiver() throws InterpreterException {
+    	return super.meta_select(this, _RECEIVER_);
     }
     
     public ATObject base_process(ATActorMirror inActor) throws InterpreterException {
-    	return receiver_.meta_receive(this);
+    	return base_getReceiver().meta_receive(this);
     }
 
     /**
@@ -87,12 +86,12 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      */
     public ATObject base_sendTo(ATObject receiver) throws InterpreterException {
         // fill in the receiver first
-        this.receiver_ = receiver;
-        return sender_.meta_send(this);
+        super.meta_assignField(this, _RECEIVER_, receiver);
+        return base_getSender().meta_send(this);
     }
     
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<asynchronous message:"+selector_+Evaluator.printAsList(arguments_).javaValue+">");
+		return NATText.atValue("<asynchronous message:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
 	}
 
     public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch {

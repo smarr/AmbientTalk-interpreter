@@ -47,7 +47,7 @@ import java.util.Set;
  */
 public class MethodDictionary implements Map, Cloneable, Serializable {
 
-	private static final int _DEFAULT_SIZE_ = 5;
+	private static final int _DEFAULT_SIZE_ = 8;
 	
 	private MethodDictionary parent_ = null;
 	

@@ -33,6 +33,7 @@ import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.natives.NATTable;
 
 /**
  * An instance of the class ELFarReference represents the event loop processor for
@@ -70,9 +71,9 @@ public final class ELFarReference extends EventLoop {
 		try {
 			return (ATTable) receiveAndWait("retractUnsentMessages()", new Callable() {
 				public Object call(Object owner) throws Exception {
-					final NATRemoteFarRef me = (NATRemoteFarRef) owner;
+					//final NATRemoteFarRef me = (NATRemoteFarRef) owner;
 					// TODO: return outgoing unsent messages
-					return null;
+					return NATTable.EMPTY;
 				}
 			});
 		} catch (Exception e) {

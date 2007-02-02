@@ -36,6 +36,7 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
@@ -55,6 +56,9 @@ import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.NativeClosure;
+import edu.vub.at.objects.mirrors.PrimitiveMethod;
+import edu.vub.at.objects.natives.grammar.AGSplice;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -86,12 +90,45 @@ import java.util.Vector;
  * - a linked list containing custom field objects
  * - a method dictionary, mapping selectors to methods
  * - a dynamic object parent, to delegate select and invoke operations
+ *   ( this parent slot is represented by a true AmbientTalk field, rather than by an instance variable )
  * - a lexical object parent, to support lexical scoping
  * 
  * @author tvcutsem
  * @author smostinc
  */
 public class NATObject extends NATCallframe implements ATObject {
+	
+	// The name of the field that points to the dynamic parent
+	public static final AGSymbol _SUPER_NAME_ = AGSymbol.jAlloc("super");
+	
+	// The names of the primitive methods
+	private static final AGSymbol _EQL_NAME_ = AGSymbol.jAlloc("==");
+	private static final AGSymbol _NEW_NAME_ = AGSymbol.jAlloc("new");
+	private static final AGSymbol _INI_NAME_ = AGSymbol.jAlloc("init");
+	
+	// The primitive methods themselves
+	
+	/** def ==(comparand) { nil } */
+	private static final PrimitiveMethod _PRIM_EQL_ = new PrimitiveMethod(
+			_EQL_NAME_, NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("comparand")})) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			return ctx.base_getLexicalScope().base__opeql__opeql_(arguments.base_at(NATNumber.ONE));
+		}
+	};
+	/** def new(@initargs) { nil } */
+	private static final PrimitiveMethod _PRIM_NEW_ = new PrimitiveMethod(
+			_NEW_NAME_, NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("initargs")) })) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			return ctx.base_getLexicalScope().base_new(arguments.asNativeTable().elements_);
+		}
+	};
+	/** def init(@initargs) { nil } */
+	private static final PrimitiveMethod _PRIM_INI_ = new PrimitiveMethod(
+			_INI_NAME_, NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("initargs")) })) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			return ctx.base_getLexicalScope().base_init(arguments.asNativeTable().elements_);
+		}
+	};
 	
 	// Auxiliary static methods to support the type of dynamic parent
 	public static final boolean _IS_A_ 		= true;
@@ -141,8 +178,10 @@ public class NATObject extends NATCallframe implements ATObject {
 	/**
 	 * The dynamic parent of this object (i.e. the delegation link).
 	 * Note that the parent of an object is immutable.
+	 * 
+	 * REPLACED by a true AmbientTalk field
 	 */
-	protected final ATObject dynamicParent_;
+	//protected final ATObject dynamicParent_;
 	
 	/* ------------------
 	 * -- Constructors --
@@ -184,7 +223,18 @@ public class NATObject extends NATCallframe implements ATObject {
 	public NATObject(ATObject dynamicParent, ATObject lexicalParent, boolean parentType) {
 		super(lexicalParent);
 		methodDictionary_ = new MethodDictionary();
-		dynamicParent_ = dynamicParent;
+		
+		// bind the dynamic parent to the field named 'super'
+		// we don't pass via meta_defineField as this would trigger mirages too early
+		variableMap_.put(_SUPER_NAME_);
+		stateVector_.add(dynamicParent);
+			
+		// add ==, new and init to the method dictionary directly
+		// we don't pass via meta_addMethod as this would trigger mirages too early
+		methodDictionary_.put(_EQL_NAME_, _PRIM_EQL_);
+		methodDictionary_.put(_NEW_NAME_, _PRIM_NEW_);
+		methodDictionary_.put(_INI_NAME_, _PRIM_INI_);
+		
 		flags_ = 0; // by default, an object has a shares-a parent and does not share its map/dictionary
 		if (parentType) {
 			// requested an 'is-a' parent
@@ -210,8 +260,13 @@ public class NATObject extends NATCallframe implements ATObject {
 			         byte flags) throws InterpreterException {
 		super(map, state, lexicalParent, null);
 		methodDictionary_ = methodDict;
-		dynamicParent_ = dynamicParent;
+		
 		flags_ = flags; //a cloned object inherits all flags from original
+			
+		// ==, new and init should already be present in the method dictionary
+		
+		// set the 'super' field to point to the new dynamic parent
+		setLocalField(_SUPER_NAME_, dynamicParent);
 		
 		// re-initialize all custom fields
 		if (originalCustomFields != null) {
@@ -248,9 +303,9 @@ public class NATObject extends NATCallframe implements ATObject {
 			//  ctx.scope = the implementing scope, being this object, under which an additional callframe will be inserted
 			//  ctx.self  = the late bound receiver, being the passed receiver
 			//  ctx.super = the parent of the implementor
-			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver, dynamicParent_));
+			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver));
 		} else {
-			return dynamicParent_.meta_invoke(receiver, selector, arguments);
+			return meta_getDynamicParent().meta_invoke(receiver, selector, arguments);
 		}
 	}
 	
@@ -259,10 +314,10 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * either in the receiver object locally, or in one of its dynamic parents.
 	 */
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
-		if (this.hasLocalField(selector) || this.hasLocalMethod(selector))
+		if (this.hasLocalField(selector) || this.hasLocalMethod(selector) || this.isPrimitive(selector))
 			return NATBoolean._TRUE_;
 		else
-			return this.dynamicParent_.meta_respondsTo(selector);
+			return meta_getDynamicParent().meta_respondsTo(selector);
 	}
 
 
@@ -300,7 +355,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			//  ctx.super = the parent of the implementor
 			return new NATClosure(this.getLocalMethod(selector), this, receiver);
 		} else {
-			return dynamicParent_.meta_select(receiver, selector);
+			return meta_getDynamicParent().meta_select(receiver, selector);
 		}
 	} 
 	
@@ -373,7 +428,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		if (this.setLocalField(selector, value)) {
 			return NATNil._INSTANCE_;
 		} else {
-			return dynamicParent_.meta_assignField(receiver, selector, value);
+			return meta_getDynamicParent().meta_assignField(receiver, selector, value);
 		}
 	}
 	
@@ -400,10 +455,10 @@ public class NATObject extends NATCallframe implements ATObject {
 		ATObject dynamicParent;
 		if(this.isFlagSet(_ISAPARENT_FLAG_)) {
 			// IS-A Relation : clone the dynamic parent.
-			dynamicParent = dynamicParent_.meta_clone();
+			dynamicParent = meta_getDynamicParent().meta_clone();
 		} else {
 			// SHARES_A Relation : share the dynamic parent.
-			dynamicParent = dynamicParent_;
+			dynamicParent = meta_getDynamicParent();
 		}
 		
 		// ! set the shares flags of this object *and* of its clone
@@ -456,11 +511,15 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * already exist. Also, care has to be taken that the method dictionary of an object
 	 * does not affect clones. Therefore, if the method dictionary is shared, a copy
 	 * of the dictionary is taken before adding the method.
+	 * 
+	 * One exception to method addition are primitive methods: if the method added
+	 * would conflict with a primitive method, the primitive is replaced by the new
+	 * method instead.
 	 */
 	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
 		ATSymbol name = method.base_getName();
-		if (methodDictionary_.containsKey(name)) {
-			throw new XDuplicateSlot("method", name.base_getText().asNativeText().javaValue);			
+		if (methodDictionary_.containsKey(name) && !isPrimitive(name)) {
+			throw new XDuplicateSlot("method", name.base_getText().asNativeText().javaValue);
 		} else {
 			// first check whether the method dictionary is shared
 			if (this.isFlagSet(_SHARE_DCT_FLAG_)) {
@@ -497,10 +556,6 @@ public class NATObject extends NATCallframe implements ATObject {
 	/* ---------------------
 	 * -- Mirror Fields   --
 	 * --------------------- */
-	
-	public ATObject meta_getDynamicParent() throws InterpreterException {
-		return dynamicParent_;
-	};
 	
 	// protected methods, may be adapted by extensions
 	
@@ -545,6 +600,10 @@ public class NATObject extends NATCallframe implements ATObject {
 		} else {
 			return result;
 		}
+	}
+	
+	private boolean isPrimitive(ATSymbol name) {
+		return name.equals(_EQL_NAME_) || name.equals(_NEW_NAME_) || name.equals(_INI_NAME_);
 	}
 	
     /* ----------------------------------

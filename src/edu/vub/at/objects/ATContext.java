@@ -49,19 +49,12 @@ public interface ATContext extends ATObject {
 	 */
 	public ATObject base_getSelf() throws InterpreterException;
 	
-	/**
-	 * Structural access to the parent (super pseudovariable) in the current context.
-	 */
-	public ATObject base_getSuper() throws InterpreterException;
-	
 	/*
 	 * Factory methods for creating new context objects as a delta w.r.t. the receiver context object.
 	 */
 	
 	public ATContext base_withLexicalEnvironment(ATObject scope) throws InterpreterException;
 	
-	public ATContext base_withParentObject(ATObject zuper) throws InterpreterException;
-	
-	public ATContext base_withDynamicReceiver(ATObject self, ATObject zuper) throws InterpreterException;
+	public ATContext base_withDynamicReceiver(ATObject self) throws InterpreterException;
 
 }

@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * Instances of the class NATMethodInvocation represent first-class method invocations.
@@ -43,11 +44,11 @@ import edu.vub.at.objects.grammar.ATSymbol;
  */
 public final class NATDelegation extends NATMessage implements ATMethodInvocation {
 
-	private final ATObject delegator_;
+	private final static AGSymbol _DELEGATOR_ = AGSymbol.jAlloc("delegator");
 	
-	public NATDelegation(ATObject delegator, ATSymbol sel, ATTable arg) {
+	public NATDelegation(ATObject delegator, ATSymbol sel, ATTable arg) throws InterpreterException {
 		super(sel, arg);
-		delegator_ = delegator;
+		super.meta_defineField(_DELEGATOR_, delegator);
 	}
 
 	/**
@@ -58,11 +59,11 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 	 * @return the return value of the invoked method.
 	 */
 	public ATObject base_sendTo(ATObject receiver) throws InterpreterException {
-		return receiver.meta_invoke(delegator_, selector_, arguments_);
+		return receiver.meta_invoke(super.meta_select(this, _DELEGATOR_), base_getSelector(), base_getArguments());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<delegation:"+selector_+Evaluator.printAsList(arguments_).javaValue+">");
+		return NATText.atValue("<delegation:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
 	}
 	
 }

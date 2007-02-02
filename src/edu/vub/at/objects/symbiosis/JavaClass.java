@@ -237,13 +237,14 @@ public final class JavaClass extends NATIsolate {
 	/**
 	 * aJavaClass.new(@args) == invoke a Java constructor
 	 * AmbientTalk objects can add a custom new method to the class in order to intercept
-	 * instance creation. The original instance can then be performed by invoking super.new(@args).
+	 * instance creation. The original instance can then be performed by invoking the old new(@args).
 	 * 
 	 * For example, imagine we want to extend the class java.lang.Point with a 3D coordinate, e.g. a 'z' field:
 	 * <tt>
 	 * def Point := jlobby.java.awt.Point;
+	 * def oldnew := Point.new;
 	 * def Point.new(x,y,z) { // 'override' the new method
-	 *   def point := super.new(x,y); // invokes the Java constructor
+	 *   def point := oldnew(x,y); // invokes the Java constructor
 	 *   def point.z := z; // adds a field dynamically to the new JavaObject wrapper
 	 *   point; // important! new should return the newly created instance
 	 * }

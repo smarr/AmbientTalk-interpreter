@@ -266,6 +266,10 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// filter: ablock
 			evalAndCompareTo("[1,2,3].filter: {|e| e != 2 }", "[1, 3]");
+
+			// find: ablock
+			evalAndCompareTo("[`a, `b, `c].find: { |e| e == `b }", "2");
+			evalAndCompareTo("[`a, `b, `c].find: { |e| e == `d }", NATNil._INSTANCE_);
 			
 			// vowels.implode() => "zeiou"
 			assertEquals("zeiou", vowels.base_implode().asNativeText().javaValue);

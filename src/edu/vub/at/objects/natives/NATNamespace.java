@@ -144,7 +144,7 @@ public final class NATNamespace extends NATObject {
 					String code = Evaluator.loadContentOfFile(src);
 				
 				    // construct the proper evaluation context for the code
-				    NATContext ctx = new NATContext(fileScope, fileScope, fileScope.dynamicParent_);
+				    NATContext ctx = new NATContext(fileScope, fileScope);
 				    
 				    // parse and evaluate the code in the proper context and bind its result to the missing slot
 					ATAbstractGrammar source = NATParser.parse(src.getName(), code);

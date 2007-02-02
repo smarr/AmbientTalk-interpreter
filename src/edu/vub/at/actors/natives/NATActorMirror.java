@@ -42,7 +42,10 @@ import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * The NATActorMirror class implements the concurrency model of ambienttalk. It continually
@@ -93,10 +96,11 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	
 	/**
 	 * Creates a new actor on the given host with the given behaviour and custom actor mirror.
+	 * REPLACED BY install: primitive
 	 */
-	public static NATLocalFarRef atValue(ELVirtualMachine host, Packet behaviourPkt, Packet actorMirrorPkt) throws InterpreterException {
+	/*public static NATLocalFarRef atValue(ELVirtualMachine host, Packet behaviourPkt, Packet actorMirrorPkt) throws InterpreterException {
 		return NATActorMirror.atValue(host, behaviourPkt, actorMirrorPkt.unpack().base_asActorMirror());
-	}
+	}*/
 	
 	
 	/**
@@ -112,30 +116,78 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
      * -- Language Construct to Actor Protocol --
      * ------------------------------------------ */
 
-	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments) {
+	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		return new NATAsyncMessage(sender, selector, arguments);
 	}
 	
-	public ATClosure base_provide(final ATSymbol topic, final ATObject service) throws InterpreterException {
-		final NATLocalFarRef exportedService = ELActor.currentActor().export(service);
-		host_.event_servicePublished(topic, exportedService);
-		return new NativeClosure(this) {
-			public ATObject base_apply(ATTable args) throws InterpreterException {
-				host_.event_cancelPublication(topic, exportedService);
-				return NATNil._INSTANCE_;
-			}
-		};
+	/**
+	 * A publication object is defined as:
+	 * object: {
+	 *   def topic := //topic under which service is published;
+	 *   def service := //the exported service object;
+	 *   def cancel() { //unexport the service object }
+	 * }
+	 */
+	public static class NATPublication extends NATObject {
+		private static final AGSymbol _TOPIC_ = AGSymbol.jAlloc("topic");
+		private static final AGSymbol _SERVICE_ = AGSymbol.jAlloc("service");
+		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
+		public NATPublication(final ELVirtualMachine host, ATSymbol topic, NATFarReference exportedService) throws InterpreterException {
+			meta_defineField(_TOPIC_, topic);
+			meta_defineField(_SERVICE_, exportedService);
+			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					ATSymbol topic = scope_.meta_select(scope_, _TOPIC_).base_asSymbol();
+					NATFarReference exportedService = scope_.meta_select(scope_, _SERVICE_).asNativeFarReference();
+					host.event_cancelPublication(topic, exportedService);
+					return NATNil._INSTANCE_;
+				}
+			});
+		}
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("<publication:"+meta_select(this, _TOPIC_)+">");
+		}
 	}
 	
-	public ATClosure base_require(final ATSymbol topic, final ATClosure handler) throws InterpreterException {
-		final NATLocalFarRef exportedHandler = ELActor.currentActor().export(handler);
+	/**
+	 * A subscription object is defined as:
+	 * object: {
+	 *   def topic := //topic subscribed to;
+	 *   def handler := //the closure to be triggered;
+	 *   def cancel() { //unsubscribe the handler }
+	 * }
+	 */
+	public static class NATSubscription extends NATObject {
+		private static final AGSymbol _TOPIC_ = AGSymbol.jAlloc("topic");
+		private static final AGSymbol _HANDLER_ = AGSymbol.jAlloc("handler");
+		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
+		public NATSubscription(final ELVirtualMachine host, ATSymbol topic, NATFarReference exportedHandler) throws InterpreterException {
+			meta_defineField(_TOPIC_, topic);
+			meta_defineField(_HANDLER_, exportedHandler);
+			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					ATSymbol topic = scope_.meta_select(scope_, _TOPIC_).base_asSymbol();
+					NATFarReference exportedHandler = scope_.meta_select(scope_, _HANDLER_).asNativeFarReference();
+					host.event_cancelSubscription(topic, exportedHandler);
+					return NATNil._INSTANCE_;
+				}
+			});
+		}
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("<subscription:"+meta_select(this, _TOPIC_)+">");
+		}
+	}
+	
+	public ATObject base_provide(final ATSymbol topic, final ATObject service) throws InterpreterException {
+		NATLocalFarRef exportedService = ELActor.currentActor().export(service);
+		host_.event_servicePublished(topic, exportedService);
+		return new NATPublication(host_, topic, exportedService);
+	}
+	
+	public ATObject base_require(final ATSymbol topic, final ATClosure handler) throws InterpreterException {
+		NATLocalFarRef exportedHandler = ELActor.currentActor().export(handler);
 		host_.event_clientSubscribed(topic, exportedHandler);
-		return new NativeClosure(this) {
-			public ATObject base_apply(ATTable args) throws InterpreterException {
-				host_.event_cancelSubscription(topic, exportedHandler);
-				return NATNil._INSTANCE_;
-			}
-		};
+		return new NATSubscription(host_, topic, exportedHandler);
 	}
 	
     /* --------------------------
@@ -200,6 +252,74 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 */
 	public ATObject base_send(ATAsyncMessage message) throws InterpreterException {
 		return meta_send(message);
+	}
+	
+	/**
+	 * def install: { code }
+	 * 
+	 * @see ATActorMirror#base_install_(ATClosure)
+	 * 
+	 * Technically, this MOP installation is achieved by performing an
+	 * imperative mixin operation on the actor's mirror.
+	 */
+	public ATObject base_install_(ATClosure code) throws InterpreterException {
+		ELActor myEventLoop = ELActor.currentActor();
+		
+		ATActorMirror currentMirror = myEventLoop.getActorMirror();
+		
+		// extend: this with: { code }
+		NATObject mirrorObject = new NATObject(
+				currentMirror, // dynamic parent = current mirror
+				code.base_getContext().base_getLexicalScope(), // lex parent = lex scope of closure
+				NATObject._IS_A_);
+		code.base_applyInScope(NATTable.EMPTY, mirrorObject);
+		
+		ATActorMirror newActorMirror = mirrorObject.base_asActorMirror();
+		ELActor.currentActor().setActorMirror(newActorMirror);
+		return new NATProtocol(myEventLoop, newActorMirror);
+	}
+	
+	/**
+	 * A protocol object is defined as:
+	 * object: {
+	 *   def installedMirror := //the installed actor mirror;
+	 *   def uninstall() { //uninstall the protocol object }
+	 * }
+	 */
+	public static class NATProtocol extends NATObject {
+		private static final AGSymbol _INSTALLED_ = AGSymbol.jAlloc("installedMirror");
+		private static final AGSymbol _UNINSTALL_ = AGSymbol.jAlloc("uninstall");
+		public NATProtocol(final ELActor eventLoop, ATActorMirror newMirror) throws InterpreterException {
+			meta_defineField(_INSTALLED_, newMirror);
+			meta_defineField(_UNINSTALL_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					ATObject mirrorToRemove = scope_.meta_select(scope_, _INSTALLED_);
+					
+					ATObject current = eventLoop.getActorMirror();
+					if (current.equals(mirrorToRemove)) {
+						// just set the actor mirror to the parent
+						eventLoop.setActorMirror(mirrorToRemove.meta_getDynamicParent().base_asActorMirror());
+					} else {
+						// find the child of the mirror to remove
+						while ((current != NATNil._INSTANCE_) && !current.meta_getDynamicParent().equals(mirrorToRemove)) {
+							current = current.meta_getDynamicParent();
+						}
+						if (current == NATNil._INSTANCE_) {
+							// mirror not found
+							throw new XIllegalOperation("Tried to uninstall a protocol that was not installed: " + mirrorToRemove);
+						} else {
+							// current.super := mirrorToRemove.super
+							current.meta_assignField(current, NATObject._SUPER_NAME_, mirrorToRemove.meta_getDynamicParent());
+						}
+					}
+					
+					return NATNil._INSTANCE_;
+				}
+			});
+	    }
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("<protocol:"+meta_select(this, _INSTALLED_)+">");
+		}
 	}
 	
     public ATActorMirror base_asActorMirror() throws XTypeMismatch {

@@ -148,7 +148,6 @@ In implementation: just provide ^ syntax 'AGDelegate'
 ^m() -> AGDelegationCreation
 o^m() -> AGDelegate eval: obj.meta_invoke(ctx.self, sel, args)
 
-
 Keywords and Optional/Varargs:
 ==============================
 

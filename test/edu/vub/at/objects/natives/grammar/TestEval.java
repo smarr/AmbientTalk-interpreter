@@ -173,7 +173,7 @@ public class TestEval extends AmbientTalkTest {
 	}
 	
 	public void testSuperReference() throws InterpreterException {
-        assertEquals(ctx_.base_getSuper(), evalAndReturn("super"));
+        assertEquals(ctx_.base_getLexicalScope().meta_getDynamicParent(), evalAndReturn("super"));
 	}
 	
 	public void testSelection() throws InterpreterException {

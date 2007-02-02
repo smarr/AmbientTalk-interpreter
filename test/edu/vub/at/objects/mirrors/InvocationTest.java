@@ -33,7 +33,6 @@ import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATMethodInvocation;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -121,7 +120,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					"false.ifTrue: fail;" +
 					"false.ifFalse: success;" +
 					"false.ifTrue: fail ifFalse: success",
-					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+					new NATContext(lexicalRoot, lexicalRoot));
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
@@ -175,7 +174,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					"def coated := closures[closures.length];" +
 					"expanded();" +
 					"coated()",
-					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+					new NATContext(lexicalRoot, lexicalRoot));
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
@@ -185,7 +184,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 			evaluateInput(
 					"closures.at(closures.length)();" +
 					"closures[closures.length]()",
-					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+					new NATContext(lexicalRoot, lexicalRoot));
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
@@ -259,7 +258,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					"message.arguments := [closures.length];" +
 					"def result        := closures <+ message;" +
 					"result()",
-					new NATContext(lexicalRoot, lexicalRoot, NATNil._INSTANCE_));
+					new NATContext(lexicalRoot, lexicalRoot));
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);

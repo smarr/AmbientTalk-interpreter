@@ -112,7 +112,7 @@ public class TestParameterBinding extends AmbientTalkTest {
 
 	public void setUp() throws InterpreterException {
 		bindScope_ = new NATObject();
-		bindCtx_ = new NATContext(bindScope_, bindScope_, bindScope_.meta_getDynamicParent());
+		bindCtx_ = new NATContext(bindScope_, bindScope_);
 	}
 	
 	/**

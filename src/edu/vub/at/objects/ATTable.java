@@ -73,6 +73,13 @@ public interface ATTable extends ATExpression {
 	public ATTable base_filter_(ATClosure clo) throws InterpreterException;
 	
 	/**
+	 * Return the index of the first element for which the given predicate returns true.
+	 * Returns nil if no element satisfying the closure can be found.
+	 * result := [ tabl ].find: { |elt| booleanCondition(elt) }
+	 */
+	public ATObject base_find_(ATClosure clo) throws InterpreterException;
+	
+	/**
 	 * Implode the receiver table of characters into a text string
 	 */
 	public ATText base_implode() throws InterpreterException;
