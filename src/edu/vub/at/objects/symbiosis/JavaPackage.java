@@ -29,14 +29,20 @@ package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XClassNotFound;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATIsolate;
+import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.LinkedList;
 import java.util.Vector;
@@ -62,6 +68,24 @@ public final class JavaPackage extends NATIsolate {
 
 	private static final String _PKG_SEP_ = ".";
 	
+	private static final AGSymbol _CLS_NAME_ = AGSymbol.jAlloc("class");
+	private static final AGSymbol _PKG_NAME_ = AGSymbol.jAlloc("package");
+	
+	/** def class(name) { nil } */
+	private static final PrimitiveMethod _PRIM_CLS_ = new PrimitiveMethod(
+			_CLS_NAME_, NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("name")})) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			return ((JavaPackage)ctx.base_getLexicalScope()).base_class(arguments.base_at(NATNumber.ONE).base_asSymbol());
+		}
+	};
+	/** def package(name) { nil } */
+	private static final PrimitiveMethod _PRIM_PKG_ = new PrimitiveMethod(
+			_PKG_NAME_, NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("name")})) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			return ((JavaPackage)ctx.base_getLexicalScope()).base_package(arguments.base_at(NATNumber.ONE).base_asSymbol());
+		}
+	};
+	
 	private final String path_;
 	
 	/**
@@ -73,6 +97,12 @@ public final class JavaPackage extends NATIsolate {
 	 */
 	public JavaPackage(String path) {
 		path_ = path;
+		try {
+			super.meta_addMethod(_PRIM_CLS_);
+			super.meta_addMethod(_PRIM_PKG_);
+		} catch (InterpreterException e) {
+			throw new RuntimeException("Failed to initialize a JavaPackage: " + e.getMessage());
+		}
 	}
 	
 	/**
