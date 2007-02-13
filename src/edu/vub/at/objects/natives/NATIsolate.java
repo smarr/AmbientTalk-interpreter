@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
@@ -115,12 +116,15 @@ public class NATIsolate extends NATObject {
 		NATIsolate extension = new NATIsolate(
 				/* dynamic parent */
 				this,
-				/* lexical parent */
-				code.base_getContext().base_getLexicalScope(),
-				/* parent porinter type */
+				/* lexical parent -> isolates don't inherit outer scope! */
+				Evaluator.getGlobalLexicalScope(),
+				/* parent pointer type */
 				parentPointerType);
-			
-		code.base_applyInScope(NATTable.EMPTY, extension);
+		
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				code.base_getMethod().base_getParameters(),
+				code.base_getContext());
+		code.base_applyInScope(copiedBindings, extension);
 		return extension;
 	}
 	
