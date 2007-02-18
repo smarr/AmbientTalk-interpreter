@@ -32,6 +32,7 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATNil;
@@ -92,8 +93,9 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
+			         ATStripe[] stripes,
 			         NATMirage base) throws InterpreterException {
-		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags);
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
 		principal_ = base;
 
 	}
@@ -138,7 +140,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 			MethodDictionary methodDict,
 			ATObject dynamicParent,
 			ATObject lexicalParent,
-			byte flags) throws InterpreterException {
+			byte flags, ATStripe[] stripes) throws InterpreterException {
 		return new NATIntercessiveMirror(map,
 				state,
 				customFields,
@@ -146,6 +148,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 				dynamicParent,
 				lexicalParent,
 				flags,
+				stripes,
 				// correct value for base_ set by NATMirage#createClone
 				principal_); 
 	}

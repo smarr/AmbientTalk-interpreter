@@ -57,7 +57,7 @@ public interface ATTable extends ATExpression {
 	 * Map a closure over each element of the table, resulting in a new table.
 	 * result := [ tab ].map: { |v| ... }
 	 */
-	public ATObject base_map_(ATClosure clo) throws InterpreterException;
+	public ATTable base_map_(ATClosure clo) throws InterpreterException;
 
 	/**
 	 * Collect all elements of the table by combining them using the given closure.
@@ -96,5 +96,10 @@ public interface ATTable extends ATExpression {
 	 *     [a, b, c, d, e].select(2,4) => [b, c, d]
 	 */
 	public ATTable base_select(ATNumber start, ATNumber stop) throws InterpreterException;
+	
+	/**
+	 * [1,2,3] + [4,5] => [1,2,3,4,5]
+	 */
+	public ATTable base__oppls_(ATTable other) throws InterpreterException;
 	
 }

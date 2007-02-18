@@ -411,6 +411,24 @@ public interface ATObject extends ATConversions {
      * @return NATBoolean._TRUE_ if both objects are related.
      */
     public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException;
+
+    /* ---------------------------------
+     * -- Stripe Testing and Querying --
+     * --------------------------------- */
+    
+    /**
+     * Tests whether the receiver object is striped with a particular stripe.
+     * If the test fails, i.e. the object is not directly striped with (a substripe of)
+     * the given stripe, the test is applied recursively to the dynamic parent of the
+     * object, until nil is reached.
+     */
+    public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException;
+    
+    /**
+     * Returns the stripes of this object. Note that only the stripes that were
+     * attached directly to this object are returned, not all of the parent's stripes as well.
+     */
+    public ATTable meta_getStripes() throws InterpreterException;
     
     /* -------------------------------
       * - Base Level Object interface -

@@ -45,6 +45,7 @@ import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.grammar.ATBegin;
@@ -92,6 +93,7 @@ import java.util.Vector;
  * - a dynamic object parent, to delegate select and invoke operations
  *   ( this parent slot is represented by a true AmbientTalk field, rather than by an instance variable )
  * - a lexical object parent, to support lexical scoping
+ * - a table of stripes that were attached to this object (for classification purposes)
  * 
  * @author tvcutsem
  * @author smostinc
@@ -157,6 +159,11 @@ public class NATObject extends NATCallframe implements ATObject {
 	private static final byte _SHARE_DCT_FLAG_ = 1<<2;
 	
 	/**
+	 * An empty stripe array shared by those objects that do not have any stripes.
+	 */
+	private static final ATStripe[] _NO_STRIPES_ = new ATStripe[0];
+	
+	/**
 	 * The flags of an AmbientTalk object encode the following boolean information:
 	 *  Format: 0b00000dmp where
 	 *   p = parent flag: if set, dynamic parent is 'is-a' parent, otherwise 'shares-a' parent
@@ -183,6 +190,11 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	//protected final ATObject dynamicParent_;
 	
+	/**
+	 * The stripes under which this object has been classified
+	 */
+	private ATStripe[] stripes_;
+	
 	/* ------------------
 	 * -- Constructors --
 	 * ------------------ */
@@ -203,6 +215,14 @@ public class NATObject extends NATCallframe implements ATObject {
 	public NATObject(ATObject lexicalParent) {
 		this(NATNil._INSTANCE_, lexicalParent, _SHARES_A_);
 	}
+	
+	/**
+	 * Constructs a new ambienttalk object parametrised by a lexical scope.
+	 * The object's dynamic parent is nil and is striped with the given table of stripes
+	 */
+	public NATObject(ATObject lexicalParent, ATStripe[] stripes) {
+		this(NATNil._INSTANCE_, lexicalParent, _SHARES_A_, stripes);
+	}
 
 	/**
 	 * Constructs a new ambienttalk object with the given dynamic parent.
@@ -213,14 +233,27 @@ public class NATObject extends NATCallframe implements ATObject {
 	public NATObject(ATObject dynamicParent, boolean parentType) {
 		this(dynamicParent, Evaluator.getGlobalLexicalScope(), parentType);
 	}
-	
+
 	/**
-	 * Constructs a new ambienttalk object based on a set of parent pointers. 
+	 * Constructs a new ambienttalk object based on a set of parent pointers.
+	 * The object has no stripes.
 	 * @param dynamicParent - the parent object of the newly created object
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
 	 * @param parentType - how this object extends its dynamic parent (is-a or shares-a)
 	 */
 	public NATObject(ATObject dynamicParent, ATObject lexicalParent, boolean parentType) {
+	   this(dynamicParent, lexicalParent, parentType, _NO_STRIPES_);
+	}
+	
+	/**
+	 * Constructs a new ambienttalk object based on a set of parent pointers.
+	 * The object is striped with the given stripes.
+	 * @param dynamicParent - the parent object of the newly created object
+	 * @param lexicalParent - the lexical scope in which the object's definition was nested
+	 * @param parentType - how this object extends its dynamic parent (is-a or shares-a)
+	 * @param stripes - the stripes attached to this object
+	 */
+	public NATObject(ATObject dynamicParent, ATObject lexicalParent, boolean parentType, ATStripe[] stripes) {
 		super(lexicalParent);
 		methodDictionary_ = new MethodDictionary();
 		
@@ -240,6 +273,8 @@ public class NATObject extends NATCallframe implements ATObject {
 			// requested an 'is-a' parent
 			setFlag(_ISAPARENT_FLAG_); // set is-a parent flag to 1
 		}
+		
+		stripes_ = stripes;
 	}
 	
 	/**
@@ -257,12 +292,15 @@ public class NATObject extends NATCallframe implements ATObject {
 			         MethodDictionary methodDict,
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
-			         byte flags) throws InterpreterException {
+			         byte flags,
+			         ATStripe[] stripes) throws InterpreterException {
 		super(map, state, lexicalParent, null);
 		methodDictionary_ = methodDict;
 		
 		flags_ = flags; //a cloned object inherits all flags from original
-			
+		
+		stripes_ = stripes;
+		
 		// ==, new and init should already be present in the method dictionary
 		
 		// set the 'super' field to point to the new dynamic parent
@@ -472,7 +510,7 @@ public class NATObject extends NATCallframe implements ATObject {
 				          methodDictionary_,
 				          dynamicParent,
 				          lexicalParent_,
-				          flags_);
+				          flags_, stripes_);
 
 	}
 	
@@ -565,14 +603,16 @@ public class NATObject extends NATCallframe implements ATObject {
 	         					  MethodDictionary methodDict,
 	         					  ATObject dynamicParent,
 	         					  ATObject lexicalParent,
-	         					  byte flags) throws InterpreterException {
+	         					  byte flags,
+	         					  ATStripe[] stripes) throws InterpreterException {
 		return new NATObject(map,
 	            state,
 	            originalCustomFields,
 	            methodDict,
 	            dynamicParent,
 	            lexicalParent,
-	            flags);
+	            flags,
+	            stripes);
 	}
 	
 	// private methods
@@ -631,6 +671,32 @@ public class NATObject extends NATCallframe implements ATObject {
 					}
 				}).base_asBoolean();
 	}
+	
+    /* ---------------------------------
+     * -- Stripe Testing and Querying --
+     * --------------------------------- */
+	
+    /**
+     * Check whether one of the stripes of this object is a substripe of the given stripe.
+     * If not, then delegate the query to the dynamic parent.
+     */
+    public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException {
+    	for (int i = 0; i < stripes_.length; i++) {
+			if (stripes_[i].base_isSubstripeOf(stripe).asNativeBoolean().javaValue) {
+				// if one stripe matches, return true
+				return NATBoolean._TRUE_;
+			}
+		}
+    	// no stripes match, ask the parent
+    	return meta_getDynamicParent().meta_isStripedWith(stripe);
+    }
+    
+    /**
+     * Return the stripes that were directly attached to this object.
+     */
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.atValue(stripes_);
+    }
 
 	/* ---------------------------------------
 	 * -- Conversion and Testing Protocol   --
@@ -660,7 +726,9 @@ public class NATObject extends NATCallframe implements ATObject {
 	public ATUnquoteSplice base_asUnquoteSplice() throws XTypeMismatch { return (ATUnquoteSplice) Coercer.coerce(this, ATUnquoteSplice.class); }
     public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch { return (ATAsyncMessage) Coercer.coerce(this, ATAsyncMessage.class);}
     public ATActorMirror base_asActorMirror() throws XTypeMismatch { return (ATActorMirror) Coercer.coerce(this, ATActorMirror.class); }
+    public ATStripe base_asStripe() throws XTypeMismatch { return (ATStripe) Coercer.coerce(this, ATStripe.class); }
 	
+    
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
 	public boolean isAmbientTalkObject() { return true; }
@@ -678,5 +746,6 @@ public class NATObject extends NATCallframe implements ATObject {
 	public boolean base_isSymbol() { return true; }
 	public boolean base_isTable() { return true; }
 	public boolean base_isUnquoteSplice() { return true; }
-    
+	public boolean base_isStripe() { return true; }
+	
 }

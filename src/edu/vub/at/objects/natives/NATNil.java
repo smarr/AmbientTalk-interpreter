@@ -50,6 +50,7 @@ import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATBegin;
@@ -364,15 +365,15 @@ public class NATNil implements ATNil, Serializable {
     }
     
     public boolean base_isMessageCreation() {
-    	    return false;
+    	return false;
     }
 
     public boolean isAmbientTalkObject() { 
-    	    return false;
+    	return false;
     }
     
     public boolean isJavaObjectUnderSymbiosis() {
-    	    return false;
+    	return false;
     }
 
     public boolean isNativeBoolean() {
@@ -388,6 +389,10 @@ public class NATNil implements ATNil, Serializable {
     }
     
     public boolean base_isMirror() {
+        return false;
+    }
+    
+    public boolean base_isStripe() {
         return false;
     }
     
@@ -431,6 +436,10 @@ public class NATNil implements ATNil, Serializable {
     	    throw new XTypeMismatch(ATHandler.class, this);
     }
 
+    public ATStripe base_asStripe() throws XTypeMismatch {
+	    throw new XTypeMismatch(ATStripe.class, this);
+    }
+    
     // Conversions for concurrency and distribution related object
     public boolean base_isFarReference() {
     	return false;
@@ -551,6 +560,31 @@ public class NATNil implements ATNil, Serializable {
 	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
 		return this.meta_isCloneOf(object);
 	}
+	
+    /* ---------------------------------
+     * -- Stripe Testing and Querying --
+     * --------------------------------- */
+	
+    /**
+     * Native objects implement the stripe test non-recursively: only the stripes
+     * returned by meta_getStripes are tested against.
+     */
+    public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException {
+    	ATObject[] stripes = this.meta_getStripes().asNativeTable().elements_;
+    	for (int i = 0; i < stripes.length; i++) {
+			if (stripes[i].base_asStripe().base_isSubstripeOf(stripe).asNativeBoolean().javaValue) {
+				return NATBoolean._TRUE_;
+			}
+		}
+    	return NATBoolean._FALSE_;
+    }
+    
+    /**
+     * By default, a native object (and also nil) has no stripes.
+     */
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.EMPTY;
+    }
 	
     /* -----------------------------
      * -- Object Passing protocol --

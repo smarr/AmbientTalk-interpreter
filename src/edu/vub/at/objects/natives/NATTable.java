@@ -153,7 +153,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		return NATNil._INSTANCE_;
 	}
 
-	public ATObject base_map_(ATClosure clo) throws InterpreterException {
+	public ATTable base_map_(ATClosure clo) throws InterpreterException {
 		if (this == EMPTY) return EMPTY;
 		
 		ATObject[] result = new ATObject[elements_.length];
@@ -222,6 +222,10 @@ public final class NATTable extends AGExpression implements ATTable {
 			}
 		});
 		return NATTable.atValue((ATObject[]) selection.toArray(new ATObject[selection.size()]));
+	}
+	
+	public ATTable base__oppls_(ATTable other) throws InterpreterException {
+		return NATTable.atValue(collate(elements_, other.asNativeTable().elements_));
 	}
 	
 	protected int extractIndex(ATNumber atIndex) throws InterpreterException {

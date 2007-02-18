@@ -41,6 +41,7 @@ import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -492,6 +493,41 @@ public final class OBJLexicalRoot extends NATByCopy {
 		code.base_applyInScope(NATTable.EMPTY, newMirage);
 		
 		return newMirage;
+	}
+	
+	/* -------------------
+	 * -- Stripe Support -
+	 * ------------------- */
+	
+	/**
+	 * is: object stripedWith: stripe
+	 * => returns true if the given object is striped with the given stripe
+	 */
+	public ATBoolean base_is_stripedWith_(ATObject object, ATStripe stripe) throws InterpreterException {
+		return object.meta_isStripedWith(stripe);
+	}
+	
+	/**
+	 * stripesOf: object
+	 * => returns all of the stripes of an object
+	 */
+	public ATTable base_stripesOf_(ATObject object) throws InterpreterException {
+		return object.meta_getStripes();
+	}
+	
+	/**
+	 * object: { code } stripedWith: [ s1, s2, ... ]
+	 * => creates a new object tagged with the given stripes
+	 */
+	public ATObject base_object_stripedWith_(ATClosure code, ATTable stripes) throws InterpreterException {
+		ATObject[] unwrapped = stripes.asNativeTable().elements_;
+		ATStripe[] unwrappedStripes = new ATStripe[unwrapped.length];
+		for (int i = 0; i < unwrappedStripes.length; i++) {
+			unwrappedStripes[i] = unwrapped[i].base_asStripe();
+		}
+		NATObject newObject = new NATObject(code.base_getContext().base_getLexicalScope(), unwrappedStripes);
+		code.base_applyInScope(NATTable.EMPTY, newObject);
+		return newObject;
 	}
 	
 	/* -------------------------------

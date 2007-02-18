@@ -31,6 +31,7 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 
 import java.util.LinkedList;
 import java.util.Vector;
@@ -66,8 +67,9 @@ public class NATIsolate extends NATObject {
 	         MethodDictionary methodDict,
 	         ATObject dynamicParent,
 	         ATObject lexicalParent,
-	         byte flags) throws InterpreterException {
-		super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags);
+	         byte flags,
+	         ATStripe[] stripes) throws InterpreterException {
+		super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
 	}
 	
 	// NATIsolate has to implement the NATByCopy implementation by hand
@@ -95,14 +97,15 @@ public class NATIsolate extends NATObject {
 			  MethodDictionary methodDict,
 			  ATObject dynamicParent,
 			  ATObject lexicalParent,
-			  byte flags) throws InterpreterException {
+			  byte flags, ATStripe[] stripes) throws InterpreterException {
         return new NATIsolate(map,
   		  				    state,
   		  				    customFields,
   		  				    methodDict,
   		  				    dynamicParent,
   		  				    lexicalParent,
-  		  				    flags);
+  		  				    flags,
+  		  				    stripes);
 	}
 	
 	public NATText meta_print() throws InterpreterException {

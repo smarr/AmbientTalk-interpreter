@@ -34,6 +34,7 @@ import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.parser.NATParser;
@@ -102,9 +103,10 @@ public final class NATNamespace extends NATObject {
 			  ATObject dynamicParent,
 			  ATObject lexicalParent,
 			  byte flags,
+			  ATStripe[] stripes,
 			  File path,
 			  String name) throws InterpreterException {
-	  super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags);
+	  super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
 	  path_ = path;
 	  name_ = name;
 	}
@@ -191,7 +193,7 @@ public final class NATNamespace extends NATObject {
 			  MethodDictionary methodDict,
 			  ATObject dynamicParent,
 			  ATObject lexicalParent,
-			  byte flags) throws InterpreterException {
+			  byte flags, ATStripe[] stripes) throws InterpreterException {
       return new NATNamespace(map,
     		  				    state,
     		  				    customFields,
@@ -199,6 +201,7 @@ public final class NATNamespace extends NATObject {
     		  				    dynamicParent,
     		  				    lexicalParent,
     		  				    flags,
+    		  				    stripes,
     		  				    path_,
     		  				    name_);
 	}

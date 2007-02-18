@@ -41,6 +41,7 @@ import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNumber;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATBegin;
@@ -84,6 +85,7 @@ public interface ATConversions {
 	public boolean base_isMethod() throws InterpreterException;
 	public boolean base_isMessageCreation() throws InterpreterException;
 	public boolean base_isMirror() throws InterpreterException;
+	public boolean base_isStripe() throws InterpreterException;
 	public boolean base_isFarReference() throws InterpreterException;
 	
 	public ATClosure   base_asClosure() throws XTypeMismatch;
@@ -96,6 +98,7 @@ public interface ATConversions {
 	public ATMethod    base_asMethod() throws XTypeMismatch;
 	public ATMirror    base_asMirror() throws XTypeMismatch;
 	public ATHandler   base_asHandler() throws XTypeMismatch;
+	public ATStripe    base_asStripe() throws XTypeMismatch;
 	public ATFarReference base_asFarReference() throws XTypeMismatch;
 	public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch;
 	public ATActorMirror base_asActorMirror() throws XTypeMismatch;

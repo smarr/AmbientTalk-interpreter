@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XClassNotFound;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
@@ -115,8 +116,9 @@ public final class JavaPackage extends NATIsolate {
 			  		   ATObject dynamicParent,
 			  		   ATObject lexicalParent,
 			  		   byte flags,
+			  		   ATStripe[] stripes,
 			  		   String path) throws InterpreterException {
-		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags);
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
 		path_ = path;
 	}
 	
@@ -147,7 +149,7 @@ public final class JavaPackage extends NATIsolate {
 			  					MethodDictionary methodDict,
 			  					ATObject dynamicParent,
 			  					ATObject lexicalParent,
-			  					byte flags) throws InterpreterException {
+			  					byte flags, ATStripe[] stripes) throws InterpreterException {
 		return new JavaPackage(map,
     		  				      state,
     		  				      customFields,
@@ -155,6 +157,7 @@ public final class JavaPackage extends NATIsolate {
     		  				      dynamicParent,
     		  				      lexicalParent,
     		  				      flags,
+    		  				      stripes,
     		  				      path_);
 	}
 	

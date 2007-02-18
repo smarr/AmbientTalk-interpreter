@@ -111,43 +111,6 @@ However, an AT selector will not undergo such conversions when remaining within 
 Can be made even cleaner if the _ -> : conversion is only performed for downSelector,
 and for symbiosis introduce another method named 'javaToATSelector'
 
-[IMPLEMENTED] Invocation and Delegation:
-========================================
-
-Currently, meta_invoke has an ugly interface: it has a receiver, a selector and arguments.
-The receiver argument is used to implement delegation. I suggest the following refactoring:
-
-split meta_invoke(rcv, sel, arg) into two operations:
-- meta_invoke(sel, arg) : default implementation is meta_delegate(this, sel, arg)
-- meta_delegate(rcv, sel, arg) : does what meta_invoke used to do
-
-With this new 'delegate' meta-level operation in place, we could introduce a new kind of
-message send in the language, a 'delegating send', e,g.
-
-obj^msg(args) => delegate msg to obj, with 'self' remaining bound to the current 'self'
-= (reflect: obj).delegate(self, `msg, args)
-
-With such a new kind of send admitted into the language, we can do away with the very
-complex semantics for 'super' as a proxy for the real super which remembers the self.
-We can just admit 'super' as a plain reference to the parent (just as 'self' is a plain
-reference to self). A super-send is then:
-
-super^msg(args)
-
-Note that super remains first-class, but without any complex semantics.
-Moreover, a useful new operation can be added, which is useful for things other than
-super-sends alone (think template methods: normally you have to express those as
-superclass-subclass, now you can implement them as implementingclass-invokingclass).
-
-The only 'issue' here is that 'self' is not necessarily restricted to child objects
-any more, as anyone can delegate to an object. This does not introduce any new
-'encapsulation breaches', however, as any object could freely extend another object
-anyhow, so 'self' was deemed 'unsafe' already. Use lexical scoping to ensure safety.
-
-In implementation: just provide ^ syntax 'AGDelegate'
-^m() -> AGDelegationCreation
-o^m() -> AGDelegate eval: obj.meta_invoke(ctx.self, sel, args)
-
 Keywords and Optional/Varargs:
 ==============================
 
@@ -268,26 +231,6 @@ NATText meta_print() throws InterpreterException;
 alle isXXX() methods => returnen boolean
 ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException;
 en varianten: nemen expliciet een NATIntercessiveMirror ipv een ATMirror
-
-Distributed Computation:
-========================
-
-Using JGroups to implement the low-level discovery and communication protocol.
-
-Native Base-level Methods:
-==========================
-
-The methods base_new, base_init and base_== have strange semantics because they are
-implemented natively. They do not entirely behave like real methods because of native lookup.
-
-For example, performing a super-send inside a custom init will trigger the 'native' implementation in the object's class
-(if the object delegates to nil). This is OK because currently all NAT classes have the same implementation of base_init.
-Once they start to differ, this may begin to give problems.
-
-We should implement base_ methods for NATObjects differently, such that they become real methods.
-Also, do mirrors correctly reflect upon new, init and ==?
-
-B.t.w.: maybe <+ should not be a base_ method and should be a built-in operator? (like dot)
 
 Static Variables:
 =================

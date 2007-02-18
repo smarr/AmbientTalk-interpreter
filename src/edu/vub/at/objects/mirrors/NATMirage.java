@@ -38,6 +38,7 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
@@ -90,8 +91,9 @@ public class NATMirage extends NATObject {
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
+			         ATStripe[] stripes,
 			         NATIntercessiveMirror mirror) throws InterpreterException {
-		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags);
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
 		mirror_ = mirror;
 	}
 	
@@ -124,7 +126,7 @@ public class NATMirage extends NATObject {
 			MethodDictionary methodDict,
 			ATObject dynamicParent,
 			ATObject lexicalParent,
-			byte flags) throws InterpreterException {
+			byte flags, ATStripe[] stripes) throws InterpreterException {
 		NATMirage clone = new NATMirage(map,
 				state,
 				customFields,
@@ -132,6 +134,7 @@ public class NATMirage extends NATObject {
 				dynamicParent,
 				lexicalParent,
 				flags,
+				stripes,
 				mirror_.magic_clone());
 		
 		clone.mirror_.setBase(clone);
