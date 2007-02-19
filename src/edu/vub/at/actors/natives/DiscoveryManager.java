@@ -38,6 +38,8 @@ import edu.vub.util.MultiMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.jgroups.Address;
+
 /**
  * The DiscoveryManager is responsible for coupling subscriptions to
  * corresponding publications.
@@ -117,6 +119,16 @@ public final class DiscoveryManager {
 			// a far reference's receive operation should not throw an exception
 			e.printStackTrace();
 		}
+	}
+	
+	// TODO networking
+	
+	public void memberJoined(Address virtualMachine) {
+		
+	}
+	
+	public void memberLeft(Address virtualMachine) {
+		
 	}
 	
 }

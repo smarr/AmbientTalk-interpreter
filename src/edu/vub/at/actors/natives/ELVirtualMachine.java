@@ -27,14 +27,25 @@
  */
 package edu.vub.at.actors.natives;
 
+import edu.vub.at.actors.eventloops.BlockingFuture;
+import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.GUID;
+import edu.vub.at.actors.net.MembershipNotifier;
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 import java.io.File;
 import java.util.Hashtable;
+
+import org.jgroups.Channel;
+import org.jgroups.JChannel;
+import org.jgroups.Message;
+import org.jgroups.blocks.MessageDispatcher;
+import org.jgroups.blocks.RequestHandler;
 
 /**
  * A ELVirtualMachine represents a virtual machine which hosts several actors. The 
@@ -45,7 +56,7 @@ import java.util.Hashtable;
  *
  * @author smostinc
  */
-public final class ELVirtualMachine extends EventLoop {
+public final class ELVirtualMachine extends EventLoop implements RequestHandler {
 	
 	public static final ELVirtualMachine currentVM() {
 		return ELActor.currentActor().getHost();
@@ -66,6 +77,9 @@ public final class ELVirtualMachine extends EventLoop {
 	/** manages subscriptions and publications */
 	private final DiscoveryManager discoveryManager_;
 	
+	/** */
+	protected MessageDispatcher messageDispatcher_;
+	
 	public ELVirtualMachine(File[] objectPathRoots, ATAbstractGrammar initCode) {
 		super("virtual machine");
 		objectPathRoots_ = objectPathRoots;
@@ -73,6 +87,8 @@ public final class ELVirtualMachine extends EventLoop {
 		vmId_ = new GUID();
 		localActors_ = new Hashtable();
 		discoveryManager_ = new DiscoveryManager();
+		
+		this.event_init();
 	}
 	
 	public GUID getGUID() { return vmId_; }
@@ -190,5 +206,63 @@ public final class ELVirtualMachine extends EventLoop {
 			}
 		});
 	}
-
+	
+	/* ============================
+	 * == JGroups -> VM Protocol ==
+	 * ============================ */
+	
+	public Object handle(Message message) {
+		return sync_event_handle(message);
+	}
+	
+	public Object sync_event_handle(final Message message) {
+		try {
+			return this.receiveAndWait(
+					"Handling a remote message",
+					new Callable() {
+						public Object call(Object argument) throws Exception {
+							// receiving the message [DEST, PACKET]
+							Packet serializedForm = (Packet)message.getObject();
+							
+							// localActors_[DEST].event_accept(PACKET)
+							ELActor processor = (ELActor)localActors_.get(new Integer(serializedForm.getDestination()));
+							
+							if(processor != null) {
+								processor.event_accept(serializedForm);
+								return "Scheduled with destination actor";
+							} else {
+								throw new XIllegalOperation("Destination actor not found");
+							}
+						};
+					});
+		} catch (Exception exception) {
+			return exception;
+		}
+	}
+	
+	private final String jGroupsProperties_ = "";
+	
+	public void event_init() {
+		receive(new Event("init("+this+")") {
+			public void process(Object byMyself) {
+				try {
+					ELVirtualMachine processor = (ELVirtualMachine)byMyself;
+					
+					Channel channel = new JChannel(jGroupsProperties_);
+					
+					processor.messageDispatcher_ = new MessageDispatcher(
+							channel, 
+							null, 
+							new MembershipNotifier(processor.discoveryManager_),  // 
+							processor,  // 
+							false, // deadlock detection is disabled
+							true); // concurrent processing is enabled
+					channel.connect("MessageDispatcherTestGroup");
+					
+				} catch (Exception e) {
+					// TODO ???
+				}
+			}
+		});
+	}
 }

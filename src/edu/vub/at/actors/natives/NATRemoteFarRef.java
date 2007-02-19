@@ -49,9 +49,9 @@ public class NATRemoteFarRef extends NATFarReference {
 	 */
 	private transient final ELFarReference sendLoop_;
 
-	public NATRemoteFarRef(ATObjectID objectId) {
+	public NATRemoteFarRef(ATObjectID objectId, ELVirtualMachine host) {
 		super(objectId);
-		sendLoop_ = new ELFarReference(this);
+		sendLoop_ = new ELFarReference(this, host);
 	}
 	
 	protected ATObject transmit(ATAsyncMessage message) throws InterpreterException {

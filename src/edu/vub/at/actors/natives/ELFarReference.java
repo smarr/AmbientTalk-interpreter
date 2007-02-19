@@ -27,11 +27,20 @@
  */
 package edu.vub.at.actors.natives;
 
+import org.jgroups.Address;
+import org.jgroups.Message;
+import org.jgroups.SuspectedException;
+import org.jgroups.TimeoutException;
+import org.jgroups.blocks.GroupRequest;
+import org.jgroups.blocks.MessageDispatcher;
+
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
+import edu.vub.at.actors.net.ConnectionListener;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATTable;
 
@@ -46,22 +55,52 @@ import edu.vub.at.objects.natives.NATTable;
  * 
  * @author tvcutsem
  */
-public final class ELFarReference extends EventLoop {
+public final class ELFarReference extends EventLoop implements ConnectionListener {
 
-	private final NATRemoteFarRef owner_;
+	private Address destinationAddress_;
+	private int destinationActorId_;
 	
-	public ELFarReference(NATRemoteFarRef owner) {
+	private boolean connected_;
+	private final NATRemoteFarRef owner_;
+	private final ELVirtualMachine host_;
+	
+	public ELFarReference(NATRemoteFarRef owner, ELVirtualMachine host) {
 		super("far reference " + owner);
 		owner_ = owner;
+		host_ = host;
 	}
 
-	public void handle(Event event) {
-		event.process(owner_);
+	public synchronized void handle(Event event) {
+		try {
+			if(connected_)
+				event.process(owner_);
+			else
+				this.wait();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void event_transmit(final ATAsyncMessage msg) {
 		receive(new Event("transmit("+msg+")") {
 			public void process(Object owner) {
+				try {
+					host_.messageDispatcher_.sendMessage(
+							new Message(destinationAddress_, null, new Packet(destinationActorId_, msg.toString(), msg)),
+							GroupRequest.GET_FIRST,
+							10000
+					);
+				} catch (XIOProblem e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (TimeoutException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SuspectedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				// TODO: try to transmit the msg
 			}
 		});
@@ -79,6 +118,14 @@ public final class ELFarReference extends EventLoop {
 		} catch (Exception e) {
 			throw (InterpreterException) e;
 		}
+	}
+
+	public void connected() {
+		connected_ = true;
+	}
+
+	public void disconnected() {
+		connected_ = false;
 	}
 
 }

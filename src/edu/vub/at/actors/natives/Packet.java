@@ -27,16 +27,16 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.exceptions.XClassNotFound;
-import edu.vub.at.exceptions.XIOProblem;
-import edu.vub.at.objects.ATObject;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
+import edu.vub.at.exceptions.XClassNotFound;
+import edu.vub.at.exceptions.XIOProblem;
+import edu.vub.at.objects.ATObject;
 
 /**
  * Packet instances are the serialized representation of AmbientTalk messages.
@@ -46,10 +46,18 @@ import java.io.Serializable;
  */
 public final class Packet implements Serializable {
 
-	private final byte[] payload_;
-	private final String description_;
+	private static final int _UNSPECIFIED_ = 0;
+	
+	private final byte[]	payload_;
+	private final String	description_;
+	private final int	destination_;
 	
 	public Packet(String description, ATObject object) throws XIOProblem {
+		this(_UNSPECIFIED_, description, object);
+	}
+
+	public Packet(int destination, String description, ATObject object) throws XIOProblem {
+		destination_ = destination;
 		description_ = description;
 		try {
 			payload_ = serialize(object);
@@ -68,6 +76,8 @@ public final class Packet implements Serializable {
 		}
 	}
 	
+	public int getDestination() { return destination_; }
+
 	public String getDescription() { return description_; }
 	
 	private byte[] serialize(Object o) throws IOException {
