@@ -27,25 +27,24 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.eventloops.BlockingFuture;
-import edu.vub.at.actors.eventloops.Callable;
-import edu.vub.at.actors.eventloops.Event;
-import edu.vub.at.actors.eventloops.EventLoop;
-import edu.vub.at.actors.id.GUID;
-import edu.vub.at.actors.net.MembershipNotifier;
-import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XIllegalOperation;
-import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.grammar.ATSymbol;
-
 import java.io.File;
 import java.util.Hashtable;
 
+import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
+
+import edu.vub.at.actors.eventloops.Callable;
+import edu.vub.at.actors.eventloops.Event;
+import edu.vub.at.actors.eventloops.EventLoop;
+import edu.vub.at.actors.id.GUID;
+import edu.vub.at.actors.net.MembershipNotifier;
+import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  * A ELVirtualMachine represents a virtual machine which hosts several actors. The 
@@ -70,6 +69,9 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 	
 	/** the GUID of this VM */
 	private final GUID vmId_;
+
+	/** the JGroups Address of the VM */
+	private Address vmAddress_;
 	
 	/** a table mapping actor IDs to local native actors (int -> ELActor) */
 	private final Hashtable localActors_;
@@ -115,6 +117,10 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 		} else {
 			throw new RuntimeException("Asked for unknown actor id: " + id);
 		}
+	}
+	
+	public Address getAddress() {
+		return vmAddress_;
 	}
 	
 	/* ==========================

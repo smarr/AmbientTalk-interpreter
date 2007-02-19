@@ -58,7 +58,6 @@ import edu.vub.at.objects.natives.NATTable;
 public final class ELFarReference extends EventLoop implements ConnectionListener {
 
 	private Address destinationAddress_;
-	private int destinationActorId_;
 	
 	private boolean connected_;
 	private final NATRemoteFarRef owner_;
@@ -87,7 +86,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 			public void process(Object owner) {
 				try {
 					host_.messageDispatcher_.sendMessage(
-							new Message(destinationAddress_, null, new Packet(destinationActorId_, msg.toString(), msg)),
+							new Message(destinationAddress_, null, new Packet(owner_.getObjectId().getActorId(), msg.toString(), msg)),
 							GroupRequest.GET_FIRST,
 							10000
 					);

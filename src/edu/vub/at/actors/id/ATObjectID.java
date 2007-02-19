@@ -27,13 +27,14 @@
  */
 package edu.vub.at.actors.id;
 
-import edu.vub.at.actors.natives.ELActor;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
+import org.jgroups.Address;
+
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
-
-import java.io.ObjectStreamException;
-import java.io.Serializable;
 
 /**
  * An ATObjectID instance represents a globally unique identifier denoting
@@ -55,6 +56,9 @@ public class ATObjectID implements Serializable {
 	
 	// Inside an NATActorMirror, objects are denoted by their hashcode
 	private final int objectId_;
+	
+	// For communication, Virtual Machines are denoted by an address, this field is filled in while serializing
+	private Address virtualMachineAddress_ = null;
 	
 	public ATObjectID(GUID vmId, int actorId, int objectId) {
 		virtualMachineId_ = vmId;
@@ -110,6 +114,12 @@ public class ATObjectID implements Serializable {
 	
 	public String toString() {
 		return virtualMachineId_.toString() + ":" + actorId_ + ":" + objectId_;
+	}
+	
+	public Object writeReplace() throws ObjectStreamException {
+		if(! this.isRemote())
+			virtualMachineAddress_ = ELVirtualMachine.currentVM().getAddress();
+		return this;
 	}
 	
 }
