@@ -31,7 +31,7 @@ import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.util.MultiMap;
 
@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.jgroups.Address;
+import org.jgroups.util.Util;
 
 /**
  * The DiscoveryManager is responsible for coupling subscriptions to
@@ -58,30 +59,38 @@ public final class DiscoveryManager {
 	 */
 	private final MultiMap subscriptions_;
 	
-	public DiscoveryManager() {
+	/**
+	 * A reference to the VM to which this discovery manager belongs,
+	 * necessary to be able to send messages to query remote VMs for
+	 * the services they offer.
+	 */
+	private final ELVirtualMachine hostVM_;
+	
+	public DiscoveryManager(ELVirtualMachine hostVM) {
 		publications_ = new MultiMap();
 		subscriptions_ = new MultiMap();
+		hostVM_ = hostVM;
 	}
 	
-	public void addPublication(ATSymbol topic, NATFarReference object) {
+	public void addPublication(ATStripe topic, NATFarReference object) {
 		publications_.put(topic, object);
 		notifySubscribers(topic, object);
 	}
 	
-	public void deletePublication(ATSymbol topic, NATFarReference object) {
+	public void deletePublication(ATStripe topic, NATFarReference object) {
 		publications_.removeValue(topic, object);
 	}
 	
-	public void addSubscription(ATSymbol topic, NATFarReference subscriber) {
+	public synchronized void addSubscription(ATStripe topic, NATFarReference subscriber) {
 		subscriptions_.put(topic, subscriber);
 		checkPublishers(topic, subscriber);
 	}
 	
-	public void deleteSubscription(ATSymbol topic, NATFarReference subscriber) {
+	public synchronized void deleteSubscription(ATStripe topic, NATFarReference subscriber) {
 		subscriptions_.removeValue(topic, subscriber);
 	}
 	
-	private void notifySubscribers(ATSymbol topic, NATFarReference published) {
+	private void notifySubscribers(ATStripe topic, NATFarReference published) {
 		Set subscribersForTopic = (Set) subscriptions_.get(topic);
 		if (subscribersForTopic != null) {
 			for (Iterator iter = subscribersForTopic.iterator(); iter.hasNext();) {
@@ -90,7 +99,7 @@ public final class DiscoveryManager {
 		}
 	}
 	
-	private void checkPublishers(ATSymbol topic, NATFarReference subscriber) {
+	private void checkPublishers(ATStripe topic, NATFarReference subscriber) {
 		Set publishersOfTopic = (Set) publications_.get(topic);
 		if (publishersOfTopic != null) {
 			for (Iterator iter = publishersOfTopic.iterator(); iter.hasNext();) {
@@ -121,14 +130,27 @@ public final class DiscoveryManager {
 		}
 	}
 	
-	// TODO networking
-	
-	public void memberJoined(Address virtualMachine) {
-		
+	/**
+	 * Notifies the discovery manager that a VM has joined the network.
+	 * This VM may be a first-time participant or it may be a previously
+	 * disconnected VM that has become reconnected.
+	 * 
+	 * The discoverymanager asks the newly joined VM whether it has any
+	 * services that match the type of an outstanding subscription on this VM.
+	 */
+	public synchronized void memberJoined(Address virtualMachine) {
+		System.err.println(hostVM_ + ": VM connected: " + virtualMachine);
+		try {
+			Set subscriptionTopics = subscriptions_.keySet();
+			hostVM_.event_sendDiscoveryQuery(virtualMachine, Util.collectionToByteBuffer(subscriptionTopics));
+		} catch (Exception e) {
+			System.err.println("Error serializing topics for discovery query: ");
+			e.printStackTrace();
+		}
 	}
 	
 	public void memberLeft(Address virtualMachine) {
-		
+		System.err.println(hostVM_ + ": VM disconnected: " + virtualMachine);
 	}
 	
 }

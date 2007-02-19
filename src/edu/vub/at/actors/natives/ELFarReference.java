@@ -27,13 +27,6 @@
  */
 package edu.vub.at.actors.natives;
 
-import org.jgroups.Address;
-import org.jgroups.Message;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
-import org.jgroups.blocks.GroupRequest;
-import org.jgroups.blocks.MessageDispatcher;
-
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
@@ -44,6 +37,12 @@ import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATTable;
 
+import org.jgroups.Address;
+import org.jgroups.Message;
+import org.jgroups.SuspectedException;
+import org.jgroups.TimeoutException;
+import org.jgroups.blocks.GroupRequest;
+
 /**
  * An instance of the class ELFarReference represents the event loop processor for
  * a remote far reference. That is, the event queue of this event loop serves as 
@@ -51,12 +50,12 @@ import edu.vub.at.objects.natives.NATTable;
  * 
  * This event loop handles event from its event queue by trying to transmit them to a remote virtual machine.
  * 
- * TODO: integrate this class with the JGroups framework.
- * 
  * @author tvcutsem
  */
 public final class ELFarReference extends EventLoop implements ConnectionListener {
 
+	private static final int _TRANSMISSION_TIMEOUT_ = 5000; // in milliseconds
+	
 	private Address destinationAddress_;
 	
 	private boolean connected_;
@@ -67,17 +66,25 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		super("far reference " + owner);
 		owner_ = owner;
 		host_ = host;
+		connected_ = true;
+		// register the remote reference with the MembershipNotifier to keep track
+		// of the state of the connection with the remote VM
+		Address vmId = owner.getObjectId().getVirtualMachineAddress();
+		host_.membershipNotifier_.addConnectionListener(vmId, this);
 	}
 
-	public synchronized void handle(Event event) {
-		try {
-			if(connected_)
-				event.process(owner_);
-			else
-				this.wait();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	/**
+	 * Process message transmission events only when the remote reference
+	 * is connected. Otherwise, wait until notified by the <tt>connected</tt> callback.
+	 */
+	public void handle(Event event) {
+		synchronized (this) {
+			while (!connected_) {
+				try {
+					this.wait();
+				} catch (InterruptedException e) { }
+			}
+			event.process(owner_);
 		}
 	}
 	
@@ -85,28 +92,38 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		receive(new Event("transmit("+msg+")") {
 			public void process(Object owner) {
 				try {
-					host_.messageDispatcher_.sendMessage(
+					// JGROUPS:MessageDispatcher.sendMessage(destination, message, mode, timeout)
+					Object returnVal = host_.messageDispatcher_.sendMessage(
+							// JGROUPS:Message.new(destination, source, Serializable)
 							new Message(destinationAddress_, null, new Packet(owner_.getObjectId().getActorId(), msg.toString(), msg)),
 							GroupRequest.GET_FIRST,
-							10000
-					);
+							_TRANSMISSION_TIMEOUT_);
+					
+					// non-null return value indicates an exception
+					if (returnVal != null) {
+						System.err.println(this + ": error upon transmission:");
+						((Exception) returnVal).printStackTrace();
+					}
 				} catch (XIOProblem e) {
 					// TODO Auto-generated catch block
+					System.err.println(this + ": error while serializing message:");
 					e.printStackTrace();
 				} catch (TimeoutException e) {
 					// TODO Auto-generated catch block
+					System.err.println(this + ": timeout while trying to transmit message:");
 					e.printStackTrace();
 				} catch (SuspectedException e) {
 					// TODO Auto-generated catch block
+					System.err.println(this + ": remote object suspected of having gone offline:");
 					e.printStackTrace();
 				}
-				// TODO: try to transmit the msg
 			}
 		});
 	}
 	
 	public ATTable sync_event_retractUnsentMessages() throws InterpreterException {
 		try {
+			// TODO: shouldn't this event be sheduled in a prioritized fashion?
 			return (ATTable) receiveAndWait("retractUnsentMessages()", new Callable() {
 				public Object call(Object owner) throws Exception {
 					//final NATRemoteFarRef me = (NATRemoteFarRef) owner;
@@ -118,12 +135,20 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 			throw (InterpreterException) e;
 		}
 	}
+	
+	/* ========================================================
+	 * == Implementation of the ConnectionListener interface ==
+	 * ========================================================
+	 */
 
 	public void connected() {
+		System.err.println(this + ": connected");
 		connected_ = true;
+		this.notifyAll();
 	}
 
 	public void disconnected() {
+		System.err.println(this + ": disconnected");
 		connected_ = false;
 	}
 

@@ -36,6 +36,7 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
@@ -132,12 +133,12 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		private static final AGSymbol _TOPIC_ = AGSymbol.jAlloc("topic");
 		private static final AGSymbol _SERVICE_ = AGSymbol.jAlloc("service");
 		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
-		public NATPublication(final ELVirtualMachine host, ATSymbol topic, NATFarReference exportedService) throws InterpreterException {
+		public NATPublication(final ELVirtualMachine host, ATStripe topic, NATFarReference exportedService) throws InterpreterException {
 			meta_defineField(_TOPIC_, topic);
 			meta_defineField(_SERVICE_, exportedService);
 			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					ATSymbol topic = scope_.meta_select(scope_, _TOPIC_).base_asSymbol();
+					ATStripe topic = scope_.meta_select(scope_, _TOPIC_).base_asStripe();
 					NATFarReference exportedService = scope_.meta_select(scope_, _SERVICE_).asNativeFarReference();
 					host.event_cancelPublication(topic, exportedService);
 					return NATNil._INSTANCE_;
@@ -161,12 +162,12 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		private static final AGSymbol _TOPIC_ = AGSymbol.jAlloc("topic");
 		private static final AGSymbol _HANDLER_ = AGSymbol.jAlloc("handler");
 		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
-		public NATSubscription(final ELVirtualMachine host, ATSymbol topic, NATFarReference exportedHandler) throws InterpreterException {
+		public NATSubscription(final ELVirtualMachine host, ATStripe topic, NATFarReference exportedHandler) throws InterpreterException {
 			meta_defineField(_TOPIC_, topic);
 			meta_defineField(_HANDLER_, exportedHandler);
 			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					ATSymbol topic = scope_.meta_select(scope_, _TOPIC_).base_asSymbol();
+					ATStripe topic = scope_.meta_select(scope_, _TOPIC_).base_asStripe();
 					NATFarReference exportedHandler = scope_.meta_select(scope_, _HANDLER_).asNativeFarReference();
 					host.event_cancelSubscription(topic, exportedHandler);
 					return NATNil._INSTANCE_;
@@ -178,13 +179,13 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		}
 	}
 	
-	public ATObject base_provide(final ATSymbol topic, final ATObject service) throws InterpreterException {
+	public ATObject base_provide(final ATStripe topic, final ATObject service) throws InterpreterException {
 		NATLocalFarRef exportedService = ELActor.currentActor().export(service);
 		host_.event_servicePublished(topic, exportedService);
 		return new NATPublication(host_, topic, exportedService);
 	}
 	
-	public ATObject base_require(final ATSymbol topic, final ATClosure handler) throws InterpreterException {
+	public ATObject base_require(final ATStripe topic, final ATClosure handler) throws InterpreterException {
 		NATLocalFarRef exportedHandler = ELActor.currentActor().export(handler);
 		host_.event_clientSubscribed(topic, exportedHandler);
 		return new NATSubscription(host_, topic, exportedHandler);

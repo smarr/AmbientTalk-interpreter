@@ -44,7 +44,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATIntercessiveMirror;
 import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
@@ -326,7 +325,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  => object becomes discoverable by objects in other actors via topic
 	 * returns a publication object that can be used to cancel the export
 	 */
-	public ATObject base_export_as_(ATObject object, ATSymbol topic) throws InterpreterException {
+	public ATObject base_export_as_(ATObject object, ATStripe topic) throws InterpreterException {
 		return ELActor.currentActor().getActorMirror().base_provide(topic, object);
 	}
 	
@@ -335,7 +334,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  => when an object is exported by another actor under topic, trigger the code
 	 * returns a subscription object that can be used to cancel the handler
 	 */
-	public ATObject base_when_discovered_(ATSymbol topic, ATClosure handler) throws InterpreterException {
+	public ATObject base_when_discovered_(ATStripe topic, ATClosure handler) throws InterpreterException {
 		return ELActor.currentActor().getActorMirror().base_require(topic, handler);
 	}
 	

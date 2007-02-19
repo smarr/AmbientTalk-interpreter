@@ -39,29 +39,41 @@ import org.jgroups.View;
 import edu.vub.at.actors.natives.DiscoveryManager;
 import edu.vub.util.MultiMap;
 
+/**
+ * An instance of the class MembershipNotifier is registered with an instance of the JGroups
+ * MessageDispatcher class as its MembershipListener. Whenever virtual machines connect or
+ * disconnect from the multicast group, this object is notified. Its role is to propagate
+ * these notifications to:
+ *  A) The AT/2 DiscoveryManager which is interested in contacting newly joined virtual machines
+ *     to see whether they provide some services that this VM requires.
+ *  B) All connected ConnectionListeners, which will usually be remote references pointing to
+ *     objects hosted by the connecting/disconnecting VM.
+ *
+ * @author tvcutsem
+ */
 public class MembershipNotifier extends ExtendedReceiverAdapter implements MembershipListener {
     
 	/**
 	 * Members of the previously accepted view are stored to evaluate the difference with any
 	 * new view that may be signalled to this class. 
 	 */
-	protected final Vector members_ = new Vector();
+	private final Vector members_ = new Vector();
 	
 	/**
 	 * A collection of ConnectionListeners which are interested in the (dis)appearance of a single
 	 * node in the JGroups overlay network.
 	 */
-	protected final MultiMap connectionListeners_ = new MultiMap();
+	private final MultiMap connectionListeners_ = new MultiMap();
 	
 	/**
 	 * The general manager for service discovery for the entire virtual machine. Whenever a new node
 	 * is encountered, this manager needs to be notified such that it can exchange the necessary 
 	 * service descriptions.
 	 */
-	protected final DiscoveryManager discoveryManager_;
+	private final DiscoveryManager discoveryManager_;
 	
 	/**
-	 * Created a new MembershipNotifier on which ConnectionListeners monitoring the (dis)appearance
+	 * Creates a new MembershipNotifier on which ConnectionListeners monitoring the (dis)appearance
 	 * of a single address can register to. 
 	 * @param discoveryManager - the service discovery manager for the current address.
 	 */
@@ -95,6 +107,8 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
      * TODO optimize set difference operations
      */
 	public synchronized void viewAccepted(View new_view) {
+		System.err.println("got new view: " + new_view);
+		
 		Vector joined_mbrs, left_mbrs, tmp;
 		Object tmp_mbr;
 
@@ -139,7 +153,7 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 			}
 		}
 		
-		for (Iterator leftMembers = joined_mbrs.iterator(); leftMembers.hasNext();) {
+		for (Iterator leftMembers = left_mbrs.iterator(); leftMembers.hasNext();) {
 			Address member = (Address) leftMembers.next();
 			
 			discoveryManager_.memberLeft(member);

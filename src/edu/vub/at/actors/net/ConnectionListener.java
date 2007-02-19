@@ -29,9 +29,13 @@ package edu.vub.at.actors.net;
 
 /**
  * 
- * TODO document the class ConnectionListener
+ * A ConnectionListener is registered with a MembershipNotifier instance and listens for
+ * changes in the connection state with a particular remote virtual machine. Whenever the
+ * observed remote machine connects or disconnects, the listener is notified using the
+ * corresponding method.
  *
  * @author smostinc
+ * @author tvcutsem
  */
 public interface ConnectionListener {
 

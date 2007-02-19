@@ -27,24 +27,24 @@
  */
 package edu.vub.at.actors.natives;
 
-import java.io.File;
-import java.util.Hashtable;
-
-import org.jgroups.Address;
-import org.jgroups.Channel;
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.blocks.MessageDispatcher;
-import org.jgroups.blocks.RequestHandler;
-
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.GUID;
 import edu.vub.at.actors.net.MembershipNotifier;
-import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.ATStripe;
+
+import java.io.File;
+import java.util.Hashtable;
+
+import org.jgroups.Address;
+import org.jgroups.Channel;
+import org.jgroups.ChannelListener;
+import org.jgroups.JChannel;
+import org.jgroups.Message;
+import org.jgroups.blocks.MessageDispatcher;
+import org.jgroups.blocks.RequestHandler;
 
 /**
  * A ELVirtualMachine represents a virtual machine which hosts several actors. The 
@@ -79,8 +79,11 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 	/** manages subscriptions and publications */
 	private final DiscoveryManager discoveryManager_;
 	
-	/** */
+	/** the JGroups communication bus for this Virtual Machine */
 	protected MessageDispatcher messageDispatcher_;
+	
+	/** the JGroups discovery bus for this Virtual Machine */
+	protected MembershipNotifier membershipNotifier_;
 	
 	public ELVirtualMachine(File[] objectPathRoots, ATAbstractGrammar initCode) {
 		super("virtual machine");
@@ -88,8 +91,10 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 		initialisationCode_ = initCode;
 		vmId_ = new GUID();
 		localActors_ = new Hashtable();
-		discoveryManager_ = new DiscoveryManager();
+		discoveryManager_ = new DiscoveryManager(this);
+		membershipNotifier_ = new MembershipNotifier(discoveryManager_);
 		
+		// initialize the message dispatcher using a JChannel
 		this.event_init();
 	}
 	
@@ -105,6 +110,11 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 	
 	public ELVirtualMachine getHost() { return this; }
 
+	/**
+	 * An event loop handles events by dispatching to the event itself.
+	 * Not to be confused with this class' handle(Message) method, which
+	 * enables the VM event loop to handle incoming JGroups Messages!
+	 */
 	public void handle(Event event) {
 		// make the event process itself
 		event.process(this);
@@ -152,7 +162,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
      * @param topic - the abstract category in which this service is published
      * @param service - a far reference to object providing the service
      */
-	public void event_servicePublished(final ATSymbol topic, final NATFarReference service) {
+	public void event_servicePublished(final ATStripe topic, final NATFarReference service) {
 		this.receive(new Event("servicePublished("+topic+","+service+")") {
 			public void process(Object myself) {
 				discoveryManager_.addPublication(topic, service);
@@ -171,7 +181,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
      * @param topic - the abstract category in which this service is published
      * @param handler - a far reference to the closure acting as a callback upon discovery
      */
-	public void event_clientSubscribed(final ATSymbol topic, final NATFarReference handler) {
+	public void event_clientSubscribed(final ATStripe topic, final NATFarReference handler) {
 		this.receive(new Event("clientSubscribed("+topic+","+handler+")") {
 			public void process(Object myself) {
 				discoveryManager_.addSubscription(topic, handler);
@@ -188,7 +198,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
      * @param topic - the abstract category in which this service is published
      * @param service - a far reference to object providing the service
      */
-	public void event_cancelPublication(final ATSymbol topic, final NATFarReference service) {
+	public void event_cancelPublication(final ATStripe topic, final NATFarReference service) {
 		this.receive(new Event("cancelPublication("+topic+","+service+")") {
 			public void process(Object myself) {
 				discoveryManager_.deletePublication(topic, service);
@@ -205,7 +215,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
      * @param topic - the abstract category in which this service is published
      * @param handler - a far reference to the closure acting as a callback upon discovery
      */
-	public void event_cancelSubscription(final ATSymbol topic, final NATFarReference handler) {
+	public void event_cancelSubscription(final ATStripe topic, final NATFarReference handler) {
 		this.receive(new Event("cancelSubscription("+topic+","+handler+")") {
 			public void process(Object myself) {
 				discoveryManager_.deleteSubscription(topic, handler);
@@ -231,14 +241,9 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 							Packet serializedForm = (Packet)message.getObject();
 							
 							// localActors_[DEST].event_accept(PACKET)
-							ELActor processor = (ELActor)localActors_.get(new Integer(serializedForm.getDestination()));
-							
-							if(processor != null) {
-								processor.event_accept(serializedForm);
-								return "Scheduled with destination actor";
-							} else {
-								throw new XIllegalOperation("Destination actor not found");
-							}
+							ELActor processor = getActor(serializedForm.getDestination());
+                            processor.event_accept(serializedForm);
+							return null; // null return value means OK
 						};
 					});
 		} catch (Exception exception) {
@@ -246,7 +251,10 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 		}
 	}
 	
-	private final String jGroupsProperties_ = "";
+	/** the protocol stack underlying the JGroups JChannel */
+	private static final String _JGROUPS_PROTOCOL_ = null;
+	/** the name of the multicast group joined by all AmbientTalk VMs */
+	private static final String _GROUP_NAME_ = "AmbientTalk";
 	
 	public void event_init() {
 		receive(new Event("init("+this+")") {
@@ -254,20 +262,58 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 				try {
 					ELVirtualMachine processor = (ELVirtualMachine)byMyself;
 					
-					Channel channel = new JChannel(jGroupsProperties_);
+					Channel channel = new JChannel(_JGROUPS_PROTOCOL_);
 					
 					processor.messageDispatcher_ = new MessageDispatcher(
-							channel, 
-							null, 
-							new MembershipNotifier(processor.discoveryManager_),  // 
-							processor,  // 
+							channel,
+							null, // the MessageListener
+							processor.membershipNotifier_,  // the MembershipListener
+							processor,  // the RequestHandler
 							false, // deadlock detection is disabled
 							true); // concurrent processing is enabled
-					channel.connect("MessageDispatcherTestGroup");
+					channel.connect(_GROUP_NAME_);
 					
+					// don't receive my own messages 
+					channel.setOpt(JChannel.LOCAL, Boolean.FALSE);
+					
+					channel.addChannelListener(new ChannelListener() {
+						public void channelClosed(Channel c) {
+							System.err.println("Channel closed: " +c);
+						}
+						public void channelConnected(Channel c) {
+							System.err.println("Channel connected: " +c);
+
+						}
+						public void channelDisconnected(Channel c) {
+							System.err.println("Channel disconnected: " +c);
+
+						}
+						public void channelReconnected(Address a) {
+							System.err.println("Channel reconnected: " +a);
+						}
+						public void channelShunned() {}
+					});
+					
+					System.err.println(this + ": successfully created connection");
 				} catch (Exception e) {
 					// TODO ???
+					System.err.println(this + ": error creating connection:");
+					e.printStackTrace();
 				}
+			}
+		});
+	}
+	
+	/**
+	 * Sent by the discovery manager whenever a discovery query has to be sent to
+	 * a remote VM when that remote VM has joined the network.
+	 * @param remoteVM - the address of the remote VM to contact
+	 * @param outstandingTopics - the topics in which this VM is interested (in serialized form)
+	 */
+	public void event_sendDiscoveryQuery(Address remoteVM, byte[] outstandingTopics) {
+		receive(new Event("sendDiscoveryQuery("+remoteVM+")") {
+			public void process(Object byMyself) {
+				
 			}
 		});
 	}

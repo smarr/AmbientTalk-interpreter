@@ -31,6 +31,7 @@ package edu.vub.at.actors;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -89,7 +90,7 @@ public interface ATActorMirror extends ATObject {
 	 * a separate service description and an object offering the service. The return
 	 * value is a publication object which allows cancelling the service offer.
 	 */
-	public ATObject base_provide(ATSymbol topic, ATObject service) throws InterpreterException;
+	public ATObject base_provide(ATStripe topic, ATObject service) throws InterpreterException;
 	
 	/**
 	 * This mechanism is the most basic mechanism to provide a service. It requires 
@@ -97,7 +98,7 @@ public interface ATActorMirror extends ATObject {
 	 * value is a subscription object which allows cancelling the service offer.
 	 * @throws InterpreterException 
 	 */
-	public ATObject base_require(ATSymbol topic, ATClosure handler) throws InterpreterException;
+	public ATObject base_require(ATStripe topic, ATClosure handler) throws InterpreterException;
 	
 	/**
 	 * def protocol := install: { code }
