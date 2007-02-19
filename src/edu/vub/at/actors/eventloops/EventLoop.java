@@ -158,6 +158,23 @@ public abstract class EventLoop {
 	}
 	
 	/**
+	 * When an event loop receives an asynchronously emitted event, this message is
+	 * immediately placed into its incoming event queue and will be processed later.
+	 * Using this method, events are scheduled first in the queue of upcoming events.
+	 * 
+	 * This method is declared protected such that subclasses can provide a cleaner
+	 * interface as to what kind of events can be received by this event loop.
+	 * The convention is that this method is only used to put back events that could
+	 * not be processed due to problems outside of the influence of the interpreter 
+	 * (e.g. host unreachability). If a subclass provides direct access to this 
+	 * primitive it should do so in methods prefixed with prioritized_event_ which 
+	 * call this protected method to schedule a certain event.
+	 */
+	protected final void receivePrioritized(Event event) {
+		eventQueue_.enqueueFirst(event);
+	}
+	
+	/**
 	 * Subclasses are responsible for defining a meaningful implementation
 	 * strategy to handle events from the event queue.
 	 * 

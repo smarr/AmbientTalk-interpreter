@@ -27,10 +27,12 @@
  */
 package edu.vub.at.actors.natives;
 
+import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
+import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.net.ConnectionListener;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIOProblem;
@@ -56,16 +58,15 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 
 	private static final int _TRANSMISSION_TIMEOUT_ = 5000; // in milliseconds
 	
-	private Address destinationAddress_;
-	
-	private boolean connected_;
 	private final NATRemoteFarRef owner_;
 	private final ELVirtualMachine host_;
+	private boolean connected_;
 	
 	public ELFarReference(NATRemoteFarRef owner, ELVirtualMachine host) {
 		super("far reference " + owner);
 		owner_ = owner;
 		host_ = host;
+
 		connected_ = true;
 		// register the remote reference with the MembershipNotifier to keep track
 		// of the state of the connection with the remote VM
@@ -92,10 +93,12 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		receive(new Event("transmit("+msg+")") {
 			public void process(Object owner) {
 				try {
+					ATObjectID id = owner_.getObjectId();
+					
 					// JGROUPS:MessageDispatcher.sendMessage(destination, message, mode, timeout)
 					Object returnVal = host_.messageDispatcher_.sendMessage(
 							// JGROUPS:Message.new(destination, source, Serializable)
-							new Message(destinationAddress_, null, new Packet(owner_.getObjectId().getActorId(), msg.toString(), msg)),
+							new Message(id.getVirtualMachineAddress(), null, new Packet(id.getActorId(), msg.toString(), msg)),
 							GroupRequest.GET_FIRST,
 							_TRANSMISSION_TIMEOUT_);
 					
@@ -105,17 +108,19 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 						((Exception) returnVal).printStackTrace();
 					}
 				} catch (XIOProblem e) {
-					// TODO Auto-generated catch block
+					// TODO Error serializing the message, drop it? 
 					System.err.println(this + ": error while serializing message:");
 					e.printStackTrace();
 				} catch (TimeoutException e) {
 					// TODO Auto-generated catch block
 					System.err.println(this + ": timeout while trying to transmit message:");
 					e.printStackTrace();
+					receivePrioritized(this);
 				} catch (SuspectedException e) {
 					// TODO Auto-generated catch block
 					System.err.println(this + ": remote object suspected of having gone offline:");
 					e.printStackTrace();
+					receivePrioritized(this);
 				}
 			}
 		});
@@ -141,13 +146,15 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	 * ========================================================
 	 */
 
-	public void connected() {
+	public synchronized void connected() {
 		System.err.println(this + ": connected");
 		connected_ = true;
 		this.notifyAll();
 	}
 
-	public void disconnected() {
+	public synchronized void disconnected() {
+		// Will only take effect when next trying to send a message
+		// If currently sending, the message will time out first.
 		System.err.println(this + ": disconnected");
 		connected_ = false;
 	}

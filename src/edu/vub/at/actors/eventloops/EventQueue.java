@@ -57,6 +57,17 @@ public final class EventQueue {
 	}
 	
 	/**
+	 * Enqueue an event as the first to be executed in the buffer. 
+	 * This method wakes up any waiting consumer threads.
+	 */
+	public void enqueueFirst(Event event) {
+		synchronized(this) {
+			elements_.add(0, event);
+			notifyAll();
+		}
+	}
+	
+	/**
 	 * Dequeue an event from the buffer. This method will block when the
 	 * buffer is empty!
 	 * 
