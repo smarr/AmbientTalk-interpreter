@@ -28,9 +28,12 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.actors.ATActorMirror;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.natives.NATActorMirror;
+import edu.vub.at.actors.natives.NATFarReference;
+import edu.vub.at.actors.natives.NATRemoteFarRef;
 import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -338,6 +341,30 @@ public final class OBJLexicalRoot extends NATByCopy {
 		return ELActor.currentActor().getActorMirror().base_require(topic, handler);
 	}
 	
+	/**
+	 * when: farReference disconnected: { code }
+	 * => when the remote reference is broken due to network disconnections, trigger the code
+	 * returns a subscription object that can be used to cancel the listener
+	 */
+	public ATObject base_when_disconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
+		if(farReference.asNativeFarReference().getObjectId().isRemote()) {
+			((NATRemoteFarRef)farReference).onDisconnection(listener);
+		}
+		return new NATFarReference.NATDisconnectionSubscription(farReference.asNativeFarReference(), listener);
+	}
+	
+	/**
+	 * when: farReference reconnected: { code }
+	 * => when the remote reference is reinstated after a network disconnection, trigger the code
+	 * returns a subscription object that can be used to cancel the listener
+	 */
+	public ATObject base_when_reconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
+		if(farReference.asNativeFarReference().getObjectId().isRemote()) {
+			((NATRemoteFarRef)farReference).onReconnection(listener);
+		}
+		return new NATFarReference.NATReconnectionSubscription(farReference.asNativeFarReference(), listener);
+	}
+
 	/* -----------------------------
 	 * -- Object Creation Methods --
 	 * ----------------------------- */

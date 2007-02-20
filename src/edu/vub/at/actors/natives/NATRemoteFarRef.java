@@ -30,9 +30,14 @@ package edu.vub.at.actors.natives;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * Instances of NATRemoteFarRef represent far references to physically remote actors.
@@ -41,17 +46,17 @@ import edu.vub.at.objects.natives.NATNil;
  * @author tvcutsem
  */
 public class NATRemoteFarRef extends NATFarReference {
-
+	
 	/**
 	 * When a remote far reference is passed on to another virtual machine, the event loop
 	 * is not taken with it. At the remote end, a new far reference will be created with the
 	 * appropriate event loop.
 	 */
-	private transient final ELFarReference sendLoop_;
+	transient final ELFarReference sendLoop_;
 
-	public NATRemoteFarRef(ATObjectID objectId, ELVirtualMachine host) {
+	public NATRemoteFarRef(ATObjectID objectId, ELActor hostActor) {
 		super(objectId);
-		sendLoop_ = new ELFarReference(this, host);
+		sendLoop_ = new ELFarReference(objectId, hostActor);
 	}
 	
 	protected ATObject transmit(ATAsyncMessage message) throws InterpreterException {
@@ -62,5 +67,12 @@ public class NATRemoteFarRef extends NATFarReference {
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {
 		return sendLoop_.sync_event_retractUnsentMessages();
 	}
+	
+	public void onDisconnection(ATClosure listener) throws InterpreterException {
+		sendLoop_.addDisconnectionListener(listener);
+	}
 
+	public void onReconnection(ATClosure listener) throws InterpreterException {
+		sendLoop_.addReconnectionListener(listener);
+	}
 }

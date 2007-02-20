@@ -87,7 +87,7 @@ public class ReceptionistsSet {
 				return farref;
 			}
 		}
-		farref = new NATRemoteFarRef(objectId, owner_.getHost());
+		farref = new NATRemoteFarRef(objectId, owner_);
 		remoteReferences_.put(objectId, new WeakReference(farref));
 		return farref;
 	}

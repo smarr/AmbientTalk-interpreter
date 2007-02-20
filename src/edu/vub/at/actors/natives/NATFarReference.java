@@ -42,8 +42,11 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByCopy;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -299,5 +302,53 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
     public ATFarReference base_asFarReference() throws XTypeMismatch {
   	    return this;
   	}
+    
+	public static class NATDisconnectionSubscription extends NATObject {
+		private static final AGSymbol _REFERENCE_ = AGSymbol.jAlloc("reference");
+		private static final AGSymbol _HANDLER_ = AGSymbol.jAlloc("handler");
+		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
+		public NATDisconnectionSubscription(final NATFarReference reference, ATClosure handler) throws InterpreterException {
+			this.meta_defineField(_REFERENCE_, reference);
+			this.meta_defineField(_HANDLER_, handler);
+			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					NATFarReference reference = scope_.meta_select(scope_, _REFERENCE_).asNativeFarReference();
+					if(reference instanceof NATRemoteFarRef) {
+						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
+						ATObject handler = scope_.meta_select(scope_, _HANDLER_);
+						remote.sendLoop_.removeDisconnectionListener(handler);
+					}
+					return NATNil._INSTANCE_;
+				}
+			});
+		}
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("<disconnection-listener:"+ this.meta_select(this, _REFERENCE_)+">");
+		}
+	}
+	
+	public static class NATReconnectionSubscription extends NATObject {
+		private static final AGSymbol _REFERENCE_ = AGSymbol.jAlloc("reference");
+		private static final AGSymbol _HANDLER_ = AGSymbol.jAlloc("handler");
+		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
+		public NATReconnectionSubscription(final NATFarReference reference, ATClosure handler) throws InterpreterException {
+			this.meta_defineField(_REFERENCE_, reference);
+			this.meta_defineField(_HANDLER_, handler);
+			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					NATFarReference reference = scope_.meta_select(scope_, _REFERENCE_).asNativeFarReference();
+					if(reference instanceof NATRemoteFarRef) {
+						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
+						ATObject handler = scope_.meta_select(scope_, _HANDLER_);
+						remote.sendLoop_.removeReconnectionListener(handler);
+					}
+					return NATNil._INSTANCE_;
+				}
+			});
+		}
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("<disconnection-listener:"+ this.meta_select(this, _REFERENCE_)+">");
+		}
+	}
 	
 }
