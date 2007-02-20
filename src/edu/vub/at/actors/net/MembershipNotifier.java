@@ -107,8 +107,6 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
      * TODO optimize set difference operations
      */
 	public synchronized void viewAccepted(View new_view) {
-		System.err.println("got new view: " + new_view);
-		
 		Vector joined_mbrs, left_mbrs, tmp;
 		Object tmp_mbr;
 

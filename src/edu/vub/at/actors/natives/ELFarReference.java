@@ -27,13 +27,13 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.net.ConnectionListener;
+import edu.vub.at.actors.net.Logging;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.objects.ATTable;
@@ -104,22 +104,16 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 					
 					// non-null return value indicates an exception
 					if (returnVal != null) {
-						System.err.println(this + ": error upon transmission:");
-						((Exception) returnVal).printStackTrace();
+						Logging.RemoteRef_LOG.error(this + ": error upon message transmission:", (Exception) returnVal);
 					}
 				} catch (XIOProblem e) {
 					// TODO Error serializing the message, drop it? 
-					System.err.println(this + ": error while serializing message:");
-					e.printStackTrace();
+					Logging.RemoteRef_LOG.error(this + ": error while serializing message:", e);
 				} catch (TimeoutException e) {
-					// TODO Auto-generated catch block
-					System.err.println(this + ": timeout while trying to transmit message:");
-					e.printStackTrace();
+					Logging.RemoteRef_LOG.warn(this + ": timeout while trying to transmit message, retrying");
 					receivePrioritized(this);
 				} catch (SuspectedException e) {
-					// TODO Auto-generated catch block
-					System.err.println(this + ": remote object suspected of having gone offline:");
-					e.printStackTrace();
+					Logging.RemoteRef_LOG.warn(this + ": remote object suspected: " + owner_.getObjectId());
 					receivePrioritized(this);
 				}
 			}
@@ -147,7 +141,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	 */
 
 	public synchronized void connected() {
-		System.err.println(this + ": connected");
+		Logging.RemoteRef_LOG.info(this + ": connected to " + owner_.getObjectId());
 		connected_ = true;
 		this.notifyAll();
 	}
@@ -155,7 +149,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	public synchronized void disconnected() {
 		// Will only take effect when next trying to send a message
 		// If currently sending, the message will time out first.
-		System.err.println(this + ": disconnected");
+		Logging.RemoteRef_LOG.info(this + ": disconnected from " + owner_.getObjectId());
 		connected_ = false;
 	}
 

@@ -27,7 +27,7 @@
  */
 package edu.vub.at.actors.eventloops;
 
-import java.util.Vector;
+import edu.vub.at.actors.net.Logging;
 
 
 
@@ -194,9 +194,8 @@ public abstract class EventLoop {
 				try {
 					Event event = eventQueue_.dequeue();
 					
-					// DEBUG
-					System.err.println(this.toString() + " is processing " + event);
-					
+					Logging.EventLoop_LOG.info(this.toString() + " is processing " + event);
+
 					handle(event);
 				} catch (InterruptedException e) {
 					// If interrupted, we may be asked to stop

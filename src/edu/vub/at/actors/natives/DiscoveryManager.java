@@ -28,6 +28,7 @@
 package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
@@ -126,7 +127,7 @@ public final class DiscoveryManager {
 			}
 		} catch (InterpreterException e) {
 			// a far reference's receive operation should not throw an exception
-			e.printStackTrace();
+			Logging.VirtualMachine_LOG.error("DiscoveryManager: error notifying subscriber closure: ", e);
 		}
 	}
 	
@@ -139,18 +140,17 @@ public final class DiscoveryManager {
 	 * services that match the type of an outstanding subscription on this VM.
 	 */
 	public synchronized void memberJoined(Address virtualMachine) {
-		System.err.println(hostVM_ + ": VM connected: " + virtualMachine);
+		Logging.VirtualMachine_LOG.info(hostVM_ + ": VM connected: " + virtualMachine);
 		try {
 			Set subscriptionTopics = subscriptions_.keySet();
 			hostVM_.event_sendDiscoveryQuery(virtualMachine, Util.collectionToByteBuffer(subscriptionTopics));
 		} catch (Exception e) {
-			System.err.println("Error serializing topics for discovery query: ");
-			e.printStackTrace();
+			Logging.VirtualMachine_LOG.error(hostVM_ + ": error serializing topics for discovery query: ", e);
 		}
 	}
 	
 	public void memberLeft(Address virtualMachine) {
-		System.err.println(hostVM_ + ": VM disconnected: " + virtualMachine);
+		Logging.VirtualMachine_LOG.info(hostVM_ + ": VM disconnected: " + virtualMachine);
 	}
 	
 }

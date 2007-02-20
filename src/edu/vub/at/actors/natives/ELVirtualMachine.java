@@ -31,11 +31,13 @@ import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.GUID;
+import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.MembershipNotifier;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATStripe;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Hashtable;
 
 import org.jgroups.Address;
@@ -251,8 +253,6 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 		}
 	}
 	
-	/** the protocol stack underlying the JGroups JChannel */
-	private static final String _JGROUPS_PROTOCOL_ = null;
 	/** the name of the multicast group joined by all AmbientTalk VMs */
 	private static final String _GROUP_NAME_ = "AmbientTalk";
 	
@@ -262,7 +262,10 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 				try {
 					ELVirtualMachine processor = (ELVirtualMachine)byMyself;
 					
-					Channel channel = new JChannel(_JGROUPS_PROTOCOL_);
+					// load the protocol stack to be used by JGroups
+					URL protocol = MembershipNotifier.class.getResource("jgroups-protocol.xml");
+					
+					Channel channel = new JChannel(protocol);
 					
 					processor.messageDispatcher_ = new MessageDispatcher(
 							channel,
@@ -273,32 +276,34 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 							true); // concurrent processing is enabled
 					channel.connect(_GROUP_NAME_);
 					
+					vmAddress_ = channel.getLocalAddress();
+					
 					// don't receive my own messages 
 					channel.setOpt(JChannel.LOCAL, Boolean.FALSE);
 					
 					channel.addChannelListener(new ChannelListener() {
 						public void channelClosed(Channel c) {
-							System.err.println("Channel closed: " +c);
+							Logging.VirtualMachine_LOG.warn(this + ": channel closed: " + c);
 						}
 						public void channelConnected(Channel c) {
-							System.err.println("Channel connected: " +c);
-
+							Logging.VirtualMachine_LOG.warn(this + ": channel connected: " + c);
 						}
 						public void channelDisconnected(Channel c) {
-							System.err.println("Channel disconnected: " +c);
-
+							Logging.VirtualMachine_LOG.warn(this + ": channel disconnected: " + c);
 						}
 						public void channelReconnected(Address a) {
-							System.err.println("Channel reconnected: " +a);
+							Logging.VirtualMachine_LOG.warn(this + ": channel reconnected. Address = " + a);
+							vmAddress_ = a;
 						}
-						public void channelShunned() {}
+						public void channelShunned() {
+							Logging.VirtualMachine_LOG.warn(this + ": channel shunned");
+						}
 					});
 					
-					System.err.println(this + ": successfully created connection");
+					Logging.VirtualMachine_LOG.info(this + ": successfully created channel connection, address = " + vmAddress_);
 				} catch (Exception e) {
 					// TODO ???
-					System.err.println(this + ": error creating connection:");
-					e.printStackTrace();
+					Logging.VirtualMachine_LOG.fatal(this + ": could not open channel connection: ", e);
 				}
 			}
 		});

@@ -29,12 +29,12 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.ATResolution;
 import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
@@ -68,8 +68,7 @@ public final class ELActor extends EventLoop {
 		try {
 			return ((ELActor) EventLoop.currentEventLoop());
 		} catch (ClassCastException e) {
-			System.err.println("Asked for an actor in a non-event loop thread?");
-			e.printStackTrace();
+			Logging.Actor_LOG.fatal("Asked for an actor in a non-event loop thread?", e);
 			throw new RuntimeException("Asked for an actor outside of an event loop");
 		}
 	}
@@ -174,16 +173,15 @@ public final class ELActor extends EventLoop {
 						lobby.meta_defineField(selector, new NATNamespace("/"+subdir.getName(), subdir));
 					} catch (XDuplicateSlot e) {
 						// TODO(review) Should throw dedicated exceptions (difference warning - abort)
-						// TODO(warn)
+						Logging.Init_LOG.error("shadowed path on classpath:", e);
 						throw new XIllegalOperation("shadowed path on classpath: "+subdir.getAbsolutePath());
 					} catch (InterpreterException e) {
 						// should not happen as the meta_defineField is native
-						// TODO(abort)
+						Logging.Init_LOG.fatal("Fatal error while constructing objectpath:", e);
 						throw new XIllegalOperation("Fatal error while constructing objectpath: " + e.getMessage());
 					}	
 				} else {
-					// TODO(warn)
-					//throw new XIllegalOperation("skipping non-directory file on classpath: " + subdir.getName());
+					Logging.Init_LOG.warn("skipping non-directory file on classpath: " + subdir.getName());
 				}
 			}
 		}
@@ -242,10 +240,10 @@ public final class ELActor extends EventLoop {
 				try {
 					ATObject result = msg.base_process(mirror_);
 					// TODO what to do with return value?
-					System.err.println("accept("+msg+") returned " + result);
+					Logging.Actor_LOG.info(this + ": accept("+msg+") returned " + result);
 				} catch (InterpreterException e) {
 					// TODO what to do with exception?
-					System.err.println("accept("+msg+") failed with " + e.getMessage());
+					Logging.Actor_LOG.info(this + ": accept("+msg+") failed ", e);
 				}
 			}
 		});
@@ -263,24 +261,14 @@ public final class ELActor extends EventLoop {
 					ATAsyncMessage msg = serializedMessage.unpack().base_asAsyncMessage();
 					ATObject result = msg.base_process(mirror_);
 					// TODO what to do with return value?
-					System.err.println("accept("+serializedMessage.getDescription()+") returned " + result);
+					Logging.Actor_LOG.info(myActorMirror + ": "+this + " returned " + result);
 				} catch (InterpreterException e) {
 					// TODO what to do with exception?
-					System.err.println("accept("+serializedMessage.getDescription()+") failed with " + e.getMessage());
+					Logging.Actor_LOG.info(myActorMirror + ": "+this + " failed ", e);
 				}
 			}
 		});
 	}
-	
-	
-	public void event_foundResolution(ATResolution found) throws InterpreterException {
-		//TODO(service discovery) Implement this method	
-	}
-
-	public void event_lostResolution(ATResolution lost) throws InterpreterException {
-		//TODO(service discovery) Implement this method	
-	}
-	
 	
 	/**
 	 * This method is invoked by a coercer in order to schedule a symbiotic invocation
