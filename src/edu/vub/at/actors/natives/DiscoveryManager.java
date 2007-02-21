@@ -38,9 +38,9 @@ import edu.vub.util.MultiMap;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Vector;
 
 import org.jgroups.Address;
-import org.jgroups.util.Util;
 
 /**
  * The DiscoveryManager is responsible for coupling subscriptions to
@@ -141,11 +141,15 @@ public final class DiscoveryManager {
 	 */
 	public synchronized void memberJoined(Address virtualMachine) {
 		Logging.VirtualMachine_LOG.info(hostVM_ + ": VM connected: " + virtualMachine);
-		try {
-			Set subscriptionTopics = subscriptions_.keySet();
-			hostVM_.event_sendDiscoveryQuery(virtualMachine, Util.collectionToByteBuffer(subscriptionTopics));
-		} catch (Exception e) {
-			Logging.VirtualMachine_LOG.error(hostVM_ + ": error serializing topics for discovery query: ", e);
+		Set subscriptionTopics = subscriptions_.keySet();
+		if (!subscriptionTopics.isEmpty()) {
+		    try {
+				// only send a discovery query if this VM requires some services
+		    	Vector topics = new Vector(subscriptionTopics);
+				hostVM_.event_sendDiscoveryQuery(virtualMachine, Packet.serialize(topics));
+			} catch (Exception e) {
+			    Logging.VirtualMachine_LOG.error(hostVM_ + ": error serializing topics for discovery query: ", e);
+		    }
 		}
 	}
 	

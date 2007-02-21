@@ -27,6 +27,9 @@
  */
 package edu.vub.at.actors.net;
 
+import edu.vub.at.actors.natives.DiscoveryManager;
+import edu.vub.util.MultiMap;
+
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
@@ -35,9 +38,6 @@ import org.jgroups.Address;
 import org.jgroups.ExtendedReceiverAdapter;
 import org.jgroups.MembershipListener;
 import org.jgroups.View;
-
-import edu.vub.at.actors.natives.DiscoveryManager;
-import edu.vub.util.MultiMap;
 
 /**
  * An instance of the class MembershipNotifier is registered with an instance of the JGroups
@@ -57,13 +57,13 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 	 * Members of the previously accepted view are stored to evaluate the difference with any
 	 * new view that may be signalled to this class. 
 	 */
-	private final Vector members_ = new Vector();
+	private final Vector knownMembers_;
 	
 	/**
 	 * A collection of ConnectionListeners which are interested in the (dis)appearance of a single
 	 * node in the JGroups overlay network.
 	 */
-	private final MultiMap connectionListeners_ = new MultiMap();
+	private final MultiMap connectionListeners_;
 	
 	/**
 	 * The general manager for service discovery for the entire virtual machine. Whenever a new node
@@ -79,6 +79,8 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 	 */
 	public MembershipNotifier(DiscoveryManager discoveryManager) {
 		discoveryManager_ = discoveryManager;
+		connectionListeners_ = new MultiMap();
+		knownMembers_ = new Vector();
 	}
 	
 	/**
@@ -98,72 +100,61 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 	public synchronized void removeConnectionListener(Address virtualMachine, ConnectionListener listener) {
 		connectionListeners_.removeValue(virtualMachine, listener);
 	}
-
+	
     /**
-     * Notify membership listener that new view was accepted. This method in 
-     * turn passes new view to all registered membership listeners.
-     * 
-     * 
-     * TODO optimize set difference operations
+     * This method is a callback from the JGroups framework that is invoked whenever the
+     * set of connected group members has changed. The callback responds to such an event
+     * by comparing the new set of members with the previously known set of members to calculate
+     * which members joined and left. For each of these joined and left members, the corresponding
+     * connection listeners are notified. Also, the discovery manager is always notified when
+     * a member has joined.
      */
-	public synchronized void viewAccepted(View new_view) {
-		Vector joined_mbrs, left_mbrs, tmp;
-		Object tmp_mbr;
-
-		if (new_view == null)
-			return;
-		tmp = new_view.getMembers();
-
-		synchronized (members_) {
-			// get new members
-			joined_mbrs = new Vector();
-			for (int i = 0; i < tmp.size(); i++) {
-				tmp_mbr = tmp.elementAt(i);
-				if (!members_.contains(tmp_mbr))
-					joined_mbrs.addElement(tmp_mbr);
-			}
-
-			// get members that left
-			left_mbrs = new Vector();
-			for (int i = 0; i < members_.size(); i++) {
-				tmp_mbr = members_.elementAt(i);
-				if (!tmp.contains(tmp_mbr))
-					left_mbrs.addElement(tmp_mbr);
-			}
-
-			// adjust our own membership
-			members_.removeAllElements();
-			members_.addAll(tmp);
-		}
-
+	public synchronized void viewAccepted(View newView) {
+		Vector newMembers = newView.getMembers();
+		Logging.VirtualMachine_LOG.debug("received new view: " + newView);
 		
-		for (Iterator newMembers = joined_mbrs.iterator(); newMembers.hasNext();) {
-			Address member = (Address) newMembers.next();
-			
-			discoveryManager_.memberJoined(member);
-			
-			Set listeners = (Set)connectionListeners_.get(member);
-			if(listeners != null) {
-				for (Iterator i = listeners.iterator(); i.hasNext();) {
-					ConnectionListener listener = (ConnectionListener) i.next();
-					listener.connected();
+		// for each new member, check whether that new member was present in previous view
+		for (Iterator iter = newMembers.iterator(); iter.hasNext();) {
+			Address member = (Address) iter.next();
+			if (!knownMembers_.contains(member)) {
+				// member who is in new view but not in old view: joined
+				
+				// notify discovery manager
+				discoveryManager_.memberJoined(member);
+				
+				// notify all connectionlisteners for this member
+				Set listeners = (Set)connectionListeners_.get(member);
+				if(listeners != null) {
+					for (Iterator i = listeners.iterator(); i.hasNext();) {
+						ConnectionListener listener = (ConnectionListener) i.next();
+						listener.connected();
+					}
 				}
 			}
 		}
 		
-		for (Iterator leftMembers = left_mbrs.iterator(); leftMembers.hasNext();) {
-			Address member = (Address) leftMembers.next();
-			
-			discoveryManager_.memberLeft(member);
-			
-			Set listeners = (Set)connectionListeners_.get(member);
-			if(listeners != null) {
-				for (Iterator i = listeners.iterator(); i.hasNext();) {
-					ConnectionListener listener = (ConnectionListener) i.next();
-					listener.disconnected();
+		// for each old member, check whether the old member is still present in new view
+		for (Iterator iter = knownMembers_.iterator(); iter.hasNext();) {
+			Address member = (Address) iter.next();
+			if (!newMembers.contains(member)) {
+				// member who is in old view but not in new view: left
+				
+				// notify discovery manager
+				discoveryManager_.memberLeft(member);
+				
+				// notify all connectionlisteners for this member
+				Set listeners = (Set)connectionListeners_.get(member);
+				if(listeners != null) {
+					for (Iterator i = listeners.iterator(); i.hasNext();) {
+						ConnectionListener listener = (ConnectionListener) i.next();
+						listener.disconnected();
+					}
 				}
 			}
 		}
-
+		
+		// new view becomes previous view
+		knownMembers_.clear();
+		knownMembers_.addAll(newMembers);
 	}
 }

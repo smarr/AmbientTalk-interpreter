@@ -54,8 +54,7 @@ public class NATLocalFarRef extends NATFarReference {
 	}
 
 	protected ATObject transmit(ATAsyncMessage passedMessage) throws InterpreterException {
-		farObjectHost_.event_accept(
-				new Packet(farObjectHost_.hashCode(), passedMessage.toString(), passedMessage));
+		farObjectHost_.event_accept(new Packet(passedMessage.toString(), passedMessage));
 		return NATNil._INSTANCE_;
 	}
 	

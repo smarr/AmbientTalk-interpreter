@@ -63,8 +63,6 @@ import edu.vub.at.objects.natives.NATTable;
  */
 public final class ELFarReference extends EventLoop implements ConnectionListener {
 
-	private static final int _TRANSMISSION_TIMEOUT_ = 5000; // in milliseconds
-	
 	private final ELActor owner_;
 	private final ATObjectID destination_;
 	private final MessageDispatcher dispatcher_;
@@ -126,9 +124,16 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 					// JGROUPS:MessageDispatcher.sendMessage(destination, message, mode, timeout)
 					Object returnVal = dispatcher_.sendMessage(
 							// JGROUPS:Message.new(destination, source, Serializable)
-							new Message(destination_.getVirtualMachineAddress(), null, new Packet(destination_.getActorId(), msg.toString(), msg)),
+							new Message(destination_.getVirtualMachineAddress(), null,
+									new Packet(msg.toString(), msg) {
+								        // this code is executed by the remote VM
+								        public Object uponArrivalDo(ELVirtualMachine remoteHost) {
+								        	remoteHost.getActor(destination_.getActorId()).event_accept(this);
+											return null; // null return value means OK
+								        }
+							        }),
 							GroupRequest.GET_FIRST,
-							_TRANSMISSION_TIMEOUT_);
+							ELVirtualMachine._TRANSMISSION_TIMEOUT_);
 					
 					// non-null return value indicates an exception
 					if (returnVal != null) {

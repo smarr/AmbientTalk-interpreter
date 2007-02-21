@@ -27,6 +27,11 @@
  */
 package edu.vub.at.actors.natives;
 
+import edu.vub.at.actors.net.Logging;
+import edu.vub.at.exceptions.XClassNotFound;
+import edu.vub.at.exceptions.XIOProblem;
+import edu.vub.at.objects.ATObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,30 +39,18 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import edu.vub.at.exceptions.XClassNotFound;
-import edu.vub.at.exceptions.XIOProblem;
-import edu.vub.at.objects.ATObject;
-
 /**
  * Packet instances are the serialized representation of AmbientTalk messages.
  * They are sent in between both local and remote actors.
  *
  * @author tvcutsem
  */
-public final class Packet implements Serializable {
-
-	private static final int _UNSPECIFIED_ = 0;
+public class Packet implements Serializable {
 	
 	private final byte[]	payload_;
 	private final String	description_;
-	private final int	destination_;
-	
-	public Packet(String description, ATObject object) throws XIOProblem {
-		this(_UNSPECIFIED_, description, object);
-	}
 
-	public Packet(int destination, String description, ATObject object) throws XIOProblem {
-		destination_ = destination;
+	public Packet(String description, ATObject object) throws XIOProblem {
 		description_ = description;
 		try {
 			payload_ = serialize(object);
@@ -76,11 +69,18 @@ public final class Packet implements Serializable {
 		}
 	}
 	
-	public int getDestination() { return destination_; }
-
 	public String getDescription() { return description_; }
 	
-	private byte[] serialize(Object o) throws IOException {
+	/**
+	 * To be overridden by subclasses to perform a useful action upon delivery
+	 * of the packet at the destination VM host.
+	 */
+	public Object uponArrivalDo(ELVirtualMachine remoteHost) {
+		Logging.VirtualMachine_LOG.error(this + ": unimplemented uponArrivalDo invoked on a packet");
+		return null;
+	}
+	
+	public static byte[] serialize(Object o) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ObjectOutputStream stream = new ObjectOutputStream(out);
 		stream.writeObject(o);
@@ -89,7 +89,7 @@ public final class Packet implements Serializable {
 		return out.toByteArray();
 	}
 	
-	private Object deserialize(byte[] b) throws IOException, ClassNotFoundException {
+	public static Object deserialize(byte[] b) throws IOException, ClassNotFoundException {
 		ByteArrayInputStream in = new ByteArrayInputStream(b);
 		ObjectInputStream instream = new ObjectInputStream(in);
 		return instream.readObject();

@@ -33,18 +33,24 @@ import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.GUID;
 import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.MembershipNotifier;
+import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATStripe;
 
 import java.io.File;
 import java.net.URL;
 import java.util.Hashtable;
+import java.util.Set;
+import java.util.Vector;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
+import org.jgroups.SuspectedException;
+import org.jgroups.TimeoutException;
+import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
 
@@ -62,6 +68,14 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 	public static final ELVirtualMachine currentVM() {
 		return ELActor.currentActor().getHost();
 	}
+	
+	/** the name of the multicast group joined by all AmbientTalk VMs */
+	private static final String _GROUP_NAME_ = "AmbientTalk";
+	
+	/** the default transmission timeout for JGroups synchronous message communication */
+	public static final int _TRANSMISSION_TIMEOUT_ = 5000; // in milliseconds
+	
+	
 	
 	/** startup parameter to the VM: which directories to include in the lobby */
 	private final File[] objectPathRoots_;
@@ -94,7 +108,6 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 		vmId_ = new GUID();
 		localActors_ = new Hashtable();
 		discoveryManager_ = new DiscoveryManager(this);
-		membershipNotifier_ = new MembershipNotifier(discoveryManager_);
 		
 		// initialize the message dispatcher using a JChannel
 		this.event_init();
@@ -238,23 +251,17 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 			return this.receiveAndWait(
 					"Handling a remote message",
 					new Callable() {
-						public Object call(Object argument) throws Exception {
+						public Object call(Object vm) throws Exception {
 							// receiving the message [DEST, PACKET]
-							Packet serializedForm = (Packet)message.getObject();
-							
-							// localActors_[DEST].event_accept(PACKET)
-							ELActor processor = getActor(serializedForm.getDestination());
-                            processor.event_accept(serializedForm);
-							return null; // null return value means OK
+							Packet packet = (Packet)message.getObject();
+                            // allow the packet to unpack  and deliver itself
+							return packet.uponArrivalDo((ELVirtualMachine) vm);
 						};
 					});
 		} catch (Exception exception) {
 			return exception;
 		}
 	}
-	
-	/** the name of the multicast group joined by all AmbientTalk VMs */
-	private static final String _GROUP_NAME_ = "AmbientTalk";
 	
 	public void event_init() {
 		receive(new Event("init("+this+")") {
@@ -267,13 +274,15 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 					
 					Channel channel = new JChannel(protocol);
 					
-					processor.messageDispatcher_ = new MessageDispatcher(
+					membershipNotifier_ = new MembershipNotifier(discoveryManager_);
+					messageDispatcher_ = new MessageDispatcher(
 							channel,
 							null, // the MessageListener
-							processor.membershipNotifier_,  // the MembershipListener
+							membershipNotifier_,  // the MembershipListener
 							processor,  // the RequestHandler
 							false, // deadlock detection is disabled
 							true); // concurrent processing is enabled
+					
 					channel.connect(_GROUP_NAME_);
 					
 					vmAddress_ = channel.getLocalAddress();
@@ -313,12 +322,51 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 	 * Sent by the discovery manager whenever a discovery query has to be sent to
 	 * a remote VM when that remote VM has joined the network.
 	 * @param remoteVM - the address of the remote VM to contact
-	 * @param outstandingTopics - the topics in which this VM is interested (in serialized form)
+	 * @param outstandingTopics - the topics in which this VM is interested (a serialized Vector of ATStripe objects)
 	 */
-	public void event_sendDiscoveryQuery(Address remoteVM, byte[] outstandingTopics) {
-		receive(new Event("sendDiscoveryQuery("+remoteVM+")") {
+	public void event_sendDiscoveryQuery(final Address remoteVMAddress, final byte[] outstandingTopics) {
+		receive(new Event("sendDiscoveryQuery("+remoteVMAddress+")") {
 			public void process(Object byMyself) {
-				
+				// filter out discovery of myself
+				if (!vmAddress_.equals(remoteVMAddress)) {
+					
+					// send a discovery query message to the remote VM
+					try {
+						// JGROUPS:MessageDispatcher.sendMessage(destination, message, mode, timeout)
+						Object returnVal = messageDispatcher_.sendMessage(
+								// JGROUPS:Message.new(destination, source, Serializable)
+								new Message(remoteVMAddress, null,
+										new Packet("sendDiscoveryQuery", null) {
+									        // this code is executed by the remote VM
+									        public Object uponArrivalDo(ELVirtualMachine remoteHost) {
+									        	// TODO: query local discoverymanager for unserialized topics
+									        	System.err.println("discovery query arrived");
+									        	try {
+													Vector topics = (Vector) Packet.deserialize(outstandingTopics);
+													System.err.println(topics);
+												} catch (Exception e) {
+													e.printStackTrace();
+												}
+									        	return null;
+									        }
+								        }),
+								GroupRequest.GET_FIRST,
+								_TRANSMISSION_TIMEOUT_);
+						
+						// non-null return value indicates an exception
+						if (returnVal != null) {
+							Logging.RemoteRef_LOG.fatal(this + ": error upon message transmission:", (Exception) returnVal);
+						}
+					} catch (XIOProblem e) {
+						Logging.VirtualMachine_LOG.fatal(this + ": error while serializing discovery query message:", e);
+					} catch (TimeoutException e) {
+						Logging.VirtualMachine_LOG.warn(this + ": timeout while trying to transmit discovery query, dropping");
+					} catch (SuspectedException e) {
+						Logging.VirtualMachine_LOG.warn(this + ": remote VM suspected while sending discovery query");
+					}
+					
+					
+				}
 			}
 		});
 	}
