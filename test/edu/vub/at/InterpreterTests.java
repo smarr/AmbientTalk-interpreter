@@ -48,6 +48,7 @@ import edu.vub.at.objects.natives.TestFieldMap;
 import edu.vub.at.objects.natives.grammar.TestEval;
 import edu.vub.at.objects.natives.grammar.TestParameterBinding;
 import edu.vub.at.objects.symbiosis.SymbiosisTest;
+import edu.vub.at.tutorial.TutorialTest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -86,6 +87,7 @@ public class InterpreterTests {
 		suite.addTestSuite(TestParameterBinding.class);
 		suite.addTestSuite(SerializationTest.class);
 		suite.addTestSuite(StripesTest.class);
+		suite.addTestSuite(TutorialTest.class);
 		//$JUnit-END$
 		return suite;
 	}
