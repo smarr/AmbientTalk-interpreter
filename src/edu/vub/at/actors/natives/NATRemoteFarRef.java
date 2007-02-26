@@ -62,7 +62,7 @@ public class NATRemoteFarRef extends NATFarReference {
 	}
 	
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {
-		return sendLoop_.sync_event_retractUnsentMessages();
+		return sendLoop_.retractUnsentMessages();
 	}
 	
 	public void onDisconnection(ATClosure listener) throws InterpreterException {

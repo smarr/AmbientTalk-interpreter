@@ -105,4 +105,15 @@ public final class EventQueue {
 		}
 	}
 	
+	/**
+	 * Tests whether the event queue is empty. This test is provided to
+	 * allow clients of the queue to perform synchronization on an external
+	 * resource if necessary.
+	 */
+	public boolean isEmpty() {
+		synchronized (this) {
+			return elements_.isEmpty();
+		}
+	}
+	
 }

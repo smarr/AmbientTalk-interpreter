@@ -54,28 +54,51 @@ public abstract class EventLoop {
 	 * As such, it is the means by which different actors - and event actors and
 	 * their virtual machines - communicate.
 	 */
-	private final EventQueue eventQueue_;
+	protected final EventQueue eventQueue_;
 	
 	/**
 	 * Each event loop has an event processor, which is a thread responsible
 	 * for perpetually dequeuing events from the event queue and passing them
 	 * on to this event loop's handle method.
 	 */
-	private final Thread processor_;
+	private Thread processor_;
 	
 	private boolean askedToStop_;
 	
 	private final String name_;
 	
 	/**
+	 * Constructs a new event loop, possibly with a custom event handler. In the case such a
+	 * custom header is provided, the event loop will only be started after the 
+	 * setCustomEventLoop() was called.
+	 * @param name used for debugging purposes
+	 * @param useDefaultEventHandler if true the client should call setCustomEventLoop() to activate the event loop
+	 */
+	public EventLoop(String name, boolean useDefaultEventLoop) {
+		eventQueue_ = new EventQueue();
+		askedToStop_ = false;
+		name_ = name;
+		
+		if(useDefaultEventLoop) {
+			processor_ = new EventProcessor(new EventProcessingLoop());
+			processor_.start();
+		}
+	}
+	
+	/**
 	 * @param name used for debugging purposes
 	 */
 	public EventLoop(String name) {
-		eventQueue_ = new EventQueue();
-		processor_ = new EventProcessor();
-		name_ = name;
-		askedToStop_ = false;
-		processor_.start();
+		this(name, true);
+	}
+	
+	public void setCustomEventLoop(Runnable eventLoop) {
+		if(processor_ != null) {
+			processor_ = new EventProcessor(eventLoop);
+			processor_.start();
+		} else {
+			throw new RuntimeException("Tried to set a custom event loop when one was already active.");
+		}
 	}
 	
 	public String toString() {
@@ -184,11 +207,13 @@ public abstract class EventLoop {
 	
 	protected final EventLoop owner() { return this; }
 	
-	public final class EventProcessor extends Thread {
-		public EventProcessor() {
-			setName(toString());
-		}
-		
+	/**
+	 * EventProcessingLoop implements the default handling of events by the event loop 
+	 * framework. It is extracted from the EventProcessor to allow custom event loops
+	 * (notably ELFarReference) to introduce a new version to deal with e.g. additional
+	 * synchronization issues.
+	 */
+	private final class EventProcessingLoop implements Runnable {
 		public final void run() {
 			while(!askedToStop_) {
 				try {
@@ -205,6 +230,20 @@ public abstract class EventLoop {
 				Thread.yield();
 			}
 		}
+	}
+	
+	/**
+	 * EventProcessor is a thread subclass whose primary goal is to keep a reference to the 
+	 * associated event loop, which is used to transform threads into the more manageable 
+	 * event loops
+	 */
+	public final class EventProcessor extends Thread {
+		
+		public EventProcessor(Runnable processingLoop) {
+			super(processingLoop);
+			setName(toString());
+		}
+		
 		protected EventLoop serving() { return owner(); }
 		
 		public String toString() {

@@ -38,6 +38,7 @@ import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.cmd.CMDTransmitATMessage;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATTable;
@@ -60,6 +61,36 @@ import org.jgroups.blocks.MessageDispatcher;
  * @author tvcutsem
  */
 public final class ELFarReference extends EventLoop implements ConnectionListener {
+	
+	// When the Far Reference needs to be interrupted, this field will be set to a non-null value
+	// The handle tests for the presence of such an interrupt and will call the handleInterrupt() 
+	// method if necessary
+	private BlockingFuture interrupt_ = null;
+	
+	/**
+	 * Signals the far reference that its owning actor has requested to retract unsent messages.
+	 * The interrupt will be handled as soon as the processing of the current event has finished
+	 * @return a blocking future the ELActor thread can wait on.
+	 */
+	public BlockingFuture setInterrupt() {
+		interrupt_ = new BlockingFuture();
+		
+		// the reception of a new interrupt may awaken a sleeping ELFarReference thread, so we notify
+		this.notify();
+		
+		return interrupt_;
+	}
+	
+	/**
+	 * Resolves the current interrupt's future with the vector of transmission events that are 
+	 * in the event queue of the far reference. This is used to retrieve copies of all messages
+	 * being sent through this far reference. Note that this method performs no deserialisation
+	 * of the events into (copied) messages. Such deserialisation needs to be done by an ELActor,
+	 * not the ELFarReference which will execute this method.
+	 */
+	public void handleInterrupt() {
+		interrupt_.resolve(eventQueue_.flush());
+	}
 	
 	private final ELActor owner_;
 	private final ATObjectID destination_;
@@ -97,7 +128,8 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	}
 		
 	public ELFarReference(ATObjectID destination, ELActor owner) {
-		super("far reference " + destination);
+		super("far reference " + destination, false);
+		
 		destination_ = destination;
 		owner_ = owner;
 		
@@ -107,59 +139,102 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		owner_.getHost().membershipNotifier_.addConnectionListener(getDestinationVMAddress(), this);
 		
 		dispatcher_ = owner_.getHost().messageDispatcher_;
+		
+		setCustomEventLoop(new EventProcessingLoop());
 	}
-
+	
 	/**
 	 * Process message transmission events only when the remote reference
 	 * is connected. Otherwise, wait until notified by the <tt>connected</tt> callback.
 	 */
 	public void handle(Event event) {
 		synchronized (this) {
-			while (!connected_) {
+			while (!connected_ && interrupt_ == null) {
 				try {
 					this.wait();
 				} catch (InterruptedException e) { }
 			}
-			event.process(owner_);
+			
+			if(interrupt_ != null) {
+				// re-enqueue the current event in its proper position
+				receivePrioritized(event);
+				
+				// flush the queue
+				handleInterrupt();
+				
+			// else is strictly necessary as the handleInterrupt method has side effects, 
+			// removing the current event from the queue, such that it would be incorrect 
+			// to still send it 
+			} else { // if (connected_) {
+				event.process(this);
+			}
 		}
 	}
 	
-	public void event_transmit(final ATAsyncMessage msg) {
-		receive(new Event("transmit("+msg+")") {
-			public void process(Object owner) {
-				try {
-					// JGROUPS:MessageDispatcher.sendMessage(destination, message, mode, timeout)
-					Object ack = new CMDTransmitATMessage(destination_.getActorId(), new Packet(msg.toString(), msg)).send(
-							           dispatcher_,
-							           getDestinationVMAddress());
-	
-					// non-null return value indicates an exception
-					if (ack != null) {
-						Logging.RemoteRef_LOG.error(this + ": non-null acknowledgement: " + ack);
-					}
-				} catch (TimeoutException e) {
-					Logging.RemoteRef_LOG.warn(this + ": timeout while trying to transmit message, retrying");
-					receivePrioritized(this);
-				} catch (SuspectedException e) {
-					Logging.RemoteRef_LOG.warn(this + ": remote object suspected: " + destination_);
-					receivePrioritized(this);
-				} catch (Exception e) {
-					Logging.RemoteRef_LOG.error(this + ": error upon message transmission:", e);
-				} 
-			}
-		});
+	/**
+	 * TransmissionEvent is a named subclass of event, which allows access to the message the
+	 * packet it is trying to send which is used, should the event be retracted. Moreover, the
+	 * notion of an explicit constructor which is called by the ELActor scheduling it, ensures
+	 * that the serialization of the message happens in the correct thread.
+	 *
+	 * @author smostinc
+	 */
+	private class TransmissionEvent extends Event {
+		public final Packet serializedMessage_;
+		
+		// Called by ELActor
+		public TransmissionEvent(ATAsyncMessage msg) throws XIOProblem {
+			super("transmit("+msg+")");
+			serializedMessage_ = new Packet(msg.toString(), msg);
+		}
+		
+		// Called by ELFarReference
+		public void process(Object owner) {
+			try {
+				// JGROUPS:MessageDispatcher.sendMessage(destination, message, mode, timeout)
+				Object ack = new CMDTransmitATMessage(destination_.getActorId(), serializedMessage_).send(
+						           dispatcher_,
+						           getDestinationVMAddress());
+
+				// non-null return value indicates an exception
+				if (ack != null) {
+					Logging.RemoteRef_LOG.error(this + ": non-null acknowledgement: " + ack);
+				}
+			} catch (TimeoutException e) {
+				Logging.RemoteRef_LOG.warn(this + ": timeout while trying to transmit message, retrying");
+				receivePrioritized(this);
+			} catch (SuspectedException e) {
+				Logging.RemoteRef_LOG.warn(this + ": remote object suspected: " + destination_);
+				receivePrioritized(this);
+			} catch (Exception e) {
+				Logging.RemoteRef_LOG.error(this + ": error upon message transmission:", e);
+			} 
+		}
 	}
 	
-	public ATTable sync_event_retractUnsentMessages() throws InterpreterException {
+	public void event_transmit(final ATAsyncMessage msg) throws XIOProblem {
+		receive(new TransmissionEvent(msg));
+		
+		// the reception of a new event may awaken a sleeping ELFarReference thread, so we notify
+		this.notify();
+	}
+	
+	public ATTable retractUnsentMessages() throws InterpreterException {
+		
+		BlockingFuture eventVectorF = setInterrupt();
+		
+		
 		try {
-			// TODO: shouldn't this event be sheduled in a prioritized fashion?
-			return (ATTable) receiveAndWait("retractUnsentMessages()", new Callable() {
-				public Object call(Object owner) throws Exception {
-					//final NATRemoteFarRef me = (NATRemoteFarRef) owner;
-					// TODO: return outgoing unsent messages
-					return NATTable.EMPTY;
-				}
-			});
+			
+			Vector events = (Vector)eventVectorF.get();
+			
+			for(int i = 0; i < events.size(); i++) {
+				TransmissionEvent current = (TransmissionEvent)events.get(i);
+				events.set(i, current.serializedMessage_.unpack());
+			}
+			
+			return NATTable.atValue((ATObject[])events.toArray());
+
 		} catch (Exception e) {
 			throw (InterpreterException) e;
 		}
@@ -173,7 +248,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	public synchronized void connected() {
 		Logging.RemoteRef_LOG.info(this + ": reconnected to " + destination_);
 		connected_ = true;
-		this.notifyAll();
+		this.notify();
 		
 		if (reconnectedListeners_ != null) {
 			for (Iterator reconnectedIter = reconnectedListeners_.iterator(); reconnectedIter.hasNext();) {
@@ -209,6 +284,27 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	
 	private Address getDestinationVMAddress() {
 		return owner_.getHost().getAddressOf(destination_.getVirtualMachineId());
+	}
+	
+	
+	private final class EventProcessingLoop implements Runnable {
+		public void run() {
+			synchronized (this) {
+				while (eventQueue_.isEmpty() && interrupt_ == null) {
+					try {
+						this.wait();
+					} catch (InterruptedException e) { }
+				}
+
+				if (interrupt_ != null) {
+					handleInterrupt();
+				} else { // if(! eventQueue_.isEmpty()) {
+					try {
+						handle(eventQueue_.dequeue());
+					} catch (InterruptedException e) { }
+				}
+			}
+		}
 	}
 
 }

@@ -375,6 +375,18 @@ public final class OBJLexicalRoot extends NATByCopy {
 		return new NATFarReference.NATReconnectionSubscription(farReference.asNativeFarReference(), listener);
 	}
 
+	/**
+	 * retract: farReference 
+	 * => retract all currently unsent messages from this far references outbox for inspection
+	 * returns a table with a copy of all the messages being sent, the user is responsible to resend all messages that still need to be sent
+	 */
+	public ATObject base_retract_(ATFarReference farReference) throws InterpreterException {
+		if(farReference.asNativeFarReference().getObjectId().isRemote()) {
+			return ((NATRemoteFarRef)farReference).meta_retractUnsentMessages();
+		}
+		return NATTable.EMPTY;
+	}
+	
 	/* -----------------------------
 	 * -- Object Creation Methods --
 	 * ----------------------------- */
