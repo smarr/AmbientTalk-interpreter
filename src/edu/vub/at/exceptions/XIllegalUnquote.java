@@ -27,6 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
@@ -50,4 +52,7 @@ public final class XIllegalUnquote extends InterpreterException {
 	
 	public ATExpression getUnquotation() { return unquotation_; }
 
+	public ATStripe getStripeType() {
+		return NativeStripes._ILLUQUOTE_;
+	}
 }

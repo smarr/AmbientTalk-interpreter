@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 import java.io.IOException;
 
 /**
@@ -46,4 +49,7 @@ public class XIOProblem extends InterpreterException {
 		return getCause().getMessage();
 	}
 
+	public ATStripe getStripeType() {
+		return NativeStripes._IOPROBLEM_;
+	}
 }

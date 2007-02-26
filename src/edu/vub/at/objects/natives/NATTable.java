@@ -38,6 +38,7 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
@@ -59,12 +60,32 @@ public final class NATTable extends AGExpression implements ATTable {
 	
 	public final ATObject[] elements_;
 	
+	/**
+	 * Table factory method. Used to enforce that only one empty table
+	 * in the system exists.
+	 */
 	public static final NATTable atValue(ATObject[] array) {
 		if (array.length == 0)
 			return NATTable.EMPTY;
 		else
 			return new NATTable(array);
-	}	
+	}
+	
+	/*
+	 * Auxiliary methods to create tables more easily.
+	 */
+	
+	public static final NATTable of(ATObject one) {
+		return new NATTable(new ATObject[] { one });
+	}
+	
+	public static final NATTable of(ATObject one, ATObject two) {
+		return new NATTable(new ATObject[] { one, two });
+	}
+	
+	public static final NATTable of(ATObject one, ATObject two, ATObject three) {
+		return new NATTable(new ATObject[] { one, two, three });
+	}
 	
 	private NATTable(ATObject[] elements) {
 		// assert elements.length > 0
@@ -130,6 +151,10 @@ public final class NATTable extends AGExpression implements ATTable {
 	public NATText meta_print() throws InterpreterException {
 		return Evaluator.printElements(this, "[", ", ","]");
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._TABLE_);
+    }
 	
 	public ATNumber base_getLength() { return NATNumber.atValue(elements_.length); }
 

@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 import java.io.InputStream;
 
 /**
@@ -92,7 +95,6 @@ public final class XParseError extends InterpreterException {
 	public InputStream getErroneousCode() {
 		return erroneousCode_;
 	}
-
 	
 	public String getMessage() {
 		if (fileName_ != null) {
@@ -100,6 +102,10 @@ public final class XParseError extends InterpreterException {
 		} else {
 			return super.getMessage();
 		}
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._PARSEERROR_;
 	}
 
 }

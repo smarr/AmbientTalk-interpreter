@@ -29,6 +29,7 @@ package edu.vub.at.exceptions;
 
 import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.natives.NATException;
 
 import java.io.PrintStream;
@@ -47,7 +48,7 @@ import java.io.PrintStream;
  * 
  * @author smostinc
  */
-public class InterpreterException extends Exception {
+public abstract class InterpreterException extends Exception {
 
 	private static final long serialVersionUID = 511962997881825680L;
 
@@ -80,5 +81,7 @@ public class InterpreterException extends Exception {
 	public ATObject getAmbientTalkRepresentation() {
 		return new NATException(this);
 	}
+	
+	public abstract ATStripe getStripeType();
 	
 }

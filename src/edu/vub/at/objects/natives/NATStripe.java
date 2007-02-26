@@ -32,6 +32,7 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -45,6 +46,20 @@ public class NATStripe extends NATByCopy implements ATStripe {
 
 	private final ATSymbol stripeName_;
 	private final ATTable parentStripes_;
+	
+	public static NATStripe atValue(String stripeName) {
+		return atValue(AGSymbol.jAlloc(stripeName));
+	}
+	
+	public static NATStripe atValue(ATSymbol stripeName) {
+		return new NATStripe(stripeName,
+				             NATTable.atValue(new ATObject[] { OBJRootStripe._INSTANCE_ }));
+	}
+	
+	public static NATStripe atValue(String stripeName, NATStripe singleParent) {
+		return new NATStripe(AGSymbol.jAlloc(stripeName),
+				             NATTable.atValue(new ATObject[] { singleParent }));
+	}
 	
 	/**
 	 * Stripes should not be created directly because it should be verified
@@ -122,6 +137,10 @@ public class NATStripe extends NATByCopy implements ATStripe {
 		return NATText.atValue("<stripe:"+stripeName_+">");
 	}
 	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._STRIPE_);
+    }
+	
 	/**
 	 * The root stripe of the stripe hierarchy: every stripe eventually
 	 * has this stripe as its parent.
@@ -133,7 +152,7 @@ public class NATStripe extends NATByCopy implements ATStripe {
 		public static final OBJRootStripe _INSTANCE_ = new OBJRootStripe();
 		
 		/**
-		 * The root stripe is named `stripe and has no parent stripes
+		 * The root stripe is named `Stripe and has no parent stripes
 		 */
 		private OBJRootStripe() {
 			super(_ROOT_NAME_, NATTable.EMPTY);

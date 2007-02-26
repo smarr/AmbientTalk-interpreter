@@ -41,6 +41,7 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATByRef;
@@ -247,6 +248,10 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		ELActor.currentActor().event_acceptSelfSend(msg);
 		return NATNil._INSTANCE_;
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._ACTORMIRROR_);
+    }
 	
 	/**
 	 * When default base-level objects send an asynchronous message, they delegate

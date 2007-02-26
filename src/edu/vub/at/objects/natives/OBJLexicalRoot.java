@@ -48,6 +48,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.mirrors.NATIntercessiveMirror;
 import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
@@ -319,19 +320,6 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
-	 * isolate: { code }
-	 *  => create an isolate object
-	 */
-	public ATObject base_isolate_(ATClosure code) throws InterpreterException {
-		NATIsolate isolate = new NATIsolate();
-		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-				code.base_getMethod().base_getParameters(),
-				code.base_getContext());
-		code.base_applyInScope(copiedBindings, isolate);
-		return isolate;
-	}
-	
-	/**
 	 * export: object as: topic
 	 *  => object becomes discoverable by objects in other actors via topic
 	 * returns a publication object that can be used to cancel the export
@@ -421,15 +409,35 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  { def obj := objectP.new(mirrorOf(someCode).context.lexicalScope);
 	 *    mirrorOf(someCode).method.body.eval(contextP.new(obj, obj, nil));
 	 *    obj }
-	 *  
+	 * 
+	 * The code block used to initialize the object may contain formal parameters.
+	 * If this is the case, the formals are evaluated in the context of the lexical scope
+	 * of the code block to values. These values are then bound to the formal parameters
+	 * in the object itself. This is primarily useful for copying surrounding variables
+	 * within the object, e.g. for isolates which lose access to their surrounding scope.
+	 * 
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent
 	 * @return a new object whose dynamic parent is NIL, whose lexical parent is the closure's lexical scope, initialized by the closure's code
 	 * @throws InterpreterException if raised inside the code closure.
 	 */
 	public ATObject base_object_(ATClosure code) throws InterpreterException {
 		NATObject newObject = new NATObject(code.base_getContext().base_getLexicalScope());
-		code.base_applyInScope(NATTable.EMPTY, newObject);
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				code.base_getMethod().base_getParameters(),
+				code.base_getContext());
+		code.base_applyInScope(copiedBindings, newObject);
 		return newObject;
+	}
+	
+	/**
+	 * isolate: { code }
+	 *  => create an isolate object
+	 *  
+	 * Equivalent to:
+	 *   object: { code } stripedWith: [ at.stripes.Isolate ]
+	 */
+	public ATObject base_isolate_(ATClosure code) throws InterpreterException {
+		return base_object_stripedWith_(code, NATTable.of(NativeStripes._ISOLATE_));
 	}
 	
 	/**

@@ -67,7 +67,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	
 	protected FieldMap 		variableMap_;
 	protected final Vector	stateVector_;
-	protected final ATObject 	lexicalParent_;
+	protected ATObject 	lexicalParent_;
 	protected LinkedList customFields_;
 	
 	public NATCallframe(ATObject lexicalParent) {

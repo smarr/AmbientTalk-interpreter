@@ -32,6 +32,7 @@ import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.util.MultiMap;
 
 import java.lang.ref.WeakReference;
@@ -78,7 +79,7 @@ public class ReceptionistsSet {
 		farReferences_ = new Hashtable();
 	}
 	
-	private NATRemoteFarRef createRemoteFarRef(ATObjectID objectId) {
+	private NATRemoteFarRef createRemoteFarRef(ATObjectID objectId, ATStripe[] stripes) {
 		NATRemoteFarRef farref;
 		WeakReference pooled = (WeakReference) remoteReferences_.get(objectId);
 		if (pooled != null) {
@@ -87,12 +88,12 @@ public class ReceptionistsSet {
 				return farref;
 			}
 		}
-		farref = new NATRemoteFarRef(objectId, owner_);
+		farref = new NATRemoteFarRef(objectId, owner_, stripes);
 		remoteReferences_.put(objectId, new WeakReference(farref));
 		return farref;
 	}
 	
-	private NATLocalFarRef createLocalFarRef(ELActor actor, ATObjectID objectId) {
+	private NATLocalFarRef createLocalFarRef(ELActor actor, ATObjectID objectId, ATStripe[] stripes) {
 		NATLocalFarRef farref;
 		WeakReference pooled = (WeakReference) farReferences_.get(objectId);
 		if (pooled != null) {
@@ -102,7 +103,7 @@ public class ReceptionistsSet {
 			}
 		}
 
-		farref = new NATLocalFarRef(actor, objectId);
+		farref = new NATLocalFarRef(actor, objectId, stripes);
 		farReferences_.put(objectId, new WeakReference(farref));
 		return farref;
 	}
@@ -131,7 +132,11 @@ public class ReceptionistsSet {
 		   exportedObjectsTable_.put(objId, object);
 		}
 		
-		return createLocalFarRef(owner_, objId);
+		// copy stripes of local object
+		ATObject[] origStripes = object.meta_getStripes().asNativeTable().elements_;
+		ATStripe[] stripes = new ATStripe[origStripes.length];
+		System.arraycopy(origStripes, 0, stripes, 0, origStripes.length);
+		return createLocalFarRef(owner_, objId, stripes);
 	}
 	
 	/**
@@ -141,17 +146,17 @@ public class ReceptionistsSet {
 	 * @return either the local object corresponding to that identifier, or a far reference designating the id
 	 * @throws InterpreterException
 	 */
-	public ATObject resolveObject(ATObjectID objectId) {
+	public ATObject resolveObject(ATObjectID objectId, ATStripe[] stripes) {
 		ATObject localObject = (ATObject) exportedObjectsTable_.get(objectId);
 		if (localObject == null) {
 			// the resolved object is not local
 			if (objectId.isRemote()) {
 				// the designated object does not live in this VM
-				return createRemoteFarRef(objectId);
+				return createRemoteFarRef(objectId, stripes);
 			} else {
 				// the designated object lives in the same VM as this actor
 				ELActor localActor = owner_.getHost().getActor(objectId.getActorId());
-				return createLocalFarRef(localActor, objectId);
+				return createLocalFarRef(localActor, objectId, stripes);
 			}
 		} else {
 			return localObject; // far ref now resolved to near ref

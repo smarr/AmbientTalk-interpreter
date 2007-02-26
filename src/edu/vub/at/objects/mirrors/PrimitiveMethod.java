@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
@@ -88,5 +89,9 @@ public abstract class PrimitiveMethod extends NATByCopy implements ATMethod {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<primitive method:"+name_+">");
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._METHOD_);
+    }
 	
 }

@@ -30,7 +30,9 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATNil;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -42,12 +44,14 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  * 
  * @author tvc
  */
-public abstract class NATMessage extends NATIsolate implements ATMessage {
+public abstract class NATMessage extends NATObject implements ATMessage {
 
 	private final static AGSymbol _SELECTOR_ = AGSymbol.jAlloc("selector");
 	private final static AGSymbol _ARGUMENTS_ = AGSymbol.jAlloc("arguments");
 	
 	public NATMessage(ATSymbol sel, ATTable arg) throws InterpreterException {
+		// tag object as a Message and as an Isolate
+		super(new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._MESSAGE_ });
 		super.meta_defineField(_SELECTOR_, sel);
 		super.meta_defineField(_ARGUMENTS_, arg);
 	}

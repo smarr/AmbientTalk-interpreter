@@ -32,6 +32,8 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 
 /**
  * 
@@ -60,6 +62,10 @@ public class NATHandler extends NATByRef implements ATHandler {
 	public ATHandler base_asHandler() {
 		return this;
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._HANDLER_);
+    }
 
 	// TODO(exception handling) meta_pass on a handler
 }

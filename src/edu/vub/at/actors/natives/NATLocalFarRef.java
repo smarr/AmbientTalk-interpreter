@@ -31,6 +31,7 @@ import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
@@ -48,8 +49,8 @@ public class NATLocalFarRef extends NATFarReference {
 	/** when serializing a far reference, the event loop stays home */
 	private transient final ELActor farObjectHost_;
 	
-	public NATLocalFarRef(ELActor farObjectHost, ATObjectID objectId) {
-		super(objectId);
+	public NATLocalFarRef(ELActor farObjectHost, ATObjectID objectId, ATStripe[] stripes) {
+		super(objectId, stripes);
 		farObjectHost_ = farObjectHost;
 	}
 

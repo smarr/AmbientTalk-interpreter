@@ -38,6 +38,7 @@ import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByRef;
@@ -326,6 +327,10 @@ public class NATIntrospectiveMirror extends NATByRef implements ATMirror {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<mirror on:"+principal_.meta_print().javaValue+">");
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._MIRROR_);
+    }
 	
 	/**
 	 * OBSOLETE: introspective mirrors are now pass-by-reference.

@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 /**
  * XIllegalApplication is thrown when a natively implemented method is applied incorrectly.
  * This is often the case when an anonymous method (implemented in Java) is applied instead
@@ -51,6 +54,10 @@ public final class XIllegalApplication extends InterpreterException {
 	
 	public Class getImplementorClass() {
 		return nativeImplementor_;
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._ILLAPP_;
 	}
 
 }

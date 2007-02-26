@@ -32,10 +32,11 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.NATIsolate;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGAssignField;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 import edu.vub.at.parser.NATParser;
 
 import java.io.ByteArrayInputStream;
@@ -102,12 +103,14 @@ public class SerializationTest extends AmbientTalkTest {
 	 * by a coercer.
 	 */
 	public void testCoercerSerialization() throws InterpreterException {
-		NATIsolate o = new NATIsolate();
-		ATTable coercer = o.base_asTable();
+		NATObject isolate = NATObject.createIsolate();
+		ATTable coercer = isolate.base_asTable();
+		assertTrue(coercer instanceof SymbioticATObjectMarker);
 		Packet p = new Packet("test", coercer);
 		ATObject obj = p.unpack();
-		assertEquals(NATIsolate.class, obj.getClass());
-		assertFalse(obj == o);
+		assertEquals(NATObject.class, obj.getClass());
+		assertFalse(obj instanceof SymbioticATObjectMarker);
+		assertFalse(obj == isolate);
 	}
 	
 }

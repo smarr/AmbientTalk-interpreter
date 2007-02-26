@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
@@ -60,5 +61,9 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<method invocation:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._METHODINV_);
+    }
 	
 }

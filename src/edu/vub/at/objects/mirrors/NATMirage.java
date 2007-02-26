@@ -245,6 +245,14 @@ public class NATMirage extends NATObject {
 	public ATObject magic_resolve() throws InterpreterException {
 		return super.meta_resolve();
 	}
+	
+	public ATBoolean magic_isStripedWith(ATStripe stripe) throws InterpreterException {
+		return super.meta_isStripedWith(stripe);
+	}
+	
+	public ATTable magic_getStripes() throws InterpreterException {
+		return super.meta_getStripes();
+	}
 
 	
 	// META Methods 
@@ -467,6 +475,17 @@ public class NATMirage extends NATObject {
     public ATObject meta_resolve() throws InterpreterException {
     	return Reflection.downObject(mirror_.meta_invoke(
 				mirror_, AGSymbol.jAlloc("resolve"), NATTable.EMPTY));
+    }
+    
+    public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException {
+    	return Reflection.downObject(mirror_.meta_invoke(
+				mirror_, AGSymbol.jAlloc("isStripedWith"), NATTable.of(stripe))).base_asBoolean();
+    }
+    
+    public ATTable meta_getStripes() throws InterpreterException {
+		return Reflection.downObject(mirror_.meta_select(
+				mirror_,
+				AGSymbol.jAlloc("stripes"))).base_asTable();
     }
 	
 	public boolean base_isMirror() {

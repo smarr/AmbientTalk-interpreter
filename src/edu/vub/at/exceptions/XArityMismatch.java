@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 /**
  * XArityMismatch is thrown during function application when actual arguments are bound to formal parameters
  * and there are either too many or too few actual arguments supplied.
@@ -48,6 +51,10 @@ public final class XArityMismatch extends InterpreterException {
 	public XArityMismatch(String funnam, int numParameters, int numArguments) {
 		super( ((numParameters < numArguments) ? _TOO_MANY_ : _TOO_FEW_)
 				 + funnam + "; expected " + numParameters + ", given " + numArguments);
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._ARITYMISMATCH_;
 	}
 
 }

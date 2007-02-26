@@ -37,7 +37,7 @@ import edu.vub.at.objects.natives.NATText;
 import java.util.HashMap;
 
 /**
- * @author tvc
+ * @author tvcutsem
  *
  * The native implementation of a symbol AG element.
  * Symbols should only be created via a call to AGSymbol.alloc
@@ -45,28 +45,31 @@ import java.util.HashMap;
  */
 public class AGSymbol extends AGExpression implements ATSymbol {
 
+	/** hashmap shared by ALL actors/VMs, hence, thread access should be explicitly synchronized */
 	private static final HashMap _STRINGPOOL_ = new HashMap();
 
-	private final ATText txt_;
+	private final String txt_;
 	
-	protected AGSymbol(ATText txt) {
+	protected AGSymbol(String txt) {
 		txt_ = txt;
 	}
 	
-	public static final AGSymbol jAlloc(String javaRepresentation) {
-		return alloc(NATText.atValue(javaRepresentation));
-	}
-	
-	public static final AGSymbol alloc(ATText txt) {
-		AGSymbol existing = (AGSymbol) _STRINGPOOL_.get(txt);
-		if (existing == null) {
-			existing = new AGSymbol(txt);
-			_STRINGPOOL_.put(txt, existing);
+	public static final AGSymbol jAlloc(String name) {
+		synchronized (_STRINGPOOL_) {
+			AGSymbol existing = (AGSymbol) _STRINGPOOL_.get(name);
+			if (existing == null) {
+				existing = new AGSymbol(name);
+				_STRINGPOOL_.put(name, existing);
+			}
+			return existing;	
 		}
-		return existing;
 	}
 	
-	public ATText base_getText() { return txt_; }
+	public static final AGSymbol alloc(NATText txt) {
+		return jAlloc(txt.javaValue);
+	}
+	
+	public ATText base_getText() { return NATText.atValue(txt_); }
 
 	/**
 	 * To evaluate a symbol reference, look up the symbol in the lexical scope.
@@ -89,7 +92,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return txt_.asNativeText();
+		return NATText.atValue(txt_);
 	}
 	
 	public boolean base_isSymbol() {
@@ -114,18 +117,14 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	}
 	
 	public String toString() {
-		try {
-			return txt_.asNativeText().javaValue;
-		} catch (InterpreterException e) {
-			return super.toString();
-		}
+		return txt_;
 	}
 	
 	/**
 	 * After deserialization, ensure that the symbol remains unique.
 	 */
 	public ATObject meta_resolve() throws InterpreterException {
-		return alloc(txt_);
+		return jAlloc(txt_);
 	}
 
 }

@@ -33,12 +33,12 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
-import edu.vub.at.objects.natives.NATIsolate;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -63,9 +63,11 @@ import java.util.Vector;
  *  - if f starts with a lowercase symbol, the field access is interpreted as a subpackage reference:
  *    The JavaPackage creates a new field referring to a JavaPackage whose path equals 'p.f.'
  *    
+ * JavaPackage instances are isolates, hence, they are pass-by-copy.
+ * 
  * @author tvcutsem
  */
-public final class JavaPackage extends NATIsolate {
+public final class JavaPackage extends NATObject {
 
 	private static final String _PKG_SEP_ = ".";
 	
@@ -94,9 +96,12 @@ public final class JavaPackage extends NATIsolate {
 	 * A package path is a '.'-separated string, always ending with a '.'
 	 * The jlobby root package has an empty package path
 	 * 
+	 * A JavaPackage is initialized as an AT/2 isolate object.
+	 * 
 	 * @param path the pathname of this JavaPackage, e.g. 'java.' or 'java.lang.'
 	 */
 	public JavaPackage(String path) {
+		super(new ATStripe[] { NativeStripes._ISOLATE_ });
 		path_ = path;
 		try {
 			super.meta_addMethod(_PRIM_CLS_);

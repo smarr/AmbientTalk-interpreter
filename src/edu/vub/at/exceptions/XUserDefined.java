@@ -28,6 +28,8 @@
 package edu.vub.at.exceptions;
 
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
 
 /**
  * Instances of the XUserDefined act as wrappers for ATObjects which are thrown at the
@@ -49,5 +51,9 @@ public class XUserDefined extends InterpreterException {
 
 	public ATObject getAmbientTalkRepresentation() {
 		return customException_;
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._CUSTOMEXCEPTION_;
 	}
 }

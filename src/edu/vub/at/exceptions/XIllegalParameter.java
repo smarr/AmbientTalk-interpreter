@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 /**
  * An XIllegalParameter exception is raised when the interpreter detects a faulty
  * formal parameter list of a function or method when it is invoked.
@@ -42,6 +45,10 @@ public class XIllegalParameter extends InterpreterException {
 	
 	public XIllegalParameter(String ofFun, String msg) {
 		super("Illegal parameter list for " + ofFun + ": "+msg);
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._ILLPARAM_;
 	}
 
 }

@@ -32,6 +32,8 @@ import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATFraction;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATNumeric;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 
 /**
  * The native implementation of an AmbientTalk fraction.
@@ -69,6 +71,10 @@ public final class NATFraction extends NATNumeric implements ATFraction {
 	public NATText meta_print() throws InterpreterException {
         return NATText.atValue(String.valueOf(javaValue));
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._FRACTION_);
+    }
 	
 	// contract with NATNumeric
 	protected double getJavaValue() { return javaValue; }

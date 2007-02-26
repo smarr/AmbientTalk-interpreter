@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 /**
  * An XIndexOutOfBounds exception is raised when an attempt is made to access or modify an AGTable beyond its capacity.
  * 
@@ -38,6 +41,10 @@ public final class XIndexOutOfBounds extends InterpreterException {
 
 	public XIndexOutOfBounds(int atIndex, int atLength) {
 		super("Index out of bounds: "+ atIndex + " (size = " + atLength + ")");
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._IDXOUTOFBOUNDS_;
 	}
 
 }

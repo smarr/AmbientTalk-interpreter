@@ -32,6 +32,7 @@ import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATNil;
 
@@ -50,8 +51,8 @@ public class NATRemoteFarRef extends NATFarReference {
 	 */
 	transient final ELFarReference sendLoop_;
 
-	public NATRemoteFarRef(ATObjectID objectId, ELActor hostActor) {
-		super(objectId);
+	public NATRemoteFarRef(ATObjectID objectId, ELActor hostActor, ATStripe[] stripes) {
+		super(objectId, stripes);
 		sendLoop_ = new ELFarReference(objectId, hostActor);
 	}
 	

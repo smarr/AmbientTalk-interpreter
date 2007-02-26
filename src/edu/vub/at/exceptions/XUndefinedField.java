@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 /**
  * An XUndefinedField exception is raised whenever a variable reference lookup fails,
  * or a field assignment lookup fails. It generally means a variable was accessed which
@@ -42,4 +45,7 @@ public final class XUndefinedField extends InterpreterException {
 		super("Undefined " + message + ": " + fieldName);
 	}
 
+	public ATStripe getStripeType() {
+		return NativeStripes._UNDEFINEDFIELD_;
+	}
 }

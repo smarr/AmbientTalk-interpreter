@@ -36,6 +36,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.mirrors.NativeClosure;
 
 /**
@@ -222,5 +223,9 @@ public class NATClosure extends NATByRef implements ATClosure {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<closure:"+method_.base_getName()+">");
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._CLOSURE_);
+    }
     
 }

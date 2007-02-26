@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
@@ -208,5 +209,9 @@ public class OBJMirrorRoot extends NATByCopy {
 	public ATObject meta_resolve() throws InterpreterException {
 		return OBJMirrorRoot._INSTANCE_;
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._MIRROR_);
+    }
 	
 }

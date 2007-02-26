@@ -29,6 +29,8 @@ package edu.vub.at.exceptions;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
 
 /**
  * XTypeMismatch instances are thrown when a value conversion failed.
@@ -60,6 +62,10 @@ public class XTypeMismatch extends InterpreterException {
 		String obj = Evaluator.toString(failedObject_);
 		return "Type mismatch: expected " + Evaluator.valueNameOf(expectedType_)
 		           + ", given " + obj + " (type: " + Evaluator.valueNameOf(failedObject_.getClass())+ ")";
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._TYPEMISMATCH_;
 	}
 
 }

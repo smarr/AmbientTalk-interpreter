@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 
 /**
  * An XDuplicateSlot exception is raised when a field or a method is added to
@@ -42,4 +45,7 @@ public final class XDuplicateSlot extends InterpreterException {
 		super("Duplicate " + slotType + " definition for " + slotName);
 	}
 
+	public ATStripe getStripeType() {
+		return NativeStripes._DUPLICATESLOT_;
+	}
 }

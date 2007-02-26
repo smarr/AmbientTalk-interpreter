@@ -27,7 +27,11 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.natives.NATTable;
 
 /**
  * @author tvc
@@ -38,4 +42,8 @@ public abstract class AGExpression extends NATAbstractGrammar implements ATExpre
 
 	public ATExpression base_asExpression() { return this; }
 
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._EXPRESSION_);
+    }
+	
 }

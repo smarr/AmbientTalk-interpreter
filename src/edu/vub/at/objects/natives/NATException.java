@@ -71,4 +71,8 @@ public class NATException extends NATByCopy {
 			return NATBoolean._FALSE_;
 		}
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(wrappedException_.getStripeType());
+    }
 }

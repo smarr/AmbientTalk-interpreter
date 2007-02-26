@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
@@ -94,5 +95,9 @@ public class NATField extends NATByRef implements ATField {
 			return new NATField(name_, (NATCallframe) newhost);
 		}
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._FIELD_);
+    }
 
 }

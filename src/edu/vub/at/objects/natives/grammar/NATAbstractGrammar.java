@@ -29,8 +29,10 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.natives.NATByCopy;
-import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.NATTable;
 
 /**
  * @author tvc
@@ -47,8 +49,8 @@ public abstract class NATAbstractGrammar extends NATByCopy implements ATAbstract
 	// subclasses of NATAbstractGrammar will override meta_eval and meta_quote as appropriate,
 	// except for the literal grammar elements which can inherit the self-evaluating behaviour of NATNil.
 	
-	public NATText meta_print() throws InterpreterException {
-        throw new RuntimeException("all subclasses of NATAbstractGrammar should override the default behaviour of NATNil");
-	}
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._ABSTRACTGRAMMAR_);
+    }
 	
 }

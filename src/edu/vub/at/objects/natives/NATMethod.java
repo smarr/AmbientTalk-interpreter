@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 
@@ -124,5 +125,9 @@ public class NATMethod extends NATByCopy implements ATMethod {
 	public boolean base_isMethod() {
 		return true;
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._METHOD_);
+    }
 
 }

@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 /**
  * An instance of the class XReflectionFailure is thrown when something goes wrong
  * when dealing with mirror or mirage operations. By extension this also covers 
@@ -60,6 +63,10 @@ public class XReflectionFailure extends InterpreterException {
 		} else {
 		    return super.getMessage();
 		}
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._REFLECTIONFAILURE_;
 	}
 
 }

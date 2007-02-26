@@ -40,6 +40,7 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATBoolean;
@@ -321,6 +322,10 @@ public final class JavaObject extends NATObject implements ATObject {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<java:"+wrappedObject_.toString()+">");
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._JAVAOBJECT_);
+    }
 	
 	/**
 	 * Passing a Java Object wrapper to another actor has the following effect:

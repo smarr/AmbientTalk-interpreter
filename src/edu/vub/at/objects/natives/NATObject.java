@@ -48,6 +48,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.Coercer;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -86,6 +87,7 @@ import java.util.Vector;
  *   - whether the dynamic parent is an IS_A or a SHARES_A parent
  *   - whether the object shares its variable map with clones
  *   - whether the object shares its method dictionary with clones
+ *   - whether the object is an isolate (i.e. pass-by-copy)
  * - a variable map, mapping variable names to indices into the state vector
  * - a state vector, containing the field values of the object
  * - a linked list containing custom field objects
@@ -159,16 +161,24 @@ public class NATObject extends NATCallframe implements ATObject {
 	private static final byte _SHARE_DCT_FLAG_ = 1<<2;
 	
 	/**
+	 * This flag determines whether or not the object is an isolate and hence pass-by-copy:
+	 *  - 1: the object is an isolate, pass-by-copy and no lexical parent except for the root
+	 *  - 0: the object is pass-by-reference and can have any lexical parent
+	 */
+	private static final byte _IS_ISOLATE_FLAG_ = 1<<3;
+	
+	/**
 	 * An empty stripe array shared by those objects that do not have any stripes.
 	 */
 	private static final ATStripe[] _NO_STRIPES_ = new ATStripe[0];
 	
 	/**
 	 * The flags of an AmbientTalk object encode the following boolean information:
-	 *  Format: 0b00000dmp where
+	 *  Format: 0b0000idmp where
 	 *   p = parent flag: if set, dynamic parent is 'is-a' parent, otherwise 'shares-a' parent
 	 *   m = shares map flag: if set, the map of this object is shared between clones
 	 *   d = shares dictionary flag: if set, the method dictionary of this object is shared between clones
+	 *   i = is isolate flag: if set, the object is passed by copy in inter-actor communication
 	 */
 	private byte flags_;
 	
@@ -205,6 +215,20 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	public NATObject() {
 		this(Evaluator.getGlobalLexicalScope());
+	}
+	
+	/**
+	 * Creates an object striped with the at.stripes.Isolate stripe.
+	 * Such an object is called an isolate because:
+	 *  - it has no access to an enclosing lexical scope (except for the root lexical scope)
+	 *  - it can therefore be passed by copy
+	 */
+	public static NATObject createIsolate() {
+		return new NATObject(new ATStripe[] { NativeStripes._ISOLATE_ });
+	}
+	
+	public NATObject(ATStripe[] stripes) {
+		this(Evaluator.getGlobalLexicalScope(), stripes);
 	}
 	
 	/**
@@ -255,6 +279,18 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	public NATObject(ATObject dynamicParent, ATObject lexicalParent, boolean parentType, ATStripe[] stripes) {
 		super(lexicalParent);
+		
+		flags_ = 0; // by default, an object has a shares-a parent and does not share its map/dictionary
+		
+		stripes_ = stripes;
+		
+		// if this object is striped as at.stripes.Isolate, flag it as an isolate
+		if (isStripedAsIsolate()) {
+			setFlag(_IS_ISOLATE_FLAG_);
+			// isolates can only have the global lexical root as their lexical scope
+			lexicalParent_ = Evaluator.getGlobalLexicalScope();
+		}
+		
 		methodDictionary_ = new MethodDictionary();
 		
 		// bind the dynamic parent to the field named 'super'
@@ -268,13 +304,10 @@ public class NATObject extends NATCallframe implements ATObject {
 		methodDictionary_.put(_NEW_NAME_, _PRIM_NEW_);
 		methodDictionary_.put(_INI_NAME_, _PRIM_INI_);
 		
-		flags_ = 0; // by default, an object has a shares-a parent and does not share its map/dictionary
 		if (parentType) {
 			// requested an 'is-a' parent
 			setFlag(_ISAPARENT_FLAG_); // set is-a parent flag to 1
 		}
-		
-		stripes_ = stripes;
 	}
 	
 	/**
@@ -299,6 +332,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		
 		flags_ = flags; //a cloned object inherits all flags from original
 		
+		// clone inherits all stripes (this implies that clones of isolates are also isolates)
 		stripes_ = stripes;
 		
 		// ==, new and init should already be present in the method dictionary
@@ -584,7 +618,12 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<object:"+this.hashCode()+">");
+		if (stripes_ == _NO_STRIPES_) {
+			return NATText.atValue("<object:"+this.hashCode()+">");
+		} else {
+			return NATText.atValue("<object:"+this.hashCode()+
+					               Evaluator.printElements(stripes_, "[", ",", "]").javaValue+">");
+		}
 	}
 	
 	public boolean base_isCallFrame() {
@@ -615,35 +654,26 @@ public class NATObject extends NATCallframe implements ATObject {
 	            stripes);
 	}
 	
-	// private methods
-	
-	private boolean isFlagSet(byte flag) {
-		return (flags_ & flag) != 0;
-	}
-
-	private void setFlag(byte flag) {
-		flags_ = (byte) (flags_ | flag);
-	}
-
-	private void unsetFlag(byte flag) {
-		flags_ = (byte) (flags_ & (~flag));
-	}
-	
-	private boolean hasLocalMethod(ATSymbol selector) {
-		return methodDictionary_.containsKey(selector);
-	}
-	
-	private ATMethod getLocalMethod(ATSymbol selector) throws XSelectorNotFound {
-		ATMethod result = (ATMethod) methodDictionary_.get(selector);
-		if(result == null) {
-			throw new XSelectorNotFound(selector, this);
-		} else {
-			return result;
-		}
-	}
-	
-	private boolean isPrimitive(ATSymbol name) {
-		return name.equals(_EQL_NAME_) || name.equals(_NEW_NAME_) || name.equals(_INI_NAME_);
+	/**
+	 * When creating children of objects, care must be taken that an extension
+	 * of an isolate itself remains an isolate.
+	 */
+	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws InterpreterException {
+		NATObject extension = new NATObject(
+				/* dynamic parent */
+				this,
+				/* lexical parent -> isolates don't inherit outer scope! */
+				isFlagSet(_IS_ISOLATE_FLAG_) ?
+						Evaluator.getGlobalLexicalScope() :
+						code.base_getContext().base_getLexicalScope(),
+				/* parent pointer type */
+				parentPointerType);
+		
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				code.base_getMethod().base_getParameters(),
+				code.base_getContext());
+		code.base_applyInScope(copiedBindings, extension);
+		return extension;
 	}
 	
     /* ----------------------------------
@@ -697,6 +727,42 @@ public class NATObject extends NATCallframe implements ATObject {
     public ATTable meta_getStripes() throws InterpreterException {
     	return NATTable.atValue(stripes_);
     }
+    
+    
+	// NATObject has to duplicate the NATByCopy implementation
+	// because NATObject inherits from NATByRef, and because Java has no
+	// multiple inheritance to override that implementation with that of
+    // NATByCopy if this object signifies an isolate.
+	
+    /**
+     * An isolate object does not return a proxy representation of itself
+     * during serialization, hence it is serialized itself. If the object
+     * is not an isolate, invoke the default behaviour for by-reference objects
+     */
+    public ATObject meta_pass() throws InterpreterException {
+    	if (isFlagSet(_IS_ISOLATE_FLAG_)) {
+    		// let go of the old local lexical root, it will be rebound upon deserialization
+    		lexicalParent_ = NATNil._INSTANCE_;
+    		return this;
+    	} else {
+    		return super.meta_pass();
+    	}
+    }
+	
+    /**
+     * An isolate object represents itself upon deserialization.
+     * If this object is not an isolate, the default behaviour for by-reference
+     * objects is invoked.
+     */
+    public ATObject meta_resolve() throws InterpreterException {
+    	if (isFlagSet(_IS_ISOLATE_FLAG_)) {
+    		// re-bind to the new local global lexical root
+    		lexicalParent_ = Evaluator.getGlobalLexicalScope();
+    		return this;
+    	} else {
+    		return super.meta_resolve();
+    	}
+    }
 
 	/* ---------------------------------------
 	 * -- Conversion and Testing Protocol   --
@@ -747,5 +813,49 @@ public class NATObject extends NATCallframe implements ATObject {
 	public boolean base_isTable() { return true; }
 	public boolean base_isUnquoteSplice() { return true; }
 	public boolean base_isStripe() { return true; }
+	
+	
+	// private methods
+	
+	private boolean isFlagSet(byte flag) {
+		return (flags_ & flag) != 0;
+	}
+
+	private void setFlag(byte flag) {
+		flags_ = (byte) (flags_ | flag);
+	}
+
+	private void unsetFlag(byte flag) {
+		flags_ = (byte) (flags_ & (~flag));
+	}
+	
+	private boolean hasLocalMethod(ATSymbol selector) {
+		return methodDictionary_.containsKey(selector);
+	}
+	
+	private ATMethod getLocalMethod(ATSymbol selector) throws XSelectorNotFound {
+		ATMethod result = (ATMethod) methodDictionary_.get(selector);
+		if(result == null) {
+			throw new XSelectorNotFound(selector, this);
+		} else {
+			return result;
+		}
+	}
+	
+	private boolean isPrimitive(ATSymbol name) {
+		return name.equals(_EQL_NAME_) || name.equals(_NEW_NAME_) || name.equals(_INI_NAME_);
+	}
+	
+	/**
+	 * @return whether this object is striped as an Isolate or not
+	 */
+	private boolean isStripedAsIsolate() {
+		for (int i = 0; i < stripes_.length; i++) {
+			if (stripes_[i].equals(NativeStripes._ISOLATE_)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 }

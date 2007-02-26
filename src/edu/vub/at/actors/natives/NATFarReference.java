@@ -40,6 +40,7 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
@@ -47,6 +48,7 @@ import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -66,6 +68,10 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  * Note that far references are pass by copy and resolve to either a near or a new
  * actor-local far reference.
  * 
+ * Far references encapsulate the same stripes as the remote object they represent.
+ * As such it becomes possible to perform a stripe test on a far reference as if it
+ * was performed on the local object itself!
+ * 
  * @author tvcutsem
  * @author smostinc
  */
@@ -73,9 +79,13 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	
 	// encodes the identity of the far object pointed at
 	private final ATObjectID objectId_;
+	
+	// the stripes with which the remote object is tagged
+	private final ATStripe[] stripes_;
 
-	protected NATFarReference(ATObjectID objectId) {
+	protected NATFarReference(ATObjectID objectId, ATStripe[] stripes) {
 		objectId_ = objectId;
+		stripes_ = stripes;
 	}
 	
 	public ATObjectID getObjectId() {
@@ -92,7 +102,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 */
 	public ATObject meta_resolve() throws InterpreterException {
 		// it may be that the once local target object is now remote!
-		return ELActor.currentActor().resolve(getObjectId());
+		return ELActor.currentActor().resolve(getObjectId(), stripes_);
 	}
 
 	/* ------------------------------
@@ -295,6 +305,14 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		throw new XSelectorNotFound(AGSymbol.jAlloc("lexicalParent"), this);
 	}
 	
+	/**
+	 * The stripes of a far reference are the stripes of the remote object
+	 * it points to, plus the FarReference stripe.
+	 */
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.atValue(stripes_);
+    }
+	
 	public boolean base_isFarReference() {
 		return true;
 	}
@@ -323,7 +341,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<disconnection-listener:"+ this.meta_select(this, _REFERENCE_)+">");
+			return NATText.atValue("<disconnection subscription:"+ this.meta_select(this, _REFERENCE_)+">");
 		}
 	}
 	
@@ -347,7 +365,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<disconnection-listener:"+ this.meta_select(this, _REFERENCE_)+">");
+			return NATText.atValue("<reconnection subscription:"+ this.meta_select(this, _REFERENCE_)+">");
 		}
 	}
 	

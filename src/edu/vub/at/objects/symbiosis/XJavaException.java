@@ -28,6 +28,8 @@
 package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -110,6 +112,10 @@ public final class XJavaException extends InterpreterException {
 
 	public String toString() {
 		return wrappedJavaException_.toString();
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._JAVAEXCEPTION_;
 	}
 	
 }

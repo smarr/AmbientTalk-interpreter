@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 /**
  * Raised when a request to load a class via a JavaPackage failed.
  * 
@@ -38,6 +41,10 @@ public final class XClassNotFound extends InterpreterException {
 
 	public XClassNotFound(String qualifiedClassname, Throwable cause) {
 		super("Could not find class " + qualifiedClassname, cause);
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._CLASSNOTFOUND_;
 	}
 	
 }

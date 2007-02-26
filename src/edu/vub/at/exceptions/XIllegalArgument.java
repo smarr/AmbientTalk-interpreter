@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 /**
  * An XIllegalArgument exception is thrown when primitive operations on native types
  * get passed an illegal argument value.
@@ -43,6 +46,10 @@ public final class XIllegalArgument extends InterpreterException {
 	
 	public XIllegalArgument(String message, Throwable cause) {
 		super(message, cause);
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._ILLARG_;
 	}
 
 }

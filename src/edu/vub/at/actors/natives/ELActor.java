@@ -39,25 +39,15 @@ import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XClassNotFound;
-import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATContext;
-import edu.vub.at.objects.natives.NATNamespace;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
-
-import java.io.File;
-import java.io.FilenameFilter;
-
-import com.openbase.jdbc.h;
 
 /**
  * An instance of the class ELActor represents a programmer-defined
@@ -148,8 +138,8 @@ public class ELActor extends EventLoop {
 	 * @param id the identifier of the object to resolve
 	 * @return a near or far reference to the object, depending on where the designated object lives
 	 */
-	public ATObject resolve(ATObjectID id) {
-		return receptionists_.resolveObject(id);
+	public ATObject resolve(ATObjectID id, ATStripe[] stripes) {
+		return receptionists_.resolveObject(id, stripes);
 	}
 	
 	
@@ -159,7 +149,7 @@ public class ELActor extends EventLoop {
 	 * ----------------------------- */
 
 	/**
-	 * Initialises the root using the contents of the init file's contents stored by
+	 * Initialises the root using the contents of the init file stored by
 	 * the hosting virtual machine.
 	 * @throws InterpreterException
 	 */

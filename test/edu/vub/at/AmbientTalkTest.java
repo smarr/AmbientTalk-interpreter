@@ -14,7 +14,6 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATContext;
-import edu.vub.at.objects.natives.NATIsolate;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
@@ -38,7 +37,7 @@ public abstract class AmbientTalkTest extends TestCase {
 			try {
 				ELVirtualMachine host = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
 				evalActor_ = NATActorMirror.atValue(host,
-						new Packet("behaviour",new NATIsolate()),
+						new Packet("behaviour", NATObject.createIsolate()),
 						new NATActorMirror(host)
 				  ).getFarHost();
 			} catch (InterpreterException e) {

@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 /**
  * An XIllegalIndex exception is thrown by the evaluator whenever an invalid
  * value is used as the index into a table (e.g. when defining, assigning or referencing it).
@@ -41,6 +44,10 @@ public final class XIllegalIndex extends InterpreterException {
 
 	public XIllegalIndex(String msg) {
 		super(_MESSAGE_ + msg);
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._ILLIDX_;
 	}
 
 }

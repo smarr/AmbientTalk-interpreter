@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 /**
  * XIllegalOperation is thrown whenever an operation is requested that is a violation
  * of the expected semantics of the interpreter. When originating from base-level code
@@ -53,7 +56,10 @@ public class XIllegalOperation extends InterpreterException {
 
 	public XIllegalOperation(Throwable cause) {
 		super(cause);
-
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._ILLOP_;
 	}
 
 }

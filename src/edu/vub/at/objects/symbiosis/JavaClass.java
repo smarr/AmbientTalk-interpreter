@@ -38,12 +38,14 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATIsolate;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -66,7 +68,7 @@ import java.util.HashMap;
  *  
  * @author tvcutsem
  */
-public final class JavaClass extends NATIsolate {
+public final class JavaClass extends NATObject {
 	
 	/**
 	 * A thread-local hashmap pooling all of the JavaClass wrappers for
@@ -104,8 +106,11 @@ public final class JavaClass extends NATIsolate {
 	/**
 	 * A JavaClass wrapping a class c is an object that has the lexical scope as its lexical parent
 	 * and has NIL as its dynamic parent.
+	 * 
+	 * JavaClass instances are isolates.
 	 */
 	private JavaClass(Class wrappedClass) {
+		super(new ATStripe[] { NativeStripes._ISOLATE_ });
 		wrappedClass_ = wrappedClass;
 	}
 	
@@ -325,6 +330,12 @@ public final class JavaClass extends NATIsolate {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<java:"+wrappedClass_.toString()+">");
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	// TODO: if (isInterface) return { isolate, stripe } else { isolate }
+    	// should actually already pass those stripes in constructor and not override parent method
+    	return NATTable.of(NativeStripes._ISOLATE_);
+    }
 
 	/**
      * A Java Class object remains unique within an actor.

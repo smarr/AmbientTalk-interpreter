@@ -37,6 +37,7 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 
 /**
  * The native implementation of an AmbientTalk number.
@@ -76,6 +77,10 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	public NATText meta_print() throws InterpreterException {
         return NATText.atValue(String.valueOf(javaValue));
 	}
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._NUMBER_);
+    }
 	
 	// contract with NATNumeric
 	protected double getJavaValue() { return javaValue; }

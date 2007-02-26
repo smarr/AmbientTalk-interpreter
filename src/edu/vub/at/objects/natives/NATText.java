@@ -37,6 +37,7 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
 import java.util.regex.Matcher;
@@ -71,6 +72,10 @@ public final class NATText extends AGExpression implements ATText {
 		public NATText meta_print() throws InterpreterException {
 	        return NATText.atValue("\"" + javaValue + "\"");
 		}
+		
+	    public ATTable meta_getStripes() throws InterpreterException {
+	    	return NATTable.of(NativeStripes._TEXT_);
+	    }
 		
 		// comparison and identity operations
 		

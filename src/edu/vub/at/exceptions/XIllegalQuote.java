@@ -27,6 +27,9 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.coercion.NativeStripes;
+
 
 /**
  * An XIllegalQuote exception is raised whenever an unquote-splice unquotation is discovered in an AG node where
@@ -42,6 +45,10 @@ public final class XIllegalQuote extends InterpreterException {
 
 	public XIllegalQuote(String uqsExp) {
 		super(_MESSAGE_ + uqsExp);
+	}
+	
+	public ATStripe getStripeType() {
+		return NativeStripes._ILLQUOTE_;
 	}
 	
 }

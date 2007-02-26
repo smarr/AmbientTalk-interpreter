@@ -30,7 +30,6 @@ package edu.vub.at.objects.natives.grammar;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvc
@@ -39,7 +38,7 @@ import edu.vub.at.objects.natives.NATText;
  */
 public final class AGSelf extends AGSymbol {
 
-	private static final NATText SELF_NAM = NATText.atValue("self");
+	private static final String SELF_NAM = "self";
 	
 	public static final AGSelf _INSTANCE_ = new AGSelf();
 	

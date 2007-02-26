@@ -38,7 +38,6 @@ import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATIsolate;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
@@ -149,8 +148,7 @@ public class MirrorTest extends AmbientTalkTest {
 	public void testJavaMirrorBaseRelation() {
 		try {
 			ATObject[] objects 		= new ATObject[] { 
-					NATNil._INSTANCE_, NATBoolean._TRUE_, NATNumber.ZERO, new NATObject(), 
-					new NATIsolate(),
+					NATNil._INSTANCE_, NATBoolean._TRUE_, NATNumber.ZERO, new NATObject(),
 					NATTable.EMPTY, NATIntrospectiveMirror.atValue(NATNil._INSTANCE_),
 					new NATIntercessiveMirror(Evaluator.getGlobalLexicalScope(), true)
 			};
