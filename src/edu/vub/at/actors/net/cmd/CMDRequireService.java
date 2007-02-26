@@ -28,11 +28,8 @@
 package edu.vub.at.actors.net.cmd;
 
 import edu.vub.at.actors.natives.ELVirtualMachine;
+import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.actors.net.Logging;
-import edu.vub.at.objects.ATStripe;
-import edu.vub.util.MultiMap;
-
-import java.util.Set;
 
 import org.jgroups.Message;
 import org.jgroups.SuspectedException;
@@ -55,11 +52,11 @@ import org.jgroups.blocks.MessageDispatcher;
  */
 public class CMDRequireService extends VMCommand {
 
-	private final ATStripe topic_;
+	private final Packet serializedTopic_;
 	
-	public CMDRequireService(ATStripe topic) {
+	public CMDRequireService(Packet topic) {
 		super("requireService");
-		topic_ = topic;
+		serializedTopic_ = topic;
 	}
 	
 	public void send(MessageDispatcher dispatcher) {
@@ -77,15 +74,8 @@ public class CMDRequireService extends VMCommand {
 	 * to see if there is a match. If so, all matching local publications are replied.
 	 */
 	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
-		// query local discoverymanager for matching topic
-    	Set matchingServices = remoteHost.discoveryManager_.getLocalPublications(topic_);
-		if (matchingServices != null) {
-			// maps topics to sets of objects that are published under this topic
-			MultiMap matchingTopics = new MultiMap();
-			matchingTopics.putValues(topic_, matchingServices);
-    		// send all matching topics back to the requestor
-    		new CMDJoinServices(matchingTopics).send(remoteHost.messageDispatcher_, wrapper.getSrc());	
-    	}
+		// query local discovery actor for matching topic
+    	remoteHost.discoveryActor_.event_remoteSubscription(serializedTopic_, wrapper.getSrc());
     	return null;
 	}
 	

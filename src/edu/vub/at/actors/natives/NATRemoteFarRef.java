@@ -33,11 +33,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATObject;
-import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * Instances of NATRemoteFarRef represent far references to physically remote actors.

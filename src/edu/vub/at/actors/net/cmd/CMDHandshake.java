@@ -70,7 +70,7 @@ public class CMDHandshake extends VMCommand {
 	}
 	
 	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
-		remoteHost.discoveryManager_.setAddressOf(senderVMId_, wrapper.getSrc());
+		remoteHost.setAddressOf(senderVMId_, wrapper.getSrc());
     	return null;
 	}
 	

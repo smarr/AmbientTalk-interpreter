@@ -30,10 +30,13 @@ package edu.vub.at.actors.natives;
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.eventloops.BlockingFuture;
+import edu.vub.at.actors.natives.DiscoveryManager.Publication;
+import edu.vub.at.actors.natives.DiscoveryManager.Subscription;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
@@ -62,7 +65,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	
 	// INSTANCE VARIABLES
 	
-	private final ELVirtualMachine host_;
+	private final ELDiscoveryActor discoveryActor_;
 	
 	/**
 	 * Creates a new actor on the specified host Virtual Machine. The actor its behaviour
@@ -109,8 +112,8 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 * creating actor, not by the created actor. To make the created actor perform something, it is
 	 * necessary to use meta_receive to send itself messages for later execution.
 	 */
-	public NATActorMirror(ELVirtualMachine host) throws InterpreterException {
-		host_ = host;
+	public NATActorMirror(ELVirtualMachine host) {
+		discoveryActor_ = host.discoveryActor_;
 	}
 	
     /* ------------------------------------------
@@ -133,14 +136,12 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		private static final AGSymbol _TOPIC_ = AGSymbol.jAlloc("topic");
 		private static final AGSymbol _SERVICE_ = AGSymbol.jAlloc("service");
 		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
-		public NATPublication(final ELVirtualMachine host, ATStripe topic, NATFarReference exportedService) throws InterpreterException {
+		public NATPublication(final ELDiscoveryActor discoveryActor, ATStripe topic, ATObject service, final Publication pub) throws InterpreterException {
 			meta_defineField(_TOPIC_, topic);
-			meta_defineField(_SERVICE_, exportedService);
+			meta_defineField(_SERVICE_, service);
 			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					ATStripe topic = scope_.meta_select(scope_, _TOPIC_).base_asStripe();
-					NATFarReference exportedService = scope_.meta_select(scope_, _SERVICE_).asNativeFarReference();
-					host.event_cancelPublication(topic, exportedService);
+					discoveryActor.event_cancelPublication(pub);
 					return NATNil._INSTANCE_;
 				}
 			});
@@ -162,14 +163,14 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		private static final AGSymbol _TOPIC_ = AGSymbol.jAlloc("topic");
 		private static final AGSymbol _HANDLER_ = AGSymbol.jAlloc("handler");
 		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
-		public NATSubscription(final ELVirtualMachine host, ATStripe topic, NATFarReference exportedHandler) throws InterpreterException {
+		public NATSubscription(final ELDiscoveryActor discoveryActor,
+				               ATStripe topic, ATClosure handler,
+				               final Subscription sub) throws InterpreterException {
 			meta_defineField(_TOPIC_, topic);
-			meta_defineField(_HANDLER_, exportedHandler);
+			meta_defineField(_HANDLER_, handler);
 			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					ATStripe topic = scope_.meta_select(scope_, _TOPIC_).base_asStripe();
-					NATFarReference exportedHandler = scope_.meta_select(scope_, _HANDLER_).asNativeFarReference();
-					host.event_cancelSubscription(topic, exportedHandler);
+					discoveryActor.event_cancelSubscription(sub);
 					return NATNil._INSTANCE_;
 				}
 			});
@@ -180,15 +181,20 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
 	public ATObject base_provide(final ATStripe topic, final ATObject service) throws InterpreterException {
-		NATLocalFarRef exportedService = ELActor.currentActor().export(service);
-		host_.event_servicePublished(topic, exportedService);
-		return new NATPublication(host_, topic, exportedService);
+		Publication pub = new Publication(ELActor.currentActor(),
+				                          new Packet(topic),
+				                          new Packet(service));
+		discoveryActor_.event_servicePublished(pub);
+		return new NATPublication(discoveryActor_, topic, service, pub);
 	}
 	
-	public ATObject base_require(final ATStripe topic, final ATClosure handler) throws InterpreterException {
-		NATLocalFarRef exportedHandler = ELActor.currentActor().export(handler);
-		host_.event_clientSubscribed(topic, exportedHandler);
-		return new NATSubscription(host_, topic, exportedHandler);
+	public ATObject base_require(final ATStripe topic, final ATClosure handler, ATBoolean isPermanent) throws InterpreterException {
+		Subscription sub = new Subscription(ELActor.currentActor(),
+				                            new Packet(topic),
+				                            new Packet(handler),
+				                            isPermanent.asNativeBoolean().javaValue);
+		discoveryActor_.event_clientSubscribed(sub);
+		return new NATSubscription(discoveryActor_, topic, handler, sub);
 	}
 	
     /* --------------------------

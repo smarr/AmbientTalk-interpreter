@@ -27,30 +27,29 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.GUID;
+import edu.vub.at.actors.net.DiscoveryListener;
 import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.MembershipNotifier;
-import edu.vub.at.exceptions.XIOProblem;
+import edu.vub.at.actors.net.cmd.CMDHandshake;
+import edu.vub.at.actors.net.cmd.VMCommand;
 import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.ATStripe;
 
 import java.io.File;
 import java.net.URL;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;
+import org.jgroups.ChannelException;
 import org.jgroups.ChannelListener;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
-import org.jgroups.blocks.GroupRequest;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
 
@@ -61,9 +60,16 @@ import org.jgroups.blocks.RequestHandler;
  * descriptions and messages. It also contains a set of runtime parameters (such as
  * the objectpath and initfile) which are needed to initialise a new actor.
  *
+ * TODO: use pure JChannel to send pure async messages rather than using a MessageDispatcher?
+ * Or use dispatcher only for message transmission.
+ * 
+ * TODO: urgently clean up the vm address book: race conditions exist wher ELFarRefs
+ * query the address book when there is no entry for the remote VM's address
+ *
+ * @author tvcutsem
  * @author smostinc
  */
-public final class ELVirtualMachine extends EventLoop implements RequestHandler {
+public final class ELVirtualMachine extends EventLoop implements RequestHandler, DiscoveryListener {
 	
 	public static final ELVirtualMachine currentVM() {
 		return ELActor.currentActor().getHost();
@@ -71,11 +77,6 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 	
 	/** the name of the multicast group joined by all AmbientTalk VMs */
 	private static final String _GROUP_NAME_ = "AmbientTalk";
-	
-	/** the default transmission timeout for JGroups synchronous message communication */
-	public static final int _TRANSMISSION_TIMEOUT_ = 5000; // in milliseconds
-	
-	
 	
 	/** startup parameter to the VM: which directories to include in the lobby */
 	private final File[] objectPathRoots_;
@@ -89,28 +90,39 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 	/** the JGroups Address of the VM */
 	private Address vmAddress_;
 	
+	/**
+	 * A table mapping VM GUIDs to Address objects.
+	 * Each time a VM connects, it sends its GUID and an entry
+	 * mapping that GUID to its current Address is registered in this table. When a remote reference
+	 * needs to send a message to the remote object, the VM is contacted based on its GUID and this
+	 * table. When a VM disconnects, the disconnecting address is removed from this table. 
+	 */
+	private final Hashtable vmAddressBook_;
+	
 	/** a table mapping actor IDs to local native actors (int -> ELActor) */
 	private final Hashtable localActors_;
 	
-	/** manages subscriptions and publications */
-	private final DiscoveryManager discoveryManager_;
-	
 	/** the JGroups communication bus for this Virtual Machine */
-	protected MessageDispatcher messageDispatcher_;
+	public MessageDispatcher messageDispatcher_;
 	
 	/** the JGroups discovery bus for this Virtual Machine */
 	protected MembershipNotifier membershipNotifier_;
+	
+	public final ELDiscoveryActor discoveryActor_;
 	
 	public ELVirtualMachine(File[] objectPathRoots, ATAbstractGrammar initCode) {
 		super("virtual machine");
 		objectPathRoots_ = objectPathRoots;
 		initialisationCode_ = initCode;
+		vmAddressBook_ = new Hashtable();
 		vmId_ = new GUID();
 		localActors_ = new Hashtable();
-		discoveryManager_ = new DiscoveryManager(this);
+		discoveryActor_ = new ELDiscoveryActor(this);
+		
+		Logging.VirtualMachine_LOG.info(this + ": VM created, initializing network connection");
 		
 		// initialize the message dispatcher using a JChannel
-		this.event_init();
+		initializeNetwork();
 	}
 	
 	public GUID getGUID() { return vmId_; }
@@ -144,8 +156,130 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 		}
 	}
 	
-	public Address getAddress() {
+	public Address getLocalVMAddress() {
 		return vmAddress_;
+	}
+	
+	/* =================================
+	 * == DiscoveryListener interface ==
+	 * ================================= */
+	
+	public void memberJoined(Address virtualMachine) {
+		this.event_memberJoined(virtualMachine);
+	}
+	
+	public void memberLeft(Address virtualMachine) {
+		this.event_memberLeft(virtualMachine);
+	}
+	
+	
+	/**
+	 * Remove all entries that map to this VM address from the VM Address book.
+	 */
+	public void removeAddress(Address virtualMachine) {
+		synchronized (vmAddressBook_) {
+			// delete entries mapping to Address from the vm Address Book table
+			Set entries = vmAddressBook_.entrySet();
+			for (Iterator iter = entries.iterator(); iter.hasNext();) {
+				Map.Entry entry = (Map.Entry) iter.next();
+				if (entry.getValue().equals(virtualMachine)) {
+					Logging.VirtualMachine_LOG.debug("Removed VM binding " + entry.getKey() + " -> " + entry.getValue());
+					iter.remove();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Resolve a remote VM's unique identifier to a concrete network address.
+	 */
+	public Address getAddressOf(GUID vmId) {
+		synchronized (vmAddressBook_) {
+			Address a = (Address) vmAddressBook_.get(vmId);
+			if (a == null) {
+				Logging.VirtualMachine_LOG.error("Asked for the address of an unknown vmId: " + vmId);
+				throw new RuntimeException("Asked for the address of an unknown vmId: " + vmId);
+			}
+			return a;
+		}
+	}
+	
+	public void setAddressOf(GUID vmId, Address a) {
+		synchronized (vmAddressBook_) {
+			vmAddressBook_.put(vmId, a);
+		}
+	}
+	
+	/**
+	 * Signals that this VM can connect to the underlying network channel
+	 * and can start distributed interaction.
+	 */
+	public void event_goOnline() {
+		this.receive(new Event("goOnline") {
+			public void process(Object myself) {
+				try {
+					Channel channel = messageDispatcher_.getChannel();
+					channel.connect(_GROUP_NAME_);
+					vmAddress_ = channel.getLocalAddress();
+					Logging.VirtualMachine_LOG.info(this + ": interpreter online, address = " + vmAddress_);
+				} catch (Exception e) {
+					Logging.VirtualMachine_LOG.fatal(this + ": could not connect to network:", e);
+				}
+			}
+		});
+	}
+	
+	/**
+	 * Signals that this VM must disconnect from the underlying network channel
+	 */
+	public void event_goOffline() {
+		this.receive(new Event("goOffline") {
+			public void process(Object myself) {
+				try {
+					Channel channel = messageDispatcher_.getChannel();
+					channel.disconnect();
+					vmAddress_ = null;
+					Logging.VirtualMachine_LOG.info(this + ": interpreter offline");
+				} catch (Exception e) {
+					Logging.VirtualMachine_LOG.fatal(this + ": error while going offline:", e);
+				}
+			}
+		});
+	}
+	
+	/**
+	 * Notifies the discovery manager that a VM has joined the network.
+	 * This VM may be a first-time participant or it may be a previously
+	 * disconnected VM that has become reconnected.
+	 * 
+	 * The VM asks the newly joined VM whether it has any
+	 * services that match the type of an outstanding subscription on this VM.
+	 */
+	public void event_memberJoined(final Address remoteVMAddress) {
+		this.receive(new Event("memberJoined("+remoteVMAddress+")") {
+			public void process(Object myself) {
+				// filter out discovery of myself
+				if (!vmAddress_.equals(remoteVMAddress)) {
+					Logging.VirtualMachine_LOG.info(this + ": VM connected: " + remoteVMAddress);
+					
+					// send a handshake message to exchange IDs
+					new CMDHandshake(vmId_).send(messageDispatcher_, remoteVMAddress);
+					
+					// ask my discovery actor to send outstanding subscriptions to the newcomer
+					discoveryActor_.event_sendAllSubscriptionsTo(remoteVMAddress);
+				}
+			}
+		});
+	}
+	
+	public void event_memberLeft(final Address virtualMachine) {
+		this.receive(new Event("memberLeft("+virtualMachine+")") {
+			public void process(Object myself) {
+				Logging.VirtualMachine_LOG.info(this + ": VM disconnected: " + virtualMachine);
+				// delete entries mapping to Address from the vm Address Book table
+				removeAddress(virtualMachine);
+			}
+		});
 	}
 	
 	/* ==========================
@@ -166,208 +300,64 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler 
 		});
 	}
 	
-    /**
-     * This event is fired whenever an object
-     * is being offered as a service provide using the provide: language construct. 
-     * The virtual machine keeps track of such services and is responsible for the 
-     * matching between services and clients. When such matches are detected the VM
-     * will send a foundResolution event to both involved actors. If the VM detects 
-     * that one partner has become unavailable it will send the lostResolution event
-     * 
-     * @param topic - the abstract category in which this service is published
-     * @param service - a far reference to object providing the service
-     */
-	public void event_servicePublished(final ATStripe topic, final NATFarReference service) {
-		this.receive(new Event("servicePublished("+topic+","+service+")") {
-			public void process(Object myself) {
-				discoveryManager_.addPublication(topic, service);
-			}
-		});
-	}
-	
-    /**
-     * This event is fired whenever an object
-     * requests a service using the require: language construct. The virtual machine 
-     * keeps track of such requests and is responsible matching services and clients. 
-     * When such matches are detected the VM will send a foundResolution event to both
-     * involved actors. If the VM detects that one partner has become unavailable it 
-     * will send the lostResolution event
-     * 
-     * @param topic - the abstract category in which this service is published
-     * @param handler - a far reference to the closure acting as a callback upon discovery
-     */
-	public void event_clientSubscribed(final ATStripe topic, final NATFarReference handler) {
-		this.receive(new Event("clientSubscribed("+topic+","+handler+")") {
-			public void process(Object myself) {
-				discoveryManager_.addSubscription(topic, handler);
-			}
-		});
-	}
-
-    /**
-     * This event is fired whenever a service
-     * offer is being revoked. In this case, the virtual machine ensures that the 
-     * object is no longer discoverable to new clients. However, it will not send 
-     * lostResolution events as these signal that an object has become unreachable.
-     * 
-     * @param topic - the abstract category in which this service is published
-     * @param service - a far reference to object providing the service
-     */
-	public void event_cancelPublication(final ATStripe topic, final NATFarReference service) {
-		this.receive(new Event("cancelPublication("+topic+","+service+")") {
-			public void process(Object myself) {
-				discoveryManager_.deletePublication(topic, service);
-			}
-		});
-	}
-
-    /**
-     * This event is fired whenever a service
-     * request is being revoked. In this case, the virtual machine ensures that the 
-     * object will no longer discover new services. However, it will not send 
-     * lostResolution events as these signal that the client has become unreachable.
-     * 
-     * @param topic - the abstract category in which this service is published
-     * @param handler - a far reference to the closure acting as a callback upon discovery
-     */
-	public void event_cancelSubscription(final ATStripe topic, final NATFarReference handler) {
-		this.receive(new Event("cancelSubscription("+topic+","+handler+")") {
-			public void process(Object myself) {
-				discoveryManager_.deleteSubscription(topic, handler);
-			}
-		});
-	}
-	
 	/* ============================
 	 * == JGroups -> VM Protocol ==
 	 * ============================ */
 	
 	public Object handle(Message message) {
-		return sync_event_handle(message);
-	}
-	
-	public Object sync_event_handle(final Message message) {
 		try {
-			return this.receiveAndWait(
-					"Handling a remote message",
-					new Callable() {
-						public Object call(Object vm) throws Exception {
-							// receiving the message [DEST, PACKET]
-							Packet packet = (Packet)message.getObject();
-                            // allow the packet to unpack  and deliver itself
-							return packet.uponArrivalDo((ELVirtualMachine) vm);
-						};
-					});
+            // receiving a VM command object
+		    VMCommand cmd = (VMCommand) message.getObject();
+		    
+		    Logging.VirtualMachine_LOG.info("handling incoming command: " + cmd);
+		    
+			// allow the command to execute itself
+		    return cmd.uponReceiptBy(this, message);
 		} catch (Exception exception) {
 			return exception;
 		}
 	}
 	
-	public void event_init() {
-		receive(new Event("init("+this+")") {
-			public void process(Object byMyself) {
-				try {
-					ELVirtualMachine processor = (ELVirtualMachine)byMyself;
-					
-					// load the protocol stack to be used by JGroups
-					URL protocol = MembershipNotifier.class.getResource("jgroups-protocol.xml");
-					
-					Channel channel = new JChannel(protocol);
-					
-					membershipNotifier_ = new MembershipNotifier(discoveryManager_);
-					messageDispatcher_ = new MessageDispatcher(
-							channel,
-							null, // the MessageListener
-							membershipNotifier_,  // the MembershipListener
-							processor,  // the RequestHandler
-							false, // deadlock detection is disabled
-							true); // concurrent processing is enabled
-					
-					channel.connect(_GROUP_NAME_);
-					
-					vmAddress_ = channel.getLocalAddress();
-					
-					// don't receive my own messages 
-					channel.setOpt(JChannel.LOCAL, Boolean.FALSE);
-					
-					channel.addChannelListener(new ChannelListener() {
-						public void channelClosed(Channel c) {
-							Logging.VirtualMachine_LOG.warn(this + ": channel closed: " + c);
-						}
-						public void channelConnected(Channel c) {
-							Logging.VirtualMachine_LOG.warn(this + ": channel connected: " + c);
-						}
-						public void channelDisconnected(Channel c) {
-							Logging.VirtualMachine_LOG.warn(this + ": channel disconnected: " + c);
-						}
-						public void channelReconnected(Address a) {
-							Logging.VirtualMachine_LOG.warn(this + ": channel reconnected. Address = " + a);
-							vmAddress_ = a;
-						}
-						public void channelShunned() {
-							Logging.VirtualMachine_LOG.warn(this + ": channel shunned");
-						}
-					});
-					
-					Logging.VirtualMachine_LOG.info(this + ": successfully created channel connection, address = " + vmAddress_);
-				} catch (Exception e) {
-					// TODO ???
-					Logging.VirtualMachine_LOG.fatal(this + ": could not open channel connection: ", e);
+	private void initializeNetwork() {
+		try {
+			// load the protocol stack to be used by JGroups
+			URL protocol = MembershipNotifier.class.getResource("jgroups-protocol.xml");
+
+			Channel channel = new JChannel(protocol);
+
+			membershipNotifier_ = new MembershipNotifier(this);
+			messageDispatcher_ = new MessageDispatcher(
+					channel,
+					null, // the MessageListener
+					membershipNotifier_,  // the MembershipListener
+					this,  // the RequestHandler
+					false, // deadlock detection is disabled
+					true); // concurrent processing is enabled
+
+			// don't receive my own messages 
+			channel.setOpt(JChannel.LOCAL, Boolean.FALSE);
+
+			channel.addChannelListener(new ChannelListener() {
+				public void channelClosed(Channel c) {
+					Logging.VirtualMachine_LOG.warn(this + ": channel closed: " + c);
 				}
-			}
-		});
+				public void channelConnected(Channel c) {
+					Logging.VirtualMachine_LOG.warn(this + ": channel connected: " + c);
+				}
+				public void channelDisconnected(Channel c) {
+					Logging.VirtualMachine_LOG.warn(this + ": channel disconnected: " + c);
+				}
+				public void channelReconnected(Address a) {
+					Logging.VirtualMachine_LOG.warn(this + ": channel reconnected. Address = " + a);
+					vmAddress_ = a;
+				}
+				public void channelShunned() {
+					Logging.VirtualMachine_LOG.warn(this + ": channel shunned");
+				}
+			});
+		} catch (ChannelException e) {
+			Logging.VirtualMachine_LOG.fatal(this + ": could not initialize network connection: ", e);
+		}
 	}
 	
-	/**
-	 * Sent by the discovery manager whenever a discovery query has to be sent to
-	 * a remote VM when that remote VM has joined the network.
-	 * @param remoteVM - the address of the remote VM to contact
-	 * @param outstandingTopics - the topics in which this VM is interested (a serialized Vector of ATStripe objects)
-	 */
-	public void event_sendDiscoveryQuery(final Address remoteVMAddress, final byte[] outstandingTopics) {
-		receive(new Event("sendDiscoveryQuery("+remoteVMAddress+")") {
-			public void process(Object byMyself) {
-				// filter out discovery of myself
-				if (!vmAddress_.equals(remoteVMAddress)) {
-					
-					// send a discovery query message to the remote VM
-					try {
-						// JGROUPS:MessageDispatcher.sendMessage(destination, message, mode, timeout)
-						Object returnVal = messageDispatcher_.sendMessage(
-								// JGROUPS:Message.new(destination, source, Serializable)
-								new Message(remoteVMAddress, null,
-										new Packet("sendDiscoveryQuery", null) {
-									        // this code is executed by the remote VM
-									        public Object uponArrivalDo(ELVirtualMachine remoteHost) {
-									        	// TODO: query local discoverymanager for unserialized topics
-									        	System.err.println("discovery query arrived");
-									        	try {
-													Vector topics = (Vector) Packet.deserialize(outstandingTopics);
-													System.err.println(topics);
-												} catch (Exception e) {
-													e.printStackTrace();
-												}
-									        	return null;
-									        }
-								        }),
-								GroupRequest.GET_FIRST,
-								_TRANSMISSION_TIMEOUT_);
-						
-						// non-null return value indicates an exception
-						if (returnVal != null) {
-							Logging.RemoteRef_LOG.fatal(this + ": error upon message transmission:", (Exception) returnVal);
-						}
-					} catch (XIOProblem e) {
-						Logging.VirtualMachine_LOG.fatal(this + ": error while serializing discovery query message:", e);
-					} catch (TimeoutException e) {
-						Logging.VirtualMachine_LOG.warn(this + ": timeout while trying to transmit discovery query, dropping");
-					} catch (SuspectedException e) {
-						Logging.VirtualMachine_LOG.warn(this + ": remote VM suspected while sending discovery query");
-					}
-					
-					
-				}
-			}
-		});
-	}
 }

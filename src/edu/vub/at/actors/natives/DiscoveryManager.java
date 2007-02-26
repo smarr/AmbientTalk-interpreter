@@ -27,20 +27,17 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.util.MultiMap;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
-import java.util.Vector;
-
-import org.jgroups.Address;
 
 /**
  * The DiscoveryManager is responsible for coupling subscriptions to
@@ -51,110 +48,236 @@ import org.jgroups.Address;
 public final class DiscoveryManager {
 
 	/**
-	 * Map of publication topic to Set of published objects
+	 * Small container class that represents an entry in the publications list.
 	 */
-	private final MultiMap publications_;
-	
-	/**
-	 * Map of subscription topic to Set of subscribed closures
-	 */
-	private final MultiMap subscriptions_;
-	
-	/**
-	 * A reference to the VM to which this discovery manager belongs,
-	 * necessary to be able to send messages to query remote VMs for
-	 * the services they offer.
-	 */
-	private final ELVirtualMachine hostVM_;
-	
-	public DiscoveryManager(ELVirtualMachine hostVM) {
-		publications_ = new MultiMap();
-		subscriptions_ = new MultiMap();
-		hostVM_ = hostVM;
-	}
-	
-	public void addPublication(ATStripe topic, NATFarReference object) {
-		publications_.put(topic, object);
-		notifySubscribers(topic, object);
-	}
-	
-	public void deletePublication(ATStripe topic, NATFarReference object) {
-		publications_.removeValue(topic, object);
-	}
-	
-	public synchronized void addSubscription(ATStripe topic, NATFarReference subscriber) {
-		subscriptions_.put(topic, subscriber);
-		checkPublishers(topic, subscriber);
-	}
-	
-	public synchronized void deleteSubscription(ATStripe topic, NATFarReference subscriber) {
-		subscriptions_.removeValue(topic, subscriber);
-	}
-	
-	private void notifySubscribers(ATStripe topic, NATFarReference published) {
-		Set subscribersForTopic = (Set) subscriptions_.get(topic);
-		if (subscribersForTopic != null) {
-			for (Iterator iter = subscribersForTopic.iterator(); iter.hasNext();) {
-				notify((NATFarReference) iter.next(), published);
-			}	
-		}
-	}
-	
-	private void checkPublishers(ATStripe topic, NATFarReference subscriber) {
-		Set publishersOfTopic = (Set) publications_.get(topic);
-		if (publishersOfTopic != null) {
-			for (Iterator iter = publishersOfTopic.iterator(); iter.hasNext();) {
-				notify(subscriber, (NATFarReference) iter.next());
-			}	
-		}
-	}
-	
-	private void notify(NATFarReference subscriber, NATFarReference published) {
-		try {
-			// only notify if subscriber is hosted by another actor than publisher
-			ATObjectID subId = subscriber.getObjectId();
-			ATObjectID pubId = published.getObjectId();
-			if ((subId.getVirtualMachineId() != pubId.getVirtualMachineId()) ||
-				(subId.getActorId() != pubId.getActorId())) {
-				// subscriber<-apply([ published ])
-				subscriber.meta_receive(
-						new NATAsyncMessage(subscriber, subscriber, Evaluator._APPLY_,
-							NATTable.atValue(new ATObject[] {
-								NATTable.atValue(new ATObject[] { published })
-							})
-						)
-				);
-			}
-		} catch (InterpreterException e) {
-			// a far reference's receive operation should not throw an exception
-			Logging.VirtualMachine_LOG.error("DiscoveryManager: error notifying subscriber closure: ", e);
+	public static class Publication {
+		public final ELActor providerActor_;
+		public final Packet providedStripe_;
+		public final Packet exportedService_;
+		public ATStripe deserializedTopic_;
+		public Publication(ELActor provider, Packet stripe, Packet exportedService) {
+			providerActor_ = provider;
+			providedStripe_ = stripe;
+			exportedService_ = exportedService;
 		}
 	}
 	
 	/**
-	 * Notifies the discovery manager that a VM has joined the network.
-	 * This VM may be a first-time participant or it may be a previously
-	 * disconnected VM that has become reconnected.
+	 * Small container class that represents an entry in the subscriptions list.
+	 */
+	public static class Subscription {
+		public final ELActor subscriberActor_;
+		public final Packet requiredStripe_;
+		public final Packet registeredHandler_;
+		public final boolean isPermanentSubscription_;
+		public ATStripe deserializedTopic_;
+		public ATObject deserializedHandler_;
+		public Subscription(ELActor subscriber, Packet stripe, Packet registeredHandler, boolean permanent) {
+			subscriberActor_ = subscriber;
+			requiredStripe_ = stripe;
+			registeredHandler_ = registeredHandler;
+			isPermanentSubscription_ = permanent;
+		}
+	}
+	
+	/**
+	 * A list of Publication objects that represent locally exported service objects.
+	 */
+	private final LinkedList publications_;
+	
+	/**
+	 * A list of Subscription objects that represent local subscription handlers.
+	 */
+	private final LinkedList subscriptions_;
+	
+	public DiscoveryManager() {
+		publications_ = new LinkedList();
+		subscriptions_ = new LinkedList();
+	}
+	
+	/**
+	 * A new local publication:
+	 *  - is stored locally
+	 *  - is checked against local subscriptions, which fire immediately
+	 *  - is broadcast to all currently connected members (done by VM)
+	 */
+	public void addLocalPublication(Publication pub) {
+		publications_.add(pub);
+		notifyLocalSubscribers(pub);
+	}
+	
+	/**
+	 * A deleted local publication is simply deleted locally. No further actions
+	 * are required because remote VMs do not cache publications.
+	 */
+	public void deleteLocalPublication(Publication pub) {
+		publications_.remove(pub);
+	}
+	
+	/**
+	 * A new local subscription:
+	 *  - is stored locally
+	 *  - is checked against local publications, which may cause the subscrption
+	 *    to fire immediately
+	 *  - is broadcast to all currently connected members (done by VM)
+	 */
+	public void addLocalSubscription(Subscription sub) {
+		subscriptions_.add(sub);
+		checkLocalPublishers(sub);
+	}
+	
+	/**
+	 * A deleted local subscription is simply deleted locally. No further actions
+	 * are required because remote VMs do not cache subscriptions.
+	 */
+	public void deleteLocalSubscription(Subscription sub) {
+		subscriptions_.remove(sub);
+	}
+	
+	/**
+	 * Returns all local publications matching the given topic. This method is used
+	 * when a remote VM has broadcast a subscription request or when two VMs discover
+	 * one another.
 	 * 
-	 * The discoverymanager asks the newly joined VM whether it has any
-	 * services that match the type of an outstanding subscription on this VM.
+	 * @return a Set of Packet objects representing the serialized form of objects
+	 * published under a topic matching the argument topic.
 	 */
-	public synchronized void memberJoined(Address virtualMachine) {
-		Logging.VirtualMachine_LOG.info(hostVM_ + ": VM connected: " + virtualMachine);
-		Set subscriptionTopics = subscriptions_.keySet();
-		if (!subscriptionTopics.isEmpty()) {
-		    try {
-				// only send a discovery query if this VM requires some services
-		    	Vector topics = new Vector(subscriptionTopics);
-				hostVM_.event_sendDiscoveryQuery(virtualMachine, Packet.serialize(topics));
-			} catch (Exception e) {
-			    Logging.VirtualMachine_LOG.error(hostVM_ + ": error serializing topics for discovery query: ", e);
-		    }
+	public Set getLocalPublishedServicesMatching(ATStripe topic) {
+		HashSet matchingPubs = new HashSet();
+		for (Iterator iter = publications_.iterator(); iter.hasNext();) {
+			Publication pub = (Publication) iter.next();
+			try {
+				if (pub.deserializedTopic_.base_isSubstripeOf(topic).asNativeBoolean().javaValue) {
+					matchingPubs.add(pub.exportedService_);
+				}
+			} catch (InterpreterException e) {
+				Logging.Actor_LOG.error("error matching stripes while querying local publications:",e);
+			}
+		}
+		return matchingPubs;
+	}
+	
+	/**
+	 * @return a Set of Packet objects denoting the serialized form of all topics for which
+	 * a local subscription is still open.
+	 */
+	public Set getAllLocalSubscriptionTopics() {
+		HashSet openSubs = new HashSet();
+		for (Iterator iter = subscriptions_.iterator(); iter.hasNext();) {
+			Subscription sub = (Subscription) iter.next();
+			openSubs.add(sub.requiredStripe_);
+		}
+		return openSubs;
+	}
+	
+	/**
+	 * When a remote VM hears the request of the local VM for services it requires,
+	 * it returns its own matching services, using a CMDJoinServices command. Via this
+	 * command, the local discovery manager is notified of external matches.
+	 * 
+	 * @param topic an outstanding subscription topic of this VM
+	 * @param remoteService the remote service matching the topic
+	 */
+	public void notifyOfExternalPublication(ATStripe pubTopic, ATObject remoteService) {
+		for (Iterator iter = subscriptions_.iterator(); iter.hasNext();) {
+			Subscription sub = (Subscription) iter.next();
+			try {
+				// publication stripe Tp <: subscription stripe Ts
+				if (pubTopic.base_isSubstripeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
+					// no need to test for separate actors, publisher is remote to this VM, so surely different actors
+					notify(sub.deserializedHandler_, remoteService);
+					// if the subscription is not permanent, cancel it
+					if (!sub.isPermanentSubscription_) {
+						iter.remove();
+					}
+				}
+			} catch (InterpreterException e) {
+				Logging.Actor_LOG.error("error matching stripes during external notification:",e);
+			}
 		}
 	}
 	
-	public void memberLeft(Address virtualMachine) {
-		Logging.VirtualMachine_LOG.info(hostVM_ + ": VM disconnected: " + virtualMachine);
+	/**
+	 * When a new publication is added locally, it is first checked whether this publication
+	 * can already satisfy some outstanding subscriptions on this VM (but from different actors)
+	 */
+	private void notifyLocalSubscribers(Publication pub) {
+		ATObject deserializedService = null; // only deserialize once we have a match
+		for (Iterator iter = subscriptions_.iterator(); iter.hasNext();) {
+			Subscription sub = (Subscription) iter.next();
+			try {
+                // publication stripe Tp <: subscription stripe Ts
+				if (pub.deserializedTopic_.base_isSubstripeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
+					
+					// only notify if subscriber is hosted by another actor than publisher
+					if (sub.subscriberActor_ != pub.providerActor_) {
+						if (deserializedService == null) {
+							// first deserialize publisher
+							deserializedService = pub.exportedService_.unpack();
+						}
+						
+						notify(sub.deserializedHandler_, deserializedService);
+						
+						// if the subscription is not permanent, cancel it
+						if (!sub.isPermanentSubscription_) {
+							iter.remove();
+						}
+					}
+				}
+			} catch (InterpreterException e) {
+				Logging.Actor_LOG.error("error matching stripes during local notification:",e);
+			}
+		}
 	}
 	
+	/**
+	 * When a new subscription is added locally, it is first checked whether this subscription
+	 * can already be satisfied by some local publications on this VM (but from different actors)
+	 */
+	private void checkLocalPublishers(Subscription sub) {
+		ATObject deserializedService = null; // only deserialize once we have a match
+		for (Iterator iter = publications_.iterator(); iter.hasNext();) {
+			Publication pub = (Publication) iter.next();
+			try {
+                // publication stripe Tp <: subscription stripe Ts
+				if (pub.deserializedTopic_.base_isSubstripeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
+					
+					// only notify if subscriber is hosted by another actor than publisher
+					if (sub.subscriberActor_ != pub.providerActor_) {
+						if (deserializedService == null) {
+							// first deserialize publisher
+							deserializedService = pub.exportedService_.unpack();
+						}
+						
+						notify(sub.deserializedHandler_, deserializedService);
+						
+						// if the subscription is not permanent, cancel it
+						if (!sub.isPermanentSubscription_) {
+							this.deleteLocalSubscription(sub);
+						}
+					}
+				}
+			} catch (InterpreterException e) {
+				Logging.Actor_LOG.error("error matching stripes during local notification:",e);
+			}
+		}
+	}
+
+	/**
+	 * Performs <code>handler&lt;-apply([ service ])</code>
+	 */
+	private void notify(ATObject handler, ATObject service) {
+		Logging.VirtualMachine_LOG.debug("notifying: "+handler+"<-(["+service+"])");
+		try {
+			handler.meta_receive(
+				new NATAsyncMessage(handler,
+							        handler,
+							        Evaluator._APPLY_,
+							        NATTable.atValue(new ATObject[] {
+							           NATTable.atValue(new ATObject[] {service})
+							        })));
+		} catch (InterpreterException e) {
+			Logging.VirtualMachine_LOG.error("DiscoveryManager: error notifying subscriber closure:", e);
+		}
+	}
 }

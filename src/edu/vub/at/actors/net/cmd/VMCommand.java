@@ -71,7 +71,8 @@ public abstract class VMCommand implements Serializable {
 	 * To be overridden by subclasses to specify the behaviour to execute upon reception
 	 * and execution of the command object at the recipient VM.
 	 * 
-	 * The thread executing this code will be the event loop thread of the remote VM.
+	 * This code is still executed in a JGroups thread!
+	 * 
 	 * @param remoteHost the host at which the command arrived and is executed
 	 * @param wrapper the JGroups message wrapper that was used to transport this command object
 	 */

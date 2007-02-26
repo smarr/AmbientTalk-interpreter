@@ -28,9 +28,8 @@
 package edu.vub.at.actors.net.cmd;
 
 import edu.vub.at.actors.natives.ELVirtualMachine;
+import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.actors.net.Logging;
-import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
 
 import org.jgroups.Message;
 import org.jgroups.SuspectedException;
@@ -52,13 +51,13 @@ import org.jgroups.blocks.MessageDispatcher;
  */
 public class CMDProvideService extends VMCommand {
 
-	private final ATStripe topic_;
-	private final ATObject service_;
+	private final Packet serializedTopic_;
+	private final Packet serializedService_;
 	
-	public CMDProvideService(ATStripe topic, ATObject service) {
+	public CMDProvideService(Packet topic, Packet service) {
 		super("provideService");
-		topic_ = topic;
-		service_ = service;
+		serializedTopic_ = topic;
+		serializedService_ = service;
 	}
 	
 	public void send(MessageDispatcher dispatcher) {
@@ -76,8 +75,8 @@ public class CMDProvideService extends VMCommand {
 	 * can be matched with the new published service.
 	 */
 	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
-		// notify subscribers of the new provided service
-		remoteHost.discoveryManager_.notifyOfExternalPublication(topic_, service_);
+		// notify local discovery actor of the new provided service
+		remoteHost.discoveryActor_.event_remotePublication(serializedTopic_, serializedService_);
     	return null;
 	}
 	

@@ -27,16 +27,6 @@
  */
 package edu.vub.at.actors.natives;
 
-import java.util.Iterator;
-import java.util.Vector;
-
-import org.jgroups.Address;
-import org.jgroups.Message;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
-import org.jgroups.blocks.GroupRequest;
-import org.jgroups.blocks.MessageDispatcher;
-
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
@@ -44,13 +34,20 @@ import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.net.ConnectionListener;
 import edu.vub.at.actors.net.Logging;
+import edu.vub.at.actors.net.cmd.CMDTransmitATMessage;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
+
+import java.util.Iterator;
+import java.util.Vector;
+
+import org.jgroups.Address;
+import org.jgroups.SuspectedException;
+import org.jgroups.TimeoutException;
+import org.jgroups.blocks.MessageDispatcher;
 
 /**
  * An instance of the class ELFarReference represents the event loop processor for
@@ -69,23 +66,33 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	
 	private boolean connected_;
 	
-	private Vector disconnectedListeners_;
-	private Vector reconnectedListeners_;
+	private Vector disconnectedListeners_; // lazy initialization
+	private Vector reconnectedListeners_; // lazy initialization
 	
-	public void addDisconnectionListener(ATObject listener) {
+	public synchronized void addDisconnectionListener(ATObject listener) {
+		if (disconnectedListeners_ == null) {
+			disconnectedListeners_ = new Vector(1);
+		}
 		disconnectedListeners_.add(listener);
 	}
 	
-	public void addReconnectionListener(ATObject listener) {
+	public synchronized void addReconnectionListener(ATObject listener) {
+		if (reconnectedListeners_ == null) {
+			reconnectedListeners_ = new Vector(1);
+		}
 		reconnectedListeners_.add(listener);
 	}
 
-	public void removeDisconnectionListener(ATObject listener) {
-		disconnectedListeners_.remove(listener);
+	public synchronized void removeDisconnectionListener(ATObject listener) {
+		if (disconnectedListeners_ != null) {
+			disconnectedListeners_.remove(listener);
+		}
 	}
 	
-	public void removeReconnectionListener(ATObject listener) {
-		reconnectedListeners_.remove(listener);
+	public synchronized void removeReconnectionListener(ATObject listener) {
+		if (reconnectedListeners_ != null) {
+			reconnectedListeners_.remove(listener);
+		}
 	}
 		
 	public ELFarReference(ATObjectID destination, ELActor owner) {
@@ -96,8 +103,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		connected_ = true;
 		// register the remote reference with the MembershipNotifier to keep track
 		// of the state of the connection with the remote VM
-		Address vmId = destination_.getVirtualMachineAddress();
-		owner_.getHost().membershipNotifier_.addConnectionListener(vmId, this);
+		owner_.getHost().membershipNotifier_.addConnectionListener(getDestinationVMAddress(), this);
 		
 		dispatcher_ = owner_.getHost().messageDispatcher_;
 	}
@@ -122,33 +128,23 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 			public void process(Object owner) {
 				try {
 					// JGROUPS:MessageDispatcher.sendMessage(destination, message, mode, timeout)
-					Object returnVal = dispatcher_.sendMessage(
-							// JGROUPS:Message.new(destination, source, Serializable)
-							new Message(destination_.getVirtualMachineAddress(), null,
-									new Packet(msg.toString(), msg) {
-								        // this code is executed by the remote VM
-								        public Object uponArrivalDo(ELVirtualMachine remoteHost) {
-								        	remoteHost.getActor(destination_.getActorId()).event_accept(this);
-											return null; // null return value means OK
-								        }
-							        }),
-							GroupRequest.GET_FIRST,
-							ELVirtualMachine._TRANSMISSION_TIMEOUT_);
-					
+					Object ack = new CMDTransmitATMessage(destination_.getActorId(), new Packet(msg.toString(), msg)).send(
+							           dispatcher_,
+							           getDestinationVMAddress());
+	
 					// non-null return value indicates an exception
-					if (returnVal != null) {
-						Logging.RemoteRef_LOG.error(this + ": error upon message transmission:", (Exception) returnVal);
+					if (ack != null) {
+						Logging.RemoteRef_LOG.error(this + ": non-null acknowledgement: " + ack);
 					}
-				} catch (XIOProblem e) {
-					// TODO Error serializing the message, drop it? 
-					Logging.RemoteRef_LOG.error(this + ": error while serializing message:", e);
 				} catch (TimeoutException e) {
 					Logging.RemoteRef_LOG.warn(this + ": timeout while trying to transmit message, retrying");
 					receivePrioritized(this);
 				} catch (SuspectedException e) {
 					Logging.RemoteRef_LOG.warn(this + ": remote object suspected: " + destination_);
 					receivePrioritized(this);
-				}
+				} catch (Exception e) {
+					Logging.RemoteRef_LOG.error(this + ": error upon message transmission:", e);
+				} 
 			}
 		});
 	}
@@ -174,18 +170,20 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	 */
 
 	public synchronized void connected() {
-		Logging.RemoteRef_LOG.info(this + ": connected to " + destination_);
+		Logging.RemoteRef_LOG.info(this + ": reconnected to " + destination_);
 		connected_ = true;
 		this.notifyAll();
 		
-		for (Iterator reconnectedIter = reconnectedListeners_.iterator(); reconnectedIter.hasNext();) {
-			ATObject listener = (ATObject) reconnectedIter.next();
-			try {
-				owner_.event_acceptSelfSend(
-						new NATAsyncMessage(NATNil._INSTANCE_, listener, Evaluator._APPLY_, NATTable.EMPTY));
-			} catch (InterpreterException e) {
-				// TODO Errors during the invocation of connection listeners should be logged
-			}
+		if (reconnectedListeners_ != null) {
+			for (Iterator reconnectedIter = reconnectedListeners_.iterator(); reconnectedIter.hasNext();) {
+				ATObject listener = (ATObject) reconnectedIter.next();
+				try {
+					owner_.event_acceptSelfSend(
+							new NATAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.EMPTY));
+				} catch (InterpreterException e) {
+					Logging.RemoteRef_LOG.error("error invoking when:reconnected: listener", e);
+				}
+			}	
 		}
 	}
 
@@ -195,15 +193,21 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		Logging.RemoteRef_LOG.info(this + ": disconnected from " + destination_);
 		connected_ = false;
 		
-		for (Iterator disconnectedIter = disconnectedListeners_.iterator(); disconnectedIter.hasNext();) {
-			ATObject listener = (ATObject) disconnectedIter.next();
-			try {
-				owner_.event_acceptSelfSend(
-						new NATAsyncMessage(NATNil._INSTANCE_, listener, Evaluator._APPLY_, NATTable.EMPTY));
-			} catch (InterpreterException e) {
-				// TODO Errors during the invocation of connection listeners should be logged
-			}
+		if (disconnectedListeners_ != null) {
+			for (Iterator disconnectedIter = disconnectedListeners_.iterator(); disconnectedIter.hasNext();) {
+				ATObject listener = (ATObject) disconnectedIter.next();
+				try {
+					owner_.event_acceptSelfSend(
+							new NATAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.EMPTY));
+				} catch (InterpreterException e) {
+					Logging.RemoteRef_LOG.error("error invoking when:disconnected: listener", e);
+				}
+			}	
 		}
+	}
+	
+	private Address getDestinationVMAddress() {
+		return owner_.getHost().getAddressOf(destination_.getVirtualMachineId());
 	}
 
 }

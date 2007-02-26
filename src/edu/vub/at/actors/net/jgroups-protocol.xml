@@ -37,8 +37,9 @@
          enable_bundling="true"
          use_send_queues="false"
          sock_conn_timeout="300"
-         skip_suspected_members="true"/>
-    <TCPPING timeout="3000"
+         skip_suspected_members="true"/ -->
+    
+    <!-- TCPPING timeout="3000"
              down_thread="false" up_thread="false"
              initial_hosts="${jgroups.tcpping.initial_hosts:localhost[7800],localhost[7801]}"
              port_range="1"
@@ -49,6 +50,7 @@
             up_thread="false"
             min_interval="5000"/>
 
+    <!-- When this protocol is enabled, it seems to take more than 5 sec to get a return value -->
     <!-- FD_SOCK down_thread="false" up_thread="false"/ -->
 
     <FD timeout="2000" max_tries="3" down_thread="false" up_thread="false" shun="true"/>
@@ -61,8 +63,8 @@
                    down_thread="false" up_thread="false"
                    discard_delivered_msgs="true"/>
 
-    <UNICAST timeout="300,600,1200,2400,3600"
-	         down_thread="false" up_thread="false"/>
+    <!-- UNICAST timeout="300,600,1200,2400,3600"
+	         down_thread="false" up_thread="false"/ -->
 
     <pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
                    down_thread="false" up_thread="false"
@@ -82,10 +84,10 @@
 
     <FRAG2 frag_size="60000" down_thread="false" up_thread="false"/>
 
-    <pbcast.STREAMING_STATE_TRANSFER down_thread="false" up_thread="false"
-                                     use_flush="true" use_reading_thread="true"/>
-
     <!-- pbcast.STATE_TRANSFER down_thread="false" up_thread="false" use_flush="false"/ -->
 
-    <pbcast.FLUSH down_thread="false" up_thread="false"/>
+    <!-- enabling the protocols below seems to also give the problem of 'slow' return values -->
+    <!-- pbcast.STREAMING_STATE_TRANSFER down_thread="false" up_thread="false"
+                                     use_flush="true" use_reading_thread="true"/ -->
+    <!-- pbcast.FLUSH down_thread="false" up_thread="false"/ -->
 </config>

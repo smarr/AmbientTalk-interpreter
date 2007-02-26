@@ -29,6 +29,7 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
@@ -37,15 +38,19 @@ import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XClassNotFound;
 import edu.vub.at.exceptions.XDuplicateSlot;
+import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNamespace;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 
 import java.io.File;
@@ -62,7 +67,7 @@ import java.io.FilenameFilter;
  *
  * @author tvcutsem
  */
-public final class ELActor extends EventLoop {
+public class ELActor extends EventLoop {
 	
 	public static final ELActor currentActor() {
 		try {
@@ -86,6 +91,14 @@ public final class ELActor extends EventLoop {
 	public ELActor(ATActorMirror mirror, ELVirtualMachine host) {
 		super("actor " + mirror.toString());
 		mirror_ = mirror;
+		host_ = host;
+		receptionists_ = new ReceptionistsSet(this);
+	}
+	
+	/** constructor dedicated to initialization of discovery actor */
+	protected ELActor(ELVirtualMachine host) {
+		super("discovery actor");
+		mirror_ = new NATActorMirror(host);
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
 	}
@@ -232,7 +245,8 @@ public final class ELActor extends EventLoop {
 	
 	/**
 	 * The main entry point for any asynchronous self-sends.
-	 * Asynchronous self-sends do not undergo any form of parameter passing.
+	 * Asynchronous self-sends do not undergo any form of parameter passing, there is no need
+	 * to serialize and deserialize the message parameter in a Packet.
 	 */
 	public void event_acceptSelfSend(final ATAsyncMessage msg) {
 		receive(new Event("accept("+msg+")") {
@@ -250,12 +264,12 @@ public final class ELActor extends EventLoop {
 	}
 	
 	/**
-	 * The main entry point for any asynchronous messages sent to this actor,
-	 * be it 'self-sends' or external sends.
+	 * The main entry point for any asynchronous messages sent to this actor
+	 * by external sources (e.g. the VM or other local actors).
 	 * @param msg the asynchronous AmbientTalk base-level message to enqueue
 	 */
 	public void event_accept(final Packet serializedMessage) {
-		receive(new Event("accept("+serializedMessage.getDescription()+")") {
+		receive(new Event("accept("+serializedMessage+")") {
 			public void process(Object myActorMirror) {
 				try {
 					ATAsyncMessage msg = serializedMessage.unpack().base_asAsyncMessage();
@@ -310,5 +324,45 @@ public final class ELActor extends EventLoop {
 	 */
 	public Object sync_event_performTest(final Callable c) throws Exception {
 		return (ATObject) receiveAndWait("performTest("+c+")", c);
+	}
+	
+	/**
+	 * When the discovery manager receives a publication from another local actor or
+	 * another remote VM, the actor is asked to compare the incoming publication against
+	 * a subscription that it had announced previously.
+	 * 
+	 * @param requiredStripe serialized form of the stripe attached to the actor's subscription
+	 * @param myHandler the closure specified as a handler for the actor's subscription
+	 * @param discoveredStripe serialized form of the stripe attached to the new publication
+	 * @param remoteService serialized form of the reference to the remote discovered service
+	 */
+	public void event_serviceJoined(final Packet requiredStripePkt, final ATFarReference myHandler,
+			                        final Packet discoveredStripePkt, final Packet remoteServicePkt) {
+		receive(new Event("serviceJoined") {
+			public void process(Object myActorMirror) {
+				try {
+					ATStripe requiredStripe = requiredStripePkt.unpack().base_asStripe();
+					ATStripe discoveredStripe = discoveredStripePkt.unpack().base_asStripe();
+					// is there a match?
+					if (discoveredStripe.base_isSubstripeOf(requiredStripe).asNativeBoolean().javaValue) {
+						ATObject remoteService = remoteServicePkt.unpack();
+						// myhandler<-apply([remoteService])
+						myHandler.meta_receive(
+							new NATAsyncMessage(myHandler, myHandler, Evaluator._APPLY_,
+								NATTable.atValue(new ATObject[] {
+									NATTable.atValue(new ATObject[] { remoteService })
+								})
+							)
+						);
+					}
+				} catch (XIOProblem e) {
+					Logging.Actor_LOG.error("Error deserializing joined stripes or services: ", e.getCause());
+				} catch (XClassNotFound e) {
+					Logging.Actor_LOG.fatal("Could not find class while deserializing joined stripes or services: ", e.getCause());
+				} catch (InterpreterException e) {
+					Logging.Actor_LOG.error("Error while joining services: ", e);
+				}
+			}
+		});
 	}
 }

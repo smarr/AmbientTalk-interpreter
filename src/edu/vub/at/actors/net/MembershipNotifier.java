@@ -27,7 +27,6 @@
  */
 package edu.vub.at.actors.net;
 
-import edu.vub.at.actors.natives.DiscoveryManager;
 import edu.vub.util.MultiMap;
 
 import java.util.Iterator;
@@ -49,6 +48,9 @@ import org.jgroups.View;
  *  B) All connected ConnectionListeners, which will usually be remote references pointing to
  *     objects hosted by the connecting/disconnecting VM.
  *
+ *
+ * TODO: change Address keys of ConnectionListeners to GUIDs to support changing addresses.
+ *
  * @author tvcutsem
  */
 public class MembershipNotifier extends ExtendedReceiverAdapter implements MembershipListener {
@@ -66,18 +68,18 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 	private final MultiMap connectionListeners_;
 	
 	/**
-	 * The general manager for service discovery for the entire virtual machine. Whenever a new node
+	 * The general manager for service discovery for the entire virtual machine. Whenever a new VM
 	 * is encountered, this manager needs to be notified such that it can exchange the necessary 
-	 * service descriptions.
+	 * service descriptions. Likewise, VM disconnections should be delegated to this listener.
 	 */
-	private final DiscoveryManager discoveryManager_;
+	private final DiscoveryListener discoveryManager_;
 	
 	/**
 	 * Creates a new MembershipNotifier on which ConnectionListeners monitoring the (dis)appearance
 	 * of a single address can register to. 
 	 * @param discoveryManager - the service discovery manager for the current address.
 	 */
-	public MembershipNotifier(DiscoveryManager discoveryManager) {
+	public MembershipNotifier(DiscoveryListener discoveryManager) {
 		discoveryManager_ = discoveryManager;
 		connectionListeners_ = new MultiMap();
 		knownMembers_ = new Vector();

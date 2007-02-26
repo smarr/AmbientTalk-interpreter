@@ -29,13 +29,7 @@ package edu.vub.at.actors.net.cmd;
 
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.net.Logging;
-import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
 import edu.vub.util.MultiMap;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 import org.jgroups.Address;
 import org.jgroups.Message;
@@ -58,7 +52,10 @@ import org.jgroups.blocks.MessageDispatcher;
 
 public class CMDJoinServices extends VMCommand {
 
-	/** A map from ATStripe to a set of ATObject references that provide that service */
+	/** 
+	 * A map from serialized ATStripe topics to Sets of serialized ATObjects that
+	 * provide the serialized topic
+	 */
 	private final MultiMap providedServices_;
 	
 	public CMDJoinServices(MultiMap providedServices) {
@@ -77,13 +74,8 @@ public class CMDJoinServices extends VMCommand {
 	}
 	
 	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
-		// notify subscribers of the provided services
-		Set entries = providedServices_.entrySet();
-		for (Iterator iter = entries.iterator(); iter.hasNext();) {
-			Map.Entry entry = (Map.Entry) iter.next();
-			remoteHost.discoveryManager_.notifyOfExternalPublication((ATStripe) entry.getKey(),
-					                                                 (ATObject) entry.getValue());
-		}
+		// notify the local subscribers of the provided services via the local discovery actor
+		remoteHost.discoveryActor_.event_batchRemotePublications(providedServices_);
     	return null;
 	}
 	

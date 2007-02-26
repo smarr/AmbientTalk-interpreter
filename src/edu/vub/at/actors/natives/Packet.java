@@ -27,7 +27,6 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.net.Logging;
 import edu.vub.at.exceptions.XClassNotFound;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.objects.ATObject;
@@ -40,8 +39,9 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
- * Packet instances are the serialized representation of AmbientTalk messages.
- * They are sent in between both local and remote actors.
+ * Packet instances are the serialized representation of AmbientTalk messages or other objects.
+ * They are exchanged directly in between local actors and in a wrapped VMCommand object between
+ * remote actors.
  *
  * @author tvcutsem
  */
@@ -59,6 +59,10 @@ public class Packet implements Serializable {
 		}
 	}
 	
+	public Packet(ATObject object) throws XIOProblem {
+		this(object.toString(), object);
+	}
+	
 	public ATObject unpack() throws XIOProblem, XClassNotFound {
 		try {
 			return (ATObject) deserialize(payload_);
@@ -69,18 +73,9 @@ public class Packet implements Serializable {
 		}
 	}
 	
-	public String getDescription() { return description_; }
+	public String toString() { return "packet["+description_+"]"; }
 	
-	/**
-	 * To be overridden by subclasses to perform a useful action upon delivery
-	 * of the packet at the destination VM host.
-	 */
-	public Object uponArrivalDo(ELVirtualMachine remoteHost) {
-		Logging.VirtualMachine_LOG.error(this + ": unimplemented uponArrivalDo invoked on a packet");
-		return null;
-	}
-	
-	public static byte[] serialize(Object o) throws IOException {
+	private static byte[] serialize(Object o) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		ObjectOutputStream stream = new ObjectOutputStream(out);
 		stream.writeObject(o);
@@ -89,7 +84,7 @@ public class Packet implements Serializable {
 		return out.toByteArray();
 	}
 	
-	public static Object deserialize(byte[] b) throws IOException, ClassNotFoundException {
+	private static Object deserialize(byte[] b) throws IOException, ClassNotFoundException {
 		ByteArrayInputStream in = new ByteArrayInputStream(b);
 		ObjectInputStream instream = new ObjectInputStream(in);
 		return instream.readObject();

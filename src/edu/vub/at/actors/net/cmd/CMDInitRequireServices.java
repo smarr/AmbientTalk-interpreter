@@ -27,15 +27,10 @@
  */
 package edu.vub.at.actors.net.cmd;
 
-import edu.vub.at.actors.natives.DiscoveryManager;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.net.Logging;
-import edu.vub.at.objects.ATStripe;
-import edu.vub.util.MultiMap;
 
-import java.util.Iterator;
 import java.util.Set;
-import java.util.Vector;
 
 import org.jgroups.Address;
 import org.jgroups.Message;
@@ -59,9 +54,12 @@ import org.jgroups.blocks.MessageDispatcher;
 
 public class CMDInitRequireServices extends VMCommand {
 
-	private final Vector topics_;
+	/**
+	 * A Set of Packet objects representing serialized ATStripe topics.
+	 */
+	private final Set topics_;
 	
-	public CMDInitRequireServices(Vector topics) {
+	public CMDInitRequireServices(Set topics) {
 		super("initRequireServices");
 		topics_ = topics;
 	}
@@ -77,25 +75,8 @@ public class CMDInitRequireServices extends VMCommand {
 	}
 	
 	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
-		DiscoveryManager remoteDM = remoteHost.discoveryManager_;
-        
-		// maps topics to sets of objects that are published under this topic
-		MultiMap matchingTopics = new MultiMap();
-		
 		// query local discoverymanager for matching topics
-    	for (Iterator iter = topics_.iterator(); iter.hasNext();) {
-			ATStripe topic = (ATStripe) iter.next();
-			Set matchingServices = remoteDM.getLocalPublications(topic);
-			if (matchingServices != null) {
-				matchingTopics.putValues(topic, matchingServices);
-			}	
-		}
-		
-    	if (!matchingTopics.isEmpty()) {
-    		// send all matching topics back to the requestor
-    		new CMDJoinServices(matchingTopics).send(remoteHost.messageDispatcher_, wrapper.getSrc());	
-    	}
-		
+		remoteHost.discoveryActor_.event_receiveNewSubscriptionsFrom(topics_, wrapper.getSrc());
     	return null;
 	}
 	

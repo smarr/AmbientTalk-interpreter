@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * GUID.java created on 21-dec-2006 at 13:43:24
+ * DiscoveryListener.java created on 22-feb-2007 at 21:23:01
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,50 +25,21 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors.id;
+package edu.vub.at.actors.net;
 
-import edu.vub.at.actors.net.Logging;
-
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import org.jgroups.Address;
 
 /**
- * This class is used to generate globally unique identifiers.
- * Implementation adapted from AmbientTalk/1.
+ * An object that implements this interface can act as a MembershipNotifier's discovery
+ * listener, which means it is kept up to date of the connection and disconnection of
+ * nearby virtual machines. Note that both methods are invoked by JGroups threads and
+ * that control should be transferred as quickly as possible to an event loop thread.
  * 
  * @author tvcutsem
  */
-public final class GUID implements Serializable {
-
-	private static final long serialVersionUID = -1876309467164128162L;
+public interface DiscoveryListener {
 	
-	//private InetAddress address_;
-	private String guid_;
-
-	public GUID() {
-		try {
-			InetAddress address = InetAddress.getLocalHost();
-			guid_ = String.valueOf(System.currentTimeMillis()) + address.toString();
-		} catch (UnknownHostException e) {
-			// should not occur for the local host
-			Logging.VirtualMachine_LOG.error("Unable to generate proper GUID:", e);
-			guid_ = String.valueOf(System.currentTimeMillis());
-		}
-	}
-
-	public String toString() {
-		return guid_;
-	}
+	public void memberJoined(Address virtualMachine);
 	
-	public int hashCode() {
-		return guid_.hashCode();
-	}
-	
-	public boolean equals(Object o) {
-		if (o instanceof GUID) {
-			return guid_.equals(((GUID)o).guid_);
-		}
-		return false;
-	}
+	public void memberLeft(Address virtualMachine);
 }

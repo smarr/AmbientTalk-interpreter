@@ -35,6 +35,7 @@ import edu.vub.at.actors.natives.NATActorMirror;
 import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.actors.natives.NATRemoteFarRef;
 import edu.vub.at.actors.natives.Packet;
+import edu.vub.at.actors.net.OBJNetwork;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
@@ -139,6 +140,13 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_getJlobby() {
 		return Evaluator.getJLobbyRoot();
+	}
+
+	/**
+	 * network (the network control object, to go online and offline)
+	 */
+	public ATObject base_getNetwork() {
+		return OBJNetwork._INSTANCE_;
 	}
 	
 	/* ------------------------
@@ -336,9 +344,23 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * when: topic discovered: { code }
 	 *  => when an object is exported by another actor under topic, trigger the code
 	 * returns a subscription object that can be used to cancel the handler
+	 * 
+	 * Once the code block has run once, it will not be triggered again.
 	 */
 	public ATObject base_when_discovered_(ATStripe topic, ATClosure handler) throws InterpreterException {
-		return ELActor.currentActor().getActorMirror().base_require(topic, handler);
+		return ELActor.currentActor().getActorMirror().base_require(topic, handler, NATBoolean._FALSE_);
+	}
+	
+	/**
+	 * whenever: topic discovered: { code }
+	 *  => when an object is exported by another actor under topic, trigger the code
+	 * returns a subscription object that can be used to cancel the handler
+	 * 
+	 * The code block can be fired multiple times. To stop the block from triggering upon
+	 * new publications, it must be explicitly cancelled
+	 */
+	public ATObject base_whenever_discovered_(ATStripe topic, ATClosure handler) throws InterpreterException {
+		return ELActor.currentActor().getActorMirror().base_require(topic, handler, NATBoolean._TRUE_);
 	}
 	
 	/**
@@ -475,9 +497,6 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a new mirror containing the specified definitions
 	 */
 	public ATObject base_mirror_(ATClosure code) throws InterpreterException {
-		// As this is a base_method, its result will be downed. Since we explicitly want to
-		// return the newly created NATIntercessiveMirror, it needs to be upped explicitly.
-		// TODO: discuss with Stijn: base_ methods don't down their ret.val
 		return OBJMirrorRoot._INSTANCE_.meta_extend(code);
 	}
 	

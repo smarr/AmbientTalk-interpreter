@@ -54,7 +54,7 @@ public class CMDTransmitATMessage extends VMCommand {
 	private final int destinationActorId_;
 	
 	public CMDTransmitATMessage(int destinationActorId, Packet atMessage) {
-		super("transmitATMessage(" + atMessage.getDescription()+")");
+		super("transmitATMessage("+atMessage+")");
 		serializedATMessage_ = atMessage;
 		destinationActorId_ = destinationActorId;
 	}

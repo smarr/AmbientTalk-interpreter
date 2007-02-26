@@ -58,6 +58,9 @@ public class MultiMap implements Map, Serializable, Cloneable {
 		return false;
 	}
 
+	/**
+	 * @return a Set of values matching the key, or null if no entry is found
+	 */
 	public Object get(Object key) {
 		return internal_.get(key);
 	}
@@ -90,16 +93,15 @@ public class MultiMap implements Map, Serializable, Cloneable {
 	/**
 	 * Puts multivalued entries for one key
 	 */
-	public Object putValues(Object key, Collection values) {
+	public void putValues(Object key, Collection values) {
 		Object existingValues = internal_.get(key);
 		if(existingValues == null) {
 			Set setOfValues = new HashSet();
-			values.addAll(values); 
+			setOfValues.addAll(values); 
 			internal_.put(key, setOfValues);
 		} else {
 			((Set)existingValues).addAll(values);
 		}
-		return null;
 	}
 
 	public void putAll(Map toMerge) {
