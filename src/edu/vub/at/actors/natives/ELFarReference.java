@@ -28,6 +28,7 @@
 package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
@@ -59,7 +60,7 @@ import org.jgroups.blocks.MessageDispatcher;
  * @author tvcutsem
  */
 public final class ELFarReference extends EventLoop implements ConnectionListener {
-
+	
 	private final ELActor owner_;
 	private final ATObjectID destination_;
 	private final MessageDispatcher dispatcher_;

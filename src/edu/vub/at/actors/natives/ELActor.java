@@ -52,9 +52,12 @@ import edu.vub.at.objects.natives.NATNamespace;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.io.File;
 import java.io.FilenameFilter;
+
+import com.openbase.jdbc.h;
 
 /**
  * An instance of the class ELActor represents a programmer-defined
@@ -154,52 +157,6 @@ public class ELActor extends EventLoop {
 	/* -----------------------------
 	 * -- Initialisation Protocol --
 	 * ----------------------------- */
-	
-	/**
-	 * Initializes the lobby namespace with a slot for each directory in the object path.
-	 * The slot name corresponds to the last name of the directory. The slot value corresponds
-	 * to a namespace object initialized with the directory.
-	 * 
-	 * If the user did not specify an objectpath, the default is .;$AT_OBJECTPATH;$AT_HOME
-	 */
-	protected void initLobbyUsingObjectPath() throws InterpreterException {
-		File[] objectPathRoots = host_.getObjectPathRoots();
-		
-		NATObject lobby = Evaluator.getLobbyNamespace();
-		
-		// for each path to the lobby, add an entry for each directory in the path
-		for (int i = 0; i < objectPathRoots.length; i++) {
-			File pathRoot = objectPathRoots[i];
-							
-			File[] filesInDirectory = pathRoot.listFiles(new FilenameFilter() {
-				// filter out all hidden files (starting with .)
-				public boolean accept(File parent, String name) {
-					return !(name.startsWith("."));
-				}
-			});
-			for (int j = 0; j < filesInDirectory.length; j++) {
-				File subdir = filesInDirectory[j];
-				if (subdir.isDirectory()) {
-					// convert the filename into an AmbientTalk selector
-					ATSymbol selector = Reflection.downSelector(subdir.getName());
-					try {
-						lobby.meta_defineField(selector, new NATNamespace("/"+subdir.getName(), subdir));
-					} catch (XDuplicateSlot e) {
-						// TODO(review) Should throw dedicated exceptions (difference warning - abort)
-						Logging.Init_LOG.error("shadowed path on classpath:", e);
-						throw new XIllegalOperation("shadowed path on classpath: "+subdir.getAbsolutePath());
-					} catch (InterpreterException e) {
-						// should not happen as the meta_defineField is native
-						Logging.Init_LOG.fatal("Fatal error while constructing objectpath:", e);
-						throw new XIllegalOperation("Fatal error while constructing objectpath: " + e.getMessage());
-					}	
-				} else {
-					Logging.Init_LOG.warn("skipping non-directory file on classpath: " + subdir.getName());
-				}
-			}
-		}
-
-	}
 
 	/**
 	 * Initialises the root using the contents of the init file's contents stored by
@@ -216,6 +173,27 @@ public class ELActor extends EventLoop {
 		initialisationCode.meta_eval(initCtx);
 	}
 	
+	/**
+	 * Initialises various fields in the lexical root of the actor, which are defined in the 
+	 * context of every actor. Candidates are a "system" field which allows the program to 
+	 * perform IO operations or a "~" field denoting the current working directory.
+	 * 
+	 * @throws InterpreterException when initialisation of a field fails
+	 */
+	protected void initSharedFields() throws InterpreterException {
+		SharedActorField[] fields = host_.getFieldsToInitialize();
+		NATObject globalScope = Evaluator.getGlobalLexicalScope();
+		
+		for (int i = 0; i < fields.length; i++) {
+			SharedActorField field = fields[i];
+			ATObject value = field.initialize();
+			if (value != null) {
+				// TODO(discuss) As the behaviour of an actor is now an isolate, we can no longer simply install anything in the lexical scope, but we must also do this in the behaviour of the actor itself
+				globalScope.meta_defineField(field.getName(), value);
+				behaviour_.meta_defineField(field.getName(), value);
+			}
+		}
+	}
 	
 	// Events to be processed by the actor event loop
 	
@@ -232,9 +210,9 @@ public class ELActor extends EventLoop {
 					// pass far ref to behaviour to creator actor who is waiting for this
 					future.resolve(receptionists_.exportObject(behaviour_));
 					
-					// go on to initialize the root and the behaviour
-					initLobbyUsingObjectPath();
+					// go on to initialize the root and all lexically visible fields
 					initRootObject();
+					initSharedFields();
 				} catch (InterpreterException e) {
 					if (!future.isDetermined())
 					  future.ruin(e);

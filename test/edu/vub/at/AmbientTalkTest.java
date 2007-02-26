@@ -5,6 +5,7 @@ import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.natives.NATActorMirror;
 import edu.vub.at.actors.natives.Packet;
+import edu.vub.at.actors.natives.SharedActorField;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIOProblem;
@@ -35,7 +36,7 @@ public abstract class AmbientTalkTest extends TestCase {
 	protected ELActor evalActor() {
 		if (evalActor_ == null) {
 			try {
-				ELVirtualMachine host = new ELVirtualMachine(new File[] { }, NATNil._INSTANCE_);
+				ELVirtualMachine host = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
 				evalActor_ = NATActorMirror.atValue(host,
 						new Packet("behaviour",new NATIsolate()),
 						new NATActorMirror(host)

@@ -77,12 +77,12 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	
 	/** the name of the multicast group joined by all AmbientTalk VMs */
 	private static final String _GROUP_NAME_ = "AmbientTalk";
-	
-	/** startup parameter to the VM: which directories to include in the lobby */
-	private final File[] objectPathRoots_;
-	
+		
 	/** startup parameter to the VM: the code of the init.at file to use */
 	private final ATAbstractGrammar initialisationCode_;
+	
+	/** startup parameter to the VM: the list of fields to be initialized in every hosted actor */
+	private final SharedActorField[] sharedFields_;
 	
 	/** the GUID of this VM */
 	private final GUID vmId_;
@@ -109,12 +109,16 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	protected MembershipNotifier membershipNotifier_;
 	
 	public final ELDiscoveryActor discoveryActor_;
-	
-	public ELVirtualMachine(File[] objectPathRoots, ATAbstractGrammar initCode) {
+	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields) {
 		super("virtual machine");
-		objectPathRoots_ = objectPathRoots;
+		
+		// used to initialize actors
 		initialisationCode_ = initCode;
+		sharedFields_ = fields;
+		
+		// used to allow actors to send messages to remote vms/actors
 		vmAddressBook_ = new Hashtable();
+
 		vmId_ = new GUID();
 		localActors_ = new Hashtable();
 		discoveryActor_ = new ELDiscoveryActor(this);
@@ -124,15 +128,15 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		// initialize the message dispatcher using a JChannel
 		initializeNetwork();
 	}
-	
+		
 	public GUID getGUID() { return vmId_; }
-	
+		
 	public ATAbstractGrammar getInitialisationCode() {
 		return initialisationCode_;
 	}
 
-	public File[] getObjectPathRoots() {
-		return objectPathRoots_;
+	public SharedActorField[] getFieldsToInitialize() {
+		return sharedFields_;
 	}
 	
 	public ELVirtualMachine getHost() { return this; }
