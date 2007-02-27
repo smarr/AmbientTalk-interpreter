@@ -328,43 +328,43 @@ public class NATNil implements ATNil, Serializable {
       * -- Value Conversion Protocol   --
       * --------------------------------- */
 
-    public boolean base_isClosure() {
+    public boolean base_isClosure() throws InterpreterException {
         return false;
     }
 
-    public boolean base_isSymbol() {
+    public boolean base_isSymbol() throws InterpreterException {
         return false;
     }
 
-    public boolean base_isBoolean() {
+    public boolean base_isBoolean() throws InterpreterException {
         return false;
     }
 
-    public boolean base_isTable() {
+    public boolean base_isTable() throws InterpreterException {
         return false;
     }
 
-    public boolean base_isCallFrame() {
+    public boolean base_isCallFrame() throws InterpreterException {
         return false;
     }
 
-    public boolean base_isUnquoteSplice() {
+    public boolean base_isUnquoteSplice() throws InterpreterException {
         return false;
     }
 
-    public boolean base_isVariableAssignment() {
+    public boolean base_isVariableAssignment() throws InterpreterException {
         return false;
     }
     
-    public boolean base_isSplice() {
+    public boolean base_isSplice() throws InterpreterException {
         return false;
     }
 
-    public boolean base_isMethod() {
+    public boolean base_isMethod() throws InterpreterException {
         return false;
     }
     
-    public boolean base_isMessageCreation() {
+    public boolean base_isMessageCreation() throws InterpreterException {
     	return false;
     }
 
@@ -388,55 +388,55 @@ public class NATNil implements ATNil, Serializable {
         return false;
     }
     
-    public boolean base_isMirror() {
+    public boolean base_isMirror() throws InterpreterException {
         return false;
     }
     
-    public boolean base_isStripe() {
+    public boolean base_isStripe() throws InterpreterException {
         return false;
     }
     
-    public ATClosure base_asClosure() throws XTypeMismatch {
+    public ATClosure base_asClosure() throws InterpreterException {
         throw new XTypeMismatch(ATClosure.class, this);
     }
 
-    public ATSymbol base_asSymbol() throws XTypeMismatch {
+    public ATSymbol base_asSymbol() throws InterpreterException {
         throw new XTypeMismatch(ATSymbol.class, this);
     }
 
-    public ATTable base_asTable() throws XTypeMismatch {
+    public ATTable base_asTable() throws InterpreterException {
         throw new XTypeMismatch(ATTable.class, this);
     }
 
-    public ATBoolean base_asBoolean() throws XTypeMismatch {
+    public ATBoolean base_asBoolean() throws InterpreterException {
         throw new XTypeMismatch(ATBoolean.class, this);
     }
 
-    public ATNumber base_asNumber() throws XTypeMismatch {
+    public ATNumber base_asNumber() throws InterpreterException {
         throw new XTypeMismatch(ATNumber.class, this);
     }
 
-    public ATMessage base_asMessage() throws XTypeMismatch {
+    public ATMessage base_asMessage() throws InterpreterException {
         throw new XTypeMismatch(ATMessage.class, this);
     }
 
-    public ATField base_asField() throws XTypeMismatch {
+    public ATField base_asField() throws InterpreterException {
         throw new XTypeMismatch(ATField.class, this);
     }
 
-    public ATMethod base_asMethod() throws XTypeMismatch {
+    public ATMethod base_asMethod() throws InterpreterException {
         throw new XTypeMismatch(ATMethod.class, this);
     }
 
-    public ATMirror base_asMirror() throws XTypeMismatch {
+    public ATMirror base_asMirror() throws InterpreterException {
         throw new XTypeMismatch(ATMirror.class, this);
     }
     
-    public ATHandler base_asHandler() throws XTypeMismatch {
+    public ATHandler base_asHandler() throws InterpreterException {
     	    throw new XTypeMismatch(ATHandler.class, this);
     }
 
-    public ATStripe base_asStripe() throws XTypeMismatch {
+    public ATStripe base_asStripe() throws InterpreterException {
 	    throw new XTypeMismatch(ATStripe.class, this);
     }
     
@@ -445,56 +445,56 @@ public class NATNil implements ATNil, Serializable {
     	return false;
     }
     
-    public ATFarReference base_asFarReference() throws XTypeMismatch {
+    public ATFarReference base_asFarReference() throws InterpreterException {
   	    throw new XTypeMismatch(ATFarReference.class, this);
   	}
     
-    public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch {
+    public ATAsyncMessage base_asAsyncMessage() throws InterpreterException {
   	    throw new XTypeMismatch(ATAsyncMessage.class, this);
   	}
     
-    public ATActorMirror base_asActorMirror() throws XTypeMismatch {
+    public ATActorMirror base_asActorMirror() throws InterpreterException {
     	throw new XTypeMismatch(ATActorMirror.class, this);
     }
     
     // Conversions for abstract grammar elements
 
-    public ATStatement base_asStatement() throws XTypeMismatch {
+    public ATStatement base_asStatement() throws InterpreterException {
         throw new XTypeMismatch(ATStatement.class, this);
     }
 
-    public ATDefinition base_asDefinition() throws XTypeMismatch {
+    public ATDefinition base_asDefinition() throws InterpreterException {
         throw new XTypeMismatch(ATDefinition.class, this);
     }
 
-    public ATExpression base_asExpression() throws XTypeMismatch {
+    public ATExpression base_asExpression() throws InterpreterException {
         throw new XTypeMismatch(ATExpression.class, this);
     }
 
-    public ATBegin base_asBegin() throws XTypeMismatch {
+    public ATBegin base_asBegin() throws InterpreterException {
         throw new XTypeMismatch(ATBegin.class, this);
     }
 
-    public ATMessageCreation base_asMessageCreation() throws XTypeMismatch {
+    public ATMessageCreation base_asMessageCreation() throws InterpreterException {
         throw new XTypeMismatch(ATMessageCreation.class, this);
     }
 
-    public ATUnquoteSplice base_asUnquoteSplice() throws XTypeMismatch {
+    public ATUnquoteSplice base_asUnquoteSplice() throws InterpreterException {
         throw new XTypeMismatch(ATUnquoteSplice.class, this);
     }
 
-    public ATAssignVariable base_asVariableAssignment() throws XTypeMismatch {
+    public ATAssignVariable base_asVariableAssignment() throws InterpreterException {
         throw new XTypeMismatch(ATAssignVariable.class, this);
     }
     
-    public ATSplice base_asSplice() throws XTypeMismatch {
+    public ATSplice base_asSplice() throws InterpreterException {
         throw new XTypeMismatch(ATSplice.class, this);
     }
     
     // Conversions for native values
     public NATObject asAmbientTalkObject() throws XTypeMismatch {
-    	    throw new XTypeMismatch(NATObject.class, this);
-    	}
+    	throw new XTypeMismatch(NATObject.class, this);
+    }
 
     public NATNumber asNativeNumber() throws XTypeMismatch {
         throw new XTypeMismatch(NATNumber.class, this);
@@ -504,7 +504,7 @@ public class NATNil implements ATNil, Serializable {
         throw new XTypeMismatch(NATFraction.class, this);
     }
 
-    public NATText asNativeText() throws InterpreterException {
+    public NATText asNativeText() throws XTypeMismatch {
     	throw new XTypeMismatch(NATText.class, this);
     }
 

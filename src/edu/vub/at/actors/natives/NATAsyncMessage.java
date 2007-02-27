@@ -49,22 +49,29 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 
 	private final static AGSymbol _RECEIVER_ = AGSymbol.jAlloc("receiver");
-
+	private final static AGSymbol _SENDER_ = AGSymbol.jAlloc("sender");
+	
     /**
      * @param sdr the sender of the asynchronous message
      * @param sel the selector of the asynchronous message
      * @param arg the arguments of the asynchronous message
      */
-    public NATAsyncMessage(ATSymbol sel, ATTable arg) throws InterpreterException {
+    public NATAsyncMessage(ATObject sender, ATSymbol sel, ATTable arg) throws InterpreterException {
         super(sel, arg, NativeStripes._ASYNCMSG_);
+        super.meta_defineField(_SENDER_, sender);
         super.meta_defineField(_RECEIVER_, NATNil._INSTANCE_);
     }
     
-    public NATAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
-        this(sel, arg);
+    public NATAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
+    	super(sel, arg, NativeStripes._ASYNCMSG_);
+        super.meta_assignField(this, _SENDER_, sdr);
         super.meta_assignField(this, _RECEIVER_, rcv);
     }
 
+    public ATObject base_getSender() throws InterpreterException {
+    	return super.meta_select(this, _SENDER_);
+    }
+    
     public ATObject base_getReceiver() throws InterpreterException {
     	return super.meta_select(this, _RECEIVER_);
     }

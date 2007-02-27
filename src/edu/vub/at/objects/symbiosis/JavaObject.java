@@ -39,8 +39,8 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATBoolean;
@@ -105,10 +105,23 @@ public final class JavaObject extends NATObject implements ATObject {
 	/**
 	 * A JavaObject wrapping an object o has a dynamic SHARES-A parent pointing to the
 	 * wrapper of o's class.
+	 * 
+	 * A symbiotic Java object is striped with all of the Java interface
+	 * stripes that correspond to the interface types implemented by the
+	 * wrapped Java object's class.
 	 */
 	private JavaObject(Object wrappedObject) {
 		super(JavaClass.wrapperFor(wrappedObject.getClass()), NATObject._SHARES_A_);
 		wrappedObject_ = wrappedObject;
+		
+		// initialize the Java symbiotic object's stripes
+		Class[] extendedInterfaces = wrappedObject_.getClass().getInterfaces();
+		if (extendedInterfaces.length > 0) {
+			stripes_ = new ATStripe[extendedInterfaces.length];
+			for (int i = 0; i < extendedInterfaces.length; i++) {
+				stripes_[i] = JavaClass.wrapperFor(extendedInterfaces[i]);
+			}	
+		}
 	}
 
 	public Object getWrappedObject() {
@@ -322,10 +335,6 @@ public final class JavaObject extends NATObject implements ATObject {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<java:"+wrappedObject_.toString()+">");
 	}
-	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._JAVAOBJECT_);
-    }
 	
 	/**
 	 * Passing a Java Object wrapper to another actor has the following effect:

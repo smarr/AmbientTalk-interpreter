@@ -42,9 +42,6 @@ public final class NativeStripes {
 //defstripe Isolate;
 	public final static NATStripe _ISOLATE_ = NATStripe.atValue("Isolate");
 	
-//defstripe JavaObject;
-	public final static NATStripe _JAVAOBJECT_ = NATStripe.atValue("JavaObject");
-	
 //defstripe Boolean;
 	public final static NATStripe _BOOLEAN_ = NATStripe.atValue("Boolean");
 	
@@ -94,19 +91,37 @@ public final class NativeStripes {
 	
 // literal values
 //defstripe Table <: Expression;
-	public final static NATStripe _TABLE_ = NATStripe.atValue("Table");
+	public final static NATStripe _TABLE_ = NATStripe.atValue("Table", _EXPRESSION_);
 	
 //defstripe Text <: Expression;
-	public final static NATStripe _TEXT_ = NATStripe.atValue("Text");
+	public final static NATStripe _TEXT_ = NATStripe.atValue("Text", _EXPRESSION_);
 	
 //defstripe Numeric <: Expression;
-	public final static NATStripe _NUMERIC_ = NATStripe.atValue("Numeric");
+	public final static NATStripe _NUMERIC_ = NATStripe.atValue("Numeric", _EXPRESSION_);
 	
 //defstripe Number <: Numeric;
-	public final static NATStripe _NUMBER_ = NATStripe.atValue("Number");
+	public final static NATStripe _NUMBER_ = NATStripe.atValue("Number", _EXPRESSION_);
 	
 //defstripe Fraction <: Numeric;
-	public final static NATStripe _FRACTION_ = NATStripe.atValue("Fraction");
+	public final static NATStripe _FRACTION_ = NATStripe.atValue("Fraction", _EXPRESSION_);
+
+//defstripe Symbol <: Expression;
+	public final static NATStripe _SYMBOL_ = NATStripe.atValue("Symbol", _EXPRESSION_);
+
+//defstripe Begin <: AbstractGrammar;
+	public final static NATStripe _BEGIN_ = NATStripe.atValue("Begin", _ABSTRACTGRAMMAR_);
+	
+//defstripe Splice <: Expression;
+	public final static NATStripe _SPLICE_ = NATStripe.atValue("Splice", _EXPRESSION_);
+	
+//defstripe UnquoteSplice <: Expression;
+	public final static NATStripe _UQSPLICE_ = NATStripe.atValue("UnquoteSplice", _EXPRESSION_);
+	
+//defstripe MessageCreation <: Expression;
+	public final static NATStripe _MSGCREATION_ = NATStripe.atValue("MessageCreation", _EXPRESSION_);
+	
+//defstripe Definition <: Statement;
+	public final static NATStripe _DEFINITION_ = NATStripe.atValue("Definition", _STATEMENT_);
 	
 //
 //// exception types

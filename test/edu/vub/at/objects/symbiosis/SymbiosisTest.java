@@ -43,6 +43,7 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATFraction;
@@ -53,6 +54,12 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.natives.grammar.TestEval;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
 
 /**
  * Tests the symbiosis with Java. This is primarily done by wrapping
@@ -761,6 +768,52 @@ public class SymbiosisTest extends AmbientTalkTest {
 		ATObject jStringBuffer = JavaClass.wrapperFor(StringBuffer.class);
 		// jStringBuffer.new(10)
 		jStringBuffer.meta_invoke(jStringBuffer, AGSymbol.jAlloc("new"), NATTable.atValue(new ATObject[] { NATNumber.atValue(10) }));
+	}
+	
+	/**
+	 * Tests whether Java interface types are correctly treated as AT/2 stripes.
+	 * Test cases: interface java.util.Set extends java.util.Collection
+	 */
+	public void testInterfacesAndStripes() throws InterpreterException {
+		JavaClass jSet = JavaClass.wrapperFor(Set.class);
+		JavaClass jCollection = JavaClass.wrapperFor(Collection.class);
+		ATStripe atSet = jSet.base_asStripe();
+		ATStripe atCollection = jCollection.base_asStripe();
+		// stripe name = 'java.util.Set'
+		assertEquals(AGSymbol.jAlloc("java.util.Set"), atSet.base_getStripeName());
+		// stripe parents = [ java.util.Collection ]
+		assertEquals(jCollection, atSet.base_getParentStripes().base_at(NATNumber.ONE));
+		// Set isSubstripeOf Collection? true
+		assertTrue(atSet.base_isSubstripeOf(atCollection).asNativeBoolean().javaValue);
+		// Collection isSubstripeOf Set? false
+		assertFalse(atCollection.base_isSubstripeOf(atSet).asNativeBoolean().javaValue);
+		// Set isSubstripeOf Set? true
+		assertTrue(atSet.base_isSubstripeOf(atSet).asNativeBoolean().javaValue);
+	}
+	
+	/**
+	 * Test whether JavaObject wrappers are correctly striped with all
+	 * of the interfaces of the wrapped instance's class.
+	 * 
+	 * Test case: java.util.Vector implements List, RandomAccess, Cloneable, Serializable
+	 */
+	public void testStripedJavaObject() throws InterpreterException {
+		JavaClass jVector = JavaClass.wrapperFor(Vector.class);
+		JavaObject vec = jVector.meta_newInstance(NATTable.EMPTY).asJavaObjectUnderSymbiosis();
+		
+		ATStripe jListStripe = JavaClass.wrapperFor(List.class).base_asStripe();
+		ATStripe jCollectionStripe = JavaClass.wrapperFor(Collection.class).base_asStripe();
+		ATStripe jSerializableStripe = JavaClass.wrapperFor(Serializable.class).base_asStripe();
+		ATStripe jSetStripe = JavaClass.wrapperFor(Set.class).base_asStripe();
+		
+		// vec is striped with List? true
+		assertTrue(vec.meta_isStripedWith(jListStripe).asNativeBoolean().javaValue);
+		// vec is striped with Collection? true
+		assertTrue(vec.meta_isStripedWith(jCollectionStripe).asNativeBoolean().javaValue);
+		// vec is striped with Serializable? true
+		assertTrue(vec.meta_isStripedWith(jSerializableStripe).asNativeBoolean().javaValue);
+		// vec is striped with Set? false
+		assertFalse(vec.meta_isStripedWith(jSetStripe).asNativeBoolean().javaValue);
 	}
 	
 }

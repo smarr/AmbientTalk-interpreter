@@ -88,31 +88,31 @@ public interface ATConversions {
 	public boolean base_isStripe() throws InterpreterException;
 	public boolean base_isFarReference() throws InterpreterException;
 	
-	public ATClosure   base_asClosure() throws XTypeMismatch;
-	public ATSymbol    base_asSymbol() throws XTypeMismatch;
-	public ATTable     base_asTable() throws XTypeMismatch;
-	public ATBoolean   base_asBoolean() throws XTypeMismatch;
-	public ATNumber    base_asNumber() throws XTypeMismatch;
-	public ATMessage   base_asMessage() throws XTypeMismatch;
-	public ATField     base_asField() throws XTypeMismatch;
-	public ATMethod    base_asMethod() throws XTypeMismatch;
-	public ATMirror    base_asMirror() throws XTypeMismatch;
-	public ATHandler   base_asHandler() throws XTypeMismatch;
-	public ATStripe    base_asStripe() throws XTypeMismatch;
-	public ATFarReference base_asFarReference() throws XTypeMismatch;
-	public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch;
-	public ATActorMirror base_asActorMirror() throws XTypeMismatch;
+	public ATClosure   base_asClosure() throws InterpreterException;
+	public ATSymbol    base_asSymbol() throws InterpreterException;
+	public ATTable     base_asTable() throws InterpreterException;
+	public ATBoolean   base_asBoolean() throws InterpreterException;
+	public ATNumber    base_asNumber() throws InterpreterException;
+	public ATMessage   base_asMessage() throws InterpreterException;
+	public ATField     base_asField() throws InterpreterException;
+	public ATMethod    base_asMethod() throws InterpreterException;
+	public ATMirror    base_asMirror() throws InterpreterException;
+	public ATHandler   base_asHandler() throws InterpreterException;
+	public ATStripe    base_asStripe() throws InterpreterException;
+	public ATFarReference base_asFarReference() throws InterpreterException;
+	public ATAsyncMessage base_asAsyncMessage() throws InterpreterException;
+	public ATActorMirror base_asActorMirror() throws InterpreterException;
 	
 	// Abstract Grammar Elements
 	
-	public ATStatement  		base_asStatement() throws XTypeMismatch;
-	public ATDefinition 		base_asDefinition() throws XTypeMismatch;
-	public ATExpression 		base_asExpression() throws XTypeMismatch;
-	public ATBegin      		base_asBegin() throws XTypeMismatch;
-	public ATMessageCreation 	base_asMessageCreation() throws XTypeMismatch;
-	public ATUnquoteSplice 		base_asUnquoteSplice() throws XTypeMismatch;
+	public ATStatement  		base_asStatement() throws InterpreterException;
+	public ATDefinition 		base_asDefinition() throws InterpreterException;
+	public ATExpression 		base_asExpression() throws InterpreterException;
+	public ATBegin      		base_asBegin() throws InterpreterException;
+	public ATMessageCreation 	base_asMessageCreation() throws InterpreterException;
+	public ATUnquoteSplice 		base_asUnquoteSplice() throws InterpreterException;
 	public ATAssignVariable 	base_asVariableAssignment() throws InterpreterException;
-	public ATSplice 			base_asSplice() throws XTypeMismatch;
+	public ATSplice 			base_asSplice() throws InterpreterException;
 
 	// Native Value Elements
 	
@@ -125,7 +125,7 @@ public interface ATConversions {
 	public NATObject   asAmbientTalkObject() throws XTypeMismatch;
 	public NATNumber   asNativeNumber() throws XTypeMismatch;
 	public NATFraction asNativeFraction() throws XTypeMismatch;
-	public NATText     asNativeText() throws InterpreterException;
+	public NATText     asNativeText() throws XTypeMismatch;
 	public NATTable    asNativeTable() throws XTypeMismatch;
 	public NATBoolean  asNativeBoolean() throws XTypeMismatch;
 	public NATNumeric  asNativeNumeric() throws XTypeMismatch;

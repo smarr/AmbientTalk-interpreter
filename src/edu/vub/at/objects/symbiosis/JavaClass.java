@@ -29,6 +29,7 @@ package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
@@ -48,6 +49,7 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
@@ -61,6 +63,9 @@ import java.util.HashMap;
  *  - sending 'new' to a Java class invokes the constructor and returns a new instance of the class under symbiosis
  *  - all static fields and methods of the Java class are reflected under symbiosis as fields and methods of the AT object
  *  
+ * A Java Class object that represents an interface can furthermore be used
+ * as an AmbientTalk stripe. The stripe's name corresponds to the interface's full name.
+ *  
  * JavaClass instances are pooled (on a per-actor basis): there should exist only one JavaClass instance
  * for each Java class loaded into the JVM. Because the JVM ensures that a Java class
  * can only be loaded once, we can use the Java class wrapped by the JavaClass instance
@@ -68,7 +73,7 @@ import java.util.HashMap;
  *  
  * @author tvcutsem
  */
-public final class JavaClass extends NATObject {
+public final class JavaClass extends NATObject implements ATStripe {
 	
 	/**
 	 * A thread-local hashmap pooling all of the JavaClass wrappers for
@@ -108,9 +113,13 @@ public final class JavaClass extends NATObject {
 	 * and has NIL as its dynamic parent.
 	 * 
 	 * JavaClass instances are isolates.
+	 * In addition, if the JavaClass wraps a Java interface type, JavaClass instances are
+	 * also stripes.
 	 */
 	private JavaClass(Class wrappedClass) {
-		super(new ATStripe[] { NativeStripes._ISOLATE_ });
+		super(wrappedClass.isInterface() ?
+			  new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._STRIPE_ } :
+			  new ATStripe[] { NativeStripes._ISOLATE_ });
 		wrappedClass_ = wrappedClass;
 	}
 	
@@ -330,12 +339,6 @@ public final class JavaClass extends NATObject {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<java:"+wrappedClass_.toString()+">");
 	}
-	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	// TODO: if (isInterface) return { isolate, stripe } else { isolate }
-    	// should actually already pass those stripes in constructor and not override parent method
-    	return NATTable.of(NativeStripes._ISOLATE_);
-    }
 
 	/**
      * A Java Class object remains unique within an actor.
@@ -343,5 +346,53 @@ public final class JavaClass extends NATObject {
     public ATObject meta_resolve() throws InterpreterException {
     	return wrapperFor(wrappedClass_);
     }
+    
+    /* ========================
+     * == ATStripe Interface ==
+     * ======================== */
+    
+    /**
+     * If this class represents an interface type, parentStripes
+     * are wrappers for all interfaces extended by this Java interface type
+     */
+	public ATTable base_getParentStripes() throws InterpreterException {
+		if (wrappedClass_.isInterface()) {
+			Class[] extendedInterfaces = wrappedClass_.getInterfaces();
+			ATObject[] stripes = new ATObject[extendedInterfaces.length];
+			for (int i = 0; i < extendedInterfaces.length; i++) {
+				stripes[i] = JavaClass.wrapperFor(extendedInterfaces[i]);
+			}
+			return NATTable.atValue(stripes);
+		} else {
+			throw new XIllegalOperation("Asked for parent stripes of a non-interface Class type:" + wrappedClass_.getName());
+		}
+	}
+
+	public ATSymbol base_getStripeName() throws InterpreterException {
+		if (wrappedClass_.isInterface()) {
+			return AGSymbol.jAlloc(wrappedClass_.getName());
+		} else {
+			throw new XIllegalOperation("Asked for stripe name of a non-interface Class type:" + wrappedClass_.getName());
+		}
+	}
+
+	/**
+	 * A Java interface type used as a stripe can only be a substripe of another
+	 * Java interface type used as a stripe, and only if this type is assignable
+	 * to the other type.
+	 */
+	public ATBoolean base_isSubstripeOf(ATStripe other) throws InterpreterException {
+		if (wrappedClass_.isInterface()) {
+			if (other instanceof JavaClass) {
+				JavaClass otherClass = (JavaClass) other;
+				// wrappedClass <: otherClass <=> otherClass >= wrappedClass
+				return NATBoolean.atValue(otherClass.wrappedClass_.isAssignableFrom(wrappedClass_));
+			} else {
+				return NATBoolean._FALSE_;
+			}
+		} else {
+			throw new XIllegalOperation("Performed substripe test on a non-interface Class type:" + wrappedClass_.getName());
+		}
+	}
 	
 }

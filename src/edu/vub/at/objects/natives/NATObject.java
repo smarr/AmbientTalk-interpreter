@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
@@ -203,7 +204,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	/**
 	 * The stripes under which this object has been classified
 	 */
-	private ATStripe[] stripes_;
+	protected ATStripe[] stripes_;
 	
 	/* ------------------
 	 * -- Constructors --
@@ -280,15 +281,23 @@ public class NATObject extends NATCallframe implements ATObject {
 	public NATObject(ATObject dynamicParent, ATObject lexicalParent, boolean parentType, ATStripe[] stripes) {
 		super(lexicalParent);
 		
-		flags_ = 0; // by default, an object has a shares-a parent and does not share its map/dictionary
+        // by default, an object has a shares-a parent, does not share its map
+		// or dictionary and is no isolate, so all flags are set to 0
+		flags_ = 0;
 		
 		stripes_ = stripes;
 		
 		// if this object is striped as at.stripes.Isolate, flag it as an isolate
-		if (isStripedAsIsolate()) {
-			setFlag(_IS_ISOLATE_FLAG_);
-			// isolates can only have the global lexical root as their lexical scope
-			lexicalParent_ = Evaluator.getGlobalLexicalScope();
+		try {
+			if (isLocallyStripedWith(NativeStripes._ISOLATE_)) {
+				setFlag(_IS_ISOLATE_FLAG_);
+				// isolates can only have the global lexical root as their lexical scope
+				lexicalParent_ = Evaluator.getGlobalLexicalScope();
+			}
+		} catch (InterpreterException e) {
+			// some custom stripe failed to match agains the Isolate stripe,
+			// the object is not considered an Isolate
+			Logging.Actor_LOG.error("Error testing for Isolate stripe, ignored:", e);
 		}
 		
 		methodDictionary_ = new MethodDictionary();
@@ -768,49 +777,58 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	public NATObject asAmbientTalkObject() { return this; }
 	
-	// ALL asXXX methods return a coercer object which returns a proxy of the correct interface that will 'down'
-	// subsequent Java base-level invocations to the AmbientTalk level
+	/**
+	 * ALL asXXX methods return a coercer object which returns a proxy of the correct interface that will 'down'
+	 * subsequent Java base-level invocations to the AmbientTalk level.
+	 * 
+	 * Coercion only happens if the object is striped with the correct stripe.
+	 */
+	private Object coerce(ATStripe requiredStripe, Class providedInterface) throws InterpreterException {
+		if (this.meta_isStripedWith(requiredStripe).asNativeBoolean().javaValue) {
+			return Coercer.coerce(this, providedInterface);
+		} else {
+			// if the object does not possess the right stripe, raise a type error
+			throw new XTypeMismatch(providedInterface, this);
+		}
+	}
 	
-	public ATBegin base_asBegin() throws XTypeMismatch { return (ATBegin) Coercer.coerce(this, ATBegin.class); }
-	public ATBoolean base_asBoolean() throws XTypeMismatch { return (ATBoolean) Coercer.coerce(this, ATBoolean.class); }
-	public ATClosure base_asClosure() throws XTypeMismatch { return (ATClosure) Coercer.coerce(this, ATClosure.class); }
-	public ATDefinition base_asDefinition() throws XTypeMismatch { return (ATDefinition) Coercer.coerce(this, ATDefinition.class); }
-	public ATExpression base_asExpression() throws XTypeMismatch { return (ATExpression) Coercer.coerce(this, ATExpression.class); }
-	public ATField base_asField() throws XTypeMismatch { return (ATField) Coercer.coerce(this, ATField.class); }
-	public ATMessage base_asMessage() throws XTypeMismatch { return (ATMessage) Coercer.coerce(this, ATMessage.class); }
-	public ATMessageCreation base_asMessageCreation() throws XTypeMismatch { return (ATMessageCreation) Coercer.coerce(this, ATMessageCreation.class); }
-	public ATMethod base_asMethod() throws XTypeMismatch { return (ATMethod) Coercer.coerce(this, ATMethod.class); }
-	public ATMirror base_asMirror() throws XTypeMismatch { return (ATMirror) Coercer.coerce(this, ATMirror.class); }
-	public ATHandler base_asHandler() throws XTypeMismatch { return (ATHandler) Coercer.coerce(this, ATHandler.class); }
-	public ATNumber base_asNumber() throws XTypeMismatch { return (ATNumber) Coercer.coerce(this, ATNumber.class); }
-	public ATSplice base_asSplice() throws XTypeMismatch { return (ATSplice) Coercer.coerce(this, ATSplice.class); }
-	public ATStatement base_asStatement() throws XTypeMismatch { return (ATStatement) Coercer.coerce(this, ATStatement.class); }
-	public ATSymbol base_asSymbol() throws XTypeMismatch { return (ATSymbol) Coercer.coerce(this, ATSymbol.class); }
-	public ATTable base_asTable() throws XTypeMismatch { return (ATTable) Coercer.coerce(this, ATTable.class); }
-	public ATUnquoteSplice base_asUnquoteSplice() throws XTypeMismatch { return (ATUnquoteSplice) Coercer.coerce(this, ATUnquoteSplice.class); }
-    public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch { return (ATAsyncMessage) Coercer.coerce(this, ATAsyncMessage.class);}
-    public ATActorMirror base_asActorMirror() throws XTypeMismatch { return (ATActorMirror) Coercer.coerce(this, ATActorMirror.class); }
-    public ATStripe base_asStripe() throws XTypeMismatch { return (ATStripe) Coercer.coerce(this, ATStripe.class); }
+	public ATBoolean base_asBoolean() throws InterpreterException { return (ATBoolean) coerce(NativeStripes._BOOLEAN_, ATBoolean.class); }
+	public ATClosure base_asClosure() throws InterpreterException { return (ATClosure) coerce(NativeStripes._CLOSURE_, ATClosure.class); }
+	public ATExpression base_asExpression() throws InterpreterException { return (ATExpression) coerce(NativeStripes._EXPRESSION_, ATExpression.class); }
+	public ATField base_asField() throws InterpreterException { return (ATField) coerce(NativeStripes._FIELD_, ATField.class); }
+	public ATMessage base_asMessage() throws InterpreterException { return (ATMessage) coerce(NativeStripes._MESSAGE_, ATMessage.class); }
+	public ATMethod base_asMethod() throws InterpreterException { return (ATMethod) coerce(NativeStripes._METHOD_, ATMethod.class); }
+	public ATMirror base_asMirror() throws InterpreterException { return (ATMirror) coerce(NativeStripes._MIRROR_, ATMirror.class); }
+	public ATHandler base_asHandler() throws InterpreterException { return (ATHandler) coerce(NativeStripes._HANDLER_, ATHandler.class); }
+	public ATNumber base_asNumber() throws InterpreterException { return (ATNumber) coerce(NativeStripes._NUMBER_, ATNumber.class); }
+	public ATTable base_asTable() throws InterpreterException { return (ATTable) coerce(NativeStripes._TABLE_, ATTable.class); }
+    public ATAsyncMessage base_asAsyncMessage() throws InterpreterException { return (ATAsyncMessage) coerce(NativeStripes._ASYNCMSG_, ATAsyncMessage.class);}
+    public ATActorMirror base_asActorMirror() throws InterpreterException { return (ATActorMirror) coerce(NativeStripes._ACTORMIRROR_, ATActorMirror.class); }
+    public ATStripe base_asStripe() throws InterpreterException { return (ATStripe) coerce(NativeStripes._STRIPE_, ATStripe.class); }
 	
+	public ATBegin base_asBegin() throws InterpreterException { return (ATBegin) coerce(NativeStripes._BEGIN_, ATBegin.class); }
+	public ATStatement base_asStatement() throws InterpreterException { return (ATStatement) coerce(NativeStripes._STATEMENT_, ATStatement.class); }
+    public ATUnquoteSplice base_asUnquoteSplice() throws InterpreterException { return (ATUnquoteSplice) coerce(NativeStripes._UQSPLICE_, ATUnquoteSplice.class); }
+    public ATSymbol base_asSymbol() throws InterpreterException { return (ATSymbol) coerce(NativeStripes._SYMBOL_, ATSymbol.class); }
+    public ATSplice base_asSplice() throws InterpreterException { return (ATSplice) coerce(NativeStripes._SPLICE_, ATSplice.class); }
+	public ATDefinition base_asDefinition() throws InterpreterException { return (ATDefinition) coerce(NativeStripes._DEFINITION_, ATDefinition.class); }
+	public ATMessageCreation base_asMessageCreation() throws InterpreterException { return (ATMessageCreation) coerce(NativeStripes._MSGCREATION_, ATMessageCreation.class); }
     
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
 	public boolean isAmbientTalkObject() { return true; }
 	
-	// TODO: discuss with Stijn: base_isMirror => isMirror, i.e. don't make this accessible?
-	// NATMirage has to override this again and say false again, seems ugly
-	
-	// perhaps we should provide annotations for objects and only return true if the objects
-	// mention that they actually represent a mirror, boolean, closure, ...
-	public boolean base_isMirror() { return true; }
-	public boolean base_isBoolean() { return true; }
-	public boolean base_isClosure() { return true; }
-	public boolean base_isMethod() { return true; }
-	public boolean base_isSplice() { return true; }
-	public boolean base_isSymbol() { return true; }
-	public boolean base_isTable() { return true; }
-	public boolean base_isUnquoteSplice() { return true; }
-	public boolean base_isStripe() { return true; }
+	// objects can only be 'cast' to a native category if they are marked with
+	// the appropriate native stripe
+	public boolean base_isMirror() throws InterpreterException { return meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue; }
+	public boolean base_isBoolean() throws InterpreterException { return meta_isStripedWith(NativeStripes._BOOLEAN_).asNativeBoolean().javaValue; }
+	public boolean base_isClosure() throws InterpreterException { return meta_isStripedWith(NativeStripes._CLOSURE_).asNativeBoolean().javaValue; }
+	public boolean base_isMethod() throws InterpreterException { return meta_isStripedWith(NativeStripes._METHOD_).asNativeBoolean().javaValue; }
+	public boolean base_isSplice() throws InterpreterException { return meta_isStripedWith(NativeStripes._SPLICE_).asNativeBoolean().javaValue; }
+	public boolean base_isSymbol() throws InterpreterException { return meta_isStripedWith(NativeStripes._SYMBOL_).asNativeBoolean().javaValue; }
+	public boolean base_isTable() throws InterpreterException { return meta_isStripedWith(NativeStripes._TABLE_).asNativeBoolean().javaValue; }
+	public boolean base_isUnquoteSplice() throws InterpreterException { return meta_isStripedWith(NativeStripes._UQSPLICE_).asNativeBoolean().javaValue; }
+	public boolean base_isStripe() throws InterpreterException { return meta_isStripedWith(NativeStripes._STRIPE_).asNativeBoolean().javaValue; }
 	
 	
 	// private methods
@@ -845,11 +863,13 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
 	/**
-	 * @return whether this object is striped as an Isolate or not
+	 * Performs a stripe test for this object locally.
+	 * @return whether this object is striped with a particular stripe or not.
 	 */
-	private boolean isStripedAsIsolate() {
-		for (int i = 0; i < stripes_.length; i++) {
-			if (stripes_[i].equals(NativeStripes._ISOLATE_)) {
+	private boolean isLocallyStripedWith(ATStripe stripe) throws InterpreterException {
+    	for (int i = 0; i < stripes_.length; i++) {
+			if (stripes_[i].base_isSubstripeOf(stripe).asNativeBoolean().javaValue) {
+				// if one stripe matches, return true
 				return true;
 			}
 		}

@@ -492,8 +492,8 @@ public class NATMirage extends NATObject {
 		return false;
 	}
 	
-	public ATMirror base_asMirror() throws XTypeMismatch {
-		return NATNil._INSTANCE_.base_asMirror();
+	public ATMirror base_asMirror() throws InterpreterException {
+		throw new XTypeMismatch(ATMirror.class, this);
 	}
 	
 	// when passing a mirage as a parameter in an asynchronous message send,
