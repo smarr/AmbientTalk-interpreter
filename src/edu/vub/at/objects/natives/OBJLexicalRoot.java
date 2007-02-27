@@ -677,57 +677,57 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
-	 * try: { tryBlock} catch: prototype using: { |e| replacementCode }
+	 * try: { tryBlock} catch: stripe using: { |e| replacementCode }
 	 * 
 	 * 'Syntactic sugar' for one in-line handler
 	 */
-	public ATObject base_try_catch_using_(ATClosure tryBlock, ATObject filter, ATClosure replacementCode) throws InterpreterException {
+	public ATObject base_try_catch_using_(ATClosure tryBlock, ATStripe filter, ATClosure replacementCode) throws InterpreterException {
 		return base_try_using_(tryBlock, new NATHandler(filter, replacementCode));
 	}
 	
 	/**
 	 * try: {
 	 *   tryBlock
-	 * } catch: prototype using: { |e|
+	 * } catch: stripe using: { |e|
 	 *   replacementCode
-	 * } catch: prototype2 using: { |e|
+	 * } catch: stripe2 using: { |e|
 	 *   replacementCode2
 	 * }
 	 * 
 	 * 'Syntactic sugar' for two in-line handlers
 	 */
-	public ATObject base_try_catch_using_catch_using_(ATClosure tryBlock,
-			                						   ATObject filter1, ATClosure hdl1,
-			                						   ATObject filter2, ATClosure hdl2) throws InterpreterException {
+	public ATObject base_try_catch_using_catch_using_(	ATClosure tryBlock,
+													ATStripe filter1, ATClosure hdl1,
+			                						   	ATStripe filter2, ATClosure hdl2) throws InterpreterException {
 		return base_try_using_using_(tryBlock, new NATHandler(filter1, hdl1), new NATHandler(filter2, hdl2));
 	}
 	
 	/**
 	 * try: {
 	 *   tryBlock
-	 * } catch: prototype using: { |e|
+	 * } catch: stripe using: { |e|
 	 *   replacementCode
-	 * } catch: prototype2 using: { |e|
+	 * } catch: stripe2 using: { |e|
 	 *   replacementCode2
-	 * } catch: prototype3 using: { |e|
+	 * } catch: stripe3 using: { |e|
 	 *   replacementCode3
 	 * }
 	 * 
 	 * 'Syntactic sugar' for three in-line handlers
 	 */
 	public ATObject base_try_catch_using_catch_using_catch_using_(ATClosure tryBlock,
-															   ATObject filter1, ATClosure hdl1,
-															   ATObject filter2, ATClosure hdl2,
-															   ATObject filter3, ATClosure hdl3) throws InterpreterException {
+															   ATStripe filter1, ATClosure hdl1,
+															   ATStripe filter2, ATClosure hdl2,
+															   ATStripe filter3, ATClosure hdl3) throws InterpreterException {
 		return base_try_using_using_using_(tryBlock, new NATHandler(filter1, hdl1), new NATHandler(filter2, hdl2), new NATHandler(filter3, hdl3));
 	}
 	
 	/**
-	 * handle: prototype with: { |e| replacementCode }
+	 * handle: stripe with: { |e| replacementCode }
 	 * 
 	 * Creates a first-class handler from a filter prototype and some handler code.
 	 */
-	public ATObject base_handle_with_(ATObject filter, ATClosure replacementCode) {
+	public ATObject base_handle_with_(ATStripe filter, ATClosure replacementCode) {
 		return new NATHandler(filter, replacementCode);
 	}
 	

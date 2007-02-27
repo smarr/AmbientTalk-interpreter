@@ -178,9 +178,7 @@ public class ELActor extends EventLoop {
 			SharedActorField field = fields[i];
 			ATObject value = field.initialize();
 			if (value != null) {
-				// TODO(discuss) As the behaviour of an actor is now an isolate, we can no longer simply install anything in the lexical scope, but we must also do this in the behaviour of the actor itself
 				globalScope.meta_defineField(field.getName(), value);
-				behaviour_.meta_defineField(field.getName(), value);
 			}
 		}
 	}

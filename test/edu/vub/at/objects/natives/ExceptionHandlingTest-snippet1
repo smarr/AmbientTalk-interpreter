@@ -1,6 +1,7 @@
 def removableFieldsMirror :=
   mirror: {
     // vectors are not loaded with these unit tests
+    // we therefore assume only a single field is removed
     def removedField := nil;
     def removeField( symbol ) {
       removedField := symbol;
@@ -18,5 +19,5 @@ def test := object: {
   def visible := nil
 } mirroredBy: removableFieldsMirror;
 
-(reflect: test).removeField(symbol("visible"));
+(reflect: test).removeField(`visible);
 (test.visible == nil).ifTrue: { fail(); };

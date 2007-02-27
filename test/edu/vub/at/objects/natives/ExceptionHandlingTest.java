@@ -35,239 +35,229 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
- * The ExceptionHandlingTest testcase tests the behaviour of the exception handling
- * primitives in Ambienttalk.
+ * This test documents and tests the behaviour of the exception handling primitives 
+ * provided in Ambienttalk. In AmbientTalk any object can be used and thrown as an 
+ * exception. Moreover, by relying on in stripes, all subtyping issues regarding to
+ * handler selection are handled by the isStripedWith meta operation.
  *
  * @author smostinc
  */
 public class ExceptionHandlingTest extends AmbientTalkTestCase {
-		
-	private ATObject globalLexScope;
-	private ATObject testScope;
-	private ATContext testCtx;
-
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(ExceptionHandlingTest.class);
-	}
-	
-	public void setUp() throws Exception {
-		globalLexScope = Evaluator.getGlobalLexicalScope();
-		testScope = new NATCallframe(globalLexScope);
-		
-		final NATClosure symbol = new NativeClosure(NATNil._INSTANCE_) {
-			public ATObject base_apply(ATTable arguments) throws InterpreterException {
-				return AGSymbol.alloc(arguments.base_at(NATNumber.ONE).asNativeText());
-			}				
-		};
-		
-		testScope.meta_defineField(AGSymbol.jAlloc("symbol"), symbol);
-
-		testScope.meta_defineField(
-				AGSymbol.jAlloc("echo:"),
-				new NativeClosure(NATNil._INSTANCE_) {
-					public ATObject base_apply(ATTable arguments) throws InterpreterException {
-						System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
-						return NATNil._INSTANCE_;
-					}						
-				});
-		
-		testScope.meta_defineField(
-				AGSymbol.jAlloc("doesNotUnderstandX"),
-				new NATException(new XSelectorNotFound(
-						AGSymbol.jAlloc("nativeException"),
-						globalLexScope)));
-		
-		testCtx = new NATContext(testScope, globalLexScope);
-	}
 	
 	/**
-	 * Tests AT Code raising an interpreter exception
+	 * Any AmbientTalk Language value can be used as an exception, proving there is nothing 
+	 * special about exceptions. This test demonstrates this for a number of language values,
+	 * such as numbers, tables, closures and stripes themselves. 
+	 * 
+	 * This test also shows that objects can be caught using the stripe they are branded with.
+	 * Note that most often, exceptions will be isolates, as these are objects (which can be
+	 * made arbitrarily complex) which are passed by copy between actors. However, as the 
+	 * stripes of a far reference are identical to the one of the original object, this 
+	 * semantics is a default upon which can be varied.
 	 */
-	public void testRaiseInterpreterException() throws InterpreterException {
+	public void testAllObjectsCanBeUsedAsExceptions() {
 		try {
-			evaluateInput("raise: doesNotUnderstandX; \n", testCtx);
-			fail();
-		} catch (XSelectorNotFound e) {
-			// 1. Raising a Java Exception Successfull
-		}
-	}
-	
-	/**
-	 * Tests AT Code raising an newly create (cloned) interpreter exception
-	 */
-	public void testRaiseNewInterpreterException() throws InterpreterException {
-		try {			
 			evaluateInput(
-					"raise: doesNotUnderstandX.new(symbol(\"at\") , object: { nil }); \n" +
-					"fail()", testCtx);
-		} catch (XSelectorNotFound e) {
-			// 1b. Raising a Java Exception Successfull
-		}
-	}
-	
-	/**
-	 * Tests AT Code catching an interpreter exception. It implements a sketchy 
-	 * object model where fields can be removed as well.
-	 */
-	public void testInterpreterExceptionThrowing() {
-		try {
-			//1. (REMOVABLE_FIELDS) AT Code throwing an interpreter exception
-			AmbientTalkTest.evalSnippet(ExceptionHandlingTest.class, "snippet1", testCtx);	
-		} catch (XSelectorNotFound e) {
-			// 1. Raising a Java Exception Successfull
+					"def testCount := 0; \n" +
+					"raise: 42 catch: Number do: { | exc | testCount := testCount + 1 }; \n" +
+					"raise: [ 4, 8, 15, 16, 23, 42 ] catch: Table do: { | exc | testCount := testCount + 1 }; \n" +
+					"raise: { testCount := testCount + 1 } catch: Closure do: { | exc | exc.apply([]) }; \n" +
+					"raise: Number catch: Stripe do: { | exc | testCount := testCount + 1 }; \n" +
+					"if: testCount != 4 then: { fail() }", ctx_);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}
-	}	
+	};
 	
 	/**
-	 * Tests AT Code catching an interpreter exception. It implements a sketchy python
-	 * object model where unfound fields are silently added to AT object.
+	 * Handler selection in AmbientTalk is purely based on the stripes an object is branded with.
+	 * As such the correct handler selection can be delegated to the stripe system which ensures
+	 * correct handler selection.
+	 */
+	public void testStripeBasedHandlerSelection() {
+		try {
+			evaluateInput(
+					"defstripe MyExceptions; \n" +
+					"defstripe IncorrectArguments <: MyExceptions; \n" +
+					"def testCount := 0; \n" +
+					"try: { \n" +
+					"  raise: (object: { nil } stripedWith: [ IncorrectArguments ]) catch: IncorrectArguments do: { | exc | testCount := testCount + 1 }; \n" +
+					"  raise: (object: { nil } stripedWith: [ IncorrectArguments ]) catch: MyExceptions do: { | exc | testCount := testCount + 1 }; \n" +
+					"  raise: (object: { nil } stripedWith: [ MyExceptions ]) catch: MyExceptions do: { | exc | testCount := testCount + 1 }; \n" +
+					"  raise: (object: { nil } stripedWith: [ MyExceptions ]) catch: IncorrectArguments do: { | exc | testCount := testCount + 1 }; \n" +
+					"} catch: MyExceptions using: { | exc | \n" +
+					// the last test will result in an uncaught exception, but all previous ones should have been handled.
+					"  if: testCount != 3 then: { fail() } \n" +
+					"}", ctx_);
+		} catch (InterpreterException e) {
+			e.printStackTrace();
+			fail("exception: "+ e);
+		}
+		
+	}
+	
+	/**
+	 * The exceptions thrown by the interpreter can be intercepted by a program as they are also
+	 * striped objects, striped to identify their function. This test illustrates how to use this 
+	 * mechanism to build a python-like object model where non-existant field are silently added
+	 * to the object upon use.
+	 * 
+	 * Note that an altogether cleaner mechanism can be conceived by using the doesNotUnderstand 
+	 * meta hook to achieve similar behaviour.
 	 */
 	public void testInterpreterExceptionHandling() {
 		try {
-			ATObject globalLexScope = Evaluator.getGlobalLexicalScope();
-			ATObject testScope = new NATCallframe(globalLexScope);
-			
-			testScope.meta_defineField(
-					AGSymbol.jAlloc("echo:"),
-					new NativeClosure(NATNil._INSTANCE_) {
-						public ATObject base_apply(ATTable arguments) throws InterpreterException {
-							System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
-							return NATNil._INSTANCE_;
-						}						
-					});			testScope.meta_defineField(
-					AGSymbol.jAlloc("doesNotUnderstandX"),
-					new NATException(new XSelectorNotFound(
-							AGSymbol.jAlloc("nativeException"),
-							globalLexScope)));
-			
-			ATContext testCtx = new NATContext(testScope, globalLexScope);
-			
-			//3. (PYTHON_OBJECT) AT Code catching an interpreter exception
 			evaluateInput(
+					"def defaultValue := 42;" +
 					"def pythonObjectMirror := \n" +
 					"  mirror: { \n" +
 					"    def select( receiver, symbol ) { \n" +
 					"      try: { \n" +
 					"        super^select( receiver, symbol ); \n" +
-					"      } catch: doesNotUnderstandX using: { | e | \n" +
-					"        super^defineField( symbol, nil ); \n" +
+					"      } catch: SelectorNotFound using: { | e | \n" +
+					"        super^defineField( symbol, defaultValue ); \n" +
+					"        defaultValue; \n" +
 					"      } \n" +
 					"    } \n" +
 					"  }; \n" +
 					"def test := object: { nil } \n" +
 					"  mirroredBy: pythonObjectMirror; \n" +
-					"(test.x == nil).ifFalse: { fail(); };",
-					testCtx);			
+					"if: (test.x != defaultValue) then: { fail(); };",
+					ctx_);			
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}
 	}
 	
-	public void testCustomObjectHandling() {
-		try {			
-			evaluateInput(
-					"def exception: code { object: code }; \n" +
-					"def XNotFound := \n" +
-					"  exception: { \n" +
-					"    def test := 0; \n" +
-					"  }; \n" +
-					"\n" +
-					"def tryTest(raised, caught, ifCaught) { \n" +
-					"  try: { \n" +
-					"    raise: raised; \n" +
-					"  } catch: caught using: { | e | \n" +
-					"    ifCaught(); \n" +
-					"  }; \n" +
-					"}; \n" +
-					"\n" +
-					"tryTest(XNotFound, XNotFound, { echo: \"1. Basic Test succeeded\"}); \n" +
-					"tryTest(clone: XNotFound, XNotFound, { echo: \"2. Can raise a cloned exception\"}); \n" +
-					"tryTest(XNotFound, clone: XNotFound, { echo: \"3. Can catch with a cloned exception\"}); \n" +
-					"tryTest(extend: XNotFound with: { nil }, XNotFound, { echo: \"4. Can catch extensions\"}); \n",
-					
-					 // + "tryTest(XNotFound, extend: XNotFound with: { nil }, { fail() });",
-					testCtx);
+	/**
+	 * To avoid improper interference with the interpreter, user code should never throw  
+	 * interpreter exceptions. However, in the light that various components of the language 
+	 * may be reimplemented in the language itself, this functionality is supported by the 
+	 * interpreter anyhow.
+	 * 
+	 * Note that given the ability to catch interpreter exceptions, the programmer automatically
+	 * has the right to throw them as well, either by rethrowing them, or by storing it as a 
+	 * prototype, of which new clones can be instatiated whenever he feels like it.
+	 * 
+	 * This test consist of an object model where access to a field can be forbidden by throwing
+	 * an interpreter exception (striped with SelectorNotFound)
+	 */
+	public void testInterpreterExceptionThrowing() {
+		try {
+			AmbientTalkTest.evalSnippet(ExceptionHandlingTest.class, "snippet1", ctx_);
+			// fail if no exception was thrown by the code. 
+			fail();
+		} catch (XSelectorNotFound e) {
+			// 1. Raising a Java Exception Successfull
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}
 	}
 	
+	/**
+	 * When rethrowing an exception from a handler, the expected semantics apply : no handlers
+	 * from the same try block are tried, even if they also match the thrown exception. Handlers
+	 * from a try block higher up the stack can however apply.
+	 *
+	 */
 	public void testRethrownExceptions() {
 		try {
 			evaluateInput(
-					"def closure := { | e | \n" +
-					"  raise: e; \n" +
-					"}; \n" +
+					"defstripe MyExceptions; \n" +
+					"defstripe IncorrectArguments <: MyExceptions; \n" +
 					"\n" +
-					"def exception: code { object: code }; \n" +
-					"def XNotFound := \n" +
-					"  exception: { \n" +
+					"def result := false;" +
+					"def test := object: { \n" +
 					"    def test := 0; \n" +
-					"  }; \n" +
+					"} stripedWith: [ IncorrectArguments ]; \n" +
 					"\n" +
 					"try: { \n" +
-					"  try: {" +
-					"    closure(XNotFound);" +
-					"  } catch: XNotFound using: { |e|" +
-					"      echo: \"5a. Rethrown exceptions should not be catched in the same handler block\";" +
-					// TODO(wtf?) if the following line is commented out the program prints the above string twice  
-					"      raise: e; \n" +
-					"  } catch: XNotFound using: { |e|" +
-					"      fail()" +
+					"  try: { \n" +
+					"    raise: test; \n" +
+					"  } catch: MyExceptions using: { | exc | \n" +
+					"      result := true; \n" +
+					"      raise: exc; \n" +
+					"  } catch: IncorrectArguments using: { | exc |" +
+					"      fail();" +
 					"  }" +
-					"} catch: XNotFound using: { | e | \n" +
-					"  echo: \"5b. Rethrown exceptions are not catched in the same handler block\" \n" +
+					"} catch: SelectorNotFound using: { | exc | \n" +
+					"  fail(); \n" +
+					"} catch: IncorrectArguments using: { | exc | \n" +
+					"  result := result.and: { true }; \n" +
 					"}; \n" +
-					"\n",					
-					 // + "tryTest(XNotFound, extend: XNotFound with: { nil }, { fail() });",
-					testCtx);
+					"\n" +
+					"if: (! result) then: { fail(); }",					
+					ctx_);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail("exception: "+ e);
 		}		
 	}
 	
-	public void testHandlerSelection() {
-		try {
-			evaluateInput(
-					"def closure := { | e | \n" +
-					"  raise: e; \n" +
-					"}; \n" +
-					"\n" +
-					"def exception: code { object: code }; \n" +
-					"def XNotFound := \n" +
-					"  exception: { \n" +
-					"    def test := 0; \n" +
-					"  }; \n" +
-					"\n" +
-					"def XSelectorNotFound := \n" +
-					"  extend: XNotFound with: { \n" +
-					"    def selector := \"\"; \n" +
-					"    def init(s) { \n" +
-					"      selector := s; \n" +
-					"    }; \n" +
-					"  }; \n" +
-					"\n" +
-					"try: {" +
-					"  closure(XNotFound);" +
-					"} catch: XSelectorNotFound using: { |e|" +
-					"  fail();" +
-					"} catch: XNotFound using: { |e|" +
-					"    echo: \"6. Handler Selection Correct.\";" +
-					"}",					
-					testCtx);
-		} catch (InterpreterException e) {
-			e.printStackTrace();
-			fail("exception: "+ e);
-		}
+	public static void main(String[] args) {
+		junit.swingui.TestRunner.run(ExceptionHandlingTest.class);
 	}
+		
+	// For testing purposes we need access to a set of native stripes
+	// These are introduced into the global lexical scope of the test 
+	private void setUpTestStripes(ATObject testScope) throws Exception {
+		
+		// Primitive type stripes used to test all objects can be thrown
+		testScope.meta_defineField(
+				AGSymbol.jAlloc("Number"),
+				NativeStripes._NUMBER_);
+
+		testScope.meta_defineField(
+				AGSymbol.jAlloc("Table"),
+				NativeStripes._TABLE_);
+
+		testScope.meta_defineField(
+				AGSymbol.jAlloc("Closure"),
+				NativeStripes._CLOSURE_);
+
+		testScope.meta_defineField(
+				AGSymbol.jAlloc("Stripe"),
+				NativeStripes._STRIPE_);
+		
+		testScope.meta_defineField(
+				AGSymbol.jAlloc("SelectorNotFound"),
+				NativeStripes._SELECTORNOTFOUND_);
+	}
+	
+	public void setUp() throws Exception {
+		ATObject globalLexScope = Evaluator.getGlobalLexicalScope();
+		ATObject testScope = new NATCallframe(globalLexScope);
+				
+		setUpTestStripes(testScope);
+
+		// For throwing InterpreterExceptions, we provide a useful prototype to start from
+		testScope.meta_defineField(
+				AGSymbol.jAlloc("doesNotUnderstandX"),
+				new NATException(new XSelectorNotFound(
+						AGSymbol.jAlloc("nativeException"),
+						globalLexScope)));
+		
+		ctx_ = new NATContext(testScope, globalLexScope);
+
+		// Aux method to aid in shortening the test code
+		evaluateInput(
+				"def raise: exception catch: stripe do: closure { \n" +
+				"  try: {" +
+				"    raise: exception;" +
+				"  } catch: stripe using: closure; \n" +
+				"}",
+				ctx_);
+	}
+	
+	
+	
+
 }
