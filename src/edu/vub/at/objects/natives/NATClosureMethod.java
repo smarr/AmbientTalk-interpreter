@@ -70,16 +70,29 @@ public final class NATClosureMethod extends NATByRef implements ATMethod {
 	 * Closure methods are a result of external method definitions.
 	 * 
 	 * @param arguments the evaluated actual arguments
-	 * @param ctx the context whose 'self' and 'super' bindings will be used during the execution of the method.
+	 * @param ctx the context whose 'self' binding will be used during the execution of the method.
 	 * The lexical scope, however, will be replaced by the closure method's own lexical scope. A call frame will
 	 * be inserted into this lexical scope before executing the method body.
+	 * To ensure that 'super' points to the parent of the actual 'self' and not the parent of the object
+	 * performing the external method definition, a 'super' field is added to the call frame shadowing
+	 * the defining object's 'super' field.
 	 * @return the value of evaluating the function body
 	 */
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 		// should be: method_.base_apply(arguments, ctx.base_withLexicalEnvironment(lexicalScope_),
 		// but this version is more efficient, as we immediately create the right context, rather than
 		// creating a temporary context which will in turn be modified by method_.base_apply
-		return method_.base_applyInScope(arguments, ctx.base_withLexicalEnvironment(new NATCallframe(lexicalScope_)));
+		
+		// hostObject = the object to which the external method was added (actually the object in which
+		// the external method was now found)
+		ATObject hostObject = ctx.base_getLexicalScope();
+		ATObject hostParent = hostObject.meta_getDynamicParent();
+		
+		NATCallframe externalFrame = new NATCallframe(lexicalScope_);
+		// super = the parent of the object to which this method was added
+		externalFrame.meta_defineField(NATObject._SUPER_NAME_, hostParent);
+		
+		return method_.base_applyInScope(arguments, ctx.base_withLexicalEnvironment(externalFrame));
 	}
 
 	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {

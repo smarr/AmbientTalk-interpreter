@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
@@ -38,24 +40,24 @@ import edu.vub.at.objects.natives.grammar.AGDefFunction;
 import edu.vub.at.objects.natives.grammar.AGSelf;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
-import junit.framework.TestCase;
-
 /**
  * NATObjectClosureTest tests the semantics of self & super inside methods and nested
  * closures.
  * 
  * @author smostinc
  */
-public class NATObjectClosureTest extends TestCase {
+public class NATObjectClosureTest extends AmbientTalkTest {
 
 	private class AGScopeTest extends NATNil implements ATStatement {
 		
 		private ATObject scope_;
 		private ATObject self_;
+		private ATObject super_;
 		
-		public AGScopeTest(ATObject scope, ATObject self) {
+		public AGScopeTest(ATObject scope, ATObject self, ATObject zuper) {
 			scope_ = scope;
 			self_ = self;
+			super_ = zuper;
 		}
 
 		public ATObject meta_eval(ATContext ctx) throws InterpreterException {
@@ -64,7 +66,7 @@ public class NATObjectClosureTest extends TestCase {
 			ATObject lexEnv = ctx.base_getLexicalScope();
 			while (lexEnv != scope_) {
 				if(lexEnv == NATNil._INSTANCE_) {
-					fail();
+					fail("Lexical scope not found");
 					break;
 				}
 				lexEnv = lexEnv.meta_getLexicalParent();
@@ -78,9 +80,7 @@ public class NATObjectClosureTest extends TestCase {
 			
 			// SUPER-tests
 			// Is the current value of super consistent with our expectations
-			//assertEquals(super_, ctx.base_getSuper());
-			// Is the expected value of super accessible through the pseudovariable
-			//assertEquals(super_, AGSuper._INSTANCE_.meta_eval(ctx));
+			assertEquals(super_, ctx.base_getLexicalScope().meta_lookup(NATObject._SUPER_NAME_));
 
 			return this;
 		}
@@ -88,8 +88,6 @@ public class NATObjectClosureTest extends TestCase {
 		public ATStatement base_asStatement() {
 			return this;
 		}
-
-		
 	
 	}
 	
@@ -141,23 +139,18 @@ public class NATObjectClosureTest extends TestCase {
 	 * - covers context initialisation at closure creation
 	 * - covers closure application
 	 */
-	public void testMethodInvocation() {
-		try {
-			NATObject object = new NATObject(lexicalRoot_);
+	public void testMethodInvocation() throws InterpreterException {
+		ATObject object = new NATObject(lexicalRoot_);
 
 			ATSymbol scopeTest = AGSymbol.alloc(NATText.atValue("scopeTest"));
 			ATMethod scopeTestMethod = new NATMethod(
 					scopeTest, 
 					NATTable.EMPTY, 
 					new AGBegin(NATTable.atValue(new ATObject[] {
-							new AGScopeTest(object, object)})));
+							new AGScopeTest(object, object, object.meta_getDynamicParent())})));
 			object.meta_addMethod(scopeTestMethod);
 			
 			object.meta_invoke(object, scopeTest, NATTable.EMPTY);
-		} catch (InterpreterException e) {
-			e.printStackTrace();
-			fail();
-		}
 	}
 	
 	/**
@@ -179,7 +172,7 @@ public class NATObjectClosureTest extends TestCase {
 					lateBoundSelf, 
 					NATTable.EMPTY, 
 					new AGBegin(NATTable.atValue(new ATObject[] {
-							new AGScopeTest(parent, child)})));
+							new AGScopeTest(parent, child, parent.meta_getDynamicParent())})));
 			
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
 			ATMethod superSemanticsTestMethod = new NATMethod(
@@ -195,7 +188,7 @@ public class NATObjectClosureTest extends TestCase {
 //						}
 //					}
 					new AGBegin(NATTable.atValue(new ATObject[] {
-							new AGScopeTest(child, child)})));
+							new AGScopeTest(child, child, child.meta_getDynamicParent())})));
 			
 			parent.meta_addMethod(lateBoundSelfTestMethod);
 			child.meta_addMethod(superSemanticsTestMethod);
@@ -219,7 +212,7 @@ public class NATObjectClosureTest extends TestCase {
 			
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
 
-			AGScopeTest test = new AGScopeTest(null, null);
+			AGScopeTest test = new AGScopeTest(null, null, null);
 			
 			NATObject child = (NATObject)parent.meta_extend(
 					new NATClosure(
@@ -233,13 +226,14 @@ public class NATObjectClosureTest extends TestCase {
 			
 			test.scope_ = child;
 			test.self_ = child;
+			test.super_ = child.meta_getDynamicParent();
 			
 			ATSymbol lateBoundSelf = AGSymbol.alloc(NATText.atValue("lateBoundSelf"));
 			ATMethod lateBoundSelfTestMethod = new NATMethod(
 					lateBoundSelf, 
 					NATTable.EMPTY, 
 					new AGBegin(NATTable.atValue(new ATObject[] {
-							new AGScopeTest(parent, child)})));
+							new AGScopeTest(parent, child, parent.meta_getDynamicParent())})));
 			
 			parent.meta_addMethod(lateBoundSelfTestMethod);
 			
@@ -250,6 +244,37 @@ public class NATObjectClosureTest extends TestCase {
 			fail();
 		}
 		
+	}
+	
+	/**
+	 * Tests whether the definition of an external method refers to the correct bindings for:
+	 *  - lexically accessed variables
+	 *  - the value of 'self'
+	 *  - the value of 'super'
+	 */
+	public void testExternalMethodBindings() throws InterpreterException {
+		/*
+		 * Test code:
+		 * 
+		 *  def hostParent := object: { nil }
+		 *  def host := extend: hostParent with: { nil }
+		 *  def extender := object: {
+		 *    def extend(o) {
+		 *      def x := 5;
+		 *      def o.m() { assert(lex==extender); assert(self==host); assert(super==hostParent) }
+		 *    }
+		 *  }
+		 */
+		ATObject hostParent = new NATObject();
+		ATObject host = new NATObject(hostParent, Evaluator.getGlobalLexicalScope(), NATObject._IS_A_);
+		ATObject extender = new NATObject();
+		
+		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("scopetest"), new AGScopeTest(extender, host, hostParent));
+		ATObject methodBody = evalAndReturn("`{def o.m() { #scopetest }}");
+		
+		extender.meta_addMethod(new NATMethod(AGSymbol.jAlloc("extend"),
+				                              NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("o")}),
+				                              new AGBegin(NATTable.of(methodBody))));
 	}
 
 	
