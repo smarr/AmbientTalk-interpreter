@@ -40,145 +40,145 @@ public final class NativeStripes {
 	/* Java implementation of lobby.at.stripes.at: */
 
 //defstripe Isolate;
-	public final static NATStripe _ISOLATE_ = NATStripe.atValue("at.stripes.Isolate");
+	public final static NATStripe _ISOLATE_ = NATStripe.atValue("Isolate");
 	
 //defstripe JavaObject;
-	public final static NATStripe _JAVAOBJECT_ = NATStripe.atValue("at.stripes.JavaObject");
+	public final static NATStripe _JAVAOBJECT_ = NATStripe.atValue("JavaObject");
 	
 //defstripe Boolean;
-	public final static NATStripe _BOOLEAN_ = NATStripe.atValue("at.stripes.Boolean");
+	public final static NATStripe _BOOLEAN_ = NATStripe.atValue("Boolean");
 	
 //defstripe Closure;
-	public final static NATStripe _CLOSURE_ = NATStripe.atValue("at.stripes.Closure");
+	public final static NATStripe _CLOSURE_ = NATStripe.atValue("Closure");
 	
 //defstripe Context;
-	public final static NATStripe _CONTEXT_ = NATStripe.atValue("at.stripes.Context");
+	public final static NATStripe _CONTEXT_ = NATStripe.atValue("Context");
 	
 //defstripe Field;
-	public final static NATStripe _FIELD_ = NATStripe.atValue("at.stripes.Field");
+	public final static NATStripe _FIELD_ = NATStripe.atValue("Field");
 	
 //defstripe Handler;
-	public final static NATStripe _HANDLER_ = NATStripe.atValue("at.stripes.Handler");
+	public final static NATStripe _HANDLER_ = NATStripe.atValue("Handler");
 	
 //defstripe Method;
-	public final static NATStripe _METHOD_ = NATStripe.atValue("at.stripes.Method");
+	public final static NATStripe _METHOD_ = NATStripe.atValue("Method");
 	
 //defstripe Message;
-	public final static NATStripe _MESSAGE_ = NATStripe.atValue("at.stripes.Message");
+	public final static NATStripe _MESSAGE_ = NATStripe.atValue("Message");
 	
 //defstripe MethodInvocation <: Message;
-	public final static NATStripe _METHODINV_ = NATStripe.atValue("at.stripes.MethodInvocation", _MESSAGE_);
+	public final static NATStripe _METHODINV_ = NATStripe.atValue("MethodInvocation", _MESSAGE_);
 	
 //defstripe AsyncMessage <: Message;
-	public final static NATStripe _ASYNCMSG_ = NATStripe.atValue("at.stripes.AsyncMessage", _MESSAGE_);
+	public final static NATStripe _ASYNCMSG_ = NATStripe.atValue("AsyncMessage", _MESSAGE_);
 	
 //defstripe Mirror;
-	public final static NATStripe _MIRROR_ = NATStripe.atValue("at.stripes.Mirror");
+	public final static NATStripe _MIRROR_ = NATStripe.atValue("Mirror");
 	
 //defstripe ActorMirror;
-	public final static NATStripe _ACTORMIRROR_ = NATStripe.atValue("at.stripes.ActorMirror");
+	public final static NATStripe _ACTORMIRROR_ = NATStripe.atValue("ActorMirror");
 	
 //defstripe Stripe;
-	public final static NATStripe _STRIPE_ = NATStripe.atValue("at.stripes.Stripe");
+	public final static NATStripe _STRIPE_ = NATStripe.atValue("Stripe");
 	
 
 // abstract grammar
 //defstripe AbstractGrammar;
-	public final static NATStripe _ABSTRACTGRAMMAR_ = NATStripe.atValue("at.stripes.AbstractGrammar");
+	public final static NATStripe _ABSTRACTGRAMMAR_ = NATStripe.atValue("AbstractGrammar");
 	
 //defstripe Statement;
-	public final static NATStripe _STATEMENT_ = NATStripe.atValue("at.stripes.Statement", _ABSTRACTGRAMMAR_);
+	public final static NATStripe _STATEMENT_ = NATStripe.atValue("Statement", _ABSTRACTGRAMMAR_);
 	
 //	defstripe Expression;
-	public final static NATStripe _EXPRESSION_ = NATStripe.atValue("at.stripes.Expression", _STATEMENT_);
+	public final static NATStripe _EXPRESSION_ = NATStripe.atValue("Expression", _STATEMENT_);
 	
 // literal values
 //defstripe Table <: Expression;
-	public final static NATStripe _TABLE_ = NATStripe.atValue("at.stripes.Table");
+	public final static NATStripe _TABLE_ = NATStripe.atValue("Table");
 	
 //defstripe Text <: Expression;
-	public final static NATStripe _TEXT_ = NATStripe.atValue("at.stripes.Text");
+	public final static NATStripe _TEXT_ = NATStripe.atValue("Text");
 	
 //defstripe Numeric <: Expression;
-	public final static NATStripe _NUMERIC_ = NATStripe.atValue("at.stripes.Numeric");
+	public final static NATStripe _NUMERIC_ = NATStripe.atValue("Numeric");
 	
 //defstripe Number <: Numeric;
-	public final static NATStripe _NUMBER_ = NATStripe.atValue("at.stripes.Number");
+	public final static NATStripe _NUMBER_ = NATStripe.atValue("Number");
 	
 //defstripe Fraction <: Numeric;
-	public final static NATStripe _FRACTION_ = NATStripe.atValue("at.stripes.Fraction");
+	public final static NATStripe _FRACTION_ = NATStripe.atValue("Fraction");
 	
 //
 //// exception types
 //defstripe Exception;
-	public final static NATStripe _EXCEPTION_ = NATStripe.atValue("at.stripes.Exception");
+	public final static NATStripe _EXCEPTION_ = NATStripe.atValue("Exception");
 	
 //defstripe ArityMismatch <: Exception;
-	public final static NATStripe _ARITYMISMATCH_ = NATStripe.atValue("at.stripes.ArityMismatch", _EXCEPTION_);
+	public final static NATStripe _ARITYMISMATCH_ = NATStripe.atValue("ArityMismatch", _EXCEPTION_);
 	
 //defstripe ClassNotFound <: Exception;
-	public final static NATStripe _CLASSNOTFOUND_ = NATStripe.atValue("at.stripes.ClassNotFound", _EXCEPTION_);
+	public final static NATStripe _CLASSNOTFOUND_ = NATStripe.atValue("ClassNotFound", _EXCEPTION_);
 	
 //defstripe DuplicateSlot <: Exception;
-	public final static NATStripe _DUPLICATESLOT_ = NATStripe.atValue("at.stripes.DuplicateSlot", _EXCEPTION_);
+	public final static NATStripe _DUPLICATESLOT_ = NATStripe.atValue("DuplicateSlot", _EXCEPTION_);
 	
 //defstripe IllegalApplication <: Exception;
-	public final static NATStripe _ILLAPP_ = NATStripe.atValue("at.stripes.IllegalApplication", _EXCEPTION_);
+	public final static NATStripe _ILLAPP_ = NATStripe.atValue("IllegalApplication", _EXCEPTION_);
 	
 //defstripe IllegalArgument <: Exception;
-	public final static NATStripe _ILLARG_ = NATStripe.atValue("at.stripes.IllegalArgument", _EXCEPTION_);
+	public final static NATStripe _ILLARG_ = NATStripe.atValue("IllegalArgument", _EXCEPTION_);
 	
 //defstripe IllegalIndex <: Exception;
-	public final static NATStripe _ILLIDX_ = NATStripe.atValue("at.stripes.IllegalIndex", _EXCEPTION_);
+	public final static NATStripe _ILLIDX_ = NATStripe.atValue("IllegalIndex", _EXCEPTION_);
 	
 //defstripe IllegalOperation <: Exception;
-	public final static NATStripe _ILLOP_ = NATStripe.atValue("at.stripes.IllegalOperation", _EXCEPTION_);
+	public final static NATStripe _ILLOP_ = NATStripe.atValue("IllegalOperation", _EXCEPTION_);
 	
 //defstripe IllegalParameter <: Exception;
-	public final static NATStripe _ILLPARAM_ = NATStripe.atValue("at.stripes.IllegalParameter", _EXCEPTION_);
+	public final static NATStripe _ILLPARAM_ = NATStripe.atValue("IllegalParameter", _EXCEPTION_);
 	
 //defstripe IllegalQuote <: Exception;
-	public final static NATStripe _ILLQUOTE_ = NATStripe.atValue("at.stripes.IllegalQuote", _EXCEPTION_);
+	public final static NATStripe _ILLQUOTE_ = NATStripe.atValue("IllegalQuote", _EXCEPTION_);
 	
 //defstripe IllegalSplice <: Exception;
-	public final static NATStripe _ILLSPLICE_ = NATStripe.atValue("at.stripes.IllegalSplice", _EXCEPTION_);
+	public final static NATStripe _ILLSPLICE_ = NATStripe.atValue("IllegalSplice", _EXCEPTION_);
 	
 //defstripe IllegalUnquote <: Exception;
-	public final static NATStripe _ILLUQUOTE_ = NATStripe.atValue("at.stripes.IllegalUnquote", _EXCEPTION_);
+	public final static NATStripe _ILLUQUOTE_ = NATStripe.atValue("IllegalUnquote", _EXCEPTION_);
 	
 //defstripe IndexOutOfBounds <: Exception;
-	public final static NATStripe _IDXOUTOFBOUNDS_ = NATStripe.atValue("at.stripes.IndexOutOfBounds", _EXCEPTION_);
+	public final static NATStripe _IDXOUTOFBOUNDS_ = NATStripe.atValue("IndexOutOfBounds", _EXCEPTION_);
 	
 //defstripe IOProblem <: Exception;
-	public final static NATStripe _IOPROBLEM_ = NATStripe.atValue("at.stripes.IOProblem", _EXCEPTION_);
+	public final static NATStripe _IOPROBLEM_ = NATStripe.atValue("IOProblem", _EXCEPTION_);
 	
 //defstripe NotInstantiatable <: Exception;
-	public final static NATStripe _NOTINSTANTIATABLE_ = NATStripe.atValue("at.stripes.NotInstantiatable", _EXCEPTION_);
+	public final static NATStripe _NOTINSTANTIATABLE_ = NATStripe.atValue("NotInstantiatable", _EXCEPTION_);
 	
 //defstripe ParseError <: Exception;
-	public final static NATStripe _PARSEERROR_ = NATStripe.atValue("at.stripes.ParseError", _EXCEPTION_);
+	public final static NATStripe _PARSEERROR_ = NATStripe.atValue("ParseError", _EXCEPTION_);
 	
 //defstripe ReflectionFailure <: Exception;
-	public final static NATStripe _REFLECTIONFAILURE_ = NATStripe.atValue("at.stripes.ReflectionFailure", _EXCEPTION_);
+	public final static NATStripe _REFLECTIONFAILURE_ = NATStripe.atValue("ReflectionFailure", _EXCEPTION_);
 
 //	defstripe SelectorNotFound <: Exception;
-	public final static NATStripe _SELECTORNOTFOUND_ = NATStripe.atValue("at.stripes.SelectorNotFound", _EXCEPTION_);
+	public final static NATStripe _SELECTORNOTFOUND_ = NATStripe.atValue("SelectorNotFound", _EXCEPTION_);
 	
 //defstripe SymbiosisFailure <: Exception;
-	public final static NATStripe _SYMBIOSISFAILURE_ = NATStripe.atValue("at.stripes.SymbiosisFailure", _EXCEPTION_);
+	public final static NATStripe _SYMBIOSISFAILURE_ = NATStripe.atValue("SymbiosisFailure", _EXCEPTION_);
 	
 //defstripe TypeMismatch <: Exception;
-	public final static NATStripe _TYPEMISMATCH_ = NATStripe.atValue("at.stripes.TypeMismatch", _EXCEPTION_);
+	public final static NATStripe _TYPEMISMATCH_ = NATStripe.atValue("TypeMismatch", _EXCEPTION_);
 	
 //defstripe UnassignableField <: Exception;
-	public final static NATStripe _UNASSIGNABLEFIELD_ = NATStripe.atValue("at.stripes.UnassignableField", _EXCEPTION_);
+	public final static NATStripe _UNASSIGNABLEFIELD_ = NATStripe.atValue("UnassignableField", _EXCEPTION_);
 	
 //defstripe UndefinedField <: Exception;
-	public final static NATStripe _UNDEFINEDFIELD_ = NATStripe.atValue("at.stripes.UndefinedField", _EXCEPTION_);
+	public final static NATStripe _UNDEFINEDFIELD_ = NATStripe.atValue("UndefinedField", _EXCEPTION_);
 	
 //defstripe CustomException <: Exception;
-	public final static NATStripe _CUSTOMEXCEPTION_ = NATStripe.atValue("at.stripes.CustomException", _EXCEPTION_);
+	public final static NATStripe _CUSTOMEXCEPTION_ = NATStripe.atValue("CustomException", _EXCEPTION_);
 
 //defstripe JavaException <: Exception;
-	public final static NATStripe _JAVAEXCEPTION_ = NATStripe.atValue("at.stripes.JavaException", _EXCEPTION_);
+	public final static NATStripe _JAVAEXCEPTION_ = NATStripe.atValue("JavaException", _EXCEPTION_);
 }

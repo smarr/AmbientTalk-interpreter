@@ -740,9 +740,8 @@ public class NATObject extends NATCallframe implements ATObject {
      * is not an isolate, invoke the default behaviour for by-reference objects
      */
     public ATObject meta_pass() throws InterpreterException {
+    	System.err.println("META_PASS: " + this.meta_print().javaValue);
     	if (isFlagSet(_IS_ISOLATE_FLAG_)) {
-    		// let go of the old local lexical root, it will be rebound upon deserialization
-    		lexicalParent_ = NATNil._INSTANCE_;
     		return this;
     	} else {
     		return super.meta_pass();
@@ -755,6 +754,7 @@ public class NATObject extends NATCallframe implements ATObject {
      * objects is invoked.
      */
     public ATObject meta_resolve() throws InterpreterException {
+    	System.err.println("META_RESOLVE: " + this.meta_print().javaValue);
     	if (isFlagSet(_IS_ISOLATE_FLAG_)) {
     		// re-bind to the new local global lexical root
     		lexicalParent_ = Evaluator.getGlobalLexicalScope();

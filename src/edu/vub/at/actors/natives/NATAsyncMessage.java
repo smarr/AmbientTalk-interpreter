@@ -48,7 +48,6 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  */
 public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 
-	private final static AGSymbol _SENDER_ = AGSymbol.jAlloc("sender");
 	private final static AGSymbol _RECEIVER_ = AGSymbol.jAlloc("receiver");
 
     /**
@@ -56,19 +55,14 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      * @param sel the selector of the asynchronous message
      * @param arg the arguments of the asynchronous message
      */
-    public NATAsyncMessage(ATObject sdr, ATSymbol sel, ATTable arg) throws InterpreterException {
+    public NATAsyncMessage(ATSymbol sel, ATTable arg) throws InterpreterException {
         super(sel, arg, NativeStripes._ASYNCMSG_);
-        super.meta_defineField(_SENDER_, sdr);
         super.meta_defineField(_RECEIVER_, NATNil._INSTANCE_);
     }
     
-    public NATAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
-        this(sdr, sel, arg);
+    public NATAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
+        this(sel, arg);
         super.meta_assignField(this, _RECEIVER_, rcv);
-    }
-
-    public ATObject base_getSender() throws InterpreterException {
-        return super.meta_select(this, _SENDER_);
     }
 
     public ATObject base_getReceiver() throws InterpreterException {
@@ -85,10 +79,10 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      *
      * @return NIL, by default. Overridable by the receiver.
      */
-    public ATObject base_sendTo(ATObject receiver) throws InterpreterException {
+    public ATObject base_sendTo(ATObject receiver, ATObject sender) throws InterpreterException {
         // fill in the receiver first
         super.meta_assignField(this, _RECEIVER_, receiver);
-        return base_getSender().meta_send(this);
+        return sender.meta_send(this);
     }
     
 	public NATText meta_print() throws InterpreterException {

@@ -202,7 +202,7 @@ public class TestEval extends AmbientTalkTest {
 				assertEquals(atM_, asyncMsg.base_getSelector());
 				assertEquals(atThree_, asyncMsg.base_getArguments().base_at(NATNumber.ONE));
 				assertTrue(asyncMsg instanceof ATAsyncMessage);
-				assertEquals(ctx_.base_getSelf(), ((ATAsyncMessage) asyncMsg).base_getSender());	
+				assertEquals(NATNil._INSTANCE_, ((ATAsyncMessage) asyncMsg).base_getReceiver());	
 			}
 		});
 	}

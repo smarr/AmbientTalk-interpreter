@@ -97,7 +97,7 @@ public abstract class EventLoop {
 			processor_ = new EventProcessor(eventLoop);
 			processor_.start();
 		} else {
-			throw new RuntimeException("Tried to set a custom event loop when one was already active.");
+			throw new IllegalStateException("Tried to set a custom event loop when one was already active.");
 		}
 	}
 	

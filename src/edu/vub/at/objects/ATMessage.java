@@ -67,9 +67,10 @@ public interface ATMessage extends ATObject {
 	 * send will be performed (synchronous or asynchronous) depends on the kind of message.
 	 * 
 	 * @param receiver the object receiving the message.
+	 * @param sender the object sending the message.
 	 * @return the value of the method invocation or message send.
 	 * @throws InterpreterException if the method is not found or an error occurs while processing the method.
 	 */
-	public ATObject base_sendTo(ATObject receiver) throws InterpreterException;
+	public ATObject base_sendTo(ATObject receiver, ATObject sender) throws InterpreterException;
 
 }

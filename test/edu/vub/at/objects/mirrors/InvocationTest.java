@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATMethodInvocation;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -208,7 +209,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 							closures.base_getLength()	
 					}));
 
-			ATObject element = message.base_sendTo(closures);
+			ATObject element = message.base_sendTo(closures, NATNil._INSTANCE_);
 			
 			element.base_asClosure().base_apply(NATTable.EMPTY);
 
@@ -237,7 +238,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 							closures.base_getLength()	
 					}));
 
-			ATObject element = message.base_sendTo(closures);
+			ATObject element = message.base_sendTo(closures, NATNil._INSTANCE_);
 			
 			element.base_asClosure().base_apply(NATTable.EMPTY);
 		} catch (InterpreterException e) {

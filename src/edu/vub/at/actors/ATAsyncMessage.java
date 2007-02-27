@@ -33,19 +33,12 @@ import edu.vub.at.objects.ATObject;
 
 /**
  * Instances of the class ATAsyncMessage represent first-class asynchronous message sends.
- * They encapsulate a sender object, a receiver object, a selector symbol and a table of arguments.
+ * They encapsulate a receiver object, a selector symbol and a table of arguments.
  * Additionally, a message -- being a first-class object, may be extended with extra fields and behaviour (attachments).
  * 
  * @author tvc
  */
 public interface ATAsyncMessage extends ATMessage {
-
-    /**
-     * Each message has a sender, namely the object on whose behalf the message was
-     * sent. In other words the sender of a message corresponds to the self at the
-     * site where the message was sent.
-     */
-    public ATObject base_getSender() throws InterpreterException;
 
     /**
      * Messages also have an explicitly named receiver, which may either be a local

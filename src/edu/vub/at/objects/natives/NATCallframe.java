@@ -67,7 +67,15 @@ public class NATCallframe extends NATByRef implements ATObject {
 	
 	protected FieldMap 		variableMap_;
 	protected final Vector	stateVector_;
-	protected ATObject 	lexicalParent_;
+	
+    /**
+     * The lexical parent 'scope' of this call frame/object.
+     * A lexical scope should never travel along with an object when it is serialized,
+     * hence it is declared transient. Serializable isolate objects will have to reset
+     * this field upon deserialization.
+     */
+	protected transient ATObject lexicalParent_;
+	
 	protected LinkedList customFields_;
 	
 	public NATCallframe(ATObject lexicalParent) {

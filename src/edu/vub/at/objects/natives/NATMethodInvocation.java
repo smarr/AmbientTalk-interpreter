@@ -54,7 +54,7 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	 * 
 	 * @return the return value of the invoked method.
 	 */
-	public ATObject base_sendTo(ATObject receiver) throws InterpreterException {
+	public ATObject base_sendTo(ATObject receiver, ATObject sender) throws InterpreterException {
 		return receiver.meta_invoke(receiver, base_getSelector(), base_getArguments());
 	}
 	

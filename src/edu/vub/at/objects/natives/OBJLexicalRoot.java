@@ -299,12 +299,12 @@ public final class OBJLexicalRoot extends NATByCopy {
 		return NATActorMirror.atValue(host, serializedIsolate, new NATActorMirror(host));
 	}
 	
-	/**
+	/*
 	 * actor: { code } mirroredBy: actorMirror
 	 *  => far reference to the behaviour of the new actor
 	 * REPLACED BY install: primitive!
-	 */
-	/*public ATObject base_actor_mirroredBy_(ATClosure code, ATActorMirror mirror) throws InterpreterException {
+	 *
+	public ATObject base_actor_mirroredBy_(ATClosure code, ATActorMirror mirror) throws InterpreterException {
 		ATObject isolate = base_isolate_(code);
 		Packet serializedIsolate = new Packet("behaviour", isolate);
 		Packet serializedMirror = new Packet("mirror", mirror);

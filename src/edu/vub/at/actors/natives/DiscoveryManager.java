@@ -271,7 +271,6 @@ public final class DiscoveryManager {
 		try {
 			handler.meta_receive(
 				new NATAsyncMessage(handler,
-							        handler,
 							        Evaluator._APPLY_,
 							        NATTable.atValue(new ATObject[] {
 							           NATTable.atValue(new ATObject[] {service})

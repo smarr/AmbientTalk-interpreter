@@ -67,7 +67,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	 * Next, evaluate the message expression into a first-class message (asynchronous message or method invocation).
 	 * The evaluation of the message send is delegated to the first-class message itself.
 	 * 
-	 * AGMSGSEND(rcv,msg).eval(ctx) = msg.eval(ctx).meta_sendTo(rcv.eval(ctx))
+	 * AGMSGSEND(rcv,msg).eval(ctx) = msg.eval(ctx).meta_sendTo(rcv.eval(ctx), ctx.self)
 	 * 
 	 * @return the value of the invoked method or NIL in the case of an asynchronous message send.
 	 */
@@ -78,7 +78,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 		InvocationStack stack = InvocationStack.getInvocationStack();
 		try {
 			stack.methodInvoked(this, rcvr, msg);
-			result = msg.base_sendTo(rcvr);
+			result = msg.base_sendTo(rcvr, ctx.base_getSelf());
 		} finally {
 			stack.methodReturned(result);
 		}
