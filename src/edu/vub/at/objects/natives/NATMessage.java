@@ -49,9 +49,9 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 	private final static AGSymbol _SELECTOR_ = AGSymbol.jAlloc("selector");
 	private final static AGSymbol _ARGUMENTS_ = AGSymbol.jAlloc("arguments");
 	
-	public NATMessage(ATSymbol sel, ATTable arg) throws InterpreterException {
+	protected NATMessage(ATSymbol sel, ATTable arg, ATStripe stripe) throws InterpreterException {
 		// tag object as a Message and as an Isolate
-		super(new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._MESSAGE_ });
+		super(new ATStripe[] { NativeStripes._ISOLATE_, stripe });
 		super.meta_defineField(_SELECTOR_, sel);
 		super.meta_defineField(_ARGUMENTS_, arg);
 	}

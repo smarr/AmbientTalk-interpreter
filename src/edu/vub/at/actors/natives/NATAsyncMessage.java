@@ -38,7 +38,6 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATMessage;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -58,7 +57,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      * @param arg the arguments of the asynchronous message
      */
     public NATAsyncMessage(ATObject sdr, ATSymbol sel, ATTable arg) throws InterpreterException {
-        super(sel, arg);
+        super(sel, arg, NativeStripes._ASYNCMSG_);
         super.meta_defineField(_SENDER_, sdr);
         super.meta_defineField(_RECEIVER_, NATNil._INSTANCE_);
     }
@@ -95,10 +94,6 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<asynchronous message:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
 	}
-	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._ASYNCMSG_);
-    }
 
     public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch {
   	    return this;

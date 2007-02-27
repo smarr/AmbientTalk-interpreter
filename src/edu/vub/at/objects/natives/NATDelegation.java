@@ -48,7 +48,7 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 	private final static AGSymbol _DELEGATOR_ = AGSymbol.jAlloc("delegator");
 	
 	public NATDelegation(ATObject delegator, ATSymbol sel, ATTable arg) throws InterpreterException {
-		super(sel, arg);
+		super(sel, arg, NativeStripes._METHODINV_);
 		super.meta_defineField(_DELEGATOR_, delegator);
 	}
 
@@ -66,9 +66,5 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<delegation:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
 	}
-	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._METHODINV_);
-    }
 	
 }
