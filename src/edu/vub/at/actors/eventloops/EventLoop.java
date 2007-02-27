@@ -68,36 +68,38 @@ public abstract class EventLoop {
 	private final String name_;
 	
 	/**
-	 * Constructs a new event loop, possibly with a custom event handler. In the case such a
+	 * Constructs a new event loop with a custom event handler. In the case such a
 	 * custom header is provided, the event loop will only be started after the 
-	 * setCustomEventLoop() was called.
+	 * startEventLoop() was called explicitly.
+	 * 
 	 * @param name used for debugging purposes
-	 * @param useDefaultEventHandler if true the client should call setCustomEventLoop() to activate the event loop
+	 * @param customEventLoop indicates that the client needs a custom event loop.
 	 */
-	public EventLoop(String name, boolean useDefaultEventLoop) {
+	public EventLoop(String name, boolean customEventLoop) {
+		eventQueue_ = new EventQueue();
+		askedToStop_ = false;
+		name_ = name;
+	}
+	
+	/**
+	 * Constructos a new event loop with the default processing behaviour.
+	 * @param name used for debugging purposes
+	 */
+	public EventLoop(String name) {
 		eventQueue_ = new EventQueue();
 		askedToStop_ = false;
 		name_ = name;
 		
-		if(useDefaultEventLoop) {
-			processor_ = new EventProcessor(new EventProcessingLoop());
-			processor_.start();
-		}
+		processor_ = new EventProcessor(new DefaultProcessingLoop());
+	    processor_.start();
 	}
 	
-	/**
-	 * @param name used for debugging purposes
-	 */
-	public EventLoop(String name) {
-		this(name, true);
-	}
-	
-	public void setCustomEventLoop(Runnable eventLoop) {
-		if(processor_ != null) {
-			processor_ = new EventProcessor(eventLoop);
-			processor_.start();
+	public void startEventLoop(Runnable customEventLoop) {
+		if (processor_ != null) {
+			throw new IllegalStateException("Tried to start the event loop while it was already active.");
 		} else {
-			throw new IllegalStateException("Tried to set a custom event loop when one was already active.");
+			processor_ = new EventProcessor(customEventLoop);
+			processor_.start();
 		}
 	}
 	
@@ -208,18 +210,18 @@ public abstract class EventLoop {
 	protected final EventLoop owner() { return this; }
 	
 	/**
-	 * EventProcessingLoop implements the default handling of events by the event loop 
+	 * DefaultProcessingLoop implements the default handling of events by the event loop 
 	 * framework. It is extracted from the EventProcessor to allow custom event loops
 	 * (notably ELFarReference) to introduce a new version to deal with e.g. additional
 	 * synchronization issues.
 	 */
-	private final class EventProcessingLoop implements Runnable {
+	private final class DefaultProcessingLoop implements Runnable {
 		public final void run() {
 			while(!askedToStop_) {
 				try {
 					Event event = eventQueue_.dequeue();
 					
-					Logging.EventLoop_LOG.info(this.toString() + " is processing " + event);
+					Logging.EventLoop_LOG.info(owner() + " is processing " + event);
 
 					handle(event);
 				} catch (InterruptedException e) {
@@ -230,6 +232,8 @@ public abstract class EventLoop {
 				Thread.yield();
 			}
 		}
+		
+        
 	}
 	
 	/**
@@ -244,11 +248,12 @@ public abstract class EventLoop {
 			setName(toString());
 		}
 		
-		protected EventLoop serving() { return owner(); }
+        protected EventLoop serving() { return owner(); }
 		
 		public String toString() {
 			return "Event Loop " + serving().toString();
 		}
+		
 	}
 	
 }

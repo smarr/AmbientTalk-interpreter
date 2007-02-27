@@ -29,7 +29,6 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.eventloops.BlockingFuture;
-import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
@@ -60,7 +59,7 @@ import org.jgroups.blocks.MessageDispatcher;
  * 
  * @author tvcutsem
  */
-public final class ELFarReference extends EventLoop implements ConnectionListener {
+public final class ELFarReference extends EventLoop implements ConnectionListener, Runnable {
 	
 	// When the Far Reference needs to be interrupted, this field will be set to a non-null value
 	// The handle tests for the presence of such an interrupt and will call the handleInterrupt() 
@@ -128,7 +127,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	}
 		
 	public ELFarReference(ATObjectID destination, ELActor owner) {
-		super("far reference " + destination, false);
+		super("far reference " + destination, true);
 		
 		destination_ = destination;
 		owner_ = owner;
@@ -140,7 +139,8 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		
 		dispatcher_ = owner_.getHost().messageDispatcher_;
 		
-		setCustomEventLoop(new EventProcessingLoop());
+		// start processing messages according to my own script
+		super.startEventLoop(this);
 	}
 	
 	/**
@@ -287,22 +287,20 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	}
 	
 	
-	private final class EventProcessingLoop implements Runnable {
-		public void run() {
-			synchronized (this) {
-				while (eventQueue_.isEmpty() && interrupt_ == null) {
-					try {
-						this.wait();
-					} catch (InterruptedException e) { }
-				}
+	public void run() {
+		synchronized (this) {
+			while (eventQueue_.isEmpty() && interrupt_ == null) {
+				try {
+					this.wait();
+				} catch (InterruptedException e) { }
+			}
 
-				if (interrupt_ != null) {
-					handleInterrupt();
-				} else { // if(! eventQueue_.isEmpty()) {
-					try {
-						handle(eventQueue_.dequeue());
-					} catch (InterruptedException e) { }
-				}
+			if (interrupt_ != null) {
+				handleInterrupt();
+			} else { // if(! eventQueue_.isEmpty()) {
+				try {
+					handle(eventQueue_.dequeue());
+				} catch (InterruptedException e) { }
 			}
 		}
 	}

@@ -353,7 +353,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	
 	/**
 	 * when: farReference disconnected: { code }
-	 * => when the remote reference is broken due to network disconnections, trigger the code
+	 *  => when the remote reference is broken due to network disconnections, trigger the code
 	 * returns a subscription object that can be used to cancel the listener
 	 */
 	public ATObject base_when_disconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
@@ -365,7 +365,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	
 	/**
 	 * when: farReference reconnected: { code }
-	 * => when the remote reference is reinstated after a network disconnection, trigger the code
+	 *  => when the remote reference is reinstated after a network disconnection, trigger the code
 	 * returns a subscription object that can be used to cancel the listener
 	 */
 	public ATObject base_when_reconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
@@ -377,14 +377,15 @@ public final class OBJLexicalRoot extends NATByCopy {
 
 	/**
 	 * retract: farReference 
-	 * => retract all currently unsent messages from this far references outbox for inspection
-	 * returns a table with a copy of all the messages being sent, the user is responsible to resend all messages that still need to be sent
+	 *  => retract all currently unsent messages from the far reference's outbox
+	 *  This has the side effect that the returned messages will *not* be sent automatically anymore,
+	 *  the programmer is responsible to resend all messages that still need to be sent by hand.
+	 *  
+	 *  Note that the returned messages are copies of the original.
+	 * @return a table with a copy of all the messages being sent.
 	 */
-	public ATObject base_retract_(ATFarReference farReference) throws InterpreterException {
-		if(farReference.asNativeFarReference().getObjectId().isRemote()) {
-			return ((NATRemoteFarRef)farReference).meta_retractUnsentMessages();
-		}
-		return NATTable.EMPTY;
+	public ATTable base_retract_(ATFarReference farReference) throws InterpreterException {
+		return farReference.meta_retractUnsentMessages();
 	}
 	
 	/* -----------------------------
@@ -531,7 +532,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 		NATMirage newMirage = new NATMirage(code.base_getContext().base_getLexicalScope(), mirrorClone);
 		mirrorClone.setBase(newMirage);
 		
-		code.base_applyInScope(NATTable.EMPTY, newMirage);
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				code.base_getMethod().base_getParameters(),
+				code.base_getContext());
+		code.base_applyInScope(copiedBindings, newMirage);
 		
 		return newMirage;
 	}
@@ -543,7 +547,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._IS_A_);
 		mirrorClone.setBase(newMirage);
 		
-		code.base_applyInScope(NATTable.EMPTY, newMirage);
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				code.base_getMethod().base_getParameters(),
+				code.base_getContext());
+		code.base_applyInScope(copiedBindings, newMirage);
 		
 		return newMirage;
 	}
@@ -555,7 +562,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._SHARES_A_);
 		mirrorClone.setBase(newMirage);
 		
-		code.base_applyInScope(NATTable.EMPTY, newMirage);
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				code.base_getMethod().base_getParameters(),
+				code.base_getContext());
+		code.base_applyInScope(copiedBindings, newMirage);
 		
 		return newMirage;
 	}
@@ -591,7 +601,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 			unwrappedStripes[i] = unwrapped[i].base_asStripe();
 		}
 		NATObject newObject = new NATObject(code.base_getContext().base_getLexicalScope(), unwrappedStripes);
-		code.base_applyInScope(NATTable.EMPTY, newObject);
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				code.base_getMethod().base_getParameters(),
+				code.base_getContext());
+		code.base_applyInScope(copiedBindings, newObject);
 		return newObject;
 	}
 	
