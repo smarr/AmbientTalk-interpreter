@@ -39,7 +39,35 @@ public class TutorialTest extends AmbientTalkTest {
 
 	
 	public void testBasicProgramming() throws InterpreterException {
+		
+		//variables
 		evalAndCompareTo("def x := 5", "5");
+		evalAndCompareTo("def y := x + 2", "7");
+		evalAndCompareTo("[x, y] := [y, x]", "[7, 5]");
+		
+		//tables
+		evalAndCompareTo("def z := 0", "0");
+		evalAndCompareTo("def t[5] { z := z + 1 }", "[1, 2, 3, 4, 5]");
+		
+		//functions
+		evalAndReturn("def square (x) { x*x }");
+		evalAndCompareTo("square(5)", "25");
+
+		evalAndReturn("	def fac(n) {" +
+			"def inner(n, result) { " +
+			   "if: (n =0) then: { result } else: { inner( n-1, n * result)  }" +
+			  "};" + 
+			  "inner(n,1)" +
+			"}");
+		evalAndCompareTo("fac(5)", "120");
+
+		evalAndCompareTo("def sum := 0", "0");
+		evalAndCompareTo("sum := sum + 1", "1");
+		evalAndReturn("sum := { | x, y| x + y }");
+		evalAndCompareTo("sum(1,2)", "3");
+	
+
 	}
+	
 	
 }

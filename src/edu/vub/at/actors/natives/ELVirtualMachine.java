@@ -33,6 +33,7 @@ import edu.vub.at.actors.id.GUID;
 import edu.vub.at.actors.net.DiscoveryListener;
 import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.MembershipNotifier;
+import edu.vub.at.actors.net.VMAddressBook;
 import edu.vub.at.actors.net.cmd.CMDHandshake;
 import edu.vub.at.actors.net.cmd.VMCommand;
 import edu.vub.at.objects.ATAbstractGrammar;
@@ -97,7 +98,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	 * needs to send a message to the remote object, the VM is contacted based on its GUID and this
 	 * table. When a VM disconnects, the disconnecting address is removed from this table. 
 	 */
-	private final Hashtable vmAddressBook_;
+	public final VMAddressBook vmAddressBook_;
 	
 	/** a table mapping actor IDs to local native actors (int -> ELActor) */
 	private final Hashtable localActors_;
@@ -106,7 +107,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	public MessageDispatcher messageDispatcher_;
 	
 	/** the JGroups discovery bus for this Virtual Machine */
-	protected MembershipNotifier membershipNotifier_;
+	public MembershipNotifier membershipNotifier_;
 	
 	public final ELDiscoveryActor discoveryActor_;
 	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields) {
@@ -117,7 +118,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		sharedFields_ = fields;
 		
 		// used to allow actors to send messages to remote vms/actors
-		vmAddressBook_ = new Hashtable();
+		vmAddressBook_ = new VMAddressBook();
 
 		vmId_ = new GUID();
 		localActors_ = new Hashtable();
@@ -178,43 +179,6 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	
 	
 	/**
-	 * Remove all entries that map to this VM address from the VM Address book.
-	 */
-	public void removeAddress(Address virtualMachine) {
-		synchronized (vmAddressBook_) {
-			// delete entries mapping to Address from the vm Address Book table
-			Set entries = vmAddressBook_.entrySet();
-			for (Iterator iter = entries.iterator(); iter.hasNext();) {
-				Map.Entry entry = (Map.Entry) iter.next();
-				if (entry.getValue().equals(virtualMachine)) {
-					Logging.VirtualMachine_LOG.debug("Removed VM binding " + entry.getKey() + " -> " + entry.getValue());
-					iter.remove();
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Resolve a remote VM's unique identifier to a concrete network address.
-	 */
-	public Address getAddressOf(GUID vmId) {
-		synchronized (vmAddressBook_) {
-			Address a = (Address) vmAddressBook_.get(vmId);
-			if (a == null) {
-				Logging.VirtualMachine_LOG.error("Asked for the address of an unknown vmId: " + vmId);
-				throw new RuntimeException("Asked for the address of an unknown vmId: " + vmId);
-			}
-			return a;
-		}
-	}
-	
-	public void setAddressOf(GUID vmId, Address a) {
-		synchronized (vmAddressBook_) {
-			vmAddressBook_.put(vmId, a);
-		}
-	}
-	
-	/**
 	 * Signals that this VM can connect to the underlying network channel
 	 * and can start distributed interaction.
 	 */
@@ -269,8 +233,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 					// send a handshake message to exchange IDs
 					new CMDHandshake(vmId_).send(messageDispatcher_, remoteVMAddress);
 					
-					// ask my discovery actor to send outstanding subscriptions to the newcomer
-					discoveryActor_.event_sendAllSubscriptionsTo(remoteVMAddress);
+			
 				}
 			}
 		});
@@ -280,8 +243,12 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		this.receive(new Event("memberLeft("+virtualMachine+")") {
 			public void process(Object myself) {
 				Logging.VirtualMachine_LOG.info(this + ": VM disconnected: " + virtualMachine);
+		
 				// delete entries mapping to Address from the vm Address Book table
-				removeAddress(virtualMachine);
+				vmAddressBook_.removeEntry(virtualMachine);
+				// notify all remote references of a disconnection 
+				membershipNotifier_.notifyDisconnected(vmAddressBook_.getGUIDOf(virtualMachine));
+
 			}
 		});
 	}

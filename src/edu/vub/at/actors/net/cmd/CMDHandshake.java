@@ -70,7 +70,11 @@ public class CMDHandshake extends VMCommand {
 	}
 	
 	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
-		remoteHost.setAddressOf(senderVMId_, wrapper.getSrc());
+		remoteHost.vmAddressBook_.addEntry(senderVMId_, wrapper.getSrc());
+		// ask my discovery actor to send outstanding subscriptions to the newcomer
+		remoteHost.discoveryActor_.event_sendAllSubscriptionsTo(wrapper.getSrc());
+		//notify all remote references registered for the new VM.
+		remoteHost.membershipNotifier_.notifyConnected(senderVMId_);
     	return null;
 	}
 	

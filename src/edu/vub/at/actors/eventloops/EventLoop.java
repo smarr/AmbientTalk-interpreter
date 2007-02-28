@@ -61,25 +61,11 @@ public abstract class EventLoop {
 	 * for perpetually dequeuing events from the event queue and passing them
 	 * on to this event loop's handle method.
 	 */
-	private Thread processor_;
+	protected Thread processor_;
 	
 	private boolean askedToStop_;
 	
 	private final String name_;
-	
-	/**
-	 * Constructs a new event loop with a custom event handler. In the case such a
-	 * custom header is provided, the event loop will only be started after the 
-	 * startEventLoop() was called explicitly.
-	 * 
-	 * @param name used for debugging purposes
-	 * @param customEventLoop indicates that the client needs a custom event loop.
-	 */
-	public EventLoop(String name, boolean customEventLoop) {
-		eventQueue_ = new EventQueue();
-		askedToStop_ = false;
-		name_ = name;
-	}
 	
 	/**
 	 * Constructos a new event loop with the default processing behaviour.
@@ -90,19 +76,10 @@ public abstract class EventLoop {
 		askedToStop_ = false;
 		name_ = name;
 		
-		processor_ = new EventProcessor(new DefaultProcessingLoop());
+		processor_ = new EventProcessor();
 	    processor_.start();
 	}
-	
-	public void startEventLoop(Runnable customEventLoop) {
-		if (processor_ != null) {
-			throw new IllegalStateException("Tried to start the event loop while it was already active.");
-		} else {
-			processor_ = new EventProcessor(customEventLoop);
-			processor_.start();
-		}
-	}
-	
+		
 	public String toString() {
 		return name_;
 	}
@@ -209,32 +186,18 @@ public abstract class EventLoop {
 	
 	protected final EventLoop owner() { return this; }
 	
-	/**
-	 * DefaultProcessingLoop implements the default handling of events by the event loop 
-	 * framework. It is extracted from the EventProcessor to allow custom event loops
-	 * (notably ELFarReference) to introduce a new version to deal with e.g. additional
-	 * synchronization issues.
-	 */
-	private final class DefaultProcessingLoop implements Runnable {
-		public final void run() {
-			while(!askedToStop_) {
-				try {
-					Event event = eventQueue_.dequeue();
-					
-					Logging.EventLoop_LOG.info(owner() + " is processing " + event);
+	public void execute() {
+		try {
+			Event event = eventQueue_.dequeue();
 
-					handle(event);
-				} catch (InterruptedException e) {
-					// If interrupted, we may be asked to stop
-				}
-				
-				// give other event loops a chance to process an event
-				Thread.yield();
-			}
+			Logging.EventLoop_LOG.info(owner() + " is processing " + event);
+
+			handle(event);
+		} catch (InterruptedException e) {
+			// If interrupted, we may be asked to stop
 		}
-		
-        
 	}
+	
 	
 	/**
 	 * EventProcessor is a thread subclass whose primary goal is to keep a reference to the 
@@ -243,13 +206,21 @@ public abstract class EventLoop {
 	 */
 	public final class EventProcessor extends Thread {
 		
-		public EventProcessor(Runnable processingLoop) {
-			super(processingLoop);
+		public EventProcessor() {
 			setName(toString());
 		}
 		
         protected EventLoop serving() { return owner(); }
 		
+		public final void run() {
+			while(!askedToStop_) {
+				execute();
+				
+				// give other event loops a chance to process an event
+				Thread.yield();
+			}
+		}
+        
 		public String toString() {
 			return "Event Loop " + serving().toString();
 		}

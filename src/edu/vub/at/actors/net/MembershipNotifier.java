@@ -27,6 +27,7 @@
  */
 package edu.vub.at.actors.net;
 
+import edu.vub.at.actors.id.GUID;
 import edu.vub.util.MultiMap;
 
 import java.util.Iterator;
@@ -91,7 +92,7 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 	 * @param virtualMachine - an address of the virtual machine hosting the object the listener is interested in
 	 * @param listener - a listener which will be notified whenever the said address connects or disconnects
 	 */
-	public synchronized void addConnectionListener(Address virtualMachine, ConnectionListener listener) {
+	public synchronized void addConnectionListener(GUID virtualMachine, ConnectionListener listener) {
 		connectionListeners_.put(virtualMachine, listener);
 	}
 	
@@ -99,7 +100,7 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 	 * Unregisters <code>listener</code> such that it will no longer be notified whenever a 
 	 * particular virtual machine becomes (un)reachable.
 	 */
-	public synchronized void removeConnectionListener(Address virtualMachine, ConnectionListener listener) {
+	public synchronized void removeConnectionListener(GUID virtualMachine, ConnectionListener listener) {
 		connectionListeners_.removeValue(virtualMachine, listener);
 	}
 	
@@ -124,14 +125,6 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 				// notify discovery manager
 				discoveryManager_.memberJoined(member);
 				
-				// notify all connectionlisteners for this member
-				Set listeners = (Set)connectionListeners_.get(member);
-				if(listeners != null) {
-					for (Iterator i = listeners.iterator(); i.hasNext();) {
-						ConnectionListener listener = (ConnectionListener) i.next();
-						listener.connected();
-					}
-				}
 			}
 		}
 		
@@ -144,19 +137,34 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 				// notify discovery manager
 				discoveryManager_.memberLeft(member);
 				
-				// notify all connectionlisteners for this member
-				Set listeners = (Set)connectionListeners_.get(member);
-				if(listeners != null) {
-					for (Iterator i = listeners.iterator(); i.hasNext();) {
-						ConnectionListener listener = (ConnectionListener) i.next();
-						listener.disconnected();
-					}
-				}
 			}
 		}
 		
 		// new view becomes previous view
 		knownMembers_.clear();
 		knownMembers_.addAll(newMembers);
+	}
+
+	public synchronized void notifyConnected(GUID vmId){
+		//notify all connectionlisteners for this member
+		Set listeners = (Set)connectionListeners_.get(vmId);
+		if(listeners != null) {
+			for (Iterator i = listeners.iterator(); i.hasNext();) {
+				ConnectionListener listener = (ConnectionListener) i.next();
+				listener.connected();
+			}
+		}
+	}
+	
+	public synchronized void notifyDisconnected (GUID vmId){
+		
+		//notify all connectionlisteners for this member
+		Set listeners = (Set)connectionListeners_.get(vmId);
+		if(listeners != null) {
+			for (Iterator i = listeners.iterator(); i.hasNext();) {
+				ConnectionListener listener = (ConnectionListener) i.next();
+				listener.disconnected();
+			}
+		}
 	}
 }
