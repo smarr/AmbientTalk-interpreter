@@ -64,8 +64,8 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     
     public NATAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
     	super(sel, arg, NativeStripes._ASYNCMSG_);
-        super.meta_assignField(this, _SENDER_, sdr);
-        super.meta_assignField(this, _RECEIVER_, rcv);
+        super.meta_defineField(_SENDER_, sdr);
+        super.meta_defineField(_RECEIVER_, rcv);
     }
 
     public ATObject base_getSender() throws InterpreterException {
