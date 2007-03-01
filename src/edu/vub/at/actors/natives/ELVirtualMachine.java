@@ -38,12 +38,8 @@ import edu.vub.at.actors.net.cmd.CMDHandshake;
 import edu.vub.at.actors.net.cmd.VMCommand;
 import edu.vub.at.objects.ATAbstractGrammar;
 
-import java.io.File;
 import java.net.URL;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;

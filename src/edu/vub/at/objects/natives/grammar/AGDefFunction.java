@@ -80,7 +80,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 * 
 	 * AGDEFFUN(nam,par,bdy).eval(ctx) =
 	 *   if ctx.scope.isCallFrame
-	 *      ctx.scope.addFunction(nam, AGCLO(AGMTH(nam,par,bdy), ctx))
+	 *      ctx.scope.defineField(nam, AGCLO(AGMTH(nam,par,bdy), ctx))
 	 *   else
 	 *      ctx.scope.addMethod(nam, AGMTH(nam,par,bdy))
 	 * 

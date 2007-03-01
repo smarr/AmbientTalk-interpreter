@@ -35,13 +35,19 @@ import edu.vub.at.actors.natives.NATActorMirror;
 import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.actors.natives.NATRemoteFarRef;
 import edu.vub.at.actors.natives.Packet;
+import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.OBJNetwork;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XDuplicateSlot;
+import edu.vub.at.exceptions.XImportConflict;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATHandler;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -49,11 +55,19 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATIntercessiveMirror;
 import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
+import edu.vub.at.objects.mirrors.PrimitiveMethod;
+import edu.vub.at.objects.natives.grammar.AGBegin;
+import edu.vub.at.objects.natives.grammar.AGDelegationCreation;
+import edu.vub.at.objects.natives.grammar.AGMessageSend;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
+
+import java.util.Vector;
 
 /**
  * An instance of the class OBJLexicalRoot represents the lexical root of an actor.
@@ -88,6 +102,158 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Constructor made private for singleton design pattern
 	 */
 	private OBJLexicalRoot() { }
+	
+	/* -----------------------
+	 * -- Primitive Methods --
+	 * ----------------------- */
+	
+	
+	private static final AGSymbol _IMPORT_NAME_ = AGSymbol.jAlloc("import:");
+	private static final AGSymbol _SRC_PARAM_ = AGSymbol.jAlloc("sourceObject");
+	
+	/**
+	 * Imports fields and methods from a given source object. This operation is very
+	 * akin to a class using a trait. For each field in the trait, a new field
+	 * is created in the importing 'host' object. For each method in the trait, a method
+	 * is added to the host object whose body consists of delegating the message
+	 * to the trait object.
+	 * 
+	 * The purpose of import: is to:
+	 *  - be able to reuse the interface of an existing object (examples are
+	 *    traits or 'mixins' such as Enumerable, Comparable, Observable, ...)
+	 *  - be able to access the interface of an existing object without having
+	 *    to qualify access. This is especially useful when applied to namespace
+	 *    objects. E.g. 'import: at.collections' allows the importer to subsequently
+	 *    write Vector.new() rather than at.collections.Vector.new()
+	 * 
+	 * def import: sourceObject {
+	 *   def newHost := thisContext.lexicalScope;
+	 *   def allFields := (reflect: sourceObject).listFields().base;
+	 *   def allMethods := (reflect: sourceObject).listMethods().base;
+	 *   allFields.each: { |field|
+	 *     (reflect: newHost).addField(field)
+	 *   }
+	 *   allMethods.each: { |method|
+	 *     (reflect: newHost).addMethod(method.name, `[@args],
+	 *       `#sourceObject^#(method.name)(@args))
+	 *   }
+	 *   nil
+	 * }
+	 * 
+	 * All duplicate slot exceptions, which signify that an imported method or field already
+	 * exists, are caught during import. These exceptions are bundled into an XImportConflict
+	 * exception, which can be inspected by the caller to detect the conflicting, unimported,
+	 * fields or methods.
+	 */
+	protected static final PrimitiveMethod _PRIM_IMPORT_ = new PrimitiveMethod(
+			_IMPORT_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_ })) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			ATObject sourceObject = arguments.base_at(NATNumber.ONE);
+			ATObject hostObject = ctx.base_getLexicalScope();
+			
+			// create call frame for this primitive method invocation by hand
+			NATCallframe thisScope = new NATCallframe(hostObject);
+			// add the parameter, it is used in the generated method
+			thisScope.meta_defineField(_SRC_PARAM_, sourceObject);
+			
+			// stores all conflicting symbols, initialized lazily
+			Vector conflicts = null;
+			
+			// define the aliased fields
+			ATField[] fields = NATObject.listTransitiveFields(sourceObject);
+			for (int i = 0; i < fields.length; i++) {
+				ATField field = fields[i];
+				// skip the 'super' field
+				if (!field.base_getName().equals(NATObject._SUPER_NAME_)) {
+					try {
+						hostObject.meta_addField(field);
+					} catch(XDuplicateSlot e) {
+						if (conflicts == null) {
+							conflicts = new Vector(2);
+						}
+						conflicts.add(e.getSlotName());
+					}
+				}
+			}
+			
+			// define the delegate methods
+			ATMethod[] methods = NATObject.listTransitiveMethods(sourceObject);
+			for (int i = 0; i < methods.length; i++) {
+				ATSymbol origMethodName = methods[i].base_getName();
+				
+				// filter out primitive methods like '==', 'new' and 'init
+				if (NATObject.isPrimitive(origMethodName)) {
+					// if these primitives would not be filtered out, they would override
+					// the primitives of the host object, which is usually unwanted and could
+					// lead to subtle bugs w.r.t. comparison and instance creation.
+					continue;
+				}
+				
+				ATMethod delegate = new NATMethod(origMethodName, Evaluator._ANON_MTH_ARGS_,
+						  new AGBegin(NATTable.of(
+						    //sourceObject^origName(@args)
+						    new AGMessageSend(_SRC_PARAM_,
+							  	              new AGDelegationCreation(origMethodName,
+							  	            		                   Evaluator._ANON_MTH_ARGS_)))));
+				
+				/*
+				 * Notice that the body of the delegate method is
+				 *   sourceObject^selector@args)
+				 * 
+				 * In order for this code to evaluate when the method is actually invoked
+				 * on the new host object, the symbol `sourceObject should evaluate to the
+				 * object contained in the variable sourceObject.
+				 * 
+				 * To ensure this binding is correct at runtime, delegate methods are
+				 * added to objects as external methods whose lexical scope is the call
+				 * frame of this method invocation The delegate methods are not added as closures,
+				 * as a closure would fix the value of 'self' too early.
+				 * 
+				 * When importing into a call frame, care must be taken that imported delegate
+				 * methods are added as closures, because call frames cannot contain methods.
+				 * In this case, the delegate is wrapped in a closure whose lexical scope is again
+				 * the call frame of this primitive method invocation. The value of self is fixed
+				 * to the current value, but this is OK given that the method is added to a call frame
+				 * which is 'selfless'.
+				 */
+				
+				try {
+					if (hostObject.base_isCallFrame()) {
+						NATClosure clo = new NATClosure(delegate, ctx.base_withLexicalEnvironment(thisScope));
+						hostObject.meta_defineField(origMethodName, clo);
+					} else {
+						hostObject.meta_addMethod(new NATClosureMethod(thisScope, delegate));
+					}
+				} catch(XDuplicateSlot e) {
+					if (conflicts == null) {
+						conflicts = new Vector(2);
+					}
+					conflicts.add(e.getSlotName());
+				}
+			}
+			
+			if (conflicts == null) {
+				// no conflicts found
+				return NATNil._INSTANCE_;
+			} else {
+				throw new XImportConflict((ATSymbol[]) conflicts.toArray(new ATSymbol[conflicts.size()]));
+			}
+		}
+	};
+	
+	/**
+	 * Invoked whenever a new true AmbientTalk object is created that should
+	 * represent the root. This gives the lexical root a chance to install its
+	 * primitive methods.
+	 */
+	public static void initializeRoot(NATObject root) {
+		try {
+			// add import: native
+			root.meta_addMethod(_PRIM_IMPORT_);
+		} catch (InterpreterException e) {
+			Logging.Init_LOG.fatal("Failed to initialize the root!", e);
+		}
+	}
 	
 	/* ----------------------
 	 * -- Global variables --

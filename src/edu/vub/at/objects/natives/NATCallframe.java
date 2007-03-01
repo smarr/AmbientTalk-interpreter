@@ -178,7 +178,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		if (this.hasLocalField(name)) {
 			// field already exists...
-			throw new XDuplicateSlot("field ", name.base_getText().asNativeText().javaValue);			
+			throw new XDuplicateSlot(XDuplicateSlot._FIELD_, name);			
 		} else {
 			boolean fieldAdded = variableMap_.put(name);
 			if (!fieldAdded) {
@@ -249,7 +249,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 		ATSymbol name = field.base_getName();
 		if (this.hasLocalField(name)) {
 			// field already exists...
-			throw new XDuplicateSlot("field ", name.base_getText().asNativeText().javaValue);			
+			throw new XDuplicateSlot(XDuplicateSlot._FIELD_, name);			
 		} else {
 			// add a clone of the field initialized with its new host
 			field = field.base_new(new ATObject[] { this }).base_asField();

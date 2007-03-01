@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * XDuplicateSlot.java created on 11-aug-2006 at 14:33:12
+ * XImportConflict.java created on 1-mrt-2007 at 14:21:56
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,46 +27,36 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
-
+import edu.vub.at.objects.natives.NATTable;
 
 /**
- * An XDuplicateSlot exception is raised when a field or a method is added to
- * an object that already contains a field or method with the same name.
- * 
- * @author tvc
+ * An XImportConflict exception is raised when an import: native fails
+ * because the importing object already defines one or more methods or
+ * fields available in the imported object. The exception provides more
+ * information about which names caused conflicts.
+ *
+ * @author tvcutsem
  */
-public final class XDuplicateSlot extends InterpreterException {
+public class XImportConflict extends InterpreterException {
 
-	private static final long serialVersionUID = -1256829498207088803L;
-
-	public static final byte _FIELD_ = 0;
-	public static final byte _METHOD_ = 1;
+	private final ATSymbol[] conflictingNames_;
 	
-	private final byte slotType_;
-	private final ATSymbol slotName_;
+	public XImportConflict(ATSymbol[] conflictingNames) throws InterpreterException {
+		super("Conflicting names during import: " + Evaluator.printElements(conflictingNames, "", ",", "").javaValue);
+		conflictingNames_ = conflictingNames;
+	}
 	
-	public XDuplicateSlot(byte slotType,  ATSymbol slotName) {
-		super("Duplicate " + ((slotType == _FIELD_) ? "field" : "method") + " definition for " + slotName);
-		slotType_ = slotType;
-		slotName_ = slotName;
+	public ATTable getConflictingNames() {
+		return NATTable.atValue(conflictingNames_);
 	}
 	
 	public ATStripe getStripeType() {
-		return NativeStripes._DUPLICATESLOT_;
+		return NativeStripes._IMPORTCONFLICT_;
 	}
 
-	public ATSymbol getSlotName() {
-		return slotName_;
-	}
-
-	public byte getSlotType() {
-		return slotType_;
-	}
-	
-	public boolean isDuplicateMethod() {
-		return slotType_ == _METHOD_;
-	}
 }

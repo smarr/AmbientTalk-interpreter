@@ -196,4 +196,7 @@ public final class NativeStripes {
 
 //defstripe JavaException <: Exception;
 	public final static NATStripe _JAVAEXCEPTION_ = NATStripe.atValue("JavaException", _EXCEPTION_);
+
+//defstripe ImportConflict <: Exception;
+	public final static NATStripe _IMPORTCONFLICT_ = NATStripe.atValue("ImportConflict", _EXCEPTION_);
 }

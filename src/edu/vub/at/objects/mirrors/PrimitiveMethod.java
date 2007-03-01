@@ -42,8 +42,12 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 
 /**
- * A primitive method is a method implemented by *all* ambienttalk objects.
- * Example primitive methods are '==', 'new' and 'init'
+ * A primitive method is the equivalent of a NativeClosure but for methods rather
+ * than closures. The advantage of PrimtiveMethods is that their base_apply method
+ * gives access to both arguments as well as to the runtime context in which they
+ * were invoked.
+ * 
+ * Example primitive methods are '==', 'new' and 'init' implemented in NATObject.
  *
  * Primitive methods should implement this method's base_apply method.
  *

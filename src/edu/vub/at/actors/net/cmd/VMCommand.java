@@ -87,11 +87,11 @@ public abstract class VMCommand implements Serializable {
 		Vector recipients = new Vector(1);
 		recipients.add(recipientVM);
 		dispatcher.castMessage(
-			recipients,
+			recipients, // send to particular member
 			// JGROUPS:Message.new(destination, source, Serializable)
 			new Message(recipientVM, null, this),
-			GroupRequest.GET_NONE,
-			_TRANSMISSION_TIMEOUT_);
+			GroupRequest.GET_NONE, // asynchronous call, non-blocking
+			0); // timeout is irrelevant
 	}
 	
 	/**
@@ -101,11 +101,11 @@ public abstract class VMCommand implements Serializable {
 		Logging.VirtualMachine_LOG.info("sending async multicast cmd: " + description_);
 		// JGROUPS:castMessage(java.util.Vector dests, Message msg, int mode, long timeout)
 		dispatcher.castMessage(
-			null,
+			null, // send to all members
 			// JGROUPS:Message.new(destination, source, Serializable)
 			new Message(null, null, this),
-			GroupRequest.GET_NONE,
-			_TRANSMISSION_TIMEOUT_);
+			GroupRequest.GET_NONE, // asynchronous call, non-blocking
+			0); // timeout is irrelevant
 	}
 	
 	/**

@@ -112,14 +112,13 @@ public final class JavaClass extends NATObject implements ATStripe {
 	 * A JavaClass wrapping a class c is an object that has the lexical scope as its lexical parent
 	 * and has NIL as its dynamic parent.
 	 * 
-	 * JavaClass instances are isolates.
-	 * In addition, if the JavaClass wraps a Java interface type, JavaClass instances are
+	 * If the JavaClass wraps a Java interface type, JavaClass instances are
 	 * also stripes.
 	 */
 	private JavaClass(Class wrappedClass) {
 		super(wrappedClass.isInterface() ?
-			  new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._STRIPE_ } :
-			  new ATStripe[] { NativeStripes._ISOLATE_ });
+			  new ATStripe[] { NativeStripes._STRIPE_ } :
+			  NATObject._NO_STRIPES_);
 		wrappedClass_ = wrappedClass;
 	}
 	
@@ -207,7 +206,7 @@ public final class JavaClass extends NATObject implements ATStripe {
      */
     public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
         if (Symbiosis.hasField(wrappedClass_, Reflection.upSelector(name), true)) {
-    	    throw new XDuplicateSlot("field ", name.toString());
+    	    throw new XDuplicateSlot(XDuplicateSlot._FIELD_, name);
         } else {
     	    return super.meta_defineField(name, value);
         }
@@ -276,7 +275,7 @@ public final class JavaClass extends NATObject implements ATStripe {
     public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
         ATSymbol name = method.base_getName();
         if (Symbiosis.hasMethod(wrappedClass_, Reflection.upSelector(name), true)) {
-    	    throw new XDuplicateSlot("method ", name.toString());
+    	    throw new XDuplicateSlot(XDuplicateSlot._METHOD_, name);
         } else {
     	    return super.meta_addMethod(method);
         }

@@ -61,7 +61,7 @@ public final class Evaluator {
 	// important symbols
 	
 	public static final AGSymbol _ANON_MTH_NAM_ = AGSymbol.jAlloc("nativelambda");
-	public static final NATTable _ANON_MTH_ARGS_ = NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("args")) });
+	public static final NATTable _ANON_MTH_ARGS_ = NATTable.of(new AGSplice(AGSymbol.jAlloc("args")));
 	public static final AGSymbol _LAMBDA_    = AGSymbol.alloc(NATText.atValue("lambda"));
 	public static final AGSymbol _APPLY_     = AGSymbol.alloc(NATText.atValue("apply"));
 	public static final AGSymbol _INIT_      = AGSymbol.alloc(NATText.atValue("init"));
@@ -410,7 +410,9 @@ public final class Evaluator {
 	 * A global scope has the sentinel instance as its lexical parent.
 	 */
 	private static NATObject createGlobalLexicalScope() {
-		return new NATObject(OBJLexicalRoot._INSTANCE_);
+		NATObject root = new NATObject(OBJLexicalRoot._INSTANCE_);
+		OBJLexicalRoot.initializeRoot(root);
+		return root;
 	}
 	
     /**

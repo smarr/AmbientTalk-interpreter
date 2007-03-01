@@ -107,9 +107,9 @@ public class NATObject extends NATCallframe implements ATObject {
 	public static final AGSymbol _SUPER_NAME_ = AGSymbol.jAlloc("super");
 	
 	// The names of the primitive methods
-	private static final AGSymbol _EQL_NAME_ = AGSymbol.jAlloc("==");
-	private static final AGSymbol _NEW_NAME_ = AGSymbol.jAlloc("new");
-	private static final AGSymbol _INI_NAME_ = AGSymbol.jAlloc("init");
+	public static final AGSymbol _EQL_NAME_ = AGSymbol.jAlloc("==");
+	public static final AGSymbol _NEW_NAME_ = AGSymbol.jAlloc("new");
+	public static final AGSymbol _INI_NAME_ = AGSymbol.jAlloc("init");
 	
 	// The primitive methods themselves
 	
@@ -134,6 +134,13 @@ public class NATObject extends NATCallframe implements ATObject {
 			return ctx.base_getLexicalScope().base_init(arguments.asNativeTable().elements_);
 		}
 	};
+	
+	/**
+	 * Does the selector signify a 'primitive' method, present in each AmbientTalk object?
+	 */
+	public static boolean isPrimitive(ATSymbol name) {
+		return name.equals(_EQL_NAME_) || name.equals(_NEW_NAME_) || name.equals(_INI_NAME_);
+	}
 	
 	// Auxiliary static methods to support the type of dynamic parent
 	public static final boolean _IS_A_ 		= true;
@@ -171,7 +178,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	/**
 	 * An empty stripe array shared by those objects that do not have any stripes.
 	 */
-	private static final ATStripe[] _NO_STRIPES_ = new ATStripe[0];
+	public static final ATStripe[] _NO_STRIPES_ = new ATStripe[0];
 	
 	/**
 	 * The flags of an AmbientTalk object encode the following boolean information:
@@ -395,7 +402,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * either in the receiver object locally, or in one of its dynamic parents.
 	 */
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
-		if (this.hasLocalField(selector) || this.hasLocalMethod(selector) || this.isPrimitive(selector))
+		if (this.hasLocalField(selector) || this.hasLocalMethod(selector))
 			return NATBoolean._TRUE_;
 		else
 			return meta_getDynamicParent().meta_respondsTo(selector);
@@ -600,7 +607,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
 		ATSymbol name = method.base_getName();
 		if (methodDictionary_.containsKey(name) && !isPrimitive(name)) {
-			throw new XDuplicateSlot("method", name.base_getText().asNativeText().javaValue);
+			throw new XDuplicateSlot(XDuplicateSlot._METHOD_, name);
 		} else {
 			// first check whether the method dictionary is shared
 			if (this.isFlagSet(_SHARE_DCT_FLAG_)) {
@@ -858,10 +865,6 @@ public class NATObject extends NATCallframe implements ATObject {
 		}
 	}
 	
-	private boolean isPrimitive(ATSymbol name) {
-		return name.equals(_EQL_NAME_) || name.equals(_NEW_NAME_) || name.equals(_INI_NAME_);
-	}
-	
 	/**
 	 * Performs a stripe test for this object locally.
 	 * @return whether this object is striped with a particular stripe or not.
@@ -874,6 +877,39 @@ public class NATObject extends NATCallframe implements ATObject {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * Auxiliary method to access the fields of an object and all of its super-objects.
+	 */
+	public static ATField[] listTransitiveFields(ATObject obj) throws InterpreterException {
+		Vector fields = new Vector();
+		for (; obj != NATNil._INSTANCE_ ; obj = obj.meta_getDynamicParent()) {
+			ATObject[] localFields = obj.meta_listFields().asNativeTable().elements_;
+			for (int i = 0; i < localFields.length; i++) {
+				fields.add(localFields[i]);
+			}
+		}
+		return (ATField[]) fields.toArray(new ATField[fields.size()]);
+	}
+	
+	/**
+	 * Auxiliary method to access the methods of an object and all of its super-objects.
+	 */
+	public static ATMethod[] listTransitiveMethods(ATObject obj) throws InterpreterException {
+		Vector methods = new Vector();
+		for (; obj != NATNil._INSTANCE_ ; obj = obj.meta_getDynamicParent()) {
+			// fast-path for native objects
+			if (obj instanceof NATObject) {
+				methods.addAll(((NATObject) obj).methodDictionary_.values());
+			} else {
+				ATObject[] localMethods = obj.meta_listMethods().asNativeTable().elements_;
+				for (int i = 0; i < localMethods.length; i++) {
+					methods.add(localMethods[i]);
+				}
+			}
+		}
+		return (ATMethod[]) methods.toArray(new ATMethod[methods.size()]);
 	}
 	
 }

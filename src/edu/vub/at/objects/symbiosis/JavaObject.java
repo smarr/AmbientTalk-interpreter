@@ -213,7 +213,7 @@ public final class JavaObject extends NATObject implements ATObject {
      */
     public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
         if (Symbiosis.hasField(wrappedObject_.getClass(), Reflection.upSelector(name), false)) {
-        	throw new XDuplicateSlot("field ", name.toString());
+        	throw new XDuplicateSlot(XDuplicateSlot._FIELD_, name);
         } else {
         	return super.meta_defineField(name, value);
         }
@@ -272,7 +272,7 @@ public final class JavaObject extends NATObject implements ATObject {
     public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
         ATSymbol name = method.base_getName();
         if (Symbiosis.hasMethod(wrappedObject_.getClass(), Reflection.upSelector(name), false)) {
-    	    throw new XDuplicateSlot("method ", name.toString());
+    	    throw new XDuplicateSlot(XDuplicateSlot._METHOD_, name);
         } else {
     	    return super.meta_addMethod(method);
         }
