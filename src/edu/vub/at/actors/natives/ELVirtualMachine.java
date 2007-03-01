@@ -222,6 +222,11 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	public void event_memberJoined(final Address remoteVMAddress) {
 		this.receive(new Event("memberJoined("+remoteVMAddress+")") {
 			public void process(Object myself) {
+				// if this VM is no longer connected, ignore the memberJoined event
+				// as there is nothing useful that can be done in response anyway
+				if(vmAddress_ == null)
+					return;
+				
 				// filter out discovery of myself
 				if (!vmAddress_.equals(remoteVMAddress)) {
 					Logging.VirtualMachine_LOG.info(this + ": VM connected: " + remoteVMAddress);
@@ -239,11 +244,20 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		this.receive(new Event("memberLeft("+virtualMachine+")") {
 			public void process(Object myself) {
 				Logging.VirtualMachine_LOG.info(this + ": VM disconnected: " + virtualMachine);
-		
-				// delete entries mapping to Address from the vm Address Book table
-				vmAddressBook_.removeEntry(virtualMachine);
-				// notify all remote references of a disconnection 
-				membershipNotifier_.notifyDisconnected(vmAddressBook_.getGUIDOf(virtualMachine));
+				
+				// Identify the GUID that corresponds to this address
+				GUID disconnected = vmAddressBook_.getGUIDOf(virtualMachine);
+				
+				// disconnected may be null if the memberJoined event was ignored because this VM 
+				// was already offline when the event was beiing processed.
+				if(disconnected != null) {
+					// delete entries mapping to Address from the vm Address Book table first, 
+					// so sending threads may have 'premonitions' that they are no longer connected
+					vmAddressBook_.removeEntry(virtualMachine);
+					
+					// properly (but synchronously) notify all remote references of a disconnection 
+					membershipNotifier_.notifyDisconnected(disconnected);
+				}
 
 			}
 		});

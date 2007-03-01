@@ -50,12 +50,12 @@ public class VMAddressBook {
 	 * Resolve a remote VM's unique identifier to a concrete network address.
 	 */
 	public synchronized GUID getGUIDOf(Address vmAddress) {
-			GUID g = (GUID) addressToGuid_.get(vmAddress);
-			if (g == null) {
-				Logging.VirtualMachine_LOG.error("Asked for the GUID of an unknown vmAddress: " + vmAddress);
-				throw new RuntimeException("Asked for the GUID of an unknown vmAddress: " + vmAddress);
-			}
-			return g;
+			return (GUID) addressToGuid_.get(vmAddress);
+//			if (g == null) {
+//				Logging.VirtualMachine_LOG.error("Asked for the GUID of an unknown vmAddress: " + vmAddress);
+//				throw new RuntimeException("Asked for the GUID of an unknown vmAddress: " + vmAddress);
+//			}
+//			return g;
 	}
 	
 	
