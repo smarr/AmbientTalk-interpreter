@@ -43,7 +43,7 @@ public class AmbientTalkTestCase extends TestCase {
 	}
 	
 	protected void setUp() throws Exception {
-		ATObject root = new NATObject(NATNil._INSTANCE_); // object with no dyn or lex parent
+		ATObject root = new NATObject(); // object with no dyn or lex parent
 		ATObject supr = new NATObject(root); // supr has root as lex parent
 		ATObject self = new NATObject(supr, root, NATObject._SHARES_A_); // self has root as lex parent and supr as dyn parent
 		ATObject scope = new NATObject(self); // scope has no dyn parent and is nested within self

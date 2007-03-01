@@ -29,9 +29,11 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefExternalMethod;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -83,12 +85,24 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 	 * 
 	 * AGDEFEXTMTH(rcv,nam,par,bdy).eval(ctx) =
 	 *   rcv.eval(ctx).defineField(nam, NATCLOMTH(ctx.cur,nam,par,bdy))
+	 *   
+	 * This method may fail with an XIllegalOperation if the receiver is an instance of a native 
+	 * type (whose method dictionaries are sealed) or if the receiver is an isolate. 
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		NATClosureMethod extMethod = new NATClosureMethod(ctx.base_getLexicalScope(),
-				                           new NATMethod(selectorExp_, argumentExps_, bodyStmts_));
-		rcvNam_.meta_eval(ctx).meta_addMethod(extMethod);
-		return extMethod;
+		ATObject receiver = rcvNam_.meta_eval(ctx);
+		if(receiver.meta_isStripedWith(NativeStripes._ISOLATE_)
+				.asNativeBoolean().javaValue) {
+			
+			throw new XIllegalOperation("Cannot define external methods on isolates");
+			
+		} else {
+			NATClosureMethod extMethod = new NATClosureMethod(ctx.base_getLexicalScope(),
+                    new NATMethod(selectorExp_, argumentExps_, bodyStmts_));
+
+			receiver.meta_addMethod(extMethod);
+			return extMethod;
+		}
 	}
 
 	/**

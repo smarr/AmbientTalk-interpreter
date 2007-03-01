@@ -849,8 +849,8 @@ public class NATObject extends NATCallframe implements ATObject {
 		return methodDictionary_.containsKey(selector);
 	}
 	
-	private ATMethod getLocalMethod(ATSymbol selector) throws XSelectorNotFound {
-		ATMethod result = (ATMethod) methodDictionary_.get(selector);
+	private ATMethod getLocalMethod(ATSymbol selector) throws InterpreterException {
+		ATMethod result = ((ATObject) methodDictionary_.get(selector)).base_asMethod();
 		if(result == null) {
 			throw new XSelectorNotFound(selector, this);
 		} else {

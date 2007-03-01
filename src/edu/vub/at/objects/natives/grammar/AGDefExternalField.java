@@ -28,11 +28,15 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATDefExternalField;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATClosureMethod;
+import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -65,11 +69,22 @@ public class AGDefExternalField extends NATAbstractGrammar implements ATDefExter
 	 * 
 	 * AGDEFEXTFLD(rcv,nam,val).eval(ctx) =
 	 *   rcv.eval(ctx).addField(nam, val.eval(ctx))
+	 *   
+	 * This method may fail with an XIllegalOperation if the receiver is an instance of a native 
+	 * type (whose field maps are sealed) or if the receiver is an isolate. 
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATObject val = valueExp_.meta_eval(ctx);
-		rcvNam_.meta_eval(ctx).meta_defineField(name_, val);
-		return val;
+		ATObject receiver = rcvNam_.meta_eval(ctx);
+		if(receiver.meta_isStripedWith(NativeStripes._ISOLATE_)
+				.asNativeBoolean().javaValue) {
+			
+			throw new XIllegalOperation("Cannot define external fields on isolates");
+			
+		} else {
+			ATObject val = valueExp_.meta_eval(ctx);
+			receiver.meta_defineField(name_, val);
+			return val;
+		}		
 	}
 
 	/**
