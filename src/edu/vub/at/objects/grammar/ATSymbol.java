@@ -27,6 +27,9 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 
 /**
@@ -36,6 +39,16 @@ import edu.vub.at.objects.ATText;
  */
 public interface ATSymbol extends ATExpression {
 
-	public ATText base_getText();
+	/**
+	 * Transform a symbol into a string.
+	 */
+	public ATText base_getText() throws InterpreterException;
+	
+	/**
+	 * Used during import: declarations to conveniently denote
+	 * aliases for names.
+	 * `a -> `b is equivalent to [ `a, `b ]
+	 */
+	public ATTable base__opmns__opgtx_(ATObject obj) throws InterpreterException;
 	
 }

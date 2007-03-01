@@ -39,7 +39,7 @@ public class LexicalRootTest extends AmbientTalkTest {
 	/**
 	 * Initialize the trait used for testing import:
 	 * 
-	 * def parent := object: { def n() { nil } }
+	 * def parent := object: { def n() { nil }; def m() { nil } }
 	 * def trait := extend: parent with: {
 	 *   def x := 0;
 	 *   def m() { self }
@@ -49,6 +49,7 @@ public class LexicalRootTest extends AmbientTalkTest {
 		super.setUp();
 		NATObject parent = new NATObject();
 		parent.meta_addMethod(new NATMethod(atN_, NATTable.EMPTY, new AGBegin(NATTable.of(NATNil._INSTANCE_))));
+		parent.meta_addMethod(new NATMethod(atM_, NATTable.EMPTY, new AGBegin(NATTable.of(NATNil._INSTANCE_))));
 		trait_ = new NATObject(parent, Evaluator.getGlobalLexicalScope(), NATObject._IS_A_);
 		trait_.meta_defineField(atX_, NATNumber.ZERO);
 		trait_.meta_addMethod(new NATMethod(atM_,
@@ -131,5 +132,20 @@ public class LexicalRootTest extends AmbientTalkTest {
 		
 		// check whether m() can be invoked from hostB and that self equals hostB
 		assertEquals(hostB, hostB.meta_invoke(hostB, atM_, NATTable.EMPTY));
+	}
+	
+	/**
+	 * Tests whether aliasing works properly.
+	 */
+	public void testImportAndAliasing() throws InterpreterException {
+		NATObject host = new NATObject();
+		AGSymbol foo = AGSymbol.jAlloc("foo");
+		NATTable alias = NATTable.of(atM_.base__opmns__opgtx_(foo)); // alias = [ `m -> `foo ]
+		// < import: trait alias: [ `m -> `foo > . eval(ctx[lex=host;self=host])
+		OBJLexicalRoot._PRIM_IMPORT_ALIAS_.base_apply(NATTable.of(trait_,alias), new NATContext(host, host));
+		
+		// check whether m() can be invoked as foo()
+		assertTrue(host.meta_respondsTo(foo).asNativeBoolean().javaValue);
+		assertEquals(host, host.meta_invoke(host, foo, NATTable.EMPTY));
 	}
 }

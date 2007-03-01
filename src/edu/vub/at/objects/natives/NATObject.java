@@ -64,6 +64,7 @@ import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
@@ -881,13 +882,20 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	/**
 	 * Auxiliary method to access the fields of an object and all of its super-objects.
+	 * Overridden fields are not included.
 	 */
 	public static ATField[] listTransitiveFields(ATObject obj) throws InterpreterException {
 		Vector fields = new Vector();
+		HashSet encounteredNames = new HashSet(); // to filter duplicates
 		for (; obj != NATNil._INSTANCE_ ; obj = obj.meta_getDynamicParent()) {
 			ATObject[] localFields = obj.meta_listFields().asNativeTable().elements_;
 			for (int i = 0; i < localFields.length; i++) {
-				fields.add(localFields[i]);
+				ATField field = localFields[i].base_asField();
+				ATSymbol fieldName = field.base_getName();
+				if (!encounteredNames.contains(fieldName)) {
+					fields.add(field);
+					encounteredNames.add(fieldName);
+				}
 			}
 		}
 		return (ATField[]) fields.toArray(new ATField[fields.size()]);
@@ -895,17 +903,32 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	/**
 	 * Auxiliary method to access the methods of an object and all of its super-objects.
+	 * Overridden methods are not included.
 	 */
 	public static ATMethod[] listTransitiveMethods(ATObject obj) throws InterpreterException {
 		Vector methods = new Vector();
+		HashSet encounteredNames = new HashSet(); // to filter duplicates		
 		for (; obj != NATNil._INSTANCE_ ; obj = obj.meta_getDynamicParent()) {
 			// fast-path for native objects
 			if (obj instanceof NATObject) {
-				methods.addAll(((NATObject) obj).methodDictionary_.values());
+				Collection localMethods = ((NATObject) obj).methodDictionary_.values();
+				for (Iterator iter = localMethods.iterator(); iter.hasNext();) {
+					ATMethod localMethod = (ATMethod) iter.next();
+					ATSymbol methodName = localMethod.base_getName();
+					if (!encounteredNames.contains(methodName)) {
+						methods.add(localMethod);
+						encounteredNames.add(methodName);
+					}
+				}
 			} else {
 				ATObject[] localMethods = obj.meta_listMethods().asNativeTable().elements_;
 				for (int i = 0; i < localMethods.length; i++) {
-					methods.add(localMethods[i]);
+					ATMethod localMethod = localMethods[i].base_asMethod();
+					ATSymbol methodName = localMethod.base_getName();
+					if (!encounteredNames.contains(methodName)) {
+						methods.add(localMethod);
+						encounteredNames.add(methodName);
+					}
 				}
 			}
 		}

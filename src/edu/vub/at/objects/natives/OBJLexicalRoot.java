@@ -67,6 +67,7 @@ import edu.vub.at.objects.natives.grammar.AGMessageSend;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
 
+import java.util.Hashtable;
 import java.util.Vector;
 
 /**
@@ -134,7 +135,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *     (reflect: newHost).addField(field)
 	 *   }
 	 *   allMethods.each: { |method|
-	 *     (reflect: newHost).addMethod(method.name, `[@args],
+	 *     (reflect: newHost).addMethod(aliasFor(method.name), `[@args],
 	 *       `#sourceObject^#(method.name)(@args))
 	 *   }
 	 *   nil
@@ -145,85 +146,75 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * exception, which can be inspected by the caller to detect the conflicting, unimported,
 	 * fields or methods.
 	 */
-	protected static final PrimitiveMethod _PRIM_IMPORT_ = new PrimitiveMethod(
-			_IMPORT_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_ })) {
+	protected static final PrimitiveMethod _PRIM_IMPORT_ = new PrimitiveMethod(_IMPORT_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_ })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			ATObject sourceObject = arguments.base_at(NATNumber.ONE);
-			ATObject hostObject = ctx.base_getLexicalScope();
-			
-			// create call frame for this primitive method invocation by hand
-			NATCallframe thisScope = new NATCallframe(hostObject);
-			// add the parameter, it is used in the generated method
-			thisScope.meta_defineField(_SRC_PARAM_, sourceObject);
-			
-			// stores all conflicting symbols, initialized lazily
-			Vector conflicts = null;
-			
-			// define the aliased fields
-			ATField[] fields = NATObject.listTransitiveFields(sourceObject);
-			for (int i = 0; i < fields.length; i++) {
-				ATField field = fields[i];
-				// skip the 'super' field
-				if (!field.base_getName().equals(NATObject._SUPER_NAME_)) {
-					try {
-						hostObject.meta_addField(field);
-					} catch(XDuplicateSlot e) {
-						if (conflicts == null) {
-							conflicts = new Vector(2);
-						}
-						conflicts.add(e.getSlotName());
-					}
+			  ATObject sourceObject = arguments.base_at(NATNumber.ONE);
+			  return performImport(sourceObject, ctx, new Hashtable());
+		}
+	};
+	
+	private static final AGSymbol _IMPORT_ALIAS_NAME_ = AGSymbol.jAlloc("import:alias:");
+	private static final AGSymbol _ALIAS_PARAM_ = AGSymbol.jAlloc("aliases");
+	
+	/**
+	 * def import: sourceObject alias: [ `oldname -> `newname , ... ]
+	 */
+	protected static final PrimitiveMethod _PRIM_IMPORT_ALIAS_ = new PrimitiveMethod(_IMPORT_ALIAS_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_, _ALIAS_PARAM_ })) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			  ATObject sourceObject = arguments.base_at(NATNumber.ONE);
+			  NATNumber two = NATNumber.atValue(2);
+			  ATObject aliases = arguments.base_at(two);
+			  
+			  Hashtable aliasMap = new Hashtable();
+			  
+			  // preprocess the aliases
+			  ATObject[] mappings = aliases.asNativeTable().elements_;
+			  for (int i = 0; i < mappings.length; i++) {
+				  // expecting tuples [ oldname, newname ]
+				  ATTable alias = mappings[i].base_asTable();
+				  aliasMap.put(alias.base_at(NATNumber.ONE).base_asSymbol(), alias.base_at(two).base_asSymbol());
+			  }
+			  
+			  return performImport(sourceObject, ctx, aliasMap);
+		}
+	};
+
+	/**
+	 * 
+	 * @param sourceObject the object that performed the import, lexically
+	 * @param ctx the runtime context during which the import is performed
+	 * @param aliases a mapping from old names (ATSymbol) to new names (ATSymbol)
+	 */
+	private static ATObject performImport(ATObject sourceObject, ATContext ctx, Hashtable aliases) throws InterpreterException {
+		ATObject hostObject = ctx.base_getLexicalScope();
+
+		// create call frame for this primitive method invocation by hand
+		NATCallframe thisScope = new NATCallframe(hostObject);
+		// add the parameter, it is used in the generated method
+		thisScope.meta_defineField(_SRC_PARAM_, sourceObject);
+
+		// stores all conflicting symbols, initialized lazily
+		Vector conflicts = null;
+
+		// the alias to be used for defining the new fields or methods
+		ATSymbol alias;
+		
+		// define the aliased fields
+		ATField[] fields = NATObject.listTransitiveFields(sourceObject);
+		for (int i = 0; i < fields.length; i++) {
+			ATField field = fields[i];
+			// skip the 'super' field
+			if (!field.base_getName().equals(NATObject._SUPER_NAME_)) {
+				
+				// check whether the field needs to be aliased
+				alias = (ATSymbol) aliases.get(field.base_getName());
+				if (alias == null) {
+					// no alias, use the original name
+					alias = field.base_getName();
 				}
-			}
-			
-			// define the delegate methods
-			ATMethod[] methods = NATObject.listTransitiveMethods(sourceObject);
-			for (int i = 0; i < methods.length; i++) {
-				ATSymbol origMethodName = methods[i].base_getName();
-				
-				// filter out primitive methods like '==', 'new' and 'init
-				if (NATObject.isPrimitive(origMethodName)) {
-					// if these primitives would not be filtered out, they would override
-					// the primitives of the host object, which is usually unwanted and could
-					// lead to subtle bugs w.r.t. comparison and instance creation.
-					continue;
-				}
-				
-				ATMethod delegate = new NATMethod(origMethodName, Evaluator._ANON_MTH_ARGS_,
-						  new AGBegin(NATTable.of(
-						    //sourceObject^origName(@args)
-						    new AGMessageSend(_SRC_PARAM_,
-							  	              new AGDelegationCreation(origMethodName,
-							  	            		                   Evaluator._ANON_MTH_ARGS_)))));
-				
-				/*
-				 * Notice that the body of the delegate method is
-				 *   sourceObject^selector@args)
-				 * 
-				 * In order for this code to evaluate when the method is actually invoked
-				 * on the new host object, the symbol `sourceObject should evaluate to the
-				 * object contained in the variable sourceObject.
-				 * 
-				 * To ensure this binding is correct at runtime, delegate methods are
-				 * added to objects as external methods whose lexical scope is the call
-				 * frame of this method invocation The delegate methods are not added as closures,
-				 * as a closure would fix the value of 'self' too early.
-				 * 
-				 * When importing into a call frame, care must be taken that imported delegate
-				 * methods are added as closures, because call frames cannot contain methods.
-				 * In this case, the delegate is wrapped in a closure whose lexical scope is again
-				 * the call frame of this primitive method invocation. The value of self is fixed
-				 * to the current value, but this is OK given that the method is added to a call frame
-				 * which is 'selfless'.
-				 */
 				
 				try {
-					if (hostObject.base_isCallFrame()) {
-						NATClosure clo = new NATClosure(delegate, ctx.base_withLexicalEnvironment(thisScope));
-						hostObject.meta_defineField(origMethodName, clo);
-					} else {
-						hostObject.meta_addMethod(new NATClosureMethod(thisScope, delegate));
-					}
+					hostObject.meta_defineField(alias, field.base_readField());
 				} catch(XDuplicateSlot e) {
 					if (conflicts == null) {
 						conflicts = new Vector(2);
@@ -231,15 +222,78 @@ public final class OBJLexicalRoot extends NATByCopy {
 					conflicts.add(e.getSlotName());
 				}
 			}
+		}
+
+		// define the delegate methods
+		ATMethod[] methods = NATObject.listTransitiveMethods(sourceObject);
+		for (int i = 0; i < methods.length; i++) {
+			ATSymbol origMethodName = methods[i].base_getName();
+
+			// filter out primitive methods like '==', 'new' and 'init
+			if (NATObject.isPrimitive(origMethodName)) {
+				// if these primitives would not be filtered out, they would override
+				// the primitives of the host object, which is usually unwanted and could
+				// lead to subtle bugs w.r.t. comparison and instance creation.
+				continue;
+			}
 			
-			if (conflicts == null) {
-				// no conflicts found
-				return NATNil._INSTANCE_;
-			} else {
-				throw new XImportConflict((ATSymbol[]) conflicts.toArray(new ATSymbol[conflicts.size()]));
+			// check whether the method needs to be aliased
+			alias = (ATSymbol) aliases.get(origMethodName);
+			if (alias == null) {
+				// no alias, use the original name
+				alias = origMethodName;
+			}
+
+			ATMethod delegate = new NATMethod(alias, Evaluator._ANON_MTH_ARGS_,
+					new AGBegin(NATTable.of(
+							//sourceObject^origName(@args)
+							new AGMessageSend(_SRC_PARAM_,
+									new AGDelegationCreation(origMethodName,
+											Evaluator._ANON_MTH_ARGS_)))));
+
+			/*
+			 * Notice that the body of the delegate method is
+			 *   sourceObject^selector@args)
+			 * 
+			 * In order for this code to evaluate when the method is actually invoked
+			 * on the new host object, the symbol `sourceObject should evaluate to the
+			 * object contained in the variable sourceObject.
+			 * 
+			 * To ensure this binding is correct at runtime, delegate methods are
+			 * added to objects as external methods whose lexical scope is the call
+			 * frame of this method invocation The delegate methods are not added as closures,
+			 * as a closure would fix the value of 'self' too early.
+			 * 
+			 * When importing into a call frame, care must be taken that imported delegate
+			 * methods are added as closures, because call frames cannot contain methods.
+			 * In this case, the delegate is wrapped in a closure whose lexical scope is again
+			 * the call frame of this primitive method invocation. The value of self is fixed
+			 * to the current value, but this is OK given that the method is added to a call frame
+			 * which is 'selfless'.
+			 */
+
+			try {
+				if (hostObject.base_isCallFrame()) {
+					NATClosure clo = new NATClosure(delegate, ctx.base_withLexicalEnvironment(thisScope));
+					hostObject.meta_defineField(origMethodName, clo);
+				} else {
+					hostObject.meta_addMethod(new NATClosureMethod(thisScope, delegate));
+				}
+			} catch(XDuplicateSlot e) {
+				if (conflicts == null) {
+					conflicts = new Vector(2);
+				}
+				conflicts.add(e.getSlotName());
 			}
 		}
-	};
+
+		if (conflicts == null) {
+			// no conflicts found
+			return NATNil._INSTANCE_;
+		} else {
+			throw new XImportConflict((ATSymbol[]) conflicts.toArray(new ATSymbol[conflicts.size()]));
+		}
+	}
 	
 	/**
 	 * Invoked whenever a new true AmbientTalk object is created that should
@@ -250,6 +304,8 @@ public final class OBJLexicalRoot extends NATByCopy {
 		try {
 			// add import: native
 			root.meta_addMethod(_PRIM_IMPORT_);
+			// add import:alias: native
+			root.meta_addMethod(_PRIM_IMPORT_ALIAS_);
 		} catch (InterpreterException e) {
 			Logging.Init_LOG.fatal("Failed to initialize the root!", e);
 		}
