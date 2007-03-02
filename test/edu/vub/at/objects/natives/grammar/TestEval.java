@@ -195,7 +195,7 @@ public class TestEval extends AmbientTalkTest {
 	}
 	
 	public void testFirstClassAsyncMessage() throws Exception {
-		actorTest(new ActorTest() {
+		actorTest(new Actorscript() {
 			public void test() throws Exception {
 				ATMessage asyncMsg = evalAndReturn("<-m(3)").base_asMessage();
 				

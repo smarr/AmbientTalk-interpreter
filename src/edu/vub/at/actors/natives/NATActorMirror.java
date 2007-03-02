@@ -32,6 +32,7 @@ import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.natives.DiscoveryManager.Publication;
 import edu.vub.at.actors.natives.DiscoveryManager.Subscription;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -45,11 +46,14 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATByRef;
+import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
+import edu.vub.at.objects.natives.grammar.AGBegin;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -70,24 +74,31 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	
 	/**
 	 * Creates a new actor on the specified host Virtual Machine. The actor its behaviour
-	 * is intialized to the passed isolate. The calling thread is **blocked** until the
-	 * actor has been constructed. However, actor root initialization etc. is carried
-	 * out by the newly created actor itself.
+	 * is intialized by means of the passed parameters and initialization code. The calling
+	 * thread is **blocked** until the actor has been constructed. However, actor behaviour
+	 * and root initialization is carried out by the newly created actor itself.
 	 * 
 	 * @param host the VM hosting this actor - after creation, the actor registers itself with this VM
-	 * @param behaviourPkt the serialized version of this actor's behaviour
+	 * @param parametersPkt the serialized parameters used to invoke the initialization code
+	 * @param initcodePkt the serialized initialization code used to initialize the actor behaviour
 	 * @param actorMirror this actor's mirror
 	 * @return a far reference to the behaviour of the actor
 	 * @throws InterpreterException
 	 */
-	public static NATLocalFarRef atValue(ELVirtualMachine host, Packet behaviourPkt, ATActorMirror actorMirror) throws InterpreterException {
+	public static NATLocalFarRef createActor(ELVirtualMachine host,
+			                                 Packet parametersPkt,
+			                                 Packet initcodePkt,
+			                                 ATActorMirror actorMirror) throws InterpreterException {
+		
 		BlockingFuture future = new BlockingFuture();
 		ELActor processor = new ELActor(actorMirror, host);
 		
 		// schedule special 'init' message which will:
 		// A) create a new behaviour and will unblock creating actor (by passing it a far ref via the future)
-		// B) initialize the root and lobby objects of this actor
-		processor.event_init(future, behaviourPkt);
+		// B) unpack the parameters used to invoke the initializatin code
+		// C) unpack the init code to initialize the behaviour
+		// D) initialize the root and lobby objects of this actor
+		processor.event_init(future, parametersPkt, initcodePkt);
 		
 		// notify host VM about my creation
 		host.event_actorCreated(processor);
@@ -100,12 +111,16 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
 	/**
-	 * Creates a new actor on the given host with the given behaviour and custom actor mirror.
-	 * REPLACED BY install: primitive
+	 * Auxiliary creation method to create an actor with an empty behaviour.
+	 * Equivalent to evaluating:
+	 * 
+	 * actor: { nil }
 	 */
-	/*public static NATLocalFarRef atValue(ELVirtualMachine host, Packet behaviourPkt, Packet actorMirrorPkt) throws InterpreterException {
-		return NATActorMirror.atValue(host, behaviourPkt, actorMirrorPkt.unpack().base_asActorMirror());
-	}*/
+	public static NATLocalFarRef createEmptyActor(ELVirtualMachine host, ATActorMirror actorMirror) throws InterpreterException {
+		Packet noParams = new Packet(NATTable.EMPTY);
+		Packet noinitcode = new Packet(new NATMethod(Evaluator._ANON_MTH_NAM_, NATTable.EMPTY, new AGBegin(NATTable.of(NATNil._INSTANCE_))));
+		return createActor(host, noParams, noinitcode, actorMirror);
+	}
 	
 	
 	/**
@@ -207,19 +222,16 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
     }
 
     /**
-     * actor.new(behaviour)
-     *  => create a new actor with the given behaviour and mirror. Both should be isolates.
-     *  Similar to actor: { behaviour's code }
+     * actor.new(closure)
+     *  => same effect as evaluating 'actor: closure'
      */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
 		int length = initargs.base_getLength().asNativeNumber().javaValue;
 		if(length != 1)
 			throw new XArityMismatch("newInstance", 1, length);
 		
-		ATObject isolate = initargs.base_at(NATNumber.ONE);
-		Packet serializedIsolate = new Packet("behaviour", isolate);
-		ELVirtualMachine host = ELVirtualMachine.currentVM();
-		return NATActorMirror.atValue(host, serializedIsolate, new NATActorMirror(host));
+		ATClosure closure = initargs.base_at(NATNumber.ONE).base_asClosure();
+		return OBJLexicalRoot._INSTANCE_.base_actor_(closure);
 	}
 	
 	public NATText meta_print() throws InterpreterException {

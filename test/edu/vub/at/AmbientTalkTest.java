@@ -4,7 +4,6 @@ import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.natives.NATActorMirror;
-import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.actors.natives.SharedActorField;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -36,10 +35,7 @@ public abstract class AmbientTalkTest extends TestCase {
 		if (evalActor_ == null) {
 			try {
 				ELVirtualMachine host = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
-				evalActor_ = NATActorMirror.atValue(host,
-						new Packet("behaviour", NATObject.createIsolate()),
-						new NATActorMirror(host)
-				  ).getFarHost();
+				evalActor_ = NATActorMirror.createEmptyActor(host, new NATActorMirror(host)).getFarHost();
 			} catch (InterpreterException e) {
 				e.printStackTrace();
 				fail(e.getMessage());
@@ -121,7 +117,7 @@ public abstract class AmbientTalkTest extends TestCase {
 		return null;
 	}
 	
-	public static abstract class ActorTest implements Callable {
+	public static abstract class Actorscript implements Callable {
 		public Object call(Object arg) throws Exception {
 			test();
 			return null;
@@ -129,7 +125,7 @@ public abstract class AmbientTalkTest extends TestCase {
 		public abstract void test() throws Exception;
 	}
 	
-	public void actorTest(ActorTest test) throws Exception {
+	public void actorTest(Actorscript test) throws Exception {
         try {
 			evalActor().sync_event_performTest(test);
 		} catch (XParseError e) {

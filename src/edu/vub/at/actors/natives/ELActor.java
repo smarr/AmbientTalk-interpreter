@@ -42,8 +42,10 @@ import edu.vub.at.exceptions.XClassNotFound;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -187,16 +189,24 @@ public class ELActor extends EventLoop {
 	
 	/**
 	 * The initial event sent by the actor mirror to its event loop to intialize itself.
-	 * @param e
+	 * @param future the synchronization point with the creating actor, needs to be fulfilled with a far ref to the behaviour.
+	 * @param parametersPkt the serialized parameters for the initialization code
+	 * @param initcodePkt the serialized initialization code
 	 */
-	protected void event_init(final BlockingFuture future, final Packet behaviourPkt) {
+	protected void event_init(final BlockingFuture future, final Packet parametersPkt, final Packet initcodePkt) {
 		receive(new Event("init("+this+")") {
 			public void process(Object byMyself) {
 				try {
-					behaviour_ = behaviourPkt.unpack();
+					behaviour_ = new NATObject();
 					
 					// pass far ref to behaviour to creator actor who is waiting for this
 					future.resolve(receptionists_.exportObject(behaviour_));
+					
+					ATTable params = parametersPkt.unpack().base_asTable();
+					ATMethod initCode = initcodePkt.unpack().base_asMethod();
+					
+					// initialize the behaviour using the parameters and the code
+					initCode.base_applyInScope(params, new NATContext(behaviour_, behaviour_));
 					
 					// go on to initialize the root and all lexically visible fields
 					initRootObject();

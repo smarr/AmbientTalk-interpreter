@@ -881,8 +881,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
 	/**
-	 * Auxiliary method to access the fields of an object and all of its super-objects.
-	 * Overridden fields are not included.
+	 * Auxiliary method to access the fields of an object and all of its super-objects up to (but excluding) nil.
+	 * Overridden fields of parent objects are not included.
 	 */
 	public static ATField[] listTransitiveFields(ATObject obj) throws InterpreterException {
 		Vector fields = new Vector();
@@ -902,8 +902,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
 	/**
-	 * Auxiliary method to access the methods of an object and all of its super-objects.
-	 * Overridden methods are not included.
+	 * Auxiliary method to access the methods of an object and all of its super-objects up to (but excluding) nil.
+	 * Overridden methods of parent objects are not included.
 	 */
 	public static ATMethod[] listTransitiveMethods(ATObject obj) throws InterpreterException {
 		Vector methods = new Vector();

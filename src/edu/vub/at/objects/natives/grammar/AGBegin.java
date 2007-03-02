@@ -38,15 +38,15 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author tvc
- *
  * AGBegin represents the abstract grammar element of a list of statements.
  * Examples:
  *  <tt>a ; b ; c</tt>
+ *  
+ * @author tvcutsem
  */
 public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 
-	private ATTable statements_;
+	private final ATTable statements_;
 	
 	public AGBegin(ATTable statements) {
 	  statements_ = statements;

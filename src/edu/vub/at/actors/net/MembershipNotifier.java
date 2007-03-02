@@ -156,7 +156,7 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 		}
 	}
 	
-	public synchronized void notifyDisconnected (GUID vmId){
+	public synchronized void notifyDisconnected(GUID vmId){
 		
 		//notify all connectionlisteners for this member
 		Set listeners = (Set)connectionListeners_.get(vmId);

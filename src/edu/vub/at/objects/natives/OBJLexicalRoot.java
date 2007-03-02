@@ -513,26 +513,30 @@ public final class OBJLexicalRoot extends NATByCopy {
 	/**
 	 * actor: { code }
 	 *  == actor: { code } mirroredBy: <default actor mirror>
+	 *  
+	 * The semantics of actor creation is as follows:
+	 * - Mandatory parameters to the block of initialization code are treated as lexically visible
+	 *   variables that have to remain available in the new actor behaviour. Hence, these variables
+	 *   are evaluated to values immediately at creation-time and parameter-passed to the new actor.
+	 * - The closure containing the initialization code is unpacked, its lexical scope is disregarded
+	 *   and the unwrapped method is serialized and sent to the new actor, which can use it to
+	 *   initialize his behaviour object.
+	 * - The creating actor waits for the created actor to spawn a new behaviour and to return a far
+	 *   reference to this behaviour. From that point on, the creating actor can run in parallel with
+	 *   the created actor, which only then evaluates the initialization code to initialize its behaviour.
+	 *  
 	 */
 	public ATObject base_actor_(ATClosure code) throws InterpreterException {
-		ATObject isolate = base_isolate_(code);
-		Packet serializedIsolate = new Packet("behaviour", isolate);
+		ATMethod method = code.base_getMethod();
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				method.base_getParameters(),
+				code.base_getContext());
+		
+		Packet serializedBindings = new Packet("actor-bindings", copiedBindings);
+		Packet serializedInitCode = new Packet("actor-initcode", method);
 		ELVirtualMachine host = ELVirtualMachine.currentVM();
-		return NATActorMirror.atValue(host, serializedIsolate, new NATActorMirror(host));
+		return NATActorMirror.createActor(host, serializedBindings, serializedInitCode, new NATActorMirror(host));
 	}
-	
-	/*
-	 * actor: { code } mirroredBy: actorMirror
-	 *  => far reference to the behaviour of the new actor
-	 * REPLACED BY install: primitive!
-	 *
-	public ATObject base_actor_mirroredBy_(ATClosure code, ATActorMirror mirror) throws InterpreterException {
-		ATObject isolate = base_isolate_(code);
-		Packet serializedIsolate = new Packet("behaviour", isolate);
-		Packet serializedMirror = new Packet("mirror", mirror);
-		ELVirtualMachine host = ELVirtualMachine.currentVM();
-		return NATActorMirror.atValue(host, serializedIsolate, serializedMirror);
-	}*/
 	
 	/**
 	 * actor => a reference to a mirror on the current actor

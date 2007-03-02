@@ -147,7 +147,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		connected_ = true;
 		// register the remote reference with the MembershipNotifier to keep track
 		// of the state of the connection with the remote VM
-		owner_.getHost().membershipNotifier_.addConnectionListener( destination_.getVirtualMachineId(), this);
+		owner_.getHost().membershipNotifier_.addConnectionListener(destination_.getVirtualMachineId(), this);
 		
 		dispatcher_ = owner_.getHost().messageDispatcher_;
 	}

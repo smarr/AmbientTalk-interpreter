@@ -1,7 +1,5 @@
 package edu.vub.at.actors.natives;
 
-import com.sun.tools.corba.se.idl.constExpr.EvaluationException;
-
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.net.ConnectionListener;
 import edu.vub.at.eval.Evaluator;
@@ -10,12 +8,10 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATObjectClosureTest;
-import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.grammar.AGBegin;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
+
 import junit.framework.TestCase;
 
 public class DistributionTest extends TestCase {
@@ -66,10 +62,7 @@ public class DistributionTest extends TestCase {
 	
 	// Creates an ELActor, hosted on the provided VM.
 	private ELActor setUpActor(ELVirtualMachine host) throws InterpreterException {
-		return NATActorMirror.atValue(host,
-				new Packet("behaviour", NATObject.createIsolate()),
-				new NATActorMirror(host)
-		  ).getFarHost();
+		return NATActorMirror.createEmptyActor(host, new NATActorMirror(host)).getFarHost();
 	}
 	
 	// installs a closure in a particular actor's scope which allows signalling a return value
