@@ -41,6 +41,84 @@ public class DistributionTest extends TestCase {
 		return testResult_;
 	}
 	
+	public static void main(String[] args) {
+		junit.swingui.TestRunner.run(NATObjectClosureTest.class);
+	}
+
+	protected void setUp() throws Exception {
+		super.setUp();
+
+		virtual1_ = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
+		virtual2_ = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
+	}
+	
+	protected void tearDown() throws Exception {
+		if(virtual1_ != null) {
+			virtual1_.event_goOffline();
+			virtual1_.stopProcessing();
+		}
+		
+		if(virtual2_ != null) {
+			virtual2_.event_goOffline();
+			virtual2_.stopProcessing();
+		}
+	}
+	
+	// Creates an ELActor, hosted on the provided VM.
+	private ELActor setUpActor(ELVirtualMachine host) throws InterpreterException {
+		return NATActorMirror.atValue(host,
+				new Packet("behaviour", NATObject.createIsolate()),
+				new NATActorMirror(host)
+		  ).getFarHost();
+	}
+	
+	// installs a closure in a particular actor's scope which allows signalling a return value
+	// with the added bonus of waking up the test thread from waiting.
+	private void setUpSuccessTrigger(ELActor processor) throws Exception {
+		processor.sync_event_performTest(new Callable() {
+			public Object call(Object argument)throws InterpreterException {
+				return Evaluator.getGlobalLexicalScope().meta_defineField(
+						AGSymbol.jAlloc("success"),
+						new NativeClosure(NATNil._INSTANCE_) {
+
+							public ATObject base_apply(ATTable arguments) throws InterpreterException {
+								setTestResult(true);
+								
+								return NATNil._INSTANCE_;
+							}
+						});
+			}
+		});
+	}
+	
+	// Joint code for the various test suites to test the behaviour of the AT connection observers 
+	private void setUpConnectionObservers() throws Exception {
+		ELActor subscriber = setUpActor(virtual1_);
+		ELActor provider   = setUpActor(virtual2_);
+		
+		// We define a closure to inform us the test succeeded
+		setUpSuccessTrigger(subscriber);
+		
+		subscriber.sync_event_eval(
+				NATParser.parse(
+						"DistributionTest#setUpConnectionObservers()",
+						"defstripe Service; \n" +
+						"when: Service discovered: { | ref |" +
+						"  when: ref disconnected: { success(); }; \n" +
+						"  when: ref reconnected:  { success(); }; \n" +
+						// explicitly triggering success, although we are not testing service discovery
+						// allows to minimize the waiting time until we can go offline
+						"  success(); " +
+						"} \n;"));
+		
+		provider.sync_event_eval(
+				NATParser.parse(
+						"DistributionTest#setUpConnectionObservers()",
+						"defstripe Service; \n" +
+						"export: (object: { nil }) as: Service"));
+	}
+
+	
 	/**
 	 * When a virtual machine joins the AmbientTalk JGroups channel, all virtual machines are 
 	 * notified of this fact by the underlying distribution layer. Messages are sent to the 
@@ -152,45 +230,16 @@ public class DistributionTest extends TestCase {
 			fail("Disconnection notification of the VM has failed to arrive within " + _TIMEOUT_ /1000 + " sec.");
 	}
 	
-	
-	private void installSuccessTrigger(ELActor processor) throws Exception {
-		processor.sync_event_performTest(new Callable() {
-			public Object call(Object argument)throws InterpreterException {
-				return Evaluator.getGlobalLexicalScope().meta_defineField(
-						AGSymbol.jAlloc("success"),
-						new NativeClosure(NATNil._INSTANCE_) {
-
-							public ATObject base_apply(ATTable arguments) throws InterpreterException {
-								setTestResult(true);
-								
-								return NATNil._INSTANCE_;
-							}
-						});
-			}
-		});
-	}
-	
+	/**
+	 * Uses the when: discovered: and export: as: constructs to make an object on one virtual
+	 * machine accessible to another virtual machine. 
+	 * @throws Exception
+	 */
 	public synchronized void testServiceDiscovery() throws Exception {
 		
 		setTestResult(false);
 		
-		ELActor subscriber = initializeActor(virtual1_);
-		ELActor provider   = initializeActor(virtual2_);
-		
-		// We define a closure to inform us the test succeeded
-		installSuccessTrigger(subscriber);
-		
-		subscriber.sync_event_eval(
-				NATParser.parse(
-						"DistributionTest#testServiceDiscovery()",
-						"defstripe Service; \n" +
-						"when: Service discovered: { | ref | success() }"));
-		
-		provider.sync_event_eval(
-				NATParser.parse(
-						"DistributionTest#testServiceDiscovery()",
-						"defstripe Service; \n" +
-						"export: (object: { nil }) as: Service"));
+		setUpConnectionObservers();
 		
 		virtual1_.event_goOnline();
 		virtual2_.event_goOnline();
@@ -202,34 +251,64 @@ public class DistributionTest extends TestCase {
 		if(! getTestResult())
 			fail("Service Discovery notification has failed to arrive within " + _TIMEOUT_ /1000 + " sec.");
 	}
-	
-	public synchronized void testConnectionObservers() throws Exception {
 		
+	/**
+	 * This test uses the when: disconnected: to detect when a far reference has become
+	 * disconnected. We distinguish between two tests, depending on the role of the device
+	 * that falls away. If the provider disconnects, the subscriber hosting the far reference
+	 * is notified of this event through a JGroups View event which is propagated up.
+	 * 
+	 * @throws Exception
+	 */
+	public synchronized void testProviderDisconnection() throws Exception {
+		
+		setUpConnectionObservers();
+		
+		virtual1_.event_goOnline();
+		virtual2_.event_goOnline();
+		
+		try {
+			this.wait( _TIMEOUT_ );
+		} catch (InterruptedException e) {};
+		
+		// reset the test condition
 		setTestResult(false);
 		
-		ELActor subscriber = initializeActor(virtual1_);
-		ELActor provider   = initializeActor(virtual2_);
+		virtual2_.event_goOffline();
 		
-		// We define a closure to inform us the test succeeded
-		installSuccessTrigger(subscriber);
+		try {
+			this.wait( _TIMEOUT_ );
+		} catch (InterruptedException e) {};
 		
-		subscriber.sync_event_eval(
-				NATParser.parse(
-						"DistributionTest#testConnectionObservers()",
-						"defstripe Service; \n" +
-						"when: Service discovered: { | ref |" +
-						// explicitly triggering success, although we are not testing service discovery
-						// allows to minimize the waiting time until we can go offline
-						"  success(); " +
-						"  when: ref disconnected: { success(); }; \n" +
-						"  when: ref reconnected:  { success(); }; \n" +
-						"} \n;"));
+		if(! getTestResult())
+			fail("Disconnection observer has failed to trigger within " + _TIMEOUT_ /1000 + " sec.");
+
+		// reset the test condition
+		setTestResult(false);
+
+		virtual2_.event_goOnline();
 		
-		provider.sync_event_eval(
-				NATParser.parse(
-						"DistributionTest#testConnectionObservers()",
-						"defstripe Service; \n" +
-						"export: (object: { nil }) as: Service"));
+		try {
+			this.wait(  );
+		} catch (InterruptedException e) {};
+		
+		if(! getTestResult())
+			fail("Reconnection observer has failed to trigger within " + _TIMEOUT_ /1000 + " sec.");
+	
+	}
+	
+	/**
+	 * This test uses the when: disconnected: to detect when a far reference has become
+	 * disconnected. We distinguish between two tests, depending on the role of the device
+	 * that falls away. If the subscriber disconnects, no JGroups View event is propagated up,
+	 * to allow disconnecting the far reference, instead the membershipNotifier must be
+	 * disconnected explicitly.
+	 * 
+	 * @throws Exception
+	 */
+	public synchronized void testSubscriberDisconnection() throws Exception {
+		
+		setUpConnectionObservers();
 		
 		virtual1_.event_goOnline();
 		virtual2_.event_goOnline();
@@ -248,58 +327,27 @@ public class DistributionTest extends TestCase {
 		} catch (InterruptedException e) {};
 		
 		if(! getTestResult())
-			fail("Disconnection observer has failed to trigger within " + 2 * _TIMEOUT_ /1000 + " sec.");
-
+			fail("Disconnection observer has failed to trigger within " + _TIMEOUT_ /1000 + " sec.");
+		
 		// reset the test condition
 		setTestResult(false);
 
 		virtual1_.event_goOnline();
 		
 		try {
-			this.wait( _TIMEOUT_ );
+			this.wait(  );
 		} catch (InterruptedException e) {};
 		
 		if(! getTestResult())
-			fail("Reconnection observer has failed to trigger within " + 2 * _TIMEOUT_ /1000 + " sec.");
+			fail("Reconnection observer has failed to trigger within " + _TIMEOUT_ /1000 + " sec.");
 	
 	}
 	
-	/*
-	 * Creates an ELActor, hosted on a newly created VM.
-	 */
-	private ELActor initializeActor(ELVirtualMachine host) throws InterpreterException {
-		return NATActorMirror.atValue(host,
-				new Packet("behaviour", NATObject.createIsolate()),
-				new NATActorMirror(host)
-		  ).getFarHost();
-	}
-	
-	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(NATObjectClosureTest.class);
-	}
 
-	protected void setUp() throws Exception {
-		super.setUp();
-
-		virtual1_ = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
-		virtual2_ = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
-	}
-	
-	protected void tearDown() throws Exception {
-		if(virtual1_ != null) {
-			virtual1_.event_goOffline();
-			virtual1_.stopProcessing();
-		}
-		
-		if(virtual2_ != null) {
-			virtual2_.event_goOffline();
-			virtual2_.stopProcessing();
-		}
-	}
 	public void notestSimple() {
 		try {
-			ELActor alice = initializeActor(virtual1_);
-			ELActor bob = initializeActor(virtual2_);
+			ELActor alice = setUpActor(virtual1_);
+			ELActor bob = setUpActor(virtual2_);
 			
 			alice.sync_event_eval(
 					NATParser.parse(

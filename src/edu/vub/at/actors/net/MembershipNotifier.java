@@ -167,4 +167,19 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 			}
 		}
 	}
+	
+	// Called by the VM when it has disconnected from the underlying channel
+	public synchronized void channelDisconnected() {
+		for (Iterator membersI = knownMembers_.iterator(); membersI.hasNext();) {
+			// for all members who were in the view
+			Address member = (Address) membersI.next();
+			
+			// notify discovery manager
+			discoveryManager_.memberLeft(member);
+
+		}
+		
+		// clear the set of known members
+		knownMembers_.clear();
+	}
 }

@@ -203,6 +203,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 					Channel channel = messageDispatcher_.getChannel();
 					channel.disconnect();
 					vmAddress_ = null;
+					membershipNotifier_.channelDisconnected();
 					Logging.VirtualMachine_LOG.info(this + ": interpreter offline");
 				} catch (Exception e) {
 					Logging.VirtualMachine_LOG.fatal(this + ": error while going offline:", e);
