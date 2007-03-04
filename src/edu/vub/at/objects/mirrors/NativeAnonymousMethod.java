@@ -78,7 +78,7 @@ public class NativeAnonymousMethod extends NATByRef implements ATMethod {
 	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
 		return base_apply(arguments, ctx);
 	}
-	
+
 	public ATSymbol base_getName() { return Evaluator._ANON_MTH_NAM_; }
 
 	public ATTable base_getParameters() { return Evaluator._ANON_MTH_ARGS_; }

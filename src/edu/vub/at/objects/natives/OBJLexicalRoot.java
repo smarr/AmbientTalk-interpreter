@@ -67,6 +67,7 @@ import edu.vub.at.objects.natives.grammar.AGMessageSend;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
 
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -110,7 +111,13 @@ public final class OBJLexicalRoot extends NATByCopy {
 	
 	
 	private static final AGSymbol _IMPORT_NAME_ = AGSymbol.jAlloc("import:");
+	private static final AGSymbol _IMPORT_ALIAS_NAME_ = AGSymbol.jAlloc("import:alias:");
+	private static final AGSymbol _IMPORT_EXCLUDE_NAME_ = AGSymbol.jAlloc("import:exclude:");
+	private static final AGSymbol _IMPORT_ALIAS_EXCLUDE_NAME_ = AGSymbol.jAlloc("import:alias:exclude:");
+	
 	private static final AGSymbol _SRC_PARAM_ = AGSymbol.jAlloc("sourceObject");
+	private static final AGSymbol _ALIAS_PARAM_ = AGSymbol.jAlloc("aliases");
+	private static final AGSymbol _EXCLUDE_PARAM_ = AGSymbol.jAlloc("exclude");
 	
 	/**
 	 * Imports fields and methods from a given source object. This operation is very
@@ -149,12 +156,9 @@ public final class OBJLexicalRoot extends NATByCopy {
 	protected static final PrimitiveMethod _PRIM_IMPORT_ = new PrimitiveMethod(_IMPORT_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_ })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			  ATObject sourceObject = arguments.base_at(NATNumber.ONE);
-			  return performImport(sourceObject, ctx, new Hashtable());
+			  return performImport(sourceObject, ctx, new Hashtable(), OBJLexicalRoot.getDefaultExcludedSlots());
 		}
 	};
-	
-	private static final AGSymbol _IMPORT_ALIAS_NAME_ = AGSymbol.jAlloc("import:alias:");
-	private static final AGSymbol _ALIAS_PARAM_ = AGSymbol.jAlloc("aliases");
 	
 	/**
 	 * def import: sourceObject alias: [ `oldname -> `newname , ... ]
@@ -162,32 +166,96 @@ public final class OBJLexicalRoot extends NATByCopy {
 	protected static final PrimitiveMethod _PRIM_IMPORT_ALIAS_ = new PrimitiveMethod(_IMPORT_ALIAS_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_, _ALIAS_PARAM_ })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			  ATObject sourceObject = arguments.base_at(NATNumber.ONE);
-			  NATNumber two = NATNumber.atValue(2);
-			  ATObject aliases = arguments.base_at(two);
-			  
-			  Hashtable aliasMap = new Hashtable();
-			  
-			  // preprocess the aliases
-			  ATObject[] mappings = aliases.asNativeTable().elements_;
-			  for (int i = 0; i < mappings.length; i++) {
-				  // expecting tuples [ oldname, newname ]
-				  ATTable alias = mappings[i].base_asTable();
-				  aliasMap.put(alias.base_at(NATNumber.ONE).base_asSymbol(), alias.base_at(two).base_asSymbol());
-			  }
-			  
-			  return performImport(sourceObject, ctx, aliasMap);
+			  ATObject aliases = arguments.base_at(NATNumber.atValue(2));
+			  return performImport(sourceObject, ctx, preprocessAliases(aliases.base_asTable()), OBJLexicalRoot.getDefaultExcludedSlots());
+		}
+	};
+	
+	/**
+	 * def import: sourceObject excludes: [ `name1, `name2, ... ]
+	 */
+	protected static final PrimitiveMethod _PRIM_IMPORT_EXCLUDE_ = new PrimitiveMethod(_IMPORT_EXCLUDE_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_, _EXCLUDE_PARAM_ })) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			  ATObject sourceObject = arguments.base_at(NATNumber.ONE);
+			  ATObject exclusions = arguments.base_at(NATNumber.atValue(2));
+			  return performImport(sourceObject, ctx, new Hashtable(), preprocessExcludes(exclusions.base_asTable()));
+		}
+	};
+	
+	/**
+	 * def import: sourceObject alias: [ `oldname -> `newname, ... ] excludes: [ `name1, `name2, ... ]
+	 */
+	protected static final PrimitiveMethod _PRIM_IMPORT_ALIAS_EXCLUDE_ = new PrimitiveMethod(_IMPORT_ALIAS_EXCLUDE_NAME_,
+			                                                                                 NATTable.atValue(new ATObject[] { _SRC_PARAM_, _ALIAS_PARAM_, _EXCLUDE_PARAM_ })) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			  ATObject sourceObject = arguments.base_at(NATNumber.ONE);
+			  ATObject aliases = arguments.base_at(NATNumber.atValue(2));
+			  ATObject exclusions = arguments.base_at(NATNumber.atValue(3));
+			  return performImport(sourceObject, ctx, preprocessAliases(aliases.base_asTable()), preprocessExcludes(exclusions.base_asTable()));
 		}
 	};
 
+	private static HashSet _DEFAULT_EXCLUDED_SLOTS_;
+	private static HashSet getDefaultExcludedSlots() {
+		if (_DEFAULT_EXCLUDED_SLOTS_ == null) {
+			_DEFAULT_EXCLUDED_SLOTS_ = new HashSet();
+			  // prepare the default names to exclude
+			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._SUPER_NAME_); // skip 'super', present in all objects
+			_DEFAULT_EXCLUDED_SLOTS_.add(Evaluator._CURNS_SYM_); // sip '~', present in all namespaces
+			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._EQL_NAME_); // skip '==', present in all objects
+			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._INI_NAME_); // skip 'init', present in all objects
+			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._NEW_NAME_); // skip 'new', present in all objects
+		}
+		return _DEFAULT_EXCLUDED_SLOTS_;
+	}
+	
 	/**
-	 * 
+	 * Given a table of tables, of the form [ [oldname, newname], ... ], returns a hashtable
+	 * mapping the old names to the new names.
+	 */
+	private static Hashtable preprocessAliases(ATTable aliases) throws InterpreterException {
+		  Hashtable aliasMap = new Hashtable();
+		  NATNumber two = NATNumber.atValue(2);
+		  
+		  // preprocess the aliases
+		  ATObject[] mappings = aliases.asNativeTable().elements_;
+		  for (int i = 0; i < mappings.length; i++) {
+			  // expecting tuples [ oldname, newname ]
+			  ATTable alias = mappings[i].base_asTable();
+			  aliasMap.put(alias.base_at(NATNumber.ONE).base_asSymbol(), alias.base_at(two).base_asSymbol());
+		  }
+		  
+		  return aliasMap;
+	}
+	
+	/**
+	 * Given a table of symbols, returns a hashset containing all the names.
+	 */
+	private static HashSet preprocessExcludes(ATTable exclusions) throws InterpreterException {
+		// make a copy of the default exclusion set such that the default set is not modified
+		HashSet exclude = (HashSet) OBJLexicalRoot.getDefaultExcludedSlots().clone();
+		  
+		// preprocess the exclusions
+		ATObject[] excludedNames = exclusions.asNativeTable().elements_;
+		for (int i = 0; i < excludedNames.length; i++) {
+		  // expecting symbols
+		  exclude.add(excludedNames[i].base_asSymbol());
+		}
+		  
+		return exclude;
+	}
+	
+	/**
+	 * Performs the actual copying of the slots from the source object to the importing object.
 	 * @param sourceObject the object that performed the import, lexically
 	 * @param ctx the runtime context during which the import is performed
 	 * @param aliases a mapping from old names (ATSymbol) to new names (ATSymbol)
+	 * @param exclude a set containing slot names (ATSymbol) to disregard
 	 */
-	private static ATObject performImport(ATObject sourceObject, ATContext ctx, Hashtable aliases) throws InterpreterException {
+	private static ATObject performImport(ATObject sourceObject, ATContext ctx,
+			                              Hashtable aliases, HashSet exclude) throws InterpreterException {
 		ATObject hostObject = ctx.base_getLexicalScope();
-
+		
 		// create call frame for this primitive method invocation by hand
 		NATCallframe thisScope = new NATCallframe(hostObject);
 		// add the parameter, it is used in the generated method
@@ -203,8 +271,8 @@ public final class OBJLexicalRoot extends NATByCopy {
 		ATField[] fields = NATObject.listTransitiveFields(sourceObject);
 		for (int i = 0; i < fields.length; i++) {
 			ATField field = fields[i];
-			// skip the 'super' field
-			if (!field.base_getName().equals(NATObject._SUPER_NAME_)) {
+			// skip excluded fields, such as the 'super' field
+			if (!exclude.contains(field.base_getName())) {
 				
 				// check whether the field needs to be aliased
 				alias = (ATSymbol) aliases.get(field.base_getName());
@@ -217,7 +285,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 					hostObject.meta_defineField(alias, field.base_readField());
 				} catch(XDuplicateSlot e) {
 					if (conflicts == null) {
-						conflicts = new Vector(2);
+						conflicts = new Vector(1);
 					}
 					conflicts.add(e.getSlotName());
 				}
@@ -229,14 +297,13 @@ public final class OBJLexicalRoot extends NATByCopy {
 		for (int i = 0; i < methods.length; i++) {
 			ATSymbol origMethodName = methods[i].base_getName();
 
-			// filter out primitive methods like '==', 'new' and 'init
-			if (NATObject.isPrimitive(origMethodName)) {
+			// filter out exluded methods, such as primitive methods like '==', 'new' and 'init'
+			if (exclude.contains(origMethodName)) {
 				// if these primitives would not be filtered out, they would override
 				// the primitives of the host object, which is usually unwanted and could
 				// lead to subtle bugs w.r.t. comparison and instance creation.
 				continue;
-			}
-			
+			}	
 			// check whether the method needs to be aliased
 			alias = (ATSymbol) aliases.get(origMethodName);
 			if (alias == null) {
@@ -281,7 +348,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 				}
 			} catch(XDuplicateSlot e) {
 				if (conflicts == null) {
-					conflicts = new Vector(2);
+					conflicts = new Vector(1);
 				}
 				conflicts.add(e.getSlotName());
 			}
@@ -306,6 +373,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 			root.meta_addMethod(_PRIM_IMPORT_);
 			// add import:alias: native
 			root.meta_addMethod(_PRIM_IMPORT_ALIAS_);
+			// add import:exclude: native
+			root.meta_addMethod(_PRIM_IMPORT_EXCLUDE_);
+			// add import:alias:exclude: native
+			root.meta_addMethod(_PRIM_IMPORT_ALIAS_EXCLUDE_);
 		} catch (InterpreterException e) {
 			Logging.Init_LOG.fatal("Failed to initialize the root!", e);
 		}

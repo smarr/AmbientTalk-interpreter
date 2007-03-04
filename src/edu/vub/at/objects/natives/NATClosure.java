@@ -73,7 +73,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 	
 	public NATClosure(ATMethod method, ATContext context) {
 		method_	= method;
-		context_	= context;
+		context_ = context;
 	}
 
 	/**

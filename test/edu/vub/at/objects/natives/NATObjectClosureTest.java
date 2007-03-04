@@ -31,7 +31,6 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
-import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;

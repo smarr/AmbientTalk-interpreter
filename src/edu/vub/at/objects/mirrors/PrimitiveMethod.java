@@ -81,7 +81,7 @@ public abstract class PrimitiveMethod extends NATByCopy implements ATMethod {
 	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
 		return base_apply(arguments, ctx);
 	}
-
+	
 	public ATMethod base_asMethod() throws XTypeMismatch {
 		return this;
 	}

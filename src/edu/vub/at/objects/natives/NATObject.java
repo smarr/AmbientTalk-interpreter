@@ -446,7 +446,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		} else {
 			return meta_getDynamicParent().meta_select(receiver, selector);
 		}
-	} 
+	}
 	
 	/**
 	 * This method corresponds to code of the form ( x ) within the scope of this 
@@ -477,8 +477,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			//  mth = the method found in this object
 			//  ctx.scope = the implementing scope, being this object
 			//  ctx.self  = the receiver, being in this case again the implementor
-			//  ctx.super = the parent of the implementor
-			return new NATClosure(this.getLocalMethod(selector), this, this);
+			return new NATClosure(this.getLocalMethod(selector),this, this);
 		} else {
 			return lexicalParent_.meta_lookup(selector);
 		}

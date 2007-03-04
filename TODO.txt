@@ -212,7 +212,7 @@ Meta-circular AmbientTalk:
 Related to a proper meta-circular implementation of AmbientTalk is to allow as much custom AT objects in
 place of implementation-level objects. That is, we should remove as much .asNative...() casts from the code
 as possible. Each such cast precludes use of custom AT objects. Sometimes, the casting is inevitable (e.g. 1+2),
-sometimes, it is. E.g.: rather than casting an ATObject to a NATTable and looping over its elements_, one could write:
+sometimes, it is not. E.g.: rather than casting an ATObject to a NATTable and looping over its elements_, one could write:
 if (obj instanceof NATTable) {
   // perform immediate native behaviour
   // loop over ((NATTable) obj).elements_ with for loop

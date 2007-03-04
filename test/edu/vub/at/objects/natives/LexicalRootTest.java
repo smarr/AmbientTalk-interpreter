@@ -141,11 +141,44 @@ public class LexicalRootTest extends AmbientTalkTest {
 		NATObject host = new NATObject();
 		AGSymbol foo = AGSymbol.jAlloc("foo");
 		NATTable alias = NATTable.of(atM_.base__opmns__opgtx_(foo)); // alias = [ `m -> `foo ]
-		// < import: trait alias: [ `m -> `foo > . eval(ctx[lex=host;self=host])
+		// < import: trait alias: [ `m -> `foo ]> . eval(ctx[lex=host;self=host])
 		OBJLexicalRoot._PRIM_IMPORT_ALIAS_.base_apply(NATTable.of(trait_,alias), new NATContext(host, host));
 		
 		// check whether m() can be invoked as foo()
 		assertTrue(host.meta_respondsTo(foo).asNativeBoolean().javaValue);
 		assertEquals(host, host.meta_invoke(host, foo, NATTable.EMPTY));
+	}
+	
+	/**
+	 * Tests whether exclusion works properly.
+	 */
+	public void testImportAndExclusion() throws InterpreterException {
+		NATObject host = new NATObject();
+		NATTable exclude = NATTable.of(atN_);
+		// < import: trait exclude: [ `n ] > . eval(ctx[lex=host;self=host])
+		OBJLexicalRoot._PRIM_IMPORT_EXCLUDE_.base_apply(NATTable.of(trait_,exclude), new NATContext(host, host));
+		
+		// check whether m is present and n is not present
+		assertTrue(host.meta_respondsTo(atM_).asNativeBoolean().javaValue);
+		assertFalse(host.meta_respondsTo(atN_).asNativeBoolean().javaValue);
+	}
+	
+	/**
+	 * Tests whether aliasing and exclusion work properly together.
+	 */
+	public void testImportAndAliasingAndExclusion() throws InterpreterException {
+		NATObject host = new NATObject();
+		AGSymbol foo = AGSymbol.jAlloc("foo");
+		NATTable alias = NATTable.of(atM_.base__opmns__opgtx_(foo)); // alias = [ `m -> `foo ]
+		NATTable exclude = NATTable.of(atN_);
+		// < import: trait alias: [ `m -> `foo ] exclude: [ `n ]> . eval(ctx[lex=host;self=host])
+		OBJLexicalRoot._PRIM_IMPORT_ALIAS_EXCLUDE_.base_apply(NATTable.of(trait_,alias,exclude), new NATContext(host, host));
+		
+		// check whether m() can be invoked as foo()
+		assertTrue(host.meta_respondsTo(foo).asNativeBoolean().javaValue);
+		assertEquals(host, host.meta_invoke(host, foo, NATTable.EMPTY));
+		
+		// check whether n is not present
+		assertFalse(host.meta_respondsTo(atN_).asNativeBoolean().javaValue);
 	}
 }

@@ -35,8 +35,6 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATDefExternalField;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATClosureMethod;
-import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATText;
 
 /**

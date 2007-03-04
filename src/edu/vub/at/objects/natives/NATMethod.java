@@ -113,7 +113,7 @@ public class NATMethod extends NATByCopy implements ATMethod {
 		PartialBinder.defineParamsForArgs(parameterBindingFunction_, ctx, arguments);
 		return body_.meta_eval(ctx);
 	}
-	
+
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<method:"+name_.meta_print().javaValue+">");
 	}
