@@ -40,6 +40,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 
 import java.util.Iterator;
@@ -247,16 +248,19 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		try {
 			
 			Vector events = (Vector)eventVectorF.get();
+			ATObject[] messages = new ATObject[events.size()];
 			
 			for(int i = 0; i < events.size(); i++) {
 				TransmissionEvent current = (TransmissionEvent)events.get(i);
-				events.set(i, current.serializedMessage_.unpack());
+				messages[i] = current.serializedMessage_.unpack();
 			}
 			
-			return NATTable.atValue((ATObject[])events.toArray());
+			return NATTable.atValue(messages);
 
 		} catch (Exception e) {
-			throw (InterpreterException) e;
+			e.printStackTrace();
+			//throw (InterpreterException) e;
+			return NATTable.EMPTY;
 		}
 	}
 	
