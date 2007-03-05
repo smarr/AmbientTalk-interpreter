@@ -335,8 +335,95 @@ public class DistributionTest extends TestCase {
 			fail("Reconnection observer has failed to trigger within " + _TIMEOUT_ /1000 + " sec.");
 	
 	}
-	
 
+	public synchronized void testRetract() throws Exception {
+		
+		final ELActor provider = setUpActor(virtual1_);
+		final ELActor subscriber = setUpActor(virtual2_);
+		
+		// We define a closure to inform us the test succeeded
+		setUpSuccessTrigger(subscriber);
+		
+		subscriber.sync_event_eval(
+				NATParser.parse(
+						"DistributionTest#testRetract()",
+						"def messages := nil;" +
+						"def far := nil;" +
+						"defstripe Service; \n" +
+						"when: Service discovered: { | ref | \n" +
+						"  far := ref; \n" +
+						"  when: ref disconnected: { \n" +
+						"    messages := retract: ref; \n" +
+						"    success(); \n" +
+						"  }; \n" +
+						"  success(); " +
+						"} \n;"));
+		
+		provider.sync_event_eval(
+				NATParser.parse(
+						"DistributionTest#testRetract()",
+						"defstripe Service; \n" +
+						"export: (object: { def inc(num) { num + 1; }; }) as: Service"));
+		
+		virtual1_.event_goOnline();
+		virtual2_.event_goOnline();
+		
+		try {
+			this.wait( _TIMEOUT_ );
+		} catch (InterruptedException e) {};
+		
+		// reset the test condition
+		setTestResult(false);
+		
+		// Spawn a new thread to allow the disconnection of the provider to be in 
+		// parallel with the sending of messages by the subscriber
+		Thread sender = new Thread() {
+			public void run() {
+				try {
+					subscriber.sync_event_eval(
+							NATParser.parse(
+									"DistributionTest#testRetract()",
+									"1.to: 5 do: { | i | \n" +
+									"  far<-inc(i); \n" +
+									"}; \n" +
+									// Stop waiting after five messages were scheduled to ensure
+									// some messages may still be in the outbox
+									"success(); \n"+
+									"6.to: 10 do: { | i | \n" +
+									"  far<-inc(i); \n" +
+									"}; \n"));
+				} catch (InterpreterException e) {
+					e.printStackTrace();
+					fail("exception: " + e);
+				}
+			};
+		};
+		
+		sender.start();
+		
+		// wait till some messages were sent
+		try {
+			this.wait( _TIMEOUT_ );
+		} catch (InterruptedException e) {};
+		
+		virtual1_.event_goOffline();
+		
+		// wait till disconnection event was processed
+		try {
+			this.wait( _TIMEOUT_ );
+		} catch (InterruptedException e) {};
+		
+		// ELActor must not be busy while retracting the messages
+		sender.join();
+		
+		ATObject messages = subscriber.sync_event_eval(
+				NATParser.parse(
+						"DistributionTest#testRetract()",
+						"messages"));
+		
+		
+	}
+	
 	public void notestSimple() {
 		try {
 			ELActor alice = setUpActor(virtual1_);
