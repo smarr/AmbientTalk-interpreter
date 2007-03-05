@@ -179,6 +179,10 @@ public class NATMirage extends NATObject {
 		return super.meta_print();
 	}
 
+	public ATObject magic_receive(ATAsyncMessage message) throws InterpreterException {
+		return super.meta_receive(message);
+	}
+
 	public ATBoolean magic_respondsTo(ATSymbol selector) throws InterpreterException {
 		return super.meta_respondsTo(selector);
 	}
@@ -353,6 +357,13 @@ public class NATMirage extends NATObject {
 					)).asNativeText();
 	}
 
+	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
+		return Reflection.downObject(mirror_.meta_invoke(
+				mirror_,
+				AGSymbol.jAlloc("receive"),
+				NATTable.atValue(new ATObject[] { message })));
+	}
+	
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
