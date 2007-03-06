@@ -27,23 +27,27 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Vector;
+
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-
-import java.util.LinkedList;
-import java.util.Vector;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * <p>NATIntercessiveMirror extends the default NATIntrospectiveMirror to also allow 
@@ -61,6 +65,8 @@ import java.util.Vector;
  */
 public class NATIntercessiveMirror extends NATObject implements ATMirror {
 
+	private static final AGSymbol _SYM_BASE_ = AGSymbol.jAlloc("base");
+	
 	protected NATMirage principal_;
 	
 	/**
@@ -99,13 +105,35 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 			         NATMirage base) throws InterpreterException {
 		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
 		principal_ = base;
-
+		
 	}
 	
 	/* -----------------------
 	 * -- ATMirror Protocol --
 	 * ----------------------- */
 
+//	// Initialises the base field for users of the mirror
+//	private void initBaseField() {
+//		try {
+//			meta_addField(new NativeField(
+//					this,
+//					AGSymbol.jAlloc("base"),
+//					NATIntercessiveMirror.class.getDeclaredMethod(
+//							"base_getBase",
+//							new Class[0]),
+//					null));
+//		} catch (InterpreterException e) {
+//			// This should not happen as mmeta_addField is natively implemented
+//			throw new RuntimeException("Initialisation of base field in an intercessive mirror failed.", e);
+//		} catch (SecurityException e) {
+//			// This should not happen as the method is public and thus visible
+//			throw new RuntimeException("Initialisation of base field in an intercessive mirror failed.", e);
+//		} catch (NoSuchMethodException e) {
+//			// This should not happen as the method exists
+//			throw new RuntimeException("Initialisation of base field in an intercessive mirror failed.", e);
+//		}
+//	}
+	
 	public ATObject base_getBase() { return principal_; }
 
 	// not a base_ method => not exposed to the ambienttalk programmer.
@@ -119,6 +147,32 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	
 	/** @return this */
 	public ATMirror base_asMirror() { return this; }
+	
+	/*
+	 * TODO: refactor the intercepting methods using custom fields. Unfortunately they need to be initialised in places other than
+	 * the constructors, apparently. One problem is that the custom field is not rebound on cloning implkying that the base mirage
+	 * is always the empty one created implicitly when using the mirror constructor
+	 */
+	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
+		if (selector == _SYM_BASE_) {
+			return principal_;
+		} else {
+			return super.meta_lookup(selector);
+		}
+	}
+	
+	/*
+	 * TODO: refactor the intercepting methods using custom fields. Unfortunately they need to be initialised in places other than
+	 * the constructors, apparently. One problem is that the custom field is not rebound on cloning implkying that the base mirage
+	 * is always the empty one created implicitly when using the mirror constructor
+	 */
+	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
+		if (selector == _SYM_BASE_) {
+			return principal_;
+		} else {
+			return super.meta_select(receiver, selector);
+		}
+	}
 	
 	public ATObject meta_clone() throws InterpreterException {
 		NATIntercessiveMirror clone = magic_clone();
