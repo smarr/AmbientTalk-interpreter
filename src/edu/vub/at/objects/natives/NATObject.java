@@ -482,21 +482,6 @@ public class NATObject extends NATCallframe implements ATObject {
 			return lexicalParent_.meta_lookup(selector);
 		}
 	}
-
-	/**
-	 * When a new field is added to an object, it is important to check whether or not
-	 * the field map is shared between clones or not. If it is shared, the map must be cloned first.
-	 * @throws InterpreterException 
-	 */
-	public ATNil meta_addField(ATField field) throws InterpreterException {
-		if (this.isFlagSet(_SHARE_MAP_FLAG_)) {
-			// copy the variable map
-			variableMap_ = variableMap_.copy();
-			// set the 'shares map' flag to false
-			unsetFlag(_SHARE_MAP_FLAG_);
-		}
-		return super.meta_addField(field);
-	}
 	
 	/**
 	 * When a new field is defined in an object, it is important to check whether or not
