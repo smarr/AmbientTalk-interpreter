@@ -258,6 +258,13 @@ public class NATMirage extends NATObject {
 		return super.meta_getStripes();
 	}
 
+	public ATBoolean magic_isCloneOf(ATObject original) throws InterpreterException {
+		return super.meta_isCloneOf(original);
+	}
+
+	public ATBoolean magic_isRelatedTo(ATObject object) throws InterpreterException {
+		return super.meta_isRelatedTo(object);
+	}
 	
 	// META Methods 
 	// Forward to our designated mirror object
@@ -312,7 +319,7 @@ public class NATMirage extends NATObject {
 	public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
-				AGSymbol.jAlloc("getMethod"),
+				AGSymbol.jAlloc("grabMethod"),
 				NATTable.atValue(new ATObject[] { selector })
 				)).base_asMethod();
 	}
@@ -423,7 +430,7 @@ public class NATMirage extends NATObject {
 	public ATField meta_grabField(ATSymbol selector) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
-				AGSymbol.jAlloc("getField"),
+				AGSymbol.jAlloc("grabField"),
 				NATTable.atValue(new ATObject[] { selector })
 		)).base_asField();
 	}
@@ -499,6 +506,22 @@ public class NATMirage extends NATObject {
 				AGSymbol.jAlloc("stripes"))).base_asTable();
     }
 	
+	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
+		return Reflection.downObject(mirror_.meta_invoke(
+				mirror_,
+				AGSymbol.jAlloc("isCloneOf"),
+				NATTable.atValue(new ATObject[] { original })
+				)).base_asBoolean();
+	}
+
+	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
+		return Reflection.downObject(mirror_.meta_invoke(
+				mirror_,
+				AGSymbol.jAlloc("isRelatedTo"),
+				NATTable.atValue(new ATObject[] { object })
+				)).base_asBoolean();
+	}
+
 	public boolean base_isMirror() {
 		return false;
 	}
