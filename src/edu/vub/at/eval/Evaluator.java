@@ -411,7 +411,6 @@ public final class Evaluator {
 	 */
 	private static NATObject createGlobalLexicalScope() {
 		NATObject root = new NATObject(OBJLexicalRoot._INSTANCE_);
-		OBJLexicalRoot.initializeRoot(root);
 		return root;
 	}
 	

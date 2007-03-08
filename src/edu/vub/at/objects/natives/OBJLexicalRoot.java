@@ -110,7 +110,16 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * -- Primitive Methods --
 	 * ----------------------- */
 	
+	/* ===============================================================================
+	 * NOTE: the code below has been replaced by dedicated syntax and AST elements.
+	 * However, the skeleton of this code may still prove useful in the future, if
+	 * we ever plan to implement all base_ native methods as true AmbientTalk methods
+	 * (i.e. as PrimitiveMethod instances).
+	 * ===============================================================================
+	 */
 	
+	
+	/*
 	private static final AGSymbol _IMPORT_NAME_ = AGSymbol.jAlloc("import:");
 	private static final AGSymbol _IMPORT_ALIAS_NAME_ = AGSymbol.jAlloc("import:alias:");
 	private static final AGSymbol _IMPORT_EXCLUDE_NAME_ = AGSymbol.jAlloc("import:exclude:");
@@ -119,74 +128,42 @@ public final class OBJLexicalRoot extends NATByCopy {
 	private static final AGSymbol _SRC_PARAM_ = AGSymbol.jAlloc("sourceObject");
 	private static final AGSymbol _ALIAS_PARAM_ = AGSymbol.jAlloc("aliases");
 	private static final AGSymbol _EXCLUDE_PARAM_ = AGSymbol.jAlloc("exclude");
+	*/
 	
-	/**
-	 * Imports fields and methods from a given source object. This operation is very
-	 * akin to a class using a trait. For each field in the trait, a new field
-	 * is created in the importing 'host' object. For each method in the trait, a method
-	 * is added to the host object whose body consists of delegating the message
-	 * to the trait object.
-	 * 
-	 * The purpose of import: is to:
-	 *  - be able to reuse the interface of an existing object (examples are
-	 *    traits or 'mixins' such as Enumerable, Comparable, Observable, ...)
-	 *  - be able to access the interface of an existing object without having
-	 *    to qualify access. This is especially useful when applied to namespace
-	 *    objects. E.g. 'import: at.collections' allows the importer to subsequently
-	 *    write Vector.new() rather than at.collections.Vector.new()
-	 * 
-	 * def import: sourceObject {
-	 *   def newHost := thisContext.lexicalScope;
-	 *   def allFields := (reflect: sourceObject).listFields().base;
-	 *   def allMethods := (reflect: sourceObject).listMethods().base;
-	 *   allFields.each: { |field|
-	 *     (reflect: newHost).addField(field)
-	 *   }
-	 *   allMethods.each: { |method|
-	 *     (reflect: newHost).addMethod(aliasFor(method.name), `[@args],
-	 *       `#sourceObject^#(method.name)(@args))
-	 *   }
-	 *   nil
-	 * }
-	 * 
-	 * All duplicate slot exceptions, which signify that an imported method or field already
-	 * exists, are caught during import. These exceptions are bundled into an XImportConflict
-	 * exception, which can be inspected by the caller to detect the conflicting, unimported,
-	 * fields or methods.
-	 */
-	protected static final PrimitiveMethod _PRIM_IMPORT_ = new PrimitiveMethod(_IMPORT_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_ })) {
+	
+	/*protected static final PrimitiveMethod _PRIM_IMPORT_ = new PrimitiveMethod(_IMPORT_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_ })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			  ATObject sourceObject = arguments.base_at(NATNumber.ONE);
 			  return performImport(sourceObject, ctx, new Hashtable(), OBJLexicalRoot.getDefaultExcludedSlots());
 		}
-	};
+	};*/
 	
 	/**
 	 * def import: sourceObject alias: [ `oldname -> `newname , ... ]
 	 */
-	protected static final PrimitiveMethod _PRIM_IMPORT_ALIAS_ = new PrimitiveMethod(_IMPORT_ALIAS_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_, _ALIAS_PARAM_ })) {
+	/*protected static final PrimitiveMethod _PRIM_IMPORT_ALIAS_ = new PrimitiveMethod(_IMPORT_ALIAS_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_, _ALIAS_PARAM_ })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			  ATObject sourceObject = arguments.base_at(NATNumber.ONE);
 			  ATObject aliases = arguments.base_at(NATNumber.atValue(2));
 			  return performImport(sourceObject, ctx, preprocessAliases(aliases.base_asTable()), OBJLexicalRoot.getDefaultExcludedSlots());
 		}
-	};
+	};*/
 	
 	/**
 	 * def import: sourceObject excludes: [ `name1, `name2, ... ]
 	 */
-	protected static final PrimitiveMethod _PRIM_IMPORT_EXCLUDE_ = new PrimitiveMethod(_IMPORT_EXCLUDE_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_, _EXCLUDE_PARAM_ })) {
+	/*protected static final PrimitiveMethod _PRIM_IMPORT_EXCLUDE_ = new PrimitiveMethod(_IMPORT_EXCLUDE_NAME_, NATTable.atValue(new ATObject[] { _SRC_PARAM_, _EXCLUDE_PARAM_ })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			  ATObject sourceObject = arguments.base_at(NATNumber.ONE);
 			  ATObject exclusions = arguments.base_at(NATNumber.atValue(2));
 			  return performImport(sourceObject, ctx, new Hashtable(), preprocessExcludes(exclusions.base_asTable()));
 		}
-	};
+	};*/
 	
 	/**
 	 * def import: sourceObject alias: [ `oldname -> `newname, ... ] excludes: [ `name1, `name2, ... ]
 	 */
-	protected static final PrimitiveMethod _PRIM_IMPORT_ALIAS_EXCLUDE_ = new PrimitiveMethod(_IMPORT_ALIAS_EXCLUDE_NAME_,
+	/*protected static final PrimitiveMethod _PRIM_IMPORT_ALIAS_EXCLUDE_ = new PrimitiveMethod(_IMPORT_ALIAS_EXCLUDE_NAME_,
 			                                                                                 NATTable.atValue(new ATObject[] { _SRC_PARAM_, _ALIAS_PARAM_, _EXCLUDE_PARAM_ })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			  ATObject sourceObject = arguments.base_at(NATNumber.ONE);
@@ -194,181 +171,14 @@ public final class OBJLexicalRoot extends NATByCopy {
 			  ATObject exclusions = arguments.base_at(NATNumber.atValue(3));
 			  return performImport(sourceObject, ctx, preprocessAliases(aliases.base_asTable()), preprocessExcludes(exclusions.base_asTable()));
 		}
-	};
-
-	private static HashSet _DEFAULT_EXCLUDED_SLOTS_;
-	private static HashSet getDefaultExcludedSlots() {
-		if (_DEFAULT_EXCLUDED_SLOTS_ == null) {
-			_DEFAULT_EXCLUDED_SLOTS_ = new HashSet();
-			  // prepare the default names to exclude
-			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._SUPER_NAME_); // skip 'super', present in all objects
-			_DEFAULT_EXCLUDED_SLOTS_.add(Evaluator._CURNS_SYM_); // sip '~', present in all namespaces
-			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._EQL_NAME_); // skip '==', present in all objects
-			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._INI_NAME_); // skip 'init', present in all objects
-			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._NEW_NAME_); // skip 'new', present in all objects
-		}
-		return _DEFAULT_EXCLUDED_SLOTS_;
-	}
-	
-	/**
-	 * Given a table of tables, of the form [ [oldname, newname], ... ], returns a hashtable
-	 * mapping the old names to the new names.
-	 */
-	private static Hashtable preprocessAliases(ATTable aliases) throws InterpreterException {
-		  Hashtable aliasMap = new Hashtable();
-		  NATNumber two = NATNumber.atValue(2);
-		  
-		  // preprocess the aliases
-		  ATObject[] mappings = aliases.asNativeTable().elements_;
-		  for (int i = 0; i < mappings.length; i++) {
-			  // expecting tuples [ oldname, newname ]
-			  ATTable alias = mappings[i].base_asTable();
-			  aliasMap.put(alias.base_at(NATNumber.ONE).base_asSymbol(), alias.base_at(two).base_asSymbol());
-		  }
-		  
-		  return aliasMap;
-	}
-	
-	/**
-	 * Given a table of symbols, returns a hashset containing all the names.
-	 */
-	private static HashSet preprocessExcludes(ATTable exclusions) throws InterpreterException {
-		// make a copy of the default exclusion set such that the default set is not modified
-		HashSet exclude = (HashSet) OBJLexicalRoot.getDefaultExcludedSlots().clone();
-		  
-		// preprocess the exclusions
-		ATObject[] excludedNames = exclusions.asNativeTable().elements_;
-		for (int i = 0; i < excludedNames.length; i++) {
-		  // expecting symbols
-		  exclude.add(excludedNames[i].base_asSymbol());
-		}
-		  
-		return exclude;
-	}
-	
-	/**
-	 * Performs the actual copying of the slots from the source object to the importing object.
-	 * @param sourceObject the object that performed the import, lexically
-	 * @param ctx the runtime context during which the import is performed
-	 * @param aliases a mapping from old names (ATSymbol) to new names (ATSymbol)
-	 * @param exclude a set containing slot names (ATSymbol) to disregard
-	 */
-	private static ATObject performImport(ATObject sourceObject, ATContext ctx,
-			                              Hashtable aliases, HashSet exclude) throws InterpreterException {
-		ATObject hostObject = ctx.base_getLexicalScope();
-		
-		// create call frame for this primitive method invocation by hand
-		NATCallframe thisScope = new NATCallframe(hostObject);
-		// add the parameter, it is used in the generated method
-		thisScope.meta_defineField(_SRC_PARAM_, sourceObject);
-
-		// stores all conflicting symbols, initialized lazily
-		Vector conflicts = null;
-
-		// the alias to be used for defining the new fields or methods
-		ATSymbol alias;
-		
-		// define the aliased fields
-		ATField[] fields = NATObject.listTransitiveFields(sourceObject);
-		for (int i = 0; i < fields.length; i++) {
-			ATField field = fields[i];
-			// skip excluded fields, such as the 'super' field
-			if (!exclude.contains(field.base_getName())) {
-				
-				// check whether the field needs to be aliased
-				alias = (ATSymbol) aliases.get(field.base_getName());
-				if (alias == null) {
-					// no alias, use the original name
-					alias = field.base_getName();
-				}
-				
-				try {
-					hostObject.meta_defineField(alias, field.base_readField());
-				} catch(XDuplicateSlot e) {
-					if (conflicts == null) {
-						conflicts = new Vector(1);
-					}
-					conflicts.add(e.getSlotName());
-				}
-			}
-		}
-
-		// define the delegate methods
-		ATMethod[] methods = NATObject.listTransitiveMethods(sourceObject);
-		for (int i = 0; i < methods.length; i++) {
-			ATSymbol origMethodName = methods[i].base_getName();
-
-			// filter out exluded methods, such as primitive methods like '==', 'new' and 'init'
-			if (exclude.contains(origMethodName)) {
-				// if these primitives would not be filtered out, they would override
-				// the primitives of the host object, which is usually unwanted and could
-				// lead to subtle bugs w.r.t. comparison and instance creation.
-				continue;
-			}	
-			// check whether the method needs to be aliased
-			alias = (ATSymbol) aliases.get(origMethodName);
-			if (alias == null) {
-				// no alias, use the original name
-				alias = origMethodName;
-			}
-
-			ATMethod delegate = new NATMethod(alias, Evaluator._ANON_MTH_ARGS_,
-					new AGBegin(NATTable.of(
-							//sourceObject^origName(@args)
-							new AGMessageSend(_SRC_PARAM_,
-									new AGDelegationCreation(origMethodName,
-											Evaluator._ANON_MTH_ARGS_)))));
-
-			/*
-			 * Notice that the body of the delegate method is
-			 *   sourceObject^selector@args)
-			 * 
-			 * In order for this code to evaluate when the method is actually invoked
-			 * on the new host object, the symbol `sourceObject should evaluate to the
-			 * object contained in the variable sourceObject.
-			 * 
-			 * To ensure this binding is correct at runtime, delegate methods are
-			 * added to objects as external methods whose lexical scope is the call
-			 * frame of this method invocation The delegate methods are not added as closures,
-			 * as a closure would fix the value of 'self' too early.
-			 * 
-			 * When importing into a call frame, care must be taken that imported delegate
-			 * methods are added as closures, because call frames cannot contain methods.
-			 * In this case, the delegate is wrapped in a closure whose lexical scope is again
-			 * the call frame of this primitive method invocation. The value of self is fixed
-			 * to the current value, but this is OK given that the method is added to a call frame
-			 * which is 'selfless'.
-			 */
-
-			try {
-				if (hostObject.base_isCallFrame()) {
-					NATClosure clo = new NATClosure(delegate, ctx.base_withLexicalEnvironment(thisScope));
-					hostObject.meta_defineField(origMethodName, clo);
-				} else {
-					hostObject.meta_addMethod(new NATClosureMethod(thisScope, delegate));
-				}
-			} catch(XDuplicateSlot e) {
-				if (conflicts == null) {
-					conflicts = new Vector(1);
-				}
-				conflicts.add(e.getSlotName());
-			}
-		}
-
-		if (conflicts == null) {
-			// no conflicts found
-			return NATNil._INSTANCE_;
-		} else {
-			throw new XImportConflict((ATSymbol[]) conflicts.toArray(new ATSymbol[conflicts.size()]));
-		}
-	}
+	};*/
 	
 	/**
 	 * Invoked whenever a new true AmbientTalk object is created that should
 	 * represent the root. This gives the lexical root a chance to install its
 	 * primitive methods.
 	 */
-	public static void initializeRoot(NATObject root) {
+	/*public static void initializeRoot(NATObject root) {
 		try {
 			// add import: native
 			root.meta_addMethod(_PRIM_IMPORT_);
@@ -381,7 +191,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 		} catch (InterpreterException e) {
 			Logging.Init_LOG.fatal("Failed to initialize the root!", e);
 		}
-	}
+	}*/
 	
 	/* ----------------------
 	 * -- Global variables --

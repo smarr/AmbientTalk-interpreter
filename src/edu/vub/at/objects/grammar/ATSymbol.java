@@ -44,11 +44,4 @@ public interface ATSymbol extends ATExpression {
 	 */
 	public ATText base_getText() throws InterpreterException;
 	
-	/**
-	 * Used during import: declarations to conveniently denote
-	 * aliases for names.
-	 * `a -> `b is equivalent to [ `a, `b ]
-	 */
-	public ATTable base__opmns__opgtx_(ATObject obj) throws InterpreterException;
-	
 }

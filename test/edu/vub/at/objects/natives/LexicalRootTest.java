@@ -5,6 +5,7 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XImportConflict;
 import edu.vub.at.objects.natives.grammar.AGBegin;
+import edu.vub.at.objects.natives.grammar.AGImport;
 import edu.vub.at.objects.natives.grammar.AGSelf;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -69,8 +70,8 @@ public class LexicalRootTest extends AmbientTalkTest {
 		host.meta_addMethod(new NATMethod(atTest, NATTable.EMPTY,
 				                  new AGBegin(NATTable.of(atX_))));
 		
-		// < import: trait > . eval(ctx[lex=host;self=host])
-		OBJLexicalRoot._PRIM_IMPORT_.base_apply(NATTable.of(trait_), new NATContext(host, host));
+		// < import trait > . eval(ctx[lex=host;self=host])
+		new AGImport(trait_, NATTable.EMPTY, NATTable.EMPTY).meta_eval(new NATContext(host, host));
 		
 		// check whether host contains the appropriate fields and methods of the traits
 		assertTrue(host.meta_respondsTo(atX_).asNativeBoolean().javaValue);
@@ -111,8 +112,8 @@ public class LexicalRootTest extends AmbientTalkTest {
 		host.meta_defineField(atX_, NATNumber.ONE);
 		
 		try {
-			// < import: trait > . eval(ctx[lex=host;self=host])
-			OBJLexicalRoot._PRIM_IMPORT_.base_apply(NATTable.of(trait_), new NATContext(host, host));
+			// < import trait > . eval(ctx[lex=host;self=host])
+			new AGImport(trait_, NATTable.EMPTY, NATTable.EMPTY).meta_eval(new NATContext(host, host));
 			fail("Expected an XImportConflict exception");
 		} catch (XImportConflict e) {
 			assertEquals(atX_, e.getConflictingNames().base_at(NATNumber.ONE));
@@ -125,10 +126,10 @@ public class LexicalRootTest extends AmbientTalkTest {
 	public void testTransitiveImport() throws InterpreterException {
 		NATObject hostA = new NATObject();
 		NATObject hostB = new NATObject();
-		// < import: trait > . eval(ctx[lex=hostA;self=hostA])
-		OBJLexicalRoot._PRIM_IMPORT_.base_apply(NATTable.of(trait_), new NATContext(hostA, hostA));
-		// < import: trait > . eval(ctx[lex=hostB;self=hostB])
-		OBJLexicalRoot._PRIM_IMPORT_.base_apply(NATTable.of(trait_), new NATContext(hostB, hostB));
+		// < import trait > . eval(ctx[lex=hostA;self=hostA])
+		new AGImport(trait_, NATTable.EMPTY, NATTable.EMPTY).meta_eval(new NATContext(hostA, hostA));
+		// < import trait > . eval(ctx[lex=hostB;self=hostB])
+		new AGImport(trait_, NATTable.EMPTY, NATTable.EMPTY).meta_eval(new NATContext(hostB, hostB));
 		
 		// check whether m() can be invoked from hostB and that self equals hostB
 		assertEquals(hostB, hostB.meta_invoke(hostB, atM_, NATTable.EMPTY));
@@ -140,9 +141,9 @@ public class LexicalRootTest extends AmbientTalkTest {
 	public void testImportAndAliasing() throws InterpreterException {
 		NATObject host = new NATObject();
 		AGSymbol foo = AGSymbol.jAlloc("foo");
-		NATTable alias = NATTable.of(atM_.base__opmns__opgtx_(foo)); // alias = [ `m -> `foo ]
-		// < import: trait alias: [ `m -> `foo ]> . eval(ctx[lex=host;self=host])
-		OBJLexicalRoot._PRIM_IMPORT_ALIAS_.base_apply(NATTable.of(trait_,alias), new NATContext(host, host));
+		NATTable alias = NATTable.of(NATTable.of(atM_, foo)); // [[m,foo]]
+		// < import trait alias m := foo > . eval(ctx[lex=host;self=host])
+		new AGImport(trait_, alias, NATTable.EMPTY).meta_eval(new NATContext(host, host));
 		
 		// check whether m() can be invoked as foo()
 		assertTrue(host.meta_respondsTo(foo).asNativeBoolean().javaValue);
@@ -155,8 +156,8 @@ public class LexicalRootTest extends AmbientTalkTest {
 	public void testImportAndExclusion() throws InterpreterException {
 		NATObject host = new NATObject();
 		NATTable exclude = NATTable.of(atN_);
-		// < import: trait exclude: [ `n ] > . eval(ctx[lex=host;self=host])
-		OBJLexicalRoot._PRIM_IMPORT_EXCLUDE_.base_apply(NATTable.of(trait_,exclude), new NATContext(host, host));
+		// < import trait exclude n > . eval(ctx[lex=host;self=host])
+		new AGImport(trait_, NATTable.EMPTY, exclude).meta_eval(new NATContext(host, host));
 		
 		// check whether m is present and n is not present
 		assertTrue(host.meta_respondsTo(atM_).asNativeBoolean().javaValue);
@@ -169,10 +170,10 @@ public class LexicalRootTest extends AmbientTalkTest {
 	public void testImportAndAliasingAndExclusion() throws InterpreterException {
 		NATObject host = new NATObject();
 		AGSymbol foo = AGSymbol.jAlloc("foo");
-		NATTable alias = NATTable.of(atM_.base__opmns__opgtx_(foo)); // alias = [ `m -> `foo ]
+		NATTable alias = NATTable.of(NATTable.of(atM_, foo)); // [[m,foo]]
 		NATTable exclude = NATTable.of(atN_);
-		// < import: trait alias: [ `m -> `foo ] exclude: [ `n ]> . eval(ctx[lex=host;self=host])
-		OBJLexicalRoot._PRIM_IMPORT_ALIAS_EXCLUDE_.base_apply(NATTable.of(trait_,alias,exclude), new NATContext(host, host));
+		// < import trait alias m := foo exclude n> . eval(ctx[lex=host;self=host])
+		new AGImport(trait_, alias, exclude).meta_eval(new NATContext(host, host));
 		
 		// check whether m() can be invoked as foo()
 		assertTrue(host.meta_respondsTo(foo).asNativeBoolean().javaValue);

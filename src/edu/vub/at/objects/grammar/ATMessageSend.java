@@ -30,13 +30,14 @@ package edu.vub.at.objects.grammar;
 import edu.vub.at.objects.ATNil;
 
 /**
- * @author tvc
- *
  * The public interface to a synchronous or asynchronous message send AG element.
  * 
  * Message sends of the form <o.m()> are transformed into <MESSAGE-SEND o <METHOD-INVOCATION m []>>
  * Message sends of the form <o<-m()> are transformed into <MESSAGE-SEND o <ASYNC-MESSAGE m []>>
- * Message sends of the form <o<+exp> are transformed into <MESSAGE-SEND o <EXPRESSION exp>> 
+ * Message sends of the form <o^m()> are transformed into <MESSAGE-SEND o <DELEGATION m []>>
+ * Message sends of the form <o<+exp> are transformed into <MESSAGE-SEND o <EXPRESSION exp>>
+ * 
+ * @author tvcutsem
  */
 public interface ATMessageSend extends ATExpression {
 

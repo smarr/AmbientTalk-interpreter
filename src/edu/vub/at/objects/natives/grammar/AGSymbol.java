@@ -72,10 +72,6 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	}
 	
 	public ATText base_getText() { return NATText.atValue(txt_); }
-
-	public ATTable base__opmns__opgtx_(ATObject obj) throws InterpreterException {
-		return NATTable.of(this, obj);
-	}
 	
 	/**
 	 * To evaluate a symbol reference, look up the symbol in the lexical scope.
