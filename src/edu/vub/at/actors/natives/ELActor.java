@@ -249,7 +249,7 @@ public class ELActor extends EventLoop {
 			public void process(Object myActorMirror) {
 				try {
 					ATAsyncMessage msg = serializedMessage.unpack().base_asAsyncMessage();
-					ATObject result = msg.base_process(mirror_);
+					ATObject result = msg.base_getReceiver().meta_receive(msg);
 					// TODO what to do with return value?
 					Logging.Actor_LOG.info(myActorMirror + ": "+this + " returned " + result);
 				} catch (InterpreterException e) {

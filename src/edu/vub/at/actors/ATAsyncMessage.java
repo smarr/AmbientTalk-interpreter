@@ -56,11 +56,12 @@ public interface ATAsyncMessage extends ATMessage {
     
     /**
      * This method is responsible for processing the message in a certain actor.
-     * By default, process dispatches to the actor by means of receive. In pseudo-code:
-     *  def process(act) {
-     *    (reflect: act).receive(self)
+     * By default, process invokes the method corresponding to its selector:
+     * 
+     *  def process(receiver) {
+     *    (reflect: receiver).invoke(receiver, self.selector, self.arguments)
      *  }
      */
-    public ATObject base_process(ATActorMirror inActor) throws InterpreterException;
+    public ATObject base_process(ATObject receiver) throws InterpreterException;
 
 }

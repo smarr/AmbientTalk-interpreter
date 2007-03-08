@@ -27,7 +27,6 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -76,8 +75,12 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     	return super.meta_select(this, _RECEIVER_);
     }
     
-    public ATObject base_process(ATActorMirror inActor) throws InterpreterException {
-    	return base_getReceiver().meta_receive(this);
+    /**
+     * The default implementation is to invoke the method corresponding to this message's selector.
+     */
+    public ATObject base_process(ATObject receiver) throws InterpreterException {
+    	// receiver is not necessarily equal to base_getReceiver() anymore
+    	return receiver.meta_invoke(receiver, this.base_getSelector(), this.base_getArguments());
     }
 
     /**

@@ -96,9 +96,13 @@ public class NATNil implements ATNil, Serializable {
     	return OBJLexicalRoot._INSTANCE_.base_getActor().base_send(message);
     }
 
+    /**
+     * By default, when an object receives an incoming asynchronous message, it tells
+     * the message to process itself. The message's default behaviour is to subsequently
+     * invoke the method corresponding to the message's selector on this object.
+     */
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
-    	ATObject rcvr = message.base_getReceiver();
-    	return rcvr.meta_invoke(rcvr, message.base_getSelector(), message.base_getArguments());
+    	return message.base_process(this);
     }
     
     /**
