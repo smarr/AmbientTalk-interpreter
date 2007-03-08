@@ -103,6 +103,22 @@ public abstract class AmbientTalkTest extends TestCase {
 		}
 	}
 	
+	public void evalAndThrowException(String input, Class interpreterExceptionClass) throws InterpreterException {
+        try {
+			ATAbstractGrammar ptree = 
+				NATParser._INSTANCE_.base_parse(NATText.atValue(input));
+			ptree.meta_eval(ctx_);
+			fail("Expected an exception of type " + Evaluator.getSimpleName(interpreterExceptionClass)); // test should throw an exception
+		} catch (InterpreterException ex) {
+			if (!interpreterExceptionClass.isInstance(ex)) {
+				ex.printStackTrace();
+				fail("Unexpected exception: "+ex.getMessage());
+			} else {
+				throw ex;
+			}
+		}
+	}
+	
 	public ATObject evalInActor(String input) {
         try {
 			ATAbstractGrammar ptree = 

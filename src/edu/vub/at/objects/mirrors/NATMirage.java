@@ -27,6 +27,9 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import java.util.LinkedList;
+import java.util.Vector;
+
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -49,9 +52,6 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
-import java.util.LinkedList;
-import java.util.Vector;
-
 /**
  * A NATMirage is an object that forwards all meta-operations invoked upon it (at
  * the java-level) to its designated mirror object. To cut off infinite meta-regress
@@ -65,13 +65,13 @@ import java.util.Vector;
  */
 public class NATMirage extends NATObject {
 
-	protected NATIntercessiveMirror mirror_;
+	protected ATMirror mirror_;
 	
-	public NATMirage(NATIntercessiveMirror mirror) {
+	public NATMirage(ATMirror mirror) {
 		mirror_ = mirror;
 	}
 	
-	public NATMirage(ATObject lexicalParent, NATIntercessiveMirror mirror) {
+	public NATMirage(ATObject lexicalParent, ATMirror mirror) {
 		super(lexicalParent);
 		mirror_ = mirror;
 	}
@@ -92,18 +92,13 @@ public class NATMirage extends NATObject {
 			         ATObject lexicalParent,
 			         byte flags,
 			         ATStripe[] stripes,
-			         NATIntercessiveMirror mirror) throws InterpreterException {
+			         ATMirror mirror) throws InterpreterException {
 		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
 		mirror_ = mirror;
 	}
 	
 	// MAGIC METHODS 
 	// Cut-off for infinite meta-regress
-	
-	public ATNil magic_setMirror(NATIntercessiveMirror mirror) {
-		mirror_ = mirror;
-		return NATNil._INSTANCE_;
-	}
 	
 	public ATNil magic_addMethod(ATMethod method) throws InterpreterException {
 		return super.meta_addMethod(method);
@@ -113,8 +108,13 @@ public class NATMirage extends NATObject {
 		return super.meta_assignField(receiver, selector, value);
 	}
 
-	public NATMirage magic_clone() throws InterpreterException {
-		return (NATMirage)super.meta_clone();
+	public NATMirage magic_clone(ATObject cloneMirror) throws InterpreterException {
+		NATMirage clone = (NATMirage)super.meta_clone();
+
+		clone.mirror_ = cloneMirror.base_asMirror();
+		
+		return clone;
+
 	}
 
 	// CLONING AUXILIARY METHODS
@@ -127,7 +127,7 @@ public class NATMirage extends NATObject {
 			ATObject dynamicParent,
 			ATObject lexicalParent,
 			byte flags, ATStripe[] stripes) throws InterpreterException {
-		NATMirage clone = new NATMirage(map,
+		return new NATMirage(map,
 				state,
 				customFields,
 				methodDict,
@@ -135,15 +135,11 @@ public class NATMirage extends NATObject {
 				lexicalParent,
 				flags,
 				stripes,
-				mirror_.magic_clone());
-		
-		clone.mirror_.setBase(clone);
-		
-		return clone;
+				mirror_);
 	}
 	
 	// CALLED BY meta_clone ON INTERCESSIVE MIRRORS
-	NATIntercessiveMirror getMirror() {
+	ATMirror getMirror() {
 		return mirror_;
 	}
 	

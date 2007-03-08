@@ -27,6 +27,12 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Vector;
+
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.net.Logging;
@@ -35,6 +41,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -58,16 +65,11 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
+import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Vector;
 
 /**
  * Native implementation of a default ambienttalk object.
@@ -102,7 +104,11 @@ import java.util.Vector;
  * @author tvcutsem
  * @author smostinc
  */
-public class NATObject extends NATCallframe implements ATObject {
+public class NATObject extends NATCallframe implements ATObject, ATMirror {
+	
+	// The name of the field that points to the base_level representation of a custom mirror
+	public static final AGSymbol _BASE_NAME_ = AGSymbol.jAlloc("base");
+
 	
 	// The name of the field that points to the dynamic parent
 	public static final AGSymbol _SUPER_NAME_ = AGSymbol.jAlloc("super");
@@ -135,6 +141,42 @@ public class NATObject extends NATCallframe implements ATObject {
 			return ctx.base_getLexicalScope().base_init(arguments.asNativeTable().elements_);
 		}
 	};
+	
+	private static final class BaseField extends NATByRef implements ATField {
+
+		private NATMirage base_;
+		
+		public BaseField(ATMirror mirror) {
+			base_ = new NATMirage(mirror);
+		}
+		
+		public ATSymbol base_getName() throws InterpreterException {
+			return _BASE_NAME_;
+		}
+
+		public ATObject base_readField() throws InterpreterException {
+			return base_;
+		}
+
+		public ATNil base_writeField(ATObject newValue) throws InterpreterException {
+			throw new XUnassignableField("base");
+		}
+		
+		public ATNil base_initialiseField(NATMirage newValue) throws InterpreterException {
+			base_ = newValue;
+			return NATNil._INSTANCE_;
+		}
+
+		// called upon installing a base field, can be ignored
+		public ATObject base_new(ATObject[] initargs) throws InterpreterException {
+			return this;
+		}
+
+		public ATField base_asField() throws InterpreterException {
+			return this;
+		}
+		
+	}
 	
 	/**
 	 * Does the selector signify a 'primitive' method, present in each AmbientTalk object?
@@ -176,6 +218,13 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	private static final byte _IS_ISOLATE_FLAG_ = 1<<3;
 	
+	/**
+	 * This flag determines whether or not the object is an mirror and thus has a base field:
+	 *  - 1: the object is a mirror, install a read-only base field and the OBJMirrorRoot as dynamic parent
+	 *  - 0: the object is a base-level object
+	 */
+	private static final byte _IS_MIRROR_FLAG_ = 1<<4;
+
 	/**
 	 * An empty stripe array shared by those objects that do not have any stripes.
 	 */
@@ -302,6 +351,14 @@ public class NATObject extends NATCallframe implements ATObject {
 				// isolates can only have the global lexical root as their lexical scope
 				lexicalParent_ = Evaluator.getGlobalLexicalScope();
 			}
+			
+			if (isLocallyStripedWith(NativeStripes._MIRROR_)) {
+				setFlag(_IS_MIRROR_FLAG_);
+				// mirrors need a read-only field which contains their baseField.
+				meta_addField(new BaseField(this.base_asMirror()));
+			}
+			
+			
 		} catch (InterpreterException e) {
 			// some custom stripe failed to match agains the Isolate stripe,
 			// the object is not considered an Isolate
@@ -554,7 +611,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		setFlag(_SHARE_DCT_FLAG_);
 		setFlag(_SHARE_MAP_FLAG_);
 		
-		return createClone(variableMap_,
+		NATObject clone = createClone(variableMap_,
 				          (Vector) stateVector_.clone(), // shallow copy
 				          customFields_, // must be re-initialized by clone!
 				          methodDictionary_,
@@ -562,6 +619,12 @@ public class NATObject extends NATCallframe implements ATObject {
 				          lexicalParent_,
 				          flags_, stripes_);
 
+		// If this object is a mirror, reinitialise its base field
+		if(clone.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+			clone.setBase( new NATMirage(this.base_asMirror()) );
+		}
+		
+		return clone;
 	}
 	
 	/**
@@ -778,7 +841,24 @@ public class NATObject extends NATCallframe implements ATObject {
     	}
     }
 
-	/* ---------------------------------------
+    /* ---------------------
+     * -- Mirror Protocol --
+     * --------------------- */
+    
+    public ATObject base_getBase() throws InterpreterException {
+		return meta_lookup(AGSymbol.jAlloc("base"));
+	}
+    
+	public void setBase(NATMirage base) throws InterpreterException {
+		if(isFlagSet(_IS_MIRROR_FLAG_)) {
+			BaseField field = (BaseField)meta_grabField(AGSymbol.jAlloc("base"));
+			field.base_initialiseField(base);
+		} else {
+			throw new XUnassignableField("base");
+		}
+	}
+    
+    /* ---------------------------------------
 	 * -- Conversion and Testing Protocol   --
 	 * --------------------------------------- */
 	
@@ -805,7 +885,6 @@ public class NATObject extends NATCallframe implements ATObject {
 	public ATField base_asField() throws InterpreterException { return (ATField) coerce(NativeStripes._FIELD_, ATField.class); }
 	public ATMessage base_asMessage() throws InterpreterException { return (ATMessage) coerce(NativeStripes._MESSAGE_, ATMessage.class); }
 	public ATMethod base_asMethod() throws InterpreterException { return (ATMethod) coerce(NativeStripes._METHOD_, ATMethod.class); }
-	public ATMirror base_asMirror() throws InterpreterException { return (ATMirror) coerce(NativeStripes._MIRROR_, ATMirror.class); }
 	public ATHandler base_asHandler() throws InterpreterException { return (ATHandler) coerce(NativeStripes._HANDLER_, ATHandler.class); }
 	public ATNumber base_asNumber() throws InterpreterException { return (ATNumber) coerce(NativeStripes._NUMBER_, ATNumber.class); }
 	public ATTable base_asTable() throws InterpreterException { return (ATTable) coerce(NativeStripes._TABLE_, ATTable.class); }
@@ -820,7 +899,15 @@ public class NATObject extends NATCallframe implements ATObject {
     public ATSplice base_asSplice() throws InterpreterException { return (ATSplice) coerce(NativeStripes._SPLICE_, ATSplice.class); }
 	public ATDefinition base_asDefinition() throws InterpreterException { return (ATDefinition) coerce(NativeStripes._DEFINITION_, ATDefinition.class); }
 	public ATMessageCreation base_asMessageCreation() throws InterpreterException { return (ATMessageCreation) coerce(NativeStripes._MSGCREATION_, ATMessageCreation.class); }
-    
+
+	public ATMirror base_asMirror() throws InterpreterException { 
+		if(meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+			return this;
+		} else {
+			throw new XTypeMismatch(ATMirror.class, this);
+		}
+	}
+	
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
 	public boolean isAmbientTalkObject() { return true; }

@@ -40,6 +40,7 @@ import edu.vub.at.actors.net.OBJNetwork;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XImportConflict;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
@@ -815,57 +816,77 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a new mirror containing the specified definitions
 	 */
 	public ATObject base_mirror_(ATClosure code) throws InterpreterException {
-		return OBJMirrorRoot._INSTANCE_.meta_extend(code);
+		
+		NATObject mirror =  new NATObject(
+				OBJMirrorRoot._INSTANCE_, 
+				code.base_getContext().base_getLexicalScope(), 
+				NATObject._SHARES_A_, 
+				new ATStripe[] { NativeStripes._MIRROR_ });
+		
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				code.base_getMethod().base_getParameters(),
+				code.base_getContext());
+		code.base_applyInScope(copiedBindings, mirror);
+		
+		return mirror;
 	}
 	
 	/**
 	 * object: { code } mirroredBy: mirror
 	 *  => return an object mirage initialized with code
 	 */
-	public ATObject base_object_mirroredBy_(ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
+	public ATObject base_object_mirroredBy_(ATClosure code, ATObject mirror) throws InterpreterException {
 		
-		// Initialise a new pair of mirror-mirage : note that we don't use clone here
-		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
-		NATMirage newMirage = new NATMirage(code.base_getContext().base_getLexicalScope(), mirrorClone);
-		mirrorClone.setBase(newMirage);
+		if(mirror.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+			// clone the mirror, this implicitly also creates a new mirage
+			NATObject clone = mirror.meta_clone().asAmbientTalkObject();
+			
+			NATMirage newMirage = (NATMirage)clone.base_getBase();
+			
+			// make the lexical scope available to the new mirage
+			newMirage.lexicalParent_= code.base_getContext().base_getLexicalScope();
+			
+			NATTable copiedBindings = Evaluator.evalMandatoryPars(
+					code.base_getMethod().base_getParameters(),
+					code.base_getContext());
+			code.base_applyInScope(copiedBindings, newMirage);
+			
+			return newMirage;
+		} else {
+			throw new XIllegalArgument("Asked to create an object from a mirror which does not have the proper stripe");
+		}
 		
-		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-				code.base_getMethod().base_getParameters(),
-				code.base_getContext());
-		code.base_applyInScope(copiedBindings, newMirage);
-		
-		return newMirage;
 	}
 	
-	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
-		
-		// Initialise a new pair of mirror-mirage : note that we don't use clone here
-		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
-		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._IS_A_);
-		mirrorClone.setBase(newMirage);
-		
-		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-				code.base_getMethod().base_getParameters(),
-				code.base_getContext());
-		code.base_applyInScope(copiedBindings, newMirage);
-		
-		return newMirage;
-	}
-	
-	public ATObject base_share_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
-		
-		// Initialise a new pair of mirror-mirage : note that we don't use clone here
-		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
-		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._SHARES_A_);
-		mirrorClone.setBase(newMirage);
-		
-		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-				code.base_getMethod().base_getParameters(),
-				code.base_getContext());
-		code.base_applyInScope(copiedBindings, newMirage);
-		
-		return newMirage;
-	}
+//	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
+//		
+//		// Initialise a new pair of mirror-mirage : note that we don't use clone here
+//		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
+//		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._IS_A_);
+//		mirrorClone.setBase(newMirage);
+//		
+//		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+//				code.base_getMethod().base_getParameters(),
+//				code.base_getContext());
+//		code.base_applyInScope(copiedBindings, newMirage);
+//		
+//		return newMirage;
+//	}
+//	
+//	public ATObject base_share_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
+//		
+//		// Initialise a new pair of mirror-mirage : note that we don't use clone here
+//		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
+//		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._SHARES_A_);
+//		mirrorClone.setBase(newMirage);
+//		
+//		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+//				code.base_getMethod().base_getParameters(),
+//				code.base_getContext());
+//		code.base_applyInScope(copiedBindings, newMirage);
+//		
+//		return newMirage;
+//	}
 	
 	/* -------------------
 	 * -- Stripe Support -

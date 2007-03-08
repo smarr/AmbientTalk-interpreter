@@ -37,6 +37,7 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -50,6 +51,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  */
 public class OBJMirrorRoot extends NATByCopy {
 	
+	public static final ATSymbol _CLONE_ = AGSymbol.jAlloc("clone");
 	public static final ATSymbol _MIRROR_ = AGSymbol.jAlloc("mirror");
 	public static final OBJMirrorRoot _INSTANCE_ = new OBJMirrorRoot();
 	
@@ -67,7 +69,13 @@ public class OBJMirrorRoot extends NATByCopy {
 	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
 		
 		NATMirage principal = (NATMirage)receiver.base_asMirror().base_getBase();
-		
+
+		// OBJMirrorRoot emulates it has a PrimitiveMethod clone
+		if(atSelector == _CLONE_) {
+			ATObject clone = receiver.meta_clone();
+			clone.asAmbientTalkObject().setBase( principal.magic_clone(clone) );
+			return clone;
+		}
 		
 		// Same as upMetaLevelSelector but with magic_ instead of meta_
 		// invoking a meta-level operation in the base would mean the operation
@@ -83,10 +91,17 @@ public class OBJMirrorRoot extends NATByCopy {
 									jSelector,
 									arguments));
 		} catch (XSelectorNotFound e) {
-			// Principal does not have a corresponding meta_level method
-			// try for a base_level method of the mirror itself. This 
-			// functionality is accessible using the super class.
-			return super.meta_invoke(receiver, atSelector, arguments);
+			// Several meta_methods actually throw this exception to indicate they failed to select or lookup a
+			// particular argument. Obviously these instances should be reported as is to the outside world. If,
+			// however, the principal does not have a corresponding meta_level method for the given selector,
+			// check whether the selector matches a base_level method of the mirror itself. This functionality 
+			// readily is accessible using the super class.
+			
+			if(e.selector_ != atSelector) {
+				throw e;
+			} else {
+				return super.meta_invoke(receiver, atSelector, arguments);
+			}
 		}
 	}
 

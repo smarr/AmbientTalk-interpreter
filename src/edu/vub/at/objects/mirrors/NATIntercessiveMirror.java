@@ -61,6 +61,9 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  * meta-operations are invoked on an ordinary object, which delegates to an instance
  * of this class to implement the correct default behaviour.</p> 
  *
+ *
+ * @deprecated
+ * 
  * @author smostinc
  */
 public class NATIntercessiveMirror extends NATObject implements ATMirror {
@@ -135,12 +138,6 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 //	}
 	
 	public ATObject base_getBase() { return principal_; }
-
-	// not a base_ method => not exposed to the ambienttalk programmer.
-	public ATNil setBase(NATMirage base) {
-		principal_ = base;
-		return NATNil._INSTANCE_;
-	} 
 	
 	/** @return true */
 	public boolean base_isMirror() { return true; }
@@ -175,20 +172,13 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	}
 	
 	public ATObject meta_clone() throws InterpreterException {
-		NATIntercessiveMirror clone = magic_clone();
-		NATMirage freshObject = new NATMirage(clone);
-		clone.setBase(freshObject);
+		NATIntercessiveMirror clone = (NATIntercessiveMirror)super.meta_clone();
+		clone.mirror_initialiseBaseField(false);
 		return clone;
 	}
 	
 	// CLONING AUXILIARY METHODS
 	
-	// Perform the actual cloning of this mirror object alone
-	// Cut-off for ping-pong of messages sent between mirror and mirage.
-	public NATIntercessiveMirror magic_clone() throws InterpreterException {
-		return (NATIntercessiveMirror)super.meta_clone();
-	}
-
 	// Called by the default NATObject Cloning algorithm
 	protected NATObject createClone(FieldMap map,
 			Vector state,
@@ -233,7 +223,25 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 		return NATText.atValue("<mirror on:"+principal_.meta_print().javaValue+">");
 	}
 	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._MIRROR_);
-    }
+	public ATTable meta_getStripes() throws InterpreterException {
+		return NATTable.of(NativeStripes._MIRROR_);
+	}
+
+	/* ----------------------------
+	 * -- Mirror-Base Protocol   --
+	 * ---------------------------- */
+	
+	/**
+	 * When cloning a mirror, it needs to be provided with a new mirage. We distinguish between
+	 * two cases: First of all, when cloning a mirror, the mirage should be an empty one. When 
+	 * cloning a mirage on the other hand, the mirror needs to be cloned and a new mirage needs
+	 * to be created which is a clone of the original one.
+	 */
+	public void mirror_initialiseBaseField(boolean cloneCurrentBase) throws InterpreterException {
+		if(cloneCurrentBase) {
+			setBase( ((NATMirage)base_getBase()).magic_clone(this) );
+		} else { // create a new empty mirage
+			setBase( new NATMirage(this) );
+		}
+	}
 }

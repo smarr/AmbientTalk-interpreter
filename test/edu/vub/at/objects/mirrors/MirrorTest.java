@@ -34,6 +34,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUserDefined;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -42,7 +43,9 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.parser.NATParser;
 
 public class MirrorTest extends AmbientTalkTest {
 	
@@ -76,34 +79,24 @@ public class MirrorTest extends AmbientTalkTest {
 				"def symbol( text ) { jlobby.edu.vub.at.objects.natives.grammar.AGSymbol.alloc( text ) }; \n");
 	}
 
-	/**
-	 * Following a bug report by Stijn. Intercessive mirror creation and extension do 
-	 * not always behave properly (e.g. they return mirages or superfluous introspective
-	 * mirrors wrapping the desired result)
-	 */
-	public void testMirrorCreation() {
-		ATObject mirror = evalAndReturn("def simpleMirror := mirror: { nil }; simpleMirror;");
-		
-		if(! (mirror instanceof NATIntercessiveMirror) ) {
-			fail("Return value of mirror: { ... } is not an intercessive mirror.");
-		};
-		
-		mirror = evalAndReturn("extend: simpleMirror with: { nil }");
-		
-		if(! (mirror instanceof NATIntercessiveMirror) ) {
-			fail("Extensions of a mirror: { ... } are not intercessive mirrors. " + mirror.getClass());
-		};
-	}
-	
-	/**
-	 * This test goes over all abstract grammar elements and tests their accessors
-	 * for fields. If all works well, the test transforms one abstract syntax tree
-	 * into another one. The former does not care for stratified access whereas the
-	 * latter one does. 
-	 */
-	public void notestAGMirrorInterface() {
-		System.out.println(" `( def [ mirror, statified ] := [ ]  })");
-	}
+//	/**
+//	 * Following a bug report by Stijn. Intercessive mirror creation and extension do 
+//	 * not always behave properly (e.g. they return mirages or superfluous introspective
+//	 * mirrors wrapping the desired result)
+//	 */
+//	public void testMirrorCreation() {
+//		ATObject mirror = evalAndReturn("def simpleMirror := mirror: { nil }; simpleMirror;");
+//		
+//		if(! (mirror instanceof NATIntercessiveMirror) ) {
+//			fail("Return value of mirror: { ... } is not an intercessive mirror.");
+//		};
+//		
+//		mirror = evalAndReturn("extend: simpleMirror with: { nil }");
+//		
+//		if(! (mirror instanceof NATIntercessiveMirror) ) {
+//			fail("Extensions of a mirror: { ... } are not intercessive mirrors. " + mirror.getClass());
+//		};
+//	}
 	
 	/**
 	 * This test creates a mirror and attempts to use it in a non-stratified way.
@@ -141,36 +134,36 @@ public class MirrorTest extends AmbientTalkTest {
 	};
 	
 	
-	/**
-	 * Tests the correctness of the up-down relation in Java : 
-	 * - down(up(o)) == o
-	 */
-	public void testJavaMirrorBaseRelation() {
-		try {
-			ATObject[] objects 		= new ATObject[] { 
-					NATNil._INSTANCE_, NATBoolean._TRUE_, NATNumber.ZERO, new NATObject(),
-					NATTable.EMPTY, NATIntrospectiveMirror.atValue(NATNil._INSTANCE_),
-					new NATIntercessiveMirror(Evaluator.getGlobalLexicalScope(), true)
-			};
-			ATMirror[] mirrors 		= new ATMirror[objects.length];
-			
-			for (int i = 0; i < objects.length; i++) {
-				mirrors[i] = NATIntrospectiveMirror.atValue(objects[i]);
-			}
-			
-			for (int i = 0; i < objects.length; i++) {
-				assertEquals(objects[i], mirrors[i].base_getBase());
-			}
-
-//			TODO(discuss) should NATIntrospectiveMirrors be unique? 
-//			(requires a map or every object has a lazily initialised pointer)
+//	/**
+//	 * Tests the correctness of the up-down relation in Java : 
+//	 * - down(up(o)) == o
+//	 */
+//	public void testJavaMirrorBaseRelation() {
+//		try {
+//			ATObject[] objects 		= new ATObject[] { 
+//					NATNil._INSTANCE_, NATBoolean._TRUE_, NATNumber.ZERO, new NATObject(),
+//					NATTable.EMPTY, NATIntrospectiveMirror.atValue(NATNil._INSTANCE_),
+//					new NATIntercessiveMirror(Evaluator.getGlobalLexicalScope(), true)
+//			};
+//			ATMirror[] mirrors 		= new ATMirror[objects.length];
+//			
 //			for (int i = 0; i < objects.length; i++) {
-//				assertEquals(mirrors[i], NATMirrorFactory._INSTANCE_.createMirror(objects[i]));
+//				mirrors[i] = NATIntrospectiveMirror.atValue(objects[i]);
 //			}
-		} catch (InterpreterException e) {
-			fail(e.getMessage());
-		}
-	}
+//			
+//			for (int i = 0; i < objects.length; i++) {
+//				assertEquals(objects[i], mirrors[i].base_getBase());
+//			}
+//
+////			TODO(discuss) should NATIntrospectiveMirrors be unique? 
+////			(requires a map or every object has a lazily initialised pointer)
+////			for (int i = 0; i < objects.length; i++) {
+////				assertEquals(mirrors[i], NATMirrorFactory._INSTANCE_.createMirror(objects[i]));
+////			}
+//		} catch (InterpreterException e) {
+//			fail(e.getMessage());
+//		}
+//	}
 	
 	/**
 	 * Tests the correctness of the up-down relation in AmbientTalk : 
@@ -193,23 +186,23 @@ public class MirrorTest extends AmbientTalkTest {
 				"} \n");
 	}	
 		
-	public void testJavaMirrorInvocation() {
-		try {
-			ATMirror trueMirror = NATIntrospectiveMirror.atValue(NATBoolean._TRUE_);
-			ATMirror responds = (ATMirror)trueMirror.meta_invoke(
-					trueMirror,
-					AGSymbol.jAlloc("respondsTo"),
-					NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("ifTrue:") }));
-			responds.base_getBase().base_asBoolean().base_ifFalse_(new NativeClosure(NATNil._INSTANCE_) {
-				public ATObject base_apply(ATTable arguments) throws InterpreterException {
-					throw new XUserDefined(NATNil._INSTANCE_);
-				}
-			});
-		} catch (InterpreterException e) {
-			e.printStackTrace();
-			fail("exception: "+ e);
-		}
-	}
+//	public void testJavaMirrorInvocation() {
+//		try {
+//			ATMirror trueMirror = NATIntrospectiveMirror.atValue(NATBoolean._TRUE_);
+//			ATMirror responds = (ATMirror)trueMirror.meta_invoke(
+//					trueMirror,
+//					AGSymbol.jAlloc("respondsTo"),
+//					NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("ifTrue:") }));
+//			responds.base_getBase().base_asBoolean().base_ifFalse_(new NativeClosure(NATNil._INSTANCE_) {
+//				public ATObject base_apply(ATTable arguments) throws InterpreterException {
+//					throw new XUserDefined(NATNil._INSTANCE_);
+//				}
+//			});
+//		} catch (InterpreterException e) {
+//			e.printStackTrace();
+//			fail("exception: "+ e);
+//		}
+//	}
 			
 	public void testMirrorInvocation() {
 		evalAndReturn(
@@ -221,9 +214,9 @@ public class MirrorTest extends AmbientTalkTest {
 			
 	public void testMirrorFieldAccess() {
 		evalAndReturn(
+				"def basicClosure := { raise: (object: { nil }) }; \n" +
 				"def extendedMirroredClosure := \n" +
-				"  extend: { raise: (object: { nil }) } \n" +
-				"    with: { nil } \n" +
+				"  object: { super := basicClosure } \n" +
 				"    mirroredBy: (mirror: { nil }); \n" +
 				"def intercessiveMirror := \n" +
 				"  reflect: extendedMirroredClosure");
@@ -231,40 +224,93 @@ public class MirrorTest extends AmbientTalkTest {
 		evalAndTestException(
 				"intercessiveMirror.dynamicParent.base.apply([]); \n",
 				XUserDefined.class);
-		
-		// Cannot assign a base-level entity to a meta-level variable
-		evalAndTestException(
-				"intercessiveMirror.mirror := \n" +
-				"  object: { \n" +
-				"    def invoke(@args) { reflect: \"ok\"}; \n" +
-				"  };\n" +
-				"extendedMirroredClosure.whatever()",
-				XTypeMismatch.class);
-		
-		// Cannot assign a base-level entity to a meta-level variable
-		evalAndReturn(
-				"intercessiveMirror.mirror := \n" +
-				"  mirror: { \n" +
-				"    def invoke(@args) { reflect: \"ok\"}; \n" +
-				"  };\n" +
-				"extendedMirroredClosure.whatever()");
+
+//		Can no longer set the mirror of a mirage the final 1-1 mapping is now stricly enforced
+//		// Cannot assign a base-level entity to a meta-level variable
+//		evalAndTestException(
+//				"intercessiveMirror.mirror := \n" +
+//				"  object: { \n" +
+//				"    def invoke(@args) { reflect: \"ok\"}; \n" +
+//				"  };\n" +
+//				"extendedMirroredClosure.whatever()",
+//				XTypeMismatch.class);
+//		
+//		// Cannot assign a base-level entity to a meta-level variable
+//		evalAndReturn(
+//				"intercessiveMirror.mirror := \n" +
+//				"  mirror: { \n" +
+//				"    def invoke(@args) { reflect: \"ok\"}; \n" +
+//				"  };\n" +
+//				"extendedMirroredClosure.whatever()");
 	}
 	
-	/* following a bug report by tom */
+	/**
+	 * This test tests the listMethods meta operations and ensures the following properties:
+	 * Empty objects contain three primitive methods: namely new, init and ==. These methods
+	 * can be overridden with custom behaviour which shadows the primitive implementation.
+	 * Also external method definitions are closures which properly inserted into the table 
+	 * of methods. Whether an object has a intercessive or introspective mirror does not matter
+	 * unless the intercessive mirror intercepts the listMethods operation.
+	 */
 	public void testListMethods() {
 		evalAndCompareTo(
-				"def test := object: { \n" +
-					"  def hello() { \"hello\" }; \n" +
-					"  def world() { \"world\" }; \n" +
-					"}; \n" +
-					"(reflect: test).listMethods(); \n",
-				"<mirror on:[<method:world>, <primitive method:new>, <primitive method:init>, <primitive method:==>, <method:hello>]>");
+				"def test := object: { nil }; \n" +
+				"(reflect: test).listMethods(); \n",
+				"<mirror on:[<primitive method:new>, <primitive method:init>, <primitive method:==>]>");
 		evalAndCompareTo(
-				"def testMirrored := object: { \n" +
-					"  def hello() { \"hello\" }; \n" +
-					"  def world() { \"world\" }; \n" +
-					"} mirroredBy: (mirror: { nil }); \n" +
-					"(reflect: testMirrored).listMethods();",
-				"<mirror on:[<method:world>, <primitive method:new>, <primitive method:init>, <primitive method:==>, <method:hello>]>");
-	}	
+				"def testMirrored := object: { nil } mirroredBy: (mirror: { nil }); \n" +
+				"(reflect: testMirrored).listMethods(); \n",
+				"<mirror on:[<primitive method:new>, <primitive method:init>, <primitive method:==>]>");
+		evalAndCompareTo(
+				"test := object: { \n" +
+				"  def init(); \n" +
+				"}; \n" +
+				"(reflect: test).listMethods(); \n",
+				"<mirror on:[<primitive method:new>, <method:init>, <primitive method:==>]>");
+		evalAndCompareTo(
+				"testMirrored := object: { \n" +
+				"  def init(); \n" +
+				"} mirroredBy: (mirror: { nil });  \n" +
+				"(reflect: testMirrored).listMethods(); \n",
+				"<mirror on:[<primitive method:new>, <method:init>, <primitive method:==>]>");
+		evalAndCompareTo(
+				"def test.hello() { \"hello world\" }; \n" +
+				"(reflect: test).listMethods(); \n",
+				"<mirror on:[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]>");
+		evalAndCompareTo(
+				"def testMirrored.hello() { \"hello world\" }; \n" +
+				"(reflect: test).listMethods(); \n",
+				"<mirror on:[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]>");
+//		evalAndCompareTo(
+//				"(reflect: test).defineMethod(`hola, `(\"hola mundo, estoy aqui\")); \n",
+//				"<mirror on:[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]>");
+	}
+	
+	/**
+	 * Following Bug report 0000001: Test whether the correct selector is returned when invoking 
+	 * meta_operations on a custom mirror which themselves may throw XSelectorNotFound exceptions.
+	 * @throws InterpreterException
+	 */
+	public void testNotFoundReporting() throws InterpreterException {
+		// The meta operation select will be found, but the field x will not be found.
+		try {
+			evalAndThrowException(
+					"def emptyMirror := mirror: { nil }; \n" +
+					"def emptyObject := object: { nil }; \n" +
+					"emptyObject.x;",
+					XSelectorNotFound.class);
+		} catch (XSelectorNotFound e) {
+			assertEquals(e.selector_, AGSymbol.jAlloc("x"));
+		}
+		// Intentionally misspelled the name of a meta operation to test whether failures to
+		// find meta operations are still properly reported.
+		try {
+			evalAndThrowException(
+					"def emptyObject.x := 42; \n" +
+					"emptyMirror.selct(emptyObject, `x);",
+					XSelectorNotFound.class);
+		} catch (XSelectorNotFound e) {
+			assertEquals(e.selector_, AGSymbol.jAlloc("selct"));
+		}
+	}
 }
