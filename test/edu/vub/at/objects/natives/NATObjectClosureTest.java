@@ -476,7 +476,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 													new AGBegin(
 															NATTable.atValue(new ATObject[] { superSemanticsTest })))}))),
 															ctx_.base_getLexicalScope(),
-															ctx_.base_getLexicalScope()));
+															ctx_.base_getLexicalScope()), NATTable.EMPTY);
 			
 			superSemanticsTest.scope_ = child;
 			superSemanticsTest.self_ = child;

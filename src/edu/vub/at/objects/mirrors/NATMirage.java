@@ -27,11 +27,9 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import java.util.LinkedList;
-import java.util.Vector;
-
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -43,14 +41,19 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATStripe;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+
+import java.util.LinkedList;
+import java.util.Vector;
 
 /**
  * A NATMirage is an object that forwards all meta-operations invoked upon it (at
@@ -67,17 +70,26 @@ public class NATMirage extends NATObject {
 
 	protected ATMirror mirror_;
 	
+	public static NATMirage createMirage(ATClosure code, ATTable stripes, ATObject mirror) throws InterpreterException {
+		if (mirror.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+			// clone the mirror, this implicitly also creates a new mirage
+			NATObject clone = mirror.meta_clone().asAmbientTalkObject();
+			
+			NATMirage newMirage = (NATMirage)clone.base_getBase();
+			
+			// make the lexical scope available to the new mirage
+			newMirage.lexicalParent_= code.base_getContext().base_getLexicalScope();
+			
+			// initialize the stripes of the new mirage
+			newMirage.stripes_ = NATStripe.toStripeArray(stripes);
+			newMirage.initializeWithCode(code);
+			return newMirage;
+		} else {
+			throw new XIllegalArgument("Asked to create an object from an object without the mirror stripe: " + mirror);
+		}
+	}
+	
 	public NATMirage(ATMirror mirror) {
-		mirror_ = mirror;
-	}
-	
-	public NATMirage(ATObject lexicalParent, ATMirror mirror) {
-		super(lexicalParent);
-		mirror_ = mirror;
-	}
-	
-	public NATMirage(ATObject dynamicParent, ATObject lexicalParent, NATIntercessiveMirror mirror, boolean parentType) {
-		super(dynamicParent, lexicalParent, parentType);
 		mirror_ = mirror;
 	}
 	
@@ -148,7 +160,7 @@ public class NATMirage extends NATObject {
 	}
 
 	public ATObject magic_extend(ATClosure code) throws InterpreterException {
-		return super.meta_extend(code);
+		return super.meta_extend(code, null);
 	}
 
 	public ATMethod magic_getMethod(ATSymbol selector) throws InterpreterException {
@@ -188,7 +200,7 @@ public class NATMirage extends NATObject {
 	}
 
 	public ATObject magic_share(ATClosure code) throws InterpreterException {
-		return super.meta_share(code);
+		return super.meta_share(code, null);
 	}
 
 	public ATNil magic_addField(ATField field) throws InterpreterException {
@@ -304,11 +316,11 @@ public class NATMirage extends NATObject {
 		return NATNil._INSTANCE_;
 	}
 
-	public ATObject meta_extend(ATClosure code) throws InterpreterException {
+	public ATObject meta_extend(ATClosure code, ATTable stripes) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("extend"),
-				NATTable.atValue(new ATObject[] { code })
+				NATTable.atValue(new ATObject[] { code, stripes })
 				));
 	}
 	
@@ -383,11 +395,11 @@ public class NATMirage extends NATObject {
 				));
 	}
 
-	public ATObject meta_share(ATClosure code) throws InterpreterException {
+	public ATObject meta_share(ATClosure code, ATTable stripes) throws InterpreterException {
 		return Reflection.downObject(mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("share"),
-				NATTable.atValue(new ATObject[] { code })
+				NATTable.atValue(new ATObject[] { code, stripes })
 				));
 	}
 

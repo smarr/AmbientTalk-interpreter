@@ -52,6 +52,7 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
@@ -233,26 +234,34 @@ public class NATNil implements ATNil, Serializable {
         return Reflection.upInstanceCreation(this, initargs);
     }
 
-	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws InterpreterException {
+	/**
+	 * When creating children of objects, care must be taken that an extension
+	 * of an isolate itself remains an isolate.
+	 */
+	protected ATObject createChild(ATClosure code, boolean parentPointerType, ATStripe[] stripes) throws InterpreterException {
 
 		NATObject extension = new NATObject(
 				/* dynamic parent */
 				this,
-				/* lexical parent */
-				code.base_getContext().base_getLexicalScope(),
+				/* lexical parent -> isolates don't inherit outer scope! */
+				this.meta_isStripedWith(NativeStripes._ISOLATE_).asNativeBoolean().javaValue ?
+						Evaluator.getGlobalLexicalScope() :
+						code.base_getContext().base_getLexicalScope(),
+				
 				/* parent porinter type */
-				parentPointerType);
-			
-		code.base_applyInScope(NATTable.EMPTY, extension);
+				parentPointerType,
+				stripes);
+		
+		extension.initializeWithCode(code);
 		return extension;
 	}
 	
-	public ATObject meta_extend(ATClosure code) throws InterpreterException {
-		return createChild(code, NATObject._IS_A_);
+	public ATObject meta_extend(ATClosure code, ATTable stripes) throws InterpreterException {
+		return createChild(code, NATObject._IS_A_, NATStripe.toStripeArray(stripes));
 	}
 
-	public ATObject meta_share(ATClosure code) throws InterpreterException {
-		return createChild(code, NATObject._SHARES_A_);
+	public ATObject meta_share(ATClosure code, ATTable stripes) throws InterpreterException {
+		return createChild(code, NATObject._SHARES_A_, NATStripe.toStripeArray(stripes));
 	}
     
     /* ---------------------------------

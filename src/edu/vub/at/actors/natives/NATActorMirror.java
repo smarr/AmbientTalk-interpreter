@@ -279,28 +279,16 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
 	/**
-	 * def install: { code }
+	 * def install: protocol
+	 *  => returns the old installed protocol
 	 * 
 	 * @see ATActorMirror#base_install_(ATClosure)
-	 * 
-	 * Technically, this MOP installation is achieved by performing an
-	 * imperative mixin operation on the actor's mirror.
 	 */
-	public ATObject base_install_(ATClosure code) throws InterpreterException {
+	public ATObject base_install_(ATActorMirror newActorMirror) throws InterpreterException {
 		ELActor myEventLoop = ELActor.currentActor();
-		
-		ATActorMirror currentMirror = myEventLoop.getActorMirror();
-		
-		// extend: this with: { code }
-		NATObject mirrorObject = new NATObject(
-				currentMirror, // dynamic parent = current mirror
-				code.base_getContext().base_getLexicalScope(), // lex parent = lex scope of closure
-				NATObject._IS_A_);
-		code.base_applyInScope(NATTable.EMPTY, mirrorObject);
-		
-		ATActorMirror newActorMirror = mirrorObject.base_asActorMirror();
-		ELActor.currentActor().setActorMirror(newActorMirror);
-		return new NATProtocol(myEventLoop, newActorMirror);
+		ATActorMirror oldMirror = myEventLoop.getActorMirror();
+		myEventLoop.setActorMirror(newActorMirror);
+		return oldMirror;
 	}
 	
 	/**
@@ -310,10 +298,10 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 *   def uninstall() { //uninstall the protocol object }
 	 * }
 	 */
-	public static class NATProtocol extends NATObject {
+	/*public static class NATMOPInstallation extends NATObject {
 		private static final AGSymbol _INSTALLED_ = AGSymbol.jAlloc("installedMirror");
 		private static final AGSymbol _UNINSTALL_ = AGSymbol.jAlloc("uninstall");
-		public NATProtocol(final ELActor eventLoop, ATActorMirror newMirror) throws InterpreterException {
+		public NATMOPInstallation(final ELActor eventLoop, ATActorMirror newMirror) throws InterpreterException {
 			meta_defineField(_INSTALLED_, newMirror);
 			meta_defineField(_UNINSTALL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
@@ -344,7 +332,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		public NATText meta_print() throws InterpreterException {
 			return NATText.atValue("<protocol:"+meta_select(this, _INSTALLED_)+">");
 		}
-	}
+	}*/
 	
     public ATActorMirror base_asActorMirror() throws XTypeMismatch {
     	return this;

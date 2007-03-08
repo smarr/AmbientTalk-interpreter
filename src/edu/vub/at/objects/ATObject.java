@@ -259,9 +259,10 @@ public interface ATObject extends ATConversions {
      * The base-level code <obj.extend { code }> is represented at the meta-level by <mirror(obj).meta_extend(code)>
      *
      * Triggers the <tt>objectExtended</tt> event on this object's beholders (mirror observers).
+     * @param stripes the stripes to tag the child with
      * @return a fresh object whose dynamic parent points to <this> with 'is-a' semantics.
      */
-    public ATObject meta_extend(ATClosure code) throws InterpreterException;
+    public ATObject meta_extend(ATClosure code, ATTable stripes) throws InterpreterException;
 
     /**
      * Create a shares-a extension of the receiver object.
@@ -269,9 +270,10 @@ public interface ATObject extends ATConversions {
      * <code>mirror(obj).meta_share(code)</code>
      *
      * Triggers the <tt>objectShared</tt> event on this object's beholders (mirror observers).
+     * @param stripes the stripes to tag the child with
      * @return a fresh object whose dynamic parent points to <this> with 'shares-a' semantics.
      */
-    public ATObject meta_share(ATClosure code) throws InterpreterException;
+    public ATObject meta_share(ATClosure code, ATTable stripes) throws InterpreterException;
 
     /* ---------------------------------
       * -- Structural Access Protocol  --

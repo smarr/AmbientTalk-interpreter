@@ -167,7 +167,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * correct use of the sending operation the only concern is then to check no super 
 	 * invocations are made by the child.
 	 */
-	public ATObject meta_extend(ATClosure code) throws InterpreterException {
+	public ATObject meta_extend(ATClosure code, ATTable stripes) throws InterpreterException {
 		throw new XIllegalOperation("Cannot extend far reference " + this + " with " + code);
 	}
 
@@ -177,7 +177,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * correct use of the sending operation the only concern is then to check no super 
 	 * invocations are made by the child.
 	 */
-	public ATObject meta_share(ATClosure code) throws InterpreterException {
+	public ATObject meta_share(ATClosure code, ATTable stripes) throws InterpreterException {
 		throw new XIllegalOperation("Cannot share far reference " + this + " with " + code);
 	}
 	

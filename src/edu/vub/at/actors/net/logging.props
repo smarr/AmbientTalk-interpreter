@@ -3,7 +3,7 @@
 # print eventloop-related information to the console
 
 log4j.logger.at.eventloops=DEBUG, console
-log4j.logger.at.init=ERROR, console
+log4j.logger.at.init=INFO, console
 
 log4j.appender.console=org.apache.log4j.ConsoleAppender
 log4j.appender.console.layout=org.apache.log4j.PatternLayout

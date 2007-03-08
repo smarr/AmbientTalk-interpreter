@@ -27,12 +27,6 @@
  */
 package edu.vub.at.objects.natives;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Vector;
-
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.net.Logging;
@@ -71,6 +65,12 @@ import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Vector;
+
 /**
  * Native implementation of a default ambienttalk object.
  * 
@@ -92,6 +92,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  *   - whether the object shares its variable map with clones
  *   - whether the object shares its method dictionary with clones
  *   - whether the object is an isolate (i.e. pass-by-copy)
+ *   - whether the object is a mirror (a meta-level object of a corresponding base-level object)
  * - a variable map, mapping variable names to indices into the state vector
  * - a state vector, containing the field values of the object
  * - a linked list containing custom field objects
@@ -109,7 +110,6 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 	// The name of the field that points to the base_level representation of a custom mirror
 	public static final AGSymbol _BASE_NAME_ = AGSymbol.jAlloc("base");
 
-	
 	// The name of the field that points to the dynamic parent
 	public static final AGSymbol _SUPER_NAME_ = AGSymbol.jAlloc("super");
 	
@@ -232,11 +232,12 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 	
 	/**
 	 * The flags of an AmbientTalk object encode the following boolean information:
-	 *  Format: 0b0000idmp where
+	 *  Format: 0b000midap where
 	 *   p = parent flag: if set, dynamic parent is 'is-a' parent, otherwise 'shares-a' parent
-	 *   m = shares map flag: if set, the map of this object is shared between clones
+	 *   a = shares map flag: if set, the map of this object is shared between clones
 	 *   d = shares dictionary flag: if set, the method dictionary of this object is shared between clones
 	 *   i = is isolate flag: if set, the object is passed by copy in inter-actor communication
+	 *   m = is mirror flag: if set, the object is a mirror and requires a 'base' field denoting its base-level object
 	 */
 	private byte flags_;
 	
@@ -251,29 +252,13 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 	private MethodDictionary methodDictionary_;
 	
 	/**
-	 * The dynamic parent of this object (i.e. the delegation link).
-	 * Note that the parent of an object is immutable.
-	 * 
-	 * REPLACED by a true AmbientTalk field
-	 */
-	//protected final ATObject dynamicParent_;
-	
-	/**
-	 * The stripes under which this object has been classified
+	 * The stripes with which this object has been striped.
 	 */
 	protected ATStripe[] stripes_;
 	
 	/* ------------------
 	 * -- Constructors --
 	 * ------------------ */
-	
-	/**
-	 * Constructs a new AmbientTalk object whose lexical parent is the
-	 * global scope and whose dynamic parent is the dynamic root.
-	 */
-	public NATObject() {
-		this(Evaluator.getGlobalLexicalScope());
-	}
 	
 	/**
 	 * Creates an object striped with the at.stripes.Isolate stripe.
@@ -283,6 +268,14 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 	 */
 	public static NATObject createIsolate() {
 		return new NATObject(new ATStripe[] { NativeStripes._ISOLATE_ });
+	}
+	
+	/**
+	 * Constructs a new AmbientTalk object whose lexical parent is the
+	 * global scope and whose dynamic parent is the dynamic root.
+	 */
+	public NATObject() {
+		this(Evaluator.getGlobalLexicalScope());
 	}
 	
 	public NATObject(ATStripe[] stripes) {
@@ -423,7 +416,21 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 				customFields_.add(field.base_new(new ATObject[] { this }).base_asField());
 			}
 		}
-		
+	}
+	
+	/**
+	 * Initialize a new AmbientTalk object with the given closure.
+	 * 
+	 * The closure encapsulates:
+	 *  - the code with which to initialize the object
+	 *  - the lexical parent of the object (but that parent should already be set)
+	 *  - the lexically inherited fields for the object (the parameters of the closure)
+	 */
+	public void initializeWithCode(ATClosure code) throws InterpreterException {
+		NATTable copiedBindings = Evaluator.evalMandatoryPars(
+				code.base_getMethod().base_getParameters(),
+				code.base_getContext());
+		code.base_applyInScope(copiedBindings, this);
 	}
 	
 	/* ------------------------------
@@ -619,8 +626,8 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 				          lexicalParent_,
 				          flags_, stripes_);
 
-		// If this object is a mirror, reinitialise its base field
-		if(clone.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+		// If this object is a mirror, reinitialise the base field of the cloned mirror
+		if(clone.isFlagSet(_IS_MIRROR_FLAG_)) {
 			clone.setBase( new NATMirage(this.base_asMirror()) );
 		}
 		
@@ -643,15 +650,6 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 		clone.meta_invoke(clone, Evaluator._INIT_, initargs);
 		return clone;
 	}
-	
-	public ATObject meta_extend(ATClosure code) throws InterpreterException {
-		return createChild(code, _IS_A_);
-	}
-
-	public ATObject meta_share(ATClosure code) throws InterpreterException {
-		return createChild(code, _SHARES_A_);
-	}
-
 
 	/* ---------------------------------
 	 * -- Structural Access Protocol  --
@@ -732,29 +730,7 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 	            flags,
 	            stripes);
 	}
-	
-	/**
-	 * When creating children of objects, care must be taken that an extension
-	 * of an isolate itself remains an isolate.
-	 */
-	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws InterpreterException {
-		NATObject extension = new NATObject(
-				/* dynamic parent */
-				this,
-				/* lexical parent -> isolates don't inherit outer scope! */
-				isFlagSet(_IS_ISOLATE_FLAG_) ?
-						Evaluator.getGlobalLexicalScope() :
-						code.base_getContext().base_getLexicalScope(),
-				/* parent pointer type */
-				parentPointerType);
 		
-		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-				code.base_getMethod().base_getParameters(),
-				code.base_getContext());
-		code.base_applyInScope(copiedBindings, extension);
-		return extension;
-	}
-	
     /* ----------------------------------
      * -- Object Relational Comparison --
      * ---------------------------------- */
@@ -804,7 +780,11 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
      * Return the stripes that were directly attached to this object.
      */
     public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.atValue(stripes_);
+    	// make a copy of the internal stripes array to ensure that the stripes
+    	// of the object are immutable. Tables allow assignment!
+    	ATStripe[] stripes = new ATStripe[stripes_.length];
+    	System.arraycopy(stripes_, 0, stripes, 0, stripes_.length);
+    	return NATTable.atValue(stripes);
     }
     
     

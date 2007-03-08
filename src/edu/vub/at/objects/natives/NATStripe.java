@@ -47,6 +47,18 @@ public class NATStripe extends NATByCopy implements ATStripe {
 	private final ATSymbol stripeName_;
 	private final ATTable parentStripes_;
 	
+	public static ATStripe[] toStripeArray(ATTable stripes) throws InterpreterException {
+		if (stripes == NATTable.EMPTY) {
+			return NATObject._NO_STRIPES_;
+		}
+		ATObject[] unwrapped = stripes.asNativeTable().elements_;
+		ATStripe[] unwrappedStripes = new ATStripe[unwrapped.length];
+		for (int i = 0; i < unwrappedStripes.length; i++) {
+			unwrappedStripes[i] = unwrapped[i].base_asStripe();
+		}
+		return unwrappedStripes;
+	}
+	
 	public static NATStripe atValue(String stripeName) {
 		return atValue(AGSymbol.jAlloc(stripeName));
 	}

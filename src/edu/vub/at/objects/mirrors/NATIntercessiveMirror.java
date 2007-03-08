@@ -27,13 +27,8 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Vector;
-
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
@@ -48,6 +43,9 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+
+import java.util.LinkedList;
+import java.util.Vector;
 
 /**
  * <p>NATIntercessiveMirror extends the default NATIntrospectiveMirror to also allow 
@@ -160,7 +158,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 	
 	/*
 	 * TODO: refactor the intercepting methods using custom fields. Unfortunately they need to be initialised in places other than
-	 * the constructors, apparently. One problem is that the custom field is not rebound on cloning implkying that the base mirage
+	 * the constructors, apparently. One problem is that the custom field is not rebound on cloning implying that the base mirage
 	 * is always the empty one created implicitly when using the mirror constructor
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
@@ -197,22 +195,6 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 				stripes,
 				// correct value for base_ set by NATMirage#createClone
 				principal_); 
-	}
-	
-	// Called by the default NATObject Extension algorithm
-	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws InterpreterException {
-
-		NATIntercessiveMirror extension = new NATIntercessiveMirror(
-				/* dynamic parent */
-				this,
-				/* lexical parent */
-				code.base_getContext().base_getLexicalScope(),
-				/* parent porinter type */
-				parentPointerType);
-			
-		code.base_applyInScope(NATTable.EMPTY, extension);
-		
-		return extension;
 	}
 	
 	/* ---------------------------------

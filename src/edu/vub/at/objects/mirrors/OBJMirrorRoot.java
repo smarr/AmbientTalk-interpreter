@@ -29,7 +29,6 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -37,7 +36,6 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -117,18 +115,6 @@ public class OBJMirrorRoot extends NATByCopy {
 		return this;
 	}
 
-	
-	protected ATObject createChild(ATClosure code, boolean parentPointerType) throws InterpreterException {
-		ATObject extension = new NATIntercessiveMirror(
-				/* lexical parent */
-				code.base_getContext().base_getLexicalScope(),
-				/* parent pointer type */
-				parentPointerType);
-			
-		code.base_applyInScope(NATTable.EMPTY, extension);
-		return extension;
-	}
-	
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
 	 * ------------------------------------------ */

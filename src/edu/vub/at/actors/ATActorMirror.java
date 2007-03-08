@@ -102,17 +102,14 @@ public interface ATActorMirror extends ATObject {
 	public ATObject base_require(ATStripe topic, ATClosure handler, ATBoolean bool) throws InterpreterException;
 	
 	/**
-	 * def protocol := install: { code }
+	 * def oldprotocol := actor.install: newprotocol
 	 * 
-	 * Installs a meta-object protocol into this actor. The given code
-	 * is executed in the context of a new object whose dynamic parent is the actor's old
-	 * mirror. Hence, in the context of code, 'super' can be used to invoke the old
-	 * meta-level behaviour.
+	 * Installs a new meta-object protocol into this actor.
 	 * 
 	 * @param code meta-level code that overrides an actor's MOP methods
-	 * @return a protocol object that allows to uninstall the MOP code
+	 * @return an the previously installed meta-object protocol
 	 */
-	public ATObject base_install_(ATClosure code) throws InterpreterException;
+	public ATObject base_install_(ATActorMirror protocol) throws InterpreterException;
 	
     /* -------------------------------------
      * -- Object Passing Protocol Support --

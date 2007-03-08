@@ -227,14 +227,6 @@ public class NATCallframe extends NATByRef implements ATObject {
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
 		throw new XIllegalOperation("Cannot create a new instance of a call frame, new its owning object instead.");
 	}
-	
-	public ATObject meta_extend(ATClosure code) throws InterpreterException {
-		throw new XIllegalOperation("Cannot extend a call frame, extend its owning object instead.");
-	}
-
-	public ATObject meta_share(ATClosure code) throws InterpreterException {
-		throw new XIllegalOperation("Cannot share a call frame, share its owning object instead.");
-	}
 
 	/* ---------------------------------
 	 * -- Structural Access Protocol  --

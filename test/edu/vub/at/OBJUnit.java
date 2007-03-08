@@ -37,7 +37,6 @@ import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.NATParser;
 
@@ -149,8 +148,7 @@ public class OBJUnit extends NATNil {
 				NATObject._SHARES_A_);
 		
 		clone.ctx_ = new NATContext(extension, extension);
-		
-		code.base_applyInScope(NATTable.EMPTY, extension);
+		extension.initializeWithCode(code);
 		return extension;
 	}
 }
