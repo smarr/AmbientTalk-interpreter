@@ -202,6 +202,23 @@ Asynchronous function invocation:
 Introduce the shorthand syntax fun<-(a,b,c) to denote fun<-apply([a,b,c])
 such that remote references to closures are more easily invokable.
 
+Isolates and Import:
+====================
+
+Import internally makes use of ClosureMethod objects to implement the delegate methods
+that are imported into the host. These objects are currently not isolates, so when an isolate
+uses import, it will probably lose its delegate methods when being passed by copy.
+
+Perhaps the methods should be actually copied when being imported into an isolate?
+
+Import should also become dedicated syntax.
+
+Far References:
+===============
+
+Proper implementation for ==, new and init on far refs
+(== should work, new and init can throw exception)
+
 ----------------------
 Implementation issues:
 ----------------------
