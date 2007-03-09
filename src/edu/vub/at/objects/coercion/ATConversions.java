@@ -39,7 +39,6 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
-import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
@@ -84,7 +83,6 @@ public interface ATConversions {
 	public boolean base_isSplice() throws InterpreterException;
 	public boolean base_isMethod() throws InterpreterException;
 	public boolean base_isMessageCreation() throws InterpreterException;
-	public boolean base_isMirror() throws InterpreterException;
 	public boolean base_isStripe() throws InterpreterException;
 	public boolean base_isFarReference() throws InterpreterException;
 	
@@ -96,7 +94,6 @@ public interface ATConversions {
 	public ATMessage   base_asMessage() throws InterpreterException;
 	public ATField     base_asField() throws InterpreterException;
 	public ATMethod    base_asMethod() throws InterpreterException;
-	public ATMirror    base_asMirror() throws InterpreterException;
 	public ATHandler   base_asHandler() throws InterpreterException;
 	public ATStripe    base_asStripe() throws InterpreterException;
 	public ATFarReference base_asFarReference() throws InterpreterException;

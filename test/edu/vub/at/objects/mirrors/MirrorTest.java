@@ -29,23 +29,12 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.AmbientTalkTest;
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUserDefined;
-import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATNumber;
-import edu.vub.at.objects.natives.NATObject;
-import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.parser.NATParser;
 
 public class MirrorTest extends AmbientTalkTest {
 	
@@ -55,6 +44,8 @@ public class MirrorTest extends AmbientTalkTest {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
+		
+		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("Mirror"), NativeStripes._MIRROR_);
 		
 		evalAndReturn(
 				"def at := object: { \n" +
@@ -79,25 +70,185 @@ public class MirrorTest extends AmbientTalkTest {
 				"def symbol( text ) { jlobby.edu.vub.at.objects.natives.grammar.AGSymbol.alloc( text ) }; \n");
 	}
 
-//	/**
-//	 * Following a bug report by Stijn. Intercessive mirror creation and extension do 
-//	 * not always behave properly (e.g. they return mirages or superfluous introspective
-//	 * mirrors wrapping the desired result)
-//	 */
-//	public void testMirrorCreation() {
-//		ATObject mirror = evalAndReturn("def simpleMirror := mirror: { nil }; simpleMirror;");
-//		
-//		if(! (mirror instanceof NATIntercessiveMirror) ) {
-//			fail("Return value of mirror: { ... } is not an intercessive mirror.");
-//		};
-//		
-//		mirror = evalAndReturn("extend: simpleMirror with: { nil }");
-//		
-//		if(! (mirror instanceof NATIntercessiveMirror) ) {
-//			fail("Extensions of a mirror: { ... } are not intercessive mirrors. " + mirror.getClass());
-//		};
-//	}
+	/**
+	 * This test tests invariants with respect to the cloning of both intercessive mirrors and 
+	 * mirages in all possible forms.
+	 */
+	public void testMirageCloning() throws InterpreterException {
+		ATObject meta    = evalAndReturn(
+				"def meta := mirror: { nil }"); 
+		ATObject subject = evalAndReturn(
+				"def subject := object: { \n" +
+				"  def field := `field; \n" +
+				"  def canonical() { nil }; \n" +
+				"  def keyworded: arg1 message: arg2 { nil }; \n" +
+				"} mirroredBy: meta; \n");
+		// test whether the new mirage has a clone of the mirror as parent
+		ATObject result = evalAndReturn(
+				"meta := reflect: subject;");
+		
+		assertNotSame(meta, result);
+		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);
+		
+		// For future comparisons wrt to cloning use the current mirror
+		meta = result;
+		
+		// Sending clone to an intercessive mirror clones that mirror
+		// as well as cloning the base object in that mirror
+		result = evalAndReturn(
+				"def cloneMirrored := meta.clone()");
+		
+		// Stratification & Cloning : result is a mirror, cloned from meta
+		assertTrue(result.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
+		assertNotSame(result, meta);
+		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);
+		
+		// For future comparisons wrt to cloning use the current mirror
+		meta = result;
+		
+		result = evalAndReturn(
+				"cloneMirrored.base");
+		
+		// Cloning : Base should be a mirage, cloned from subject
+		assertTrue(result instanceof NATMirage);
+		assertNotSame(result, subject);
+		assertTrue(result.meta_isCloneOf(subject).asNativeBoolean().javaValue);
+		
+		// For future comparisons wrt to cloning use the current base object
+		subject = result;
+		
+		// Cloning a mirror, created a clone of the mirror with an empty mirage
+		result = evalAndReturn(
+				"clone: cloneMirrored");
+		
+		// Stratification & Cloning : result is a mirror, cloned from meta
+		assertTrue(result.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
+		assertNotSame(result, meta);
+		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);
+
+		// For future comparisons wrt to cloning use the current mirror
+		meta = result;
+
+		result = evalAndReturn(
+				"subject := cloneMirrored.base");
+
+		// Mirror Cloning : Base should be a mirage, yet not cloned from subject
+		assertTrue(result instanceof NATMirage);
+		assertNotSame(result, subject);
+		assertFalse(result.meta_isCloneOf(subject).asNativeBoolean().javaValue);
+		
+		// For future comparisons wrt to cloning use the current base object
+		subject = result;
+
+		result = evalAndReturn(
+				"subject := subject.new();");
+		
+		// Mirage.new() : Base should be a mirage, cloned from subject
+		assertTrue(result instanceof NATMirage);
+		assertNotSame(result, subject);
+		assertTrue(result.meta_isCloneOf(subject).asNativeBoolean().javaValue);
+		
+		result = evalAndReturn(
+				"reflect: subject;");
+
+		// Mirage.new() : Mirror should be a NATObject, with the mirror stripe which is cloned from the original mirror
+		assertTrue(result.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
+		assertNotSame(result, meta);
+		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);	
+
+
+	}
 	
+	/**
+	 * This test invokes all meta-level operations defined on objects and tests whether they 
+	 * return the proper results. As all these meta-level operations should return mirrors on
+	 * the 'actual' return values, this test also covers the stratification with respect to
+	 * return values. A full test of stratified mirror access is provided below.
+	 */
+	public void testObjectMetaOperations() {
+		ATObject subject = evalAndReturn(
+				"def subject := object: { \n" +
+				"  def field := `field; \n" +
+				"  def canonical() { nil }; \n" +
+				"  def keyworded: arg1 message: arg2 { nil }; \n" +
+				"}; \n");
+		evalAndCompareTo(
+				"def mirror := reflect: subject;",
+				"<mirror on:" + subject.toString() + ">");
+		evalAndCompareTo(
+				"mirror.dynamicParent;",
+				"<mirror on:nil>");
+		evalAndCompareTo(
+				"mirror.print();",
+				"<mirror on:\"" + subject.toString() + "\">");
+
+	}
+
+	/**
+	 * In order to build a full reflective tower, it is necessary to be able to create and use 
+	 * mirrors on mirrors as well. This test covers the creation and use of default introspective
+	 * mirrors on mirrors
+	 */
+	public void testReflectingOnIntrospectiveMirrors() {
+		evalAndCompareTo(
+				"def meta := reflect: false; \n" +
+				"def metaMeta := reflect: meta;",
+				"<mirror on:<mirror on:false>>");
+		evalAndCompareTo(
+				"def select := metaMeta.select(meta, `select).base",
+				"<native closure:select>");
+		evalAndCompareTo(
+				"def succeeded := select(false, `not)(); \n",
+				"true");
+
+	}
+	
+	/**
+	 * In order to build a full reflective tower, it is necessary to be able to create and use 
+	 * mirrors on mirrors as well. This test covers the creation and use of default introspective
+	 * mirrors on custom intercessive mirrors
+	 */
+	public void testReflectingOnIntercessiveMirrors() {
+		ATObject meta = evalAndReturn(
+				"def meta := mirror: { nil }; \n");
+		assertTrue(meta.toString().endsWith("[<stripe:Mirror>]>"));
+		evalAndCompareTo(
+				"def metaMeta := reflect: meta;",
+				"<mirror on:"+ meta +">");
+		evalAndCompareTo(
+				"def defineField := metaMeta.select(meta, `defineField).base",
+				"<native closure:defineField>");
+		evalAndCompareTo(
+				"defineField(`boolValue, true); \n" +
+				"meta.base.boolValue",
+				"true");
+	}
+	
+	/** 
+	 * To uphold stratification, values returned from invocations on a mirror should be 
+	 * automatically wrapped in a mirror. When returning a value that is itself a mirror, this
+	 * property should be upheld as otherwise it is impossible at the meta-level to distinguish
+	 * whether the value of a field is a base or meta-level entity. This test illustrates this
+	 * possible source for confusion.
+	 */ 
+	public void testMirrorWrapping() {
+		evalAndReturn(
+				"def subject := object: { \n" +
+				"  def thisBase := nil; \n" +
+				"  def thisMeta := nil; \n" +
+				"}; \n" +
+				"def mirror := reflect: subject; \n" +
+				"subject.thisBase := subject; \n" +
+				"subject.thisMeta := mirror;");
+		ATObject base = evalAndReturn(
+				"mirror.select(subject, `thisBase);");
+		ATObject meta = evalAndReturn(
+				"mirror.select(subject, `thisMeta);");
+		
+		assertNotSame(base, meta);
+		assertEquals("<mirror on:"+ base.toString() + ">", meta.toString());
+		
+	}
 	/**
 	 * This test creates a mirror and attempts to use it in a non-stratified way.
 	 * The test assumes failure if these attempts succeed, and continues if they
@@ -111,7 +262,7 @@ public class MirrorTest extends AmbientTalkTest {
 	 */
 	public void testStratification() { 
 		
-		evalAndReturn("def mirror  := at.mirrors.Factory.createMirror(true);");
+		evalAndReturn("def mirror  := reflect: true;");
 		
 		// Invoking base-level reflectee behaviour on a mirror. 
 		// Throws XSelectorNotFound as: 
@@ -122,13 +273,15 @@ public class MirrorTest extends AmbientTalkTest {
 				XSelectorNotFound.class);
 		
 		// Mirror consistency : return values are mirrors too.
+		evalAndReturn(
+				"def responds    := mirror.respondsTo( symbol(\"ifTrue:\") );" +
+				"(is: responds stripedWith: Mirror)" +
+				"   .ifFalse: { at.unit.fail(\"Return value is not a mirror\") };");
+		
 		// Throws XSelectorNotFound as responds is a mirror and: 
 		// - the method meta_ifTrue on NATBoolean does not exist
 		// - the method base_ifTrue on NATMirror does not exist
 		evalAndTestException(
-				"def responds    := mirror.respondsTo( symbol(\"ifTrue:\") );" +
-				"(responds.isMirror())" +
-				"   .ifFalse: { at.unit.fail(\"Return value is not a mirror\") };" +
 				"responds.ifTrue: { at.unit.fail(\"Can invoke base-level methods through a mirror\") };",
 				XSelectorNotFound.class);		
 	};

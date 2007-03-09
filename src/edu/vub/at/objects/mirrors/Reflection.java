@@ -36,8 +36,10 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATException;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.Symbiosis;
@@ -643,8 +645,8 @@ public final class Reflection {
 	 * Pass an AmbientTalk meta-level object into the base-level
 	 */
 	public static final ATObject downObject(ATObject metaObject) throws InterpreterException {
-		if (metaObject.base_isMirror()) {
-			return metaObject.base_asMirror().base_getBase();
+		if (metaObject.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+			return metaObject.meta_select(metaObject, NATObject._BASE_NAME_);
 		} else {
 			return metaObject; // most native objects represent both the object at the base and at the meta-level
 		}

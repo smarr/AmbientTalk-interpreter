@@ -29,12 +29,12 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
-import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -43,6 +43,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -72,7 +73,7 @@ import edu.vub.at.objects.natives.NATText;
  * @author tvcutsem
  */
 
-public class NATIntrospectiveMirror extends NATByRef implements ATMirror {
+public class NATIntrospectiveMirror extends NATByRef {
 
 	/** the object reflected on. This object is NOT a NATMirage */
 	private final ATObject principal_;
@@ -84,7 +85,7 @@ public class NATIntrospectiveMirror extends NATByRef implements ATMirror {
 	 * @return either an introspective mirror (if the passed object is native), otherwise
 	 * a custom intercessive mirror.
 	 */
-	public static final ATMirror atValue(ATObject objectRepresentation) {
+	public static final ATObject atValue(ATObject objectRepresentation) {
 		if(objectRepresentation instanceof NATMirage)
 			return ((NATMirage)objectRepresentation).getMirror();
 		else
@@ -104,17 +105,15 @@ public class NATIntrospectiveMirror extends NATByRef implements ATMirror {
 		principal_ = representation;
 	}
 	
-	/* -----------------------
-	 * -- ATMirror Protocol --
-	 * ----------------------- */
-
-	public ATObject base_getBase() { return principal_; }
-
-	/** @return true */
-	public boolean base_isMirror() { return true; }
-	
-	/** @return this */
-	public ATMirror base_asMirror() { return this; }
+	/**
+	 * This method is used to allow selecting the base field of an intercessive mirror using 
+	 * the reflective selection of fields. This method is never invoked directly by the 
+	 * implementation.
+	 * @return the base-level entity this mirror reflects on
+	 */
+	public ATObject base_getBase() {
+		return principal_;
+	}
 	
 	/* ------------------------------
 	 * -- Message Sending Protocol --
@@ -234,8 +233,11 @@ public class NATIntrospectiveMirror extends NATByRef implements ATMirror {
 		String jSelector = null;
 		
 		try{
+			if(! value.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue)
+				throw new XIllegalArgument("Stratification violation : attempted to assign a non-mirror value to a meta field");
+			
 			jSelector = Reflection.upMetaFieldMutationSelector(name);
-			Reflection.upFieldAssignment(principal_, jSelector, value.base_asMirror().base_getBase());
+			Reflection.upFieldAssignment(principal_, jSelector, value.meta_select(value, NATObject._BASE_NAME_));
 		} catch (XSelectorNotFound e) {
 			// Principal does not have a corresponding meta_level method
 			// OR the passed value is not a mirror object

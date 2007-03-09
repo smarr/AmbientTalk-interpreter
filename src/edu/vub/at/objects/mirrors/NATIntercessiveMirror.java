@@ -27,10 +27,10 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import java.util.LinkedList;
+import java.util.Vector;
+
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATMirror;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
@@ -38,14 +38,10 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-
-import java.util.LinkedList;
-import java.util.Vector;
 
 /**
  * <p>NATIntercessiveMirror extends the default NATIntrospectiveMirror to also allow 
@@ -64,7 +60,7 @@ import java.util.Vector;
  * 
  * @author smostinc
  */
-public class NATIntercessiveMirror extends NATObject implements ATMirror {
+public class NATIntercessiveMirror extends NATObject {
 
 	private static final AGSymbol _SYM_BASE_ = AGSymbol.jAlloc("base");
 	
@@ -134,15 +130,7 @@ public class NATIntercessiveMirror extends NATObject implements ATMirror {
 //			throw new RuntimeException("Initialisation of base field in an intercessive mirror failed.", e);
 //		}
 //	}
-	
-	public ATObject base_getBase() { return principal_; }
-	
-	/** @return true */
-	public boolean base_isMirror() { return true; }
-	
-	/** @return this */
-	public ATMirror base_asMirror() { return this; }
-	
+		
 	/*
 	 * TODO: refactor the intercepting methods using custom fields. Unfortunately they need to be initialised in places other than
 	 * the constructors, apparently. One problem is that the custom field is not rebound on cloning implkying that the base mirage

@@ -36,7 +36,6 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
-import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
@@ -68,7 +67,8 @@ import java.util.Vector;
  */
 public class NATMirage extends NATObject {
 
-	protected ATMirror mirror_;
+	// Whenever this field is set, the object should be tested for the _MIRROR_ native stripe
+	protected ATObject mirror_;
 	
 	public static NATMirage createMirage(ATClosure code, ATTable stripes, ATObject mirror) throws InterpreterException {
 		if (mirror.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
@@ -89,7 +89,7 @@ public class NATMirage extends NATObject {
 		}
 	}
 	
-	public NATMirage(ATMirror mirror) {
+	public NATMirage(ATObject mirror) {
 		mirror_ = mirror;
 	}
 	
@@ -104,7 +104,7 @@ public class NATMirage extends NATObject {
 			         ATObject lexicalParent,
 			         byte flags,
 			         ATStripe[] stripes,
-			         ATMirror mirror) throws InterpreterException {
+			         ATObject mirror) throws InterpreterException {
 		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
 		mirror_ = mirror;
 	}
@@ -121,11 +121,15 @@ public class NATMirage extends NATObject {
 	}
 
 	public NATMirage magic_clone(ATObject cloneMirror) throws InterpreterException {
-		NATMirage clone = (NATMirage)super.meta_clone();
 
-		clone.mirror_ = cloneMirror.base_asMirror();
+		if(cloneMirror.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+			NATMirage clone = (NATMirage)super.meta_clone();
+			clone.mirror_ = cloneMirror;
+			return clone;
+		} else {
+			throw new XIllegalArgument("Stratification violation : attempted to create a mirage from an object which is not striped to be a valid mirror.");
+		}
 		
-		return clone;
 
 	}
 
@@ -151,7 +155,7 @@ public class NATMirage extends NATObject {
 	}
 	
 	// CALLED BY meta_clone ON INTERCESSIVE MIRRORS
-	ATMirror getMirror() {
+	ATObject getMirror() {
 		return mirror_;
 	}
 	
@@ -530,14 +534,6 @@ public class NATMirage extends NATObject {
 				)).base_asBoolean();
 	}
 
-	public boolean base_isMirror() {
-		return false;
-	}
-	
-	public ATMirror base_asMirror() throws InterpreterException {
-		throw new XTypeMismatch(ATMirror.class, this);
-	}
-	
 	// when passing a mirage as a parameter in an asynchronous message send,
 	// make the mirror decide what object to read or write
 	

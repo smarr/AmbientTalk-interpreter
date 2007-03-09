@@ -43,7 +43,6 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
-import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -105,7 +104,7 @@ import java.util.Vector;
  * @author tvcutsem
  * @author smostinc
  */
-public class NATObject extends NATCallframe implements ATObject, ATMirror {
+public class NATObject extends NATCallframe implements ATObject {
 	
 	// The name of the field that points to the base_level representation of a custom mirror
 	public static final AGSymbol _BASE_NAME_ = AGSymbol.jAlloc("base");
@@ -146,7 +145,7 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 
 		private NATMirage base_;
 		
-		public BaseField(ATMirror mirror) {
+		public BaseField(ATObject mirror) {
 			base_ = new NATMirage(mirror);
 		}
 		
@@ -348,7 +347,7 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 			if (isLocallyStripedWith(NativeStripes._MIRROR_)) {
 				setFlag(_IS_MIRROR_FLAG_);
 				// mirrors need a read-only field which contains their baseField.
-				meta_addField(new BaseField(this.base_asMirror()));
+				meta_addField(new BaseField(this));
 			}
 			
 			
@@ -628,7 +627,7 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 
 		// If this object is a mirror, reinitialise the base field of the cloned mirror
 		if(clone.isFlagSet(_IS_MIRROR_FLAG_)) {
-			clone.setBase( new NATMirage(this.base_asMirror()) );
+			clone.setBase( new NATMirage( clone ) );
 		}
 		
 		return clone;
@@ -879,14 +878,6 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
     public ATSplice base_asSplice() throws InterpreterException { return (ATSplice) coerce(NativeStripes._SPLICE_, ATSplice.class); }
 	public ATDefinition base_asDefinition() throws InterpreterException { return (ATDefinition) coerce(NativeStripes._DEFINITION_, ATDefinition.class); }
 	public ATMessageCreation base_asMessageCreation() throws InterpreterException { return (ATMessageCreation) coerce(NativeStripes._MSGCREATION_, ATMessageCreation.class); }
-
-	public ATMirror base_asMirror() throws InterpreterException { 
-		if(meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
-			return this;
-		} else {
-			throw new XTypeMismatch(ATMirror.class, this);
-		}
-	}
 	
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
@@ -894,7 +885,6 @@ public class NATObject extends NATCallframe implements ATObject, ATMirror {
 	
 	// objects can only be 'cast' to a native category if they are marked with
 	// the appropriate native stripe
-	public boolean base_isMirror() throws InterpreterException { return meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue; }
 	public boolean base_isBoolean() throws InterpreterException { return meta_isStripedWith(NativeStripes._BOOLEAN_).asNativeBoolean().javaValue; }
 	public boolean base_isClosure() throws InterpreterException { return meta_isStripedWith(NativeStripes._CLOSURE_).asNativeBoolean().javaValue; }
 	public boolean base_isMethod() throws InterpreterException { return meta_isStripedWith(NativeStripes._METHOD_).asNativeBoolean().javaValue; }

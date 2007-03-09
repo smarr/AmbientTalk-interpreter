@@ -36,6 +36,7 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -66,7 +67,7 @@ public class OBJMirrorRoot extends NATByCopy {
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
 		
-		NATMirage principal = (NATMirage)receiver.base_asMirror().base_getBase();
+		NATMirage principal = (NATMirage)receiver.meta_select(receiver, NATObject._BASE_NAME_);
 
 		// OBJMirrorRoot emulates it has a PrimitiveMethod clone
 		if(atSelector == _CLONE_) {
@@ -143,7 +144,7 @@ public class OBJMirrorRoot extends NATByCopy {
 	 * referring to its principal.</p>
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
-		NATMirage principal = (NATMirage)receiver.base_asMirror().base_getBase();
+		NATMirage principal = (NATMirage)receiver.meta_select(receiver, NATObject._BASE_NAME_);
 		
 		// Same as upMetaLevelSelector but with magic_ instead of meta_
 		// invoking a meta-level operation in the base would mean the operation
@@ -184,7 +185,7 @@ public class OBJMirrorRoot extends NATByCopy {
 	 * itself is changed.
 	 */
 	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-		NATMirage principal = (NATMirage)receiver.base_asMirror().base_getBase();
+		NATMirage principal = (NATMirage)receiver.meta_select(receiver, NATObject._BASE_NAME_);
 		
 		String jSelector = Reflection.upMagicFieldMutationSelector(name);
 		
@@ -193,7 +194,7 @@ public class OBJMirrorRoot extends NATByCopy {
 					principal.getClass(),
 					principal,
 					jSelector,
-					new ATObject[] { name.equals(_MIRROR_)? value : value.base_asMirror().base_getBase() });
+					new ATObject[] { name.equals(_MIRROR_)? value : value.meta_select(receiver, NATObject._BASE_NAME_) });
 		} catch (XSelectorNotFound e) {
 			// Principal does not have a corresponding meta_level method
 			// OR the passed value is not a mirror object

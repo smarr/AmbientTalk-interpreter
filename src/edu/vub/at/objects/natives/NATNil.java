@@ -46,7 +46,6 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
-import edu.vub.at.objects.ATMirror;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -401,10 +400,6 @@ public class NATNil implements ATNil, Serializable {
         return false;
     }
     
-    public boolean base_isMirror() throws InterpreterException {
-        return false;
-    }
-    
     public boolean base_isStripe() throws InterpreterException {
         return false;
     }
@@ -441,10 +436,6 @@ public class NATNil implements ATNil, Serializable {
         throw new XTypeMismatch(ATMethod.class, this);
     }
 
-    public ATMirror base_asMirror() throws InterpreterException {
-        throw new XTypeMismatch(ATMirror.class, this);
-    }
-    
     public ATHandler base_asHandler() throws InterpreterException {
     	    throw new XTypeMismatch(ATHandler.class, this);
     }
