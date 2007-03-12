@@ -227,14 +227,7 @@ public class ELActor extends EventLoop {
 	public void event_acceptSelfSend(final ATAsyncMessage msg) {
 		receive(new Event("accept("+msg+")") {
 			public void process(Object myActorMirror) {
-				try {
-					ATObject result = msg.base_process(mirror_);
-					// TODO what to do with return value?
-					Logging.Actor_LOG.info(this + ": accept("+msg+") returned " + result);
-				} catch (InterpreterException e) {
-					// TODO what to do with exception?
-					Logging.Actor_LOG.info(this + ": accept("+msg+") failed ", e);
-				}
+				performAccept(msg);
 			}
 		});
 	}
@@ -247,17 +240,25 @@ public class ELActor extends EventLoop {
 	public void event_accept(final Packet serializedMessage) {
 		receive(new Event("accept("+serializedMessage+")") {
 			public void process(Object myActorMirror) {
-				try {
-					ATAsyncMessage msg = serializedMessage.unpack().base_asAsyncMessage();
-					ATObject result = msg.base_getReceiver().meta_receive(msg);
-					// TODO what to do with return value?
-					Logging.Actor_LOG.info(myActorMirror + ": "+this + " returned " + result);
-				} catch (InterpreterException e) {
-					// TODO what to do with exception?
-					Logging.Actor_LOG.info(myActorMirror + ": "+this + " failed ", e);
-				}
-			}
+			  try {
+				ATAsyncMessage msg = serializedMessage.unpack().base_asAsyncMessage();
+				performAccept(msg);
+			  } catch (InterpreterException e) {
+				Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
+			  }
+		    }
 		});
+	}
+	
+	private void performAccept(ATAsyncMessage msg) {
+		try {
+			ATObject result = msg.base_getReceiver().meta_receive(msg);
+			// TODO what to do with return value?
+			Logging.Actor_LOG.info(mirror_ + ": "+ msg + " returned " + result);
+		} catch (InterpreterException e) {
+			// TODO what to do with exception?
+			Logging.Actor_LOG.error(mirror_ + ": "+ msg + " failed ", e);
+		}
 	}
 	
 	/**

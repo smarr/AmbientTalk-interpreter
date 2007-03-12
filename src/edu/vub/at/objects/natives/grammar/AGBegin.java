@@ -45,7 +45,7 @@ import edu.vub.at.objects.natives.NATText;
  * @author tvcutsem
  */
 public final class AGBegin extends NATAbstractGrammar implements ATBegin {
-
+	
 	private final ATTable statements_;
 	
 	public AGBegin(ATTable statements) {

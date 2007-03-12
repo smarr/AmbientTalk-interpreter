@@ -66,11 +66,17 @@ public interface ATMessage extends ATObject {
 	 * Sends this message to a particular receiver object. The way in which the message
 	 * send will be performed (synchronous or asynchronous) depends on the kind of message.
 	 * 
-	 * @param receiver the object receiving the message.
-	 * @param sender the object sending the message.
+	 * @param receiver the object receiving the message denoted by this ATMessage.
+	 * @param sender the object sending the message.denoted by this ATMessage
 	 * @return the value of the method invocation or message send.
 	 * @throws InterpreterException if the method is not found or an error occurs while processing the method.
 	 */
 	public ATObject base_sendTo(ATObject receiver, ATObject sender) throws InterpreterException;
+	
+	/**
+	 * Primitive implementation of base_sendTo.
+	 * @param self the AmbientTalk object to which 'sendTo' was originally sent
+	 */
+	public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException;
 
 }

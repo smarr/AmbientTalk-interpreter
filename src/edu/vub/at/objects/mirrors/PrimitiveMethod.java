@@ -30,72 +30,88 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATByCopy;
+import edu.vub.at.objects.natives.NATMethod;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.grammar.AGBegin;
+import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 
 /**
  * A primitive method is the equivalent of a NativeClosure but for methods rather
  * than closures. The advantage of PrimtiveMethods is that their base_apply method
- * gives access to both arguments as well as to the runtime context in which they
- * were invoked.
+ * gives access to both arguments as well as to the runtime context in that contains
+ * the lexical environment in which they were defined.
  * 
  * Example primitive methods are '==', 'new' and 'init' implemented in NATObject.
  *
- * Primitive methods should implement this method's base_apply method.
+ * Primitive methods should implement this method's base_apply method or invoke the
+ * constructor taking a PrimitiveBody parameter and implement that class's meta_eval
+ * method, if they want to make use of AT/2's parameter binding semantics.
+ * 
+ * Primitive methods installed in native objects that can be extended should ensure
+ * that they use the dynamic receiver stored in the application context (the AmbientTalk
+ * 'self') rather than the Java 'this' variable to perform self-sends. The former will
+ * properly invoke/select the overridden methods/fields of a child AT object, the latter
+ * will simply refer to the native instance, disregarding any modifications by child objects.
  *
  * @author tvcutsem
  */
-public abstract class PrimitiveMethod extends NATByCopy implements ATMethod {
+public class PrimitiveMethod extends NATMethod {
 	
-	private final ATSymbol name_;
-	private final ATTable  formals_;
+	/**
+	 * Instances of this helper class represent primitive method bodies. To the
+	 * AT programmer, they look like empty methods (i.e. { nil }). The native Java
+	 * implementation is specified by overriding the meta_eval method.
+	 */
+	public static abstract class PrimitiveBody extends NATAbstractGrammar implements ATBegin {
+		
+		/**
+		 * A primitive can override this method and has access to:
+		 * - ctx.lexicalScope = the call frame for this method invocation
+		 * - ctx.lexicalScope.lexicalParent = the object in which the method was found
+		 * - ctx.dynamicReceiver = the object on which the method was invoked
+		 */
+		public abstract ATObject meta_eval(ATContext ctx) throws InterpreterException;
+
+		public ATObject meta_quote(ATContext ctx) throws InterpreterException {
+			return this;
+		}
+		
+		public ATTable base_getStatements() { return NATTable.of(NATNil._INSTANCE_); }
+		
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("Primitive body " + this);
+		}
+		
+		public ATBegin base_asBegin() throws XTypeMismatch {
+			return this;
+		}
+		
+	}
 	
+	public PrimitiveMethod(ATSymbol name, ATTable formals, PrimitiveBody body) {
+		super(name, formals, body);
+	}
+
+	/**
+	 * Constructor for the creation of primitive methods where the body is left empty.
+	 * The idea is that the creator of such primitive methods overrides the base_apply
+	 * method because the primitive method has no need for a call frame or parameter binding.
+	 */
 	public PrimitiveMethod(ATSymbol name, ATTable formals) {
-		name_ = name;
-		formals_ = formals;
-	}
-
-	public ATSymbol base_getName() throws InterpreterException {
-		return name_;
-	}
-	
-	public ATTable base_getParameters() throws InterpreterException {
-		return formals_;
-	}
-
-	public ATBegin base_getBodyExpression() {
-		return new AGBegin(NATTable.atValue(new ATObject[] {
-				NATText.atValue("Primitive implementation of " + name_) }));
-	}
-	
-	public abstract ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException;
-	
-	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {
-		return base_apply(arguments, ctx);
-	}
-	
-	public ATMethod base_asMethod() throws XTypeMismatch {
-		return this;
-	}
-
-	public boolean base_isMethod() {
-		return true;
+		super(name, formals, new PrimitiveBody() {
+			public ATObject meta_eval(ATContext ctx) throws InterpreterException {
+				return NATNil._INSTANCE_;
+			}
+		});
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<primitive method:"+name_+">");
+		return NATText.atValue("<primitive method:"+base_getName()+">");
 	}
-	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._METHOD_);
-    }
 	
 }

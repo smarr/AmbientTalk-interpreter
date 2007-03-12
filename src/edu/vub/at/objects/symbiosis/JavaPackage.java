@@ -70,20 +70,17 @@ import java.util.Vector;
 public final class JavaPackage extends NATObject {
 
 	private static final String _PKG_SEP_ = ".";
-	
-	private static final AGSymbol _CLS_NAME_ = AGSymbol.jAlloc("class");
-	private static final AGSymbol _PKG_NAME_ = AGSymbol.jAlloc("package");
-	
+
 	/** def class(name) { nil } */
 	private static final PrimitiveMethod _PRIM_CLS_ = new PrimitiveMethod(
-			_CLS_NAME_, NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("name")})) {
+			AGSymbol.jAlloc("class"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("name")})) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			return ((JavaPackage)ctx.base_getLexicalScope()).base_class(arguments.base_at(NATNumber.ONE).base_asSymbol());
 		}
 	};
 	/** def package(name) { nil } */
 	private static final PrimitiveMethod _PRIM_PKG_ = new PrimitiveMethod(
-			_PKG_NAME_, NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("name")})) {
+			AGSymbol.jAlloc("package"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("name")})) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			return ((JavaPackage)ctx.base_getLexicalScope()).base_package(arguments.base_at(NATNumber.ONE).base_asSymbol());
 		}

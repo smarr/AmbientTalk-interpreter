@@ -28,12 +28,16 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATNil;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -45,15 +49,30 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  * @author tvc
  */
 public abstract class NATMessage extends NATObject implements ATMessage {
-
+	
 	private final static AGSymbol _SELECTOR_ = AGSymbol.jAlloc("selector");
 	private final static AGSymbol _ARGUMENTS_ = AGSymbol.jAlloc("arguments");
+	
+	/** def sendTo(receiver, sender) { nil } */
+	private static final PrimitiveMethod _PRIM_SND_ = new PrimitiveMethod(
+			AGSymbol.jAlloc("sendTo"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("receiver"), AGSymbol.jAlloc("sender") })) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			int arity = arguments.base_getLength().asNativeNumber().javaValue;
+			if (arity != 2) {
+				throw new XArityMismatch("sendTo", 2, arity);
+			}
+			return ctx.base_getLexicalScope().base_asMessage().prim_sendTo(
+					ctx.base_getSelf().base_asMessage(),
+					arguments.base_at(NATNumber.ONE), arguments.base_at(NATNumber.atValue(2)));
+		}
+	};
 	
 	protected NATMessage(ATSymbol sel, ATTable arg, ATStripe stripe) throws InterpreterException {
 		// tag object as a Message and as an Isolate
 		super(new ATStripe[] { NativeStripes._ISOLATE_, stripe });
 		super.meta_defineField(_SELECTOR_, sel);
 		super.meta_defineField(_ARGUMENTS_, arg);
+		super.meta_addMethod(_PRIM_SND_);
 	}
 
 	public ATSymbol base_getSelector() throws InterpreterException {
@@ -69,6 +88,13 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 		return NATNil._INSTANCE_;
 	}
 	
+	/**
+	 * If sendTo is invoked from the Java-level directly, use 'this' as the dynamic receiver.
+	 */
+	public ATObject base_sendTo(ATObject receiver, ATObject sender) throws InterpreterException {
+		return this.prim_sendTo(this, receiver, sender);
+	}
+
 	public ATMessage base_asMessage() {
 		return this;
 	}

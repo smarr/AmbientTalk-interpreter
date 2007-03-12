@@ -32,6 +32,7 @@ import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -123,6 +124,9 @@ public class NATObject extends NATCallframe implements ATObject {
 	private static final PrimitiveMethod _PRIM_EQL_ = new PrimitiveMethod(
 			_EQL_NAME_, NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("comparand")})) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			if (!arguments.base_getLength().equals(NATNumber.ONE)) {
+				throw new XArityMismatch("==", 1, arguments.base_getLength().asNativeNumber().javaValue);
+			}
 			return ctx.base_getLexicalScope().base__opeql__opeql_(arguments.base_at(NATNumber.ONE));
 		}
 	};
@@ -336,43 +340,45 @@ public class NATObject extends NATCallframe implements ATObject {
 		
 		stripes_ = stripes;
 		
-		// if this object is striped as at.stripes.Isolate, flag it as an isolate
-		try {
-			if (isLocallyStripedWith(NativeStripes._ISOLATE_)) {
-				setFlag(_IS_ISOLATE_FLAG_);
-				// isolates can only have the global lexical root as their lexical scope
-				lexicalParent_ = Evaluator.getGlobalLexicalScope();
-			}
-			
-			if (isLocallyStripedWith(NativeStripes._MIRROR_)) {
-				setFlag(_IS_MIRROR_FLAG_);
-				// mirrors need a read-only field which contains their baseField.
-				meta_addField(new BaseField(this));
-			}
-			
-			
-		} catch (InterpreterException e) {
-			// some custom stripe failed to match agains the Isolate stripe,
-			// the object is not considered an Isolate
-			Logging.Actor_LOG.error("Error testing for Isolate stripe, ignored:", e);
-		}
-		
 		methodDictionary_ = new MethodDictionary();
 		
 		// bind the dynamic parent to the field named 'super'
 		// we don't pass via meta_defineField as this would trigger mirages too early
 		variableMap_.put(_SUPER_NAME_);
 		stateVector_.add(dynamicParent);
-			
+		
 		// add ==, new and init to the method dictionary directly
 		// we don't pass via meta_addMethod as this would trigger mirages too early
 		methodDictionary_.put(_EQL_NAME_, _PRIM_EQL_);
 		methodDictionary_.put(_NEW_NAME_, _PRIM_NEW_);
 		methodDictionary_.put(_INI_NAME_, _PRIM_INI_);
 		
-		if (parentType) {
+		if (parentType) { // parentType == _IS_A_)
 			// requested an 'is-a' parent
 			setFlag(_ISAPARENT_FLAG_); // set is-a parent flag to 1
+		}
+		
+		try {
+            // if this object is striped as at.stripes.Isolate, flag it as an isolate
+            // we cannot perform 'this.meta_isStripedWith(ISOLATE)' because this would trigger mirages too early
+			if (isLocallyStripedWith(NativeStripes._ISOLATE_)
+			     || dynamicParent.meta_isStripedWith(NativeStripes._ISOLATE_).asNativeBoolean().javaValue) {
+				setFlag(_IS_ISOLATE_FLAG_);
+				// isolates can only have the global lexical root as their lexical scope
+				lexicalParent_ = Evaluator.getGlobalLexicalScope();
+			}
+			
+			// if this object is locally striped as a mirror, add a 'base' field to it
+			if (isLocallyStripedWith(NativeStripes._MIRROR_)) {
+				setFlag(_IS_MIRROR_FLAG_);
+				// mirrors need a read-only field which contains their baseField.
+				meta_addField(new BaseField(this));
+			}
+			
+		} catch (InterpreterException e) {
+			// some custom stripe failed to match agains the Isolate stripe,
+			// the object is not considered an Isolate
+			Logging.Actor_LOG.error("Error testing for Isolate stripe, ignored:", e);
 		}
 	}
 	
@@ -454,7 +460,6 @@ public class NATObject extends NATCallframe implements ATObject {
 			// immediately execute the method in the context ctx where
 			//  ctx.scope = the implementing scope, being this object, under which an additional callframe will be inserted
 			//  ctx.self  = the late bound receiver, being the passed receiver
-			//  ctx.super = the parent of the implementor
 			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver));
 		} else {
 			return meta_getDynamicParent().meta_invoke(receiver, selector, arguments);
@@ -517,9 +522,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * of the object and its dynamic parents.
 	 * 
 	 * Overridden from NATCallframe to take methods into account as well.
-	 */
-	
-	/**
+	 * 
 	 * This method is used to evaluate code of the form <tt>selector</tt> within the scope
 	 * of this object. An object resolves such a lookup request as follows:
 	 *  - If a field corresponding to the selector exists locally, the field's value is returned.
@@ -765,14 +768,12 @@ public class NATObject extends NATCallframe implements ATObject {
      * If not, then delegate the query to the dynamic parent.
      */
     public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException {
-    	for (int i = 0; i < stripes_.length; i++) {
-			if (stripes_[i].base_isSubstripeOf(stripe).asNativeBoolean().javaValue) {
-				// if one stripe matches, return true
-				return NATBoolean._TRUE_;
-			}
-		}
-    	// no stripes match, ask the parent
-    	return meta_getDynamicParent().meta_isStripedWith(stripe);
+    	if (isLocallyStripedWith(stripe)) {
+    		return NATBoolean._TRUE_;
+    	} else {
+        	// no stripes match, ask the parent
+        	return meta_getDynamicParent().meta_isStripedWith(stripe);
+    	}
     }
     
     /**

@@ -74,6 +74,10 @@ public final class Coercer implements InvocationHandler {
 		wrappingThread_ = Thread.currentThread();
 	}
 	
+	public String toString() {
+		return "<coercer on: "+principal_+">";
+	}
+	
 	public static final Object coerce(ATObject object, Class type) throws XTypeMismatch {
 		if (type.isInstance(object)) { // object instanceof type
 			return object; // no need to coerce
@@ -89,8 +93,10 @@ public final class Coercer implements InvocationHandler {
 	}
 
 	public Object invoke(Object receiver, final Method method, Object[] arguments) throws Throwable {
+		Class methodImplementor = method.getDeclaringClass();
 		// handle toString, hashCode and equals in a dedicated fashion
-		if (method.getDeclaringClass() == Object.class) {
+		// similarly, handle AT conversion methods by simply forwarding them to the native AT object
+		if (methodImplementor == Object.class || methodImplementor == ATConversions.class) {
 			// invoke these methods on the principal rather than on the proxy
 			try {
 				return method.invoke(principal_, arguments);

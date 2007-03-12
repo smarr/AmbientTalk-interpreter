@@ -31,9 +31,9 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATTable;
 
 /**
- * @author tvc
- *
- * The public interface to a sequence of statements.
+ * The public interface to a sequence of statements. The table encapsulated by ATBegin may not be empty.
+ * 
+ * @author tvcutsem
  */
 public interface ATBegin extends ATAbstractGrammar {
 

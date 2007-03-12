@@ -61,7 +61,14 @@ public interface ATAsyncMessage extends ATMessage {
      *  def process(receiver) {
      *    (reflect: receiver).invoke(receiver, self.selector, self.arguments)
      *  }
+     * 
+     * @param receiver the object that has been designated to receive the message
      */
     public ATObject base_process(ATObject receiver) throws InterpreterException;
 
+    /**
+     * The primitive implementation of base_process.
+     * @param self the ambienttalk object that originally received the 'process' message.
+     */
+    public ATObject prim_process(ATAsyncMessage self, ATObject receiver) throws InterpreterException;
 }

@@ -119,7 +119,7 @@ public class NATNil implements ATNil, Serializable {
     public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
         try {
 			String jSelector = Reflection.upBaseLevelSelector(atSelector);
-			return Reflection.upInvocation(this, jSelector, arguments);
+			return Reflection.upInvocation(this /*receiver*/, jSelector, arguments);
 		} catch (XSelectorNotFound e) {
 			return receiver.meta_doesNotUnderstand(atSelector).base_asClosure().base_apply(arguments);
 		}

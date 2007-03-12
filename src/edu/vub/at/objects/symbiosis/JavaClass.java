@@ -27,14 +27,16 @@
  */
 package edu.vub.at.objects.symbiosis;
 
+import edu.vub.at.actors.net.Logging;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
-import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
@@ -43,9 +45,11 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -106,6 +110,22 @@ public final class JavaClass extends NATObject implements ATStripe {
 		}
 	}
 	
+	// primitive fields and method of a JavaClass wrapper
+	
+	private static final AGSymbol _PST_NAME_ = AGSymbol.jAlloc("parentStripes");
+	private static final AGSymbol _SNM_NAME_ = AGSymbol.jAlloc("stripeName");
+	
+	/** def isSubstripeOf(stripe) { nil } */
+	private static final PrimitiveMethod _PRIM_SST_ = new PrimitiveMethod(
+			AGSymbol.jAlloc("isSubstripeOf"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("stripe")})) {
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			if (!arguments.base_getLength().equals(NATNumber.ONE)) {
+				throw new XArityMismatch("isSubstripeOf", 1, arguments.base_getLength().asNativeNumber().javaValue);
+			}
+			return ctx.base_getLexicalScope().asJavaClassUnderSymbiosis().base_isSubstripeOf(arguments.base_at(NATNumber.ONE).base_asStripe());
+		}
+	};
+	
 	private final Class wrappedClass_;
 	
 	/**
@@ -120,6 +140,23 @@ public final class JavaClass extends NATObject implements ATStripe {
 			  new ATStripe[] { NativeStripes._STRIPE_ } :
 			  NATObject._NO_STRIPES_);
 		wrappedClass_ = wrappedClass;
+		
+		// add the two fields and one method needed for an ATStripe
+		if (wrappedClass.isInterface()) {
+			Class[] extendedInterfaces = wrappedClass_.getInterfaces();
+			ATObject[] stripes = new ATObject[extendedInterfaces.length];
+			for (int i = 0; i < extendedInterfaces.length; i++) {
+				stripes[i] = JavaClass.wrapperFor(extendedInterfaces[i]);
+			}
+			
+			try {
+				super.meta_defineField(_PST_NAME_, NATTable.atValue(stripes));
+				super.meta_defineField(_SNM_NAME_, AGSymbol.jAlloc(wrappedClass_.getName()));
+				super.meta_addMethod(_PRIM_SST_);
+			} catch (InterpreterException e) {
+				Logging.Actor_LOG.fatal("Error while initializing Java Class as stripe: " + wrappedClass.getName(), e);
+			}
+		}
 	}
 	
 	public Class getWrappedClass() { return wrappedClass_; }
@@ -355,24 +392,11 @@ public final class JavaClass extends NATObject implements ATStripe {
      * are wrappers for all interfaces extended by this Java interface type
      */
 	public ATTable base_getParentStripes() throws InterpreterException {
-		if (wrappedClass_.isInterface()) {
-			Class[] extendedInterfaces = wrappedClass_.getInterfaces();
-			ATObject[] stripes = new ATObject[extendedInterfaces.length];
-			for (int i = 0; i < extendedInterfaces.length; i++) {
-				stripes[i] = JavaClass.wrapperFor(extendedInterfaces[i]);
-			}
-			return NATTable.atValue(stripes);
-		} else {
-			throw new XIllegalOperation("Asked for parent stripes of a non-interface Class type:" + wrappedClass_.getName());
-		}
+		return super.meta_select(this, _PST_NAME_).base_asTable();
 	}
 
 	public ATSymbol base_getStripeName() throws InterpreterException {
-		if (wrappedClass_.isInterface()) {
-			return AGSymbol.jAlloc(wrappedClass_.getName());
-		} else {
-			throw new XIllegalOperation("Asked for stripe name of a non-interface Class type:" + wrappedClass_.getName());
-		}
+		return super.meta_select(this, _SNM_NAME_).base_asSymbol();
 	}
 
 	/**
@@ -381,16 +405,12 @@ public final class JavaClass extends NATObject implements ATStripe {
 	 * to the other type.
 	 */
 	public ATBoolean base_isSubstripeOf(ATStripe other) throws InterpreterException {
-		if (wrappedClass_.isInterface()) {
-			if (other instanceof JavaClass) {
-				JavaClass otherClass = (JavaClass) other;
-				// wrappedClass <: otherClass <=> otherClass >= wrappedClass
-				return NATBoolean.atValue(otherClass.wrappedClass_.isAssignableFrom(wrappedClass_));
-			} else {
-				return NATBoolean._FALSE_;
-			}
+		if (other instanceof JavaClass) {
+			JavaClass otherClass = (JavaClass) other;
+			// wrappedClass <: otherClass <=> otherClass >= wrappedClass
+			return NATBoolean.atValue(otherClass.wrappedClass_.isAssignableFrom(wrappedClass_));
 		} else {
-			throw new XIllegalOperation("Performed substripe test on a non-interface Class type:" + wrappedClass_.getName());
+			return NATBoolean._FALSE_;
 		}
 	}
 	

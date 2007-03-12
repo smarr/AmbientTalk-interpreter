@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.PartialBinder;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -37,6 +38,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.PrimitiveMethod;
 
 /**
  * NATMethod implements methods as named functions which are in fact simply containers
@@ -62,6 +64,25 @@ public class NATMethod extends NATByCopy implements ATMethod {
 		// calculate the parameter binding strategy to use using partial evaluation
 		parameterBindingFunction_ =
 			PartialBinder.calculateResidual(name_.base_getText().asNativeText().javaValue, parameters);
+	}
+	
+	/**
+	 * Constructor to be used by primitive methods only.
+	 */
+	protected NATMethod(ATSymbol name, ATTable parameters, PrimitiveMethod.PrimitiveBody body) {
+		name_ 		= name;
+		parameters_ = parameters;
+		body_ 		= body;
+		PartialBinder parameterBindingFunction;
+		try {
+			// calculate the parameter binding strategy to use using partial evaluation
+			parameterBindingFunction = PartialBinder.calculateResidual(name_.base_getText().asNativeText().javaValue, parameters);
+		} catch (InterpreterException e) {
+			parameterBindingFunction = null;
+			// this indicates a bug, primitive methods should not contain erroneous parameter lists
+			Logging.VirtualMachine_LOG.fatal("error creating primitive method: ",e);
+		}
+		parameterBindingFunction_ = parameterBindingFunction;
 	}
 
 	public ATSymbol base_getName() {

@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -54,8 +55,8 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	 * 
 	 * @return the return value of the invoked method.
 	 */
-	public ATObject base_sendTo(ATObject receiver, ATObject sender) throws InterpreterException {
-		return receiver.meta_invoke(receiver, base_getSelector(), base_getArguments());
+	public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException {
+		return receiver.meta_invoke(receiver, self.base_getSelector(), self.base_getArguments());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
