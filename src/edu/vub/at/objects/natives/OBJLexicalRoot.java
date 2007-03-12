@@ -613,7 +613,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  => return an object mirage initialized with code and striped with the given stripes
 	 */
 	public ATObject base_object_stripedWith_mirroredBy_(ATClosure code, ATTable stripes, ATObject mirror) throws InterpreterException {
-		return NATMirage.createMirage(code, NATTable.EMPTY, mirror);
+		return NATMirage.createMirage(code, stripes, mirror);
 	}
 	
 //	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
