@@ -199,4 +199,7 @@ public final class NativeStripes {
 
 //defstripe ImportConflict <: Exception;
 	public final static NATStripe _IMPORTCONFLICT_ = NATStripe.atValue("ImportConflict", _EXCEPTION_);
+
+//defstripe ObjectOffline <: Exception;
+    public final static NATStripe _OBJECTOFFLINE_ = NATStripe.atValue("ObjectOffline", _EXCEPTION_);
 }

@@ -89,6 +89,8 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 	/**
 	 * Registers <code>listener</code> to be notified whenever a virtual machine becomes (un)reachable.
 	 * 
+	 * TODO: store only WEAK references to the remote references
+	 * 
 	 * @param virtualMachine - an address of the virtual machine hosting the object the listener is interested in
 	 * @param listener - a listener which will be notified whenever the said address connects or disconnects
 	 */

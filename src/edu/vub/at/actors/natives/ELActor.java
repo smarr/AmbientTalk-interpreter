@@ -41,6 +41,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XClassNotFound;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -140,11 +141,9 @@ public class ELActor extends EventLoop {
 	 * @param id the identifier of the object to resolve
 	 * @return a near or far reference to the object, depending on where the designated object lives
 	 */
-	public ATObject resolve(ATObjectID id, ATStripe[] stripes) {
+	public ATObject resolve(ATObjectID id, ATStripe[] stripes) throws XObjectOffline {
 		return receptionists_.resolveObject(id, stripes);
 	}
-	
-	
 	
 	/* -----------------------------
 	 * -- Initialisation Protocol --

@@ -39,6 +39,8 @@ import edu.vub.at.objects.natives.NATNil;
 /**
  * Instances of NATRemoteFarRef represent far references to physically remote actors.
  * By 'physically remote', we mean in a separate address space.
+ * 
+ * TODO: implement finalizer and stop ELFarRef upon finalization
  *
  * @author tvcutsem
  */
@@ -49,7 +51,7 @@ public class NATRemoteFarRef extends NATFarReference {
 	 * is not taken with it. At the remote end, a new far reference will be created with the
 	 * appropriate event loop.
 	 */
-	transient final ELFarReference sendLoop_;
+	private transient final ELFarReference sendLoop_;
 
 	public NATRemoteFarRef(ATObjectID objectId, ELActor hostActor, ATStripe[] stripes) {
 		super(objectId, stripes);
@@ -71,5 +73,13 @@ public class NATRemoteFarRef extends NATFarReference {
 
 	public void onReconnection(ATClosure listener) throws InterpreterException {
 		sendLoop_.addReconnectionListener(listener);
+	}
+	
+	public void removeDisconnectionListener(ATObject listener) {
+		sendLoop_.removeDisconnectionListener(listener);
+	}
+	
+	public void removeReconnectionListener(ATObject listener) {
+		sendLoop_.removeReconnectionListener(listener);
 	}
 }

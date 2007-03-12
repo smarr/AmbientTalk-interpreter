@@ -334,7 +334,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 					if(reference instanceof NATRemoteFarRef) {
 						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
 						ATObject handler = scope_.meta_select(scope_, _HANDLER_);
-						remote.sendLoop_.removeDisconnectionListener(handler);
+						remote.removeDisconnectionListener(handler);
 					}
 					return NATNil._INSTANCE_;
 				}
@@ -358,7 +358,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 					if(reference instanceof NATRemoteFarRef) {
 						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
 						ATObject handler = scope_.meta_select(scope_, _HANDLER_);
-						remote.sendLoop_.removeReconnectionListener(handler);
+						remote.removeReconnectionListener(handler);
 					}
 					return NATNil._INSTANCE_;
 				}
