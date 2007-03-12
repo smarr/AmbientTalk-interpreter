@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
@@ -143,6 +144,20 @@ public class MirageTest extends AmbientTalkTest {
 		assertNotSame(result, meta);
 		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);	
 
+	}
+	
+	/**
+	 * This test ensures that extensions of mirrors have their own base object, which ensures
+	 * that they are properly cloned, each child mirror clone having their own base. 
+	 */
+	public void testEachMirrorHasItsOwnBase() {
+		ATObject result = evalAndReturn(
+				"def meta := mirror:  { nil }; \n" +
+				"def base := object:  { nil } mirroredBy: meta; \n" +
+				"    meta := reflect: base; \n" +
+				"def extension := extend: meta with: { nil }; \n" +
+				"(extension.base == meta.base);"); 
+		assertEquals(NATBoolean._FALSE_, result);
 	}
 	
 	public void testMirageInvocation() throws InterpreterException {
