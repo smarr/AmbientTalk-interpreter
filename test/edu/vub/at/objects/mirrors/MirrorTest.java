@@ -46,6 +46,8 @@ public class MirrorTest extends AmbientTalkTest {
 		super.setUp();
 		
 		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("Mirror"), NativeStripes._MIRROR_);
+		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("context"), ctx_);
+		
 		
 		evalAndReturn(
 				"def at := object: { \n" +
@@ -69,95 +71,6 @@ public class MirrorTest extends AmbientTalkTest {
 				"\n" +
 				"def symbol( text ) { jlobby.edu.vub.at.objects.natives.grammar.AGSymbol.alloc( text ) }; \n");
 	}
-
-	/**
-	 * This test tests invariants with respect to the cloning of both intercessive mirrors and 
-	 * mirages in all possible forms.
-	 */
-	public void testMirageCloning() throws InterpreterException {
-		ATObject meta    = evalAndReturn(
-				"def meta := mirror: { nil }"); 
-		ATObject subject = evalAndReturn(
-				"def subject := object: { \n" +
-				"  def field := `field; \n" +
-				"  def canonical() { nil }; \n" +
-				"  def keyworded: arg1 message: arg2 { nil }; \n" +
-				"} mirroredBy: meta; \n");
-		// test whether the new mirage has a clone of the mirror as parent
-		ATObject result = evalAndReturn(
-				"meta := reflect: subject;");
-		
-		assertNotSame(meta, result);
-		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);
-		
-		// For future comparisons wrt to cloning use the current mirror
-		meta = result;
-		
-		// Sending clone to an intercessive mirror clones that mirror
-		// as well as cloning the base object in that mirror
-		result = evalAndReturn(
-				"def cloneMirrored := meta.clone()");
-		
-		// Stratification & Cloning : result is a mirror, cloned from meta
-		assertTrue(result.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
-		assertNotSame(result, meta);
-		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);
-		
-		// For future comparisons wrt to cloning use the current mirror
-		meta = result;
-		
-		result = evalAndReturn(
-				"cloneMirrored.base");
-		
-		// Cloning : Base should be a mirage, cloned from subject
-		assertTrue(result instanceof NATMirage);
-		assertNotSame(result, subject);
-		assertTrue(result.meta_isCloneOf(subject).asNativeBoolean().javaValue);
-		
-		// For future comparisons wrt to cloning use the current base object
-		subject = result;
-		
-		// Cloning a mirror, created a clone of the mirror with an empty mirage
-		result = evalAndReturn(
-				"clone: cloneMirrored");
-		
-		// Stratification & Cloning : result is a mirror, cloned from meta
-		assertTrue(result.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
-		assertNotSame(result, meta);
-		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);
-
-		// For future comparisons wrt to cloning use the current mirror
-		meta = result;
-
-		result = evalAndReturn(
-				"subject := cloneMirrored.base");
-
-		// Mirror Cloning : Base should be a mirage, yet not cloned from subject
-		assertTrue(result instanceof NATMirage);
-		assertNotSame(result, subject);
-		assertFalse(result.meta_isCloneOf(subject).asNativeBoolean().javaValue);
-		
-		// For future comparisons wrt to cloning use the current base object
-		subject = result;
-
-		result = evalAndReturn(
-				"subject := subject.new();");
-		
-		// Mirage.new() : Base should be a mirage, cloned from subject
-		assertTrue(result instanceof NATMirage);
-		assertNotSame(result, subject);
-		assertTrue(result.meta_isCloneOf(subject).asNativeBoolean().javaValue);
-		
-		result = evalAndReturn(
-				"reflect: subject;");
-
-		// Mirage.new() : Mirror should be a NATObject, with the mirror stripe which is cloned from the original mirror
-		assertTrue(result.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
-		assertNotSame(result, meta);
-		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);	
-
-
-	}
 	
 	/**
 	 * This test invokes all meta-level operations defined on objects and tests whether they 
@@ -179,8 +92,32 @@ public class MirrorTest extends AmbientTalkTest {
 				"mirror.dynamicParent;",
 				"<mirror on:nil>");
 		evalAndCompareTo(
+				"mirror.listFields();",
+				"<mirror on:[<field:super>, <field:field>]>");
+		evalAndCompareTo(
+				"mirror.listMethods();",
+				"<mirror on:[<method:keyworded:message:>, <primitive method:new>, <primitive method:init>, <primitive method:==>, <method:canonical>]>");
+		evalAndCompareTo(
+				"mirror.eval(context);",
+				"<mirror on:" + subject.toString() + ">");
+		evalAndCompareTo(
+				"mirror.quote(context);",
+				"<mirror on:" + subject.toString() + ">");
+		evalAndCompareTo(
 				"mirror.print();",
 				"<mirror on:\"" + subject.toString() + "\">");
+		evalAndCompareTo(
+				"mirror.isRelatedTo(nil);",
+				"<mirror on:true>");
+		evalAndCompareTo(
+				"mirror.isCloneOf(object: { nil });",
+				"<mirror on:false>");
+		evalAndCompareTo(
+				"mirror.getStripes();",
+				"<mirror on:[]>");
+		evalAndCompareTo(
+				"mirror.isStripedWith(Mirror);",
+				"<mirror on:false>");
 
 	}
 
@@ -195,7 +132,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"def metaMeta := reflect: meta;",
 				"<mirror on:<mirror on:false>>");
 		evalAndCompareTo(
-				"def select := metaMeta.select(meta, `select).base",
+				"def select := metaMeta.select(meta, `select).base.base",
 				"<native closure:select>");
 		evalAndCompareTo(
 				"def succeeded := select(false, `not)(); \n",
@@ -216,7 +153,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"def metaMeta := reflect: meta;",
 				"<mirror on:"+ meta +">");
 		evalAndCompareTo(
-				"def defineField := metaMeta.select(meta, `defineField).base",
+				"def defineField := metaMeta.select(meta, `defineField).base.base",
 				"<native closure:defineField>");
 		evalAndCompareTo(
 				"defineField(`boolValue, true); \n" +

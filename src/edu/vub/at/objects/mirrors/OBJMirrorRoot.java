@@ -156,20 +156,18 @@ public class OBJMirrorRoot extends NATByCopy {
 		try {
 			jSelector = Reflection.upMagicFieldAccessSelector(atSelector);
 			return NATIntrospectiveMirror.atValue(
-					Reflection.downObject(
-							Reflection.upFieldSelection(
-									principal,
-									jSelector)));
+					Reflection.upFieldSelection(
+							principal,
+							jSelector));
 			
 		} catch (XSelectorNotFound e) {
 			try {
 				jSelector = Reflection.upMagicLevelSelector(atSelector);
 
 				return NATIntrospectiveMirror.atValue(
-						Reflection.downObject(
-								Reflection.upMethodSelection(
-										principal, 
-										jSelector, atSelector)));
+						Reflection.upMethodSelection(
+								principal, 
+								jSelector, atSelector));
 			} catch (XSelectorNotFound e2) {
 				// Principal does not have a corresponding meta_level field nor
 				// method try for a base_level field or method of the mirror itself.

@@ -143,11 +143,10 @@ public class NATIntrospectiveMirror extends NATByRef {
 		
 		try {
 			return atValue(
-					Reflection.downObject(
-							Reflection.upInvocation(
-									principal_, // implementor and self
-									jSelector,
-									arguments)));
+					Reflection.upInvocation(
+								principal_, // implementor and self
+								jSelector,
+								arguments));
 		} catch (XSelectorNotFound e) {
 			// Principal does not have a corresponding meta_level method
 			// try for a base_level method of the mirror itself.
@@ -183,23 +182,23 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * referring to its principal.</p>
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
+				
 		String jSelector = null;
 		
 		try {
 			jSelector = Reflection.upMetaFieldAccessSelector(atSelector);
 			return atValue(
-					Reflection.downObject(Reflection.upFieldSelection(principal_, jSelector)));
+					Reflection.upFieldSelection(principal_, jSelector));
 			
 		} catch (XSelectorNotFound e) {
 			try {
 				jSelector = Reflection.upMetaLevelSelector(atSelector);
 
 				return atValue(
-						Reflection.downObject(
-								Reflection.upMethodSelection(
-										principal_, 
-										jSelector,
-										atSelector)));
+						Reflection.upMethodSelection(
+								principal_, 
+								jSelector,
+								atSelector));
 			} catch (XSelectorNotFound e2) {
 				// Principal does not have a corresponding meta_level field nor
 				// method try for a base_level field or method of the mirror itself.
