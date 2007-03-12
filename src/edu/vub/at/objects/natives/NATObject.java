@@ -368,13 +368,13 @@ public class NATObject extends NATCallframe implements ATObject {
 				lexicalParent_ = Evaluator.getGlobalLexicalScope();
 			}
 			
-			// if this object is locally striped as a mirror, add a 'base' field to it
-			if (isLocallyStripedWith(NativeStripes._MIRROR_)) {
+			// if this object is striped as a mirror, set the flag accordingly
+	        // we cannot perform 'this.meta_isStripedWith(MIRROR)' because this would trigger mirages too early
+			if (isLocallyStripedWith(NativeStripes._MIRROR_) ||
+				dynamicParent.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
 				setFlag(_IS_MIRROR_FLAG_);
-				// mirrors need a read-only field which contains their baseField.
-				meta_addField(new BaseField(this));
 			}
-			
+
 		} catch (InterpreterException e) {
 			// some custom stripe failed to match agains the Isolate stripe,
 			// the object is not considered an Isolate
@@ -436,6 +436,12 @@ public class NATObject extends NATCallframe implements ATObject {
 				code.base_getMethod().base_getParameters(),
 				code.base_getContext());
 		code.base_applyInScope(copiedBindings, this);
+		
+		// if this object is a mirror, add a 'base' field to it
+        if (isFlagSet(_IS_MIRROR_FLAG_)) {
+			// mirrors need a read-only field which contains their baseField.
+			meta_addField(new BaseField(this));
+		}
 	}
 	
 	/* ------------------------------
