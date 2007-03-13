@@ -29,13 +29,10 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATCallframe;
-import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -107,7 +104,7 @@ public class MirageTest extends AmbientTalkTest {
 		
 		// Cloning a mirror, created a clone of the mirror with an empty mirage
 		result = evalAndReturn(
-				"clone: cloneMirrored");
+				"def cloned := clone: cloneMirrored");
 		
 		// Stratification & Cloning : result is a mirror, cloned from meta
 		assertTrue(result.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
@@ -118,7 +115,7 @@ public class MirageTest extends AmbientTalkTest {
 		meta = result;
 
 		result = evalAndReturn(
-				"subject := cloneMirrored.base");
+				"subject := cloned.base");
 
 		// Mirror Cloning : Base should be a mirage, yet not cloned from subject
 		assertTrue(result instanceof NATMirage);
@@ -158,6 +155,19 @@ public class MirageTest extends AmbientTalkTest {
 				"def extension := extend: meta with: { nil }; \n" +
 				"(extension.base == meta.base);"); 
 		assertEquals(NATBoolean._FALSE_, result);
+	}
+	
+	/**
+	 * This test ensures that the 'base' field of a mirror is not modified
+	 * when the mirror is used to create a new mirage.
+	 */
+	public void testMirrorBaseNotModifiedOnClone() {
+		ATObject result = evalAndReturn(
+				"def origMirror := mirror:  { nil };\n" +
+				"def origBase := origMirror.base;\n" +
+				"def newBase := object: { nil } mirroredBy: origMirror; \n" +
+				"(origMirror.base) == origBase\n"); 
+		assertEquals(NATBoolean._TRUE_, result);
 	}
 	
 	public void testMirageInvocation() throws InterpreterException {

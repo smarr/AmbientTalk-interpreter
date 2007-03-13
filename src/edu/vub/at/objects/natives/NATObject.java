@@ -165,16 +165,18 @@ public class NATObject extends NATCallframe implements ATObject {
 			throw new XUnassignableField("base");
 		}
 		
-		public ATNil base_initialiseField(NATMirage newValue) throws InterpreterException {
+		public void initialiseField(NATMirage newValue) throws InterpreterException {
 			base_ = newValue;
-			return NATNil._INSTANCE_;
 		}
 
-		// called upon installing a base field, can be ignored
+		// called upon installing a base field in a cloned mirror
 		public ATObject base_new(ATObject[] initargs) throws InterpreterException {
-			return this;
+			if (initargs.length != 1) {
+				throw new XArityMismatch("new", 1, initargs.length);
+			}
+			return new BaseField(initargs[0]);
 		}
-
+		
 		public ATField base_asField() throws InterpreterException {
 			return this;
 		}
@@ -373,6 +375,11 @@ public class NATObject extends NATCallframe implements ATObject {
 			if (isLocallyStripedWith(NativeStripes._MIRROR_) ||
 				dynamicParent.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
 				setFlag(_IS_MIRROR_FLAG_);
+				// mirrors need a read-only field which contains their baseField.
+				// note that the field is added to the custom fields list explicitly, rather than via
+				// meta_addField, such that mirages are not triggered too early
+				customFields_ = new LinkedList();
+				customFields_.add(new BaseField(this));
 			}
 
 		} catch (InterpreterException e) {
@@ -438,10 +445,11 @@ public class NATObject extends NATCallframe implements ATObject {
 		code.base_applyInScope(copiedBindings, this);
 		
 		// if this object is a mirror, add a 'base' field to it
-        if (isFlagSet(_IS_MIRROR_FLAG_)) {
+		// done in constructor
+        /*if (isFlagSet(_IS_MIRROR_FLAG_)) {
 			// mirrors need a read-only field which contains their baseField.
 			meta_addField(new BaseField(this));
-		}
+		}*/
 	}
 	
 	/* ------------------------------
@@ -635,9 +643,9 @@ public class NATObject extends NATCallframe implements ATObject {
 				          flags_, stripes_);
 
 		// If this object is a mirror, reinitialise the base field of the cloned mirror
-		if(clone.isFlagSet(_IS_MIRROR_FLAG_)) {
+		/*if(clone.isFlagSet(_IS_MIRROR_FLAG_)) {
 			clone.setBase( new NATMirage( clone ) );
-		}
+		}*/
 		
 		return clone;
 	}
@@ -838,7 +846,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public void setBase(NATMirage base) throws InterpreterException {
 		if(isFlagSet(_IS_MIRROR_FLAG_)) {
 			BaseField field = (BaseField)meta_grabField(AGSymbol.jAlloc("base"));
-			field.base_initialiseField(base);
+			field.initialiseField(base);
 		} else {
 			throw new XUnassignableField("base");
 		}

@@ -38,6 +38,7 @@ import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -212,6 +213,10 @@ public class OBJMirrorRoot extends NATByCopy {
 	
     public ATTable meta_getStripes() throws InterpreterException {
     	return NATTable.of(NativeStripes._MIRROR_);
+    }
+    
+    public NATText meta_print() throws InterpreterException {
+    	return NATText.atValue("<native object: mirrorroot>");
     }
 	
 }
