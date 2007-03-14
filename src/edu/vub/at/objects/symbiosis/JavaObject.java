@@ -154,6 +154,7 @@ public final class JavaObject extends NATObject implements ATObject {
 					this, wrappedObject_, wrappedObject_.getClass(), jSelector,
 					arguments.asNativeTable().elements_);
 		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(atSelector);
     	    return super.meta_invoke(receiver, atSelector, arguments);
 		}
     }
@@ -262,7 +263,7 @@ public final class JavaObject extends NATObject implements ATObject {
 	 * Invoking new on a JavaObject will exhibit the same behaviour as if new was invoked on the parent class.
 	 */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-    	return meta_getDynamicParent().meta_newInstance(initargs);
+    	return base_getSuper().meta_newInstance(initargs);
     }
     
     /**

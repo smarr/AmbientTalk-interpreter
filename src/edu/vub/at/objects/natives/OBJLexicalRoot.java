@@ -237,6 +237,13 @@ public final class OBJLexicalRoot extends NATByCopy {
 		return OBJNetwork._INSTANCE_;
 	}
 	
+	/**
+	 * mirrorroot (the default mirror on objects)
+	 */
+	public ATObject base_getMirrorroot() {
+		return Evaluator.getMirrorRoot();
+	}
+	
 	/* ------------------------
 	 * -- Control Structures --
 	 * ------------------------ */
@@ -495,6 +502,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  { def obj := objectP.new(mirrorOf(someCode).context.lexicalScope);
 	 *    mirrorOf(someCode).method.body.eval(contextP.new(obj, obj, nil));
 	 *    obj }
+	 *  = object: { someCode } childOf: nil extends: false stripedWith: [] mirroredBy: mirrorroot
 	 * 
 	 * The code block used to initialize the object may contain formal parameters.
 	 * If this is the case, the formals are evaluated in the context of the lexical scope
@@ -507,9 +515,8 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @throws InterpreterException if raised inside the code closure.
 	 */
 	public ATObject base_object_(ATClosure code) throws InterpreterException {
-		NATObject newObject = new NATObject(code.base_getContext().base_getLexicalScope());
-		newObject.initializeWithCode(code);
-		return newObject;
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, NATNil._INSTANCE_, NATBoolean._FALSE_ /* SHARES-A link */, NATTable.EMPTY, base_getMirrorroot());
 	}
 	
 	/**
@@ -519,7 +526,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  extend: anObject with: { someCode }
 	 * 
 	 * pseudo-implementation:
-	 *  mirrorOf(anObject).extend(someCode)
+	 *  = object: { someCode } childOf: anObject extends: true stripedWith: [] mirroredBy: mirrorroot
 	 *  
 	 * @param parent the object to extend
 	 * @param code a closure containing the code to extend the parent object with
@@ -527,11 +534,23 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @throws InterpreterException if raised inside the code closure.
 	 */
 	public ATObject base_extend_with_(ATObject parent, ATClosure code) throws InterpreterException {
-		return parent.meta_extend(code, NATTable.EMPTY);
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._TRUE_ /* IS-A link */, NATTable.EMPTY, base_getMirrorroot());
 	}
 	
 	public ATObject base_extend_with_stripedWith_(ATObject parent, ATClosure code, ATTable stripes) throws InterpreterException {
-		return parent.meta_extend(code, stripes);
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._TRUE_ /* IS-A link */, stripes, base_getMirrorroot());
+	}
+	
+	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, ATObject mirror) throws InterpreterException {
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._TRUE_ /* IS-A link */, NATTable.EMPTY, mirror);
+	}
+	
+	public ATObject base_extend_with_stripedWith_mirroredBy_(ATObject parent, ATClosure code, ATTable stripes, ATObject mirror) throws InterpreterException {
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._TRUE_ /* IS-A link */, stripes, mirror);
 	}
 	
 	/**
@@ -541,7 +560,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  share: anObject with: { someCode }
 	 * 
 	 * pseudo-implementation:
-	 *  mirrorOf(anObject).share(someCode)
+	 *  = object: { someCode } childOf: anObject extends: false stripedWith: [] mirroredBy: mirrorroot
 	 * 
 	 * @param parent the object to extend
 	 * @param code a closure containing the code to extend the parent object with
@@ -549,21 +568,33 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @throws InterpreterException if raised inside the code closure.
 	 */
 	public ATObject base_share_with_(ATObject parent, ATClosure code) throws InterpreterException {
-		return parent.meta_share(code, NATTable.EMPTY);
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._FALSE_ /* SHARES-A link */, NATTable.EMPTY, base_getMirrorroot());
 	}
 
 	public ATObject base_share_with_stripedWith_(ATObject parent, ATClosure code, ATTable stripes) throws InterpreterException {
-		return parent.meta_share(code, stripes);
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._FALSE_ /* SHARES-A link */, stripes, base_getMirrorroot());
+	}
+	
+	public ATObject base_share_with_mirroredBy_(ATObject parent, ATClosure code, ATObject mirror) throws InterpreterException {
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._FALSE_ /* SHARES-A link */, NATTable.EMPTY, mirror);
+	}
+	
+	public ATObject base_share_with_stripedWith_mirroredBy_(ATObject parent, ATClosure code, ATTable stripes, ATObject mirror) throws InterpreterException {
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._FALSE_ /* SHARES-A link */, stripes, mirror);
 	}
 	
 	/**
 	 * object: { code } stripedWith: [ s1, s2, ... ]
 	 * => creates a new object tagged with the given stripes
+	 * = object: { code } childOf: nil extends: false stripedWith: [ s1, s2, ... ] mirroredBy: mirrorroot
 	 */
 	public ATObject base_object_stripedWith_(ATClosure code, ATTable stripes) throws InterpreterException {
-		NATObject newObject = new NATObject(code.base_getContext().base_getLexicalScope(), NATStripe.toStripeArray(stripes));
-		newObject.initializeWithCode(code);
-		return newObject;
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, NATNil._INSTANCE_, NATBoolean._FALSE_ /* SHARES-A link */, stripes, base_getMirrorroot());
 	}
 	
 	/**
@@ -585,35 +616,70 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  mirror: { someCode } 
 	 * 
 	 * pseudo-implementation:
-	 *  defaultMirror.extend(somecode)
+	 *  = object: { code } childOf: mirrorroot extends: true stripedWith: [] mirroredBy: mirrorroot
 	 * 
 	 * @param code a closure containing both the code with which to initialize the mirror and the new mirror's lexical parent
 	 * @return a new mirror containing the specified definitions
 	 */
 	public ATObject base_mirror_(ATClosure code) throws InterpreterException {
-		NATObject mirror =  new NATObject(
-				OBJMirrorRoot._INSTANCE_, 
-				code.base_getContext().base_getLexicalScope(), 
-				NATObject._SHARES_A_, 
-				new ATStripe[] { NativeStripes._MIRROR_ });
-		mirror.initializeWithCode(code);
-		return mirror;
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, base_getMirrorroot(), NATBoolean._TRUE_ /* IS-A link */, NATTable.EMPTY, base_getMirrorroot());
 	}
 	
 	/**
 	 * object: { code } mirroredBy: mirror
 	 *  => return an object mirage initialized with code
+	 *  = object: { code } childOf: nil extends: false stripedWith: [] mirroredBy: mirror
 	 */
 	public ATObject base_object_mirroredBy_(ATClosure code, ATObject mirror) throws InterpreterException {
-		return NATMirage.createMirage(code, NATTable.EMPTY, mirror);
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, NATNil._INSTANCE_, NATBoolean._FALSE_ /* SHARES-A link */, NATTable.EMPTY, mirror);
 	}
 	
 	/**
 	 * object: { code } stripedWith: [ s1, s2, ... ] mirroredBy: mirror
 	 *  => return an object mirage initialized with code and striped with the given stripes
+	 *  = object: { code } childOf: nil extends: false stripedWith: [s1, s2, ... ] mirroredBy: mirror
 	 */
 	public ATObject base_object_stripedWith_mirroredBy_(ATClosure code, ATTable stripes, ATObject mirror) throws InterpreterException {
-		return NATMirage.createMirage(code, stripes, mirror);
+		// TODO: delegate to actor mirror?
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, NATNil._INSTANCE_, NATBoolean._FALSE_ /* SHARES-A link */, stripes, mirror);
+	}
+	
+	/**
+	 * object: { code } childOf: parent extends: parentType stripedWith: [ stripes ] mirroredBy: mirror
+	 *  => return a new object o initialized with code where:
+	 *   o.super == parent
+	 *   o.lexParent == code.lexScope
+	 *   o.parentType == parentType
+	 *   o.stripes == stripes
+	 *   (reflect: o) == mirror.new(o)
+	 *   
+	 * @param code the code with which to initialize the object + the object's lexical parent
+	 * @param parent the object that is to become the initial parent of the newly created object
+	 * @param parentType if true, the child has an IS-A relationship with the parent, SHARES-A otherwise
+	 * @param stripes the stripes with which the newly created object should be striped
+	 * @param mirror the custom mirror for this object, or mirrorroot for a default object
+	 * @return the new object, fully initialized with code
+	 */
+	public ATObject base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure code, ATObject parent, ATBoolean parentType, ATTable stripes, ATObject mirror) throws InterpreterException {
+		ATStripe[] stripeArray = NATStripe.toStripeArray(stripes);
+		boolean parentRelation = parentType.asNativeBoolean().javaValue;
+		NATObject newObject;
+		// if the mirror is a 'default' mirror...
+		if (mirror instanceof OBJMirrorRoot) {
+			// then create a native object
+			newObject = new NATObject(parent, // dynamic parent
+					                  code.base_getContext().base_getLexicalScope(), // lexical parent
+					                  parentRelation, // IS-A or SHARES-A
+					                  stripeArray); // initial stripes
+		} else {
+			// else create a mirage mirrored by the custom mirror
+			newObject = NATMirage.createMirage(code, parent, parentRelation, stripeArray, mirror);
+		}
+		
+		newObject.initializeWithCode(code);
+		return newObject;
 	}
 	
 //	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
@@ -665,17 +731,30 @@ public final class OBJLexicalRoot extends NATByCopy {
 	/**
 	 * The clone: primitive, which returns a clone of an object.
 	 * 
+	 * When a mirror is cloned, its base field is *shared* with the original mirror (because of
+	 * shallow copy semantics). However, the base object will still be tied to the original mirror.
+	 * Therefore, the clone: operator is implemented as follows:
+	 * 
+     * def clone: obj {
+     *   if: (is: obj stripedWith: Mirror) then: {
+     *     reflect: (clone: obj.base)
+     *   } else: {
+     *     (reflect: obj).clone()
+     *   }
+     * }
+	 * 
 	 * usage:
 	 *  clone: anObject
-	 * 
-	 * pseudo-implementation:
-	 *  (reflect: anObject).clone()
 	 * 
 	 * @param original the object to copy
 	 * @return a clone of the given object
 	 */
 	public ATObject base_clone_(ATObject original) throws InterpreterException {
-		return original.meta_clone();
+		if (original.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+		    return base_reflect_(base_clone_(original.meta_select(original, OBJMirrorRoot._BASE_NAME_)));
+		} else {
+			return original.meta_clone();
+		}
 	}
 	
 	/* -------------------

@@ -65,4 +65,17 @@ public class XSelectorNotFound extends InterpreterException {
 		return NativeStripes._SELECTORNOTFOUND_;
 	}
 	
+	/**
+	 * Several meta_* methods actually catch this exception to recover from a failed lookup by continuing
+	 * the search in an other object (e.g. parent objects, native objects, ...). When the lookup would
+	 * succeed and an XSelectorNotFound exception is raised because of another failed lookup, this alternate
+	 * behaviour should not be tried. Hence, when catching an XSelectorNotFound with the intention of redirecting
+	 * lookup, the exception handler should invoke this method to ensure that he is dealing with the right exception.
+	 */
+	public void catchOnlyIfSelectorEquals(ATSymbol sym) throws InterpreterException {
+		if (!selector_.base__opeql__opeql_(sym).asNativeBoolean().javaValue) {
+			throw this;
+		}
+	}
+	
 }

@@ -86,7 +86,7 @@ public final class NATClosureMethod extends NATByRef implements ATMethod {
 		// hostObject = the object to which the external method was added (actually the object in which
 		// the external method was now found)
 		ATObject hostObject = ctx.base_getLexicalScope();
-		ATObject hostParent = hostObject.meta_getDynamicParent();
+		ATObject hostParent = hostObject.base_getSuper();
 		
 		NATCallframe externalFrame = new NATCallframe(lexicalScope_);
 		// super = the parent of the object to which this method was added

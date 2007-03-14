@@ -219,6 +219,63 @@ Far References:
 Proper implementation for ==, new and init on far refs
 (== should work, new and init can throw exception)
 
+Mirrors:
+========
+
+Intercessive mirrors are always tied to a particular 'base' object.
+The default intercessive mirror is named 'mirrorroot' and is an object
+that understands all meta_* operations, implementing them using default semantics.
+
+It can be thought of as being defined as follows:
+
+def mirrorroot := object: {
+  def base := object: { nil } mirroredBy: self // base of the mirror root is an empty mirage
+  def init(b) {
+    base := b
+  }
+  def invoke(@args) { <default native invocation behaviour> }
+  def select(@args) { <default native selection behaviour> }
+  ...
+} stripedWith: [ Mirror ]
+
+This object can then simply be extended / composed by other objects to deviate from the default semantics.
+Hence, 'mirrors' are simply objects with the same interface as this mirrorroot object: they should be
+able to respond to all meta_* messages and have a 'base' field.
+
+When a mirror is cloned, its base field is *shared* with the clone. However, the base object will still be
+tied to the original mirror. Therefore, the default clone: operator is implemented as follows:
+
+def clone: obj {
+  if: (is: obj stripedWith: Mirror) then: {
+    reflect: (clone: obj.base)
+  } else: {
+    (reflect: obj).clone()
+  }
+}
+
+In other words: when a mirror is cloned, the mirage is cloned instead (recursively) and a mirror on the new mirage is returned.
+Cloning mirages also clones the corresponding mirror - and re-initializes the cloned mirror's mirage to the cloned mirage, so there
+the bidirectional link between mirror and mirage is not broken.
+
+There is another way to assign mirrors to mirages, by means of the object:mirroredBy: primitive:
+
+def mirage := object: {
+  ...
+} mirroredBy: aMirror
+
+Internally, this operation is translated into
+aMirror.new(<uninitialized mirage>)
+which is:
+aMirror.meta_clone().invoke("init", [<uninitialized mirage>])
+
+For regular mirrors, which are IS-A children of the mirrorroot, this leads to the invocation of 'init' on aMirror,
+and eventually also to the invocation of 'init' on OBJMirrorRoot. This init implementation sets the base field to point
+to the new mirage, and initializes the 'mirror' field of the mirage to the dynamic receiver of 'init'.
+From that point on, the mirage is considered initialized and can be used.
+An 'uninitialized' mirage is one whose mirror is assigned to 'nil'.
+When explicitly making a new instance of a mirror, OBJMirrorRoot checks whether the object
+is receives in its init method is indeed a NATMirage, and whether its mirror is != nil.
+
 ----------------------
 Implementation issues:
 ----------------------

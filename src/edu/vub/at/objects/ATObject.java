@@ -254,27 +254,6 @@ public interface ATObject extends ATConversions {
      */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException;
 
-    /**
-     * Create an is-a extension of the receiver object.
-     * The base-level code <obj.extend { code }> is represented at the meta-level by <mirror(obj).meta_extend(code)>
-     *
-     * Triggers the <tt>objectExtended</tt> event on this object's beholders (mirror observers).
-     * @param stripes the stripes to tag the child with
-     * @return a fresh object whose dynamic parent points to <this> with 'is-a' semantics.
-     */
-    public ATObject meta_extend(ATClosure code, ATTable stripes) throws InterpreterException;
-
-    /**
-     * Create a shares-a extension of the receiver object.
-     * The base-level code <code>obj.share { code }</code> is represented at the meta-level by
-     * <code>mirror(obj).meta_share(code)</code>
-     *
-     * Triggers the <tt>objectShared</tt> event on this object's beholders (mirror observers).
-     * @param stripes the stripes to tag the child with
-     * @return a fresh object whose dynamic parent points to <this> with 'shares-a' semantics.
-     */
-    public ATObject meta_share(ATClosure code, ATTable stripes) throws InterpreterException;
-
     /* ---------------------------------
       * -- Structural Access Protocol  --
       * --------------------------------- */
@@ -350,13 +329,15 @@ public interface ATObject extends ATConversions {
       * --------------------- */
 
     /**
-     * Objects have a classical dynamic parent chain created using extension
-     * primitives. This getter method allows accessing the parent alongside
-     * this dynamic parent chain to be accessed as a field of the object's
-     * mirror.
-     * @throws InterpreterException 
+     * Objects have a dynamic parent delegation chain, but there are two kinds
+     * of delegation links: IS-A and SHARES-A links. This method returns whether
+     * this object extends its parent object via an IS-A link.
+     * 
+     * Note that accessing the dynamic parent itself is not a meta-level operation,
+     * the dynamic parent can simply be accessed from the base level by performing
+     * 'obj.super'.
      */
-    public ATObject meta_getDynamicParent() throws InterpreterException;
+    public ATBoolean meta_isExtensionOfParent() throws InterpreterException;
 
     /**
      * Objects also have a lexical parent which is the scope in which their
@@ -437,6 +418,12 @@ public interface ATObject extends ATConversions {
       * -------------------------------
       */
 
+    /**
+     * Access the dynamic parent of this object, that is, the object to which
+     * locally failed operations such as 'invoke' and 'select' are delegated to.
+     */
+    public ATObject base_getSuper() throws InterpreterException;
+    
     /**
      * The pointer equality == operator.
      * OBJ(o1) == OBJ(o2) => BLN(o1.equals(o2))

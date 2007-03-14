@@ -28,14 +28,12 @@
 package edu.vub.at.objects.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 
 /**
- * @author tvc
- *
  * The public interface to a symbol reference AG element.
+ * 
+ * @author tvcutsem
  */
 public interface ATSymbol extends ATExpression {
 

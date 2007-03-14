@@ -27,19 +27,19 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 	}
 	
 	public void testInvocation() {
-		evalAndCompareTo("mirrorOn1.invoke(mirrorOn1.base, `+, [2]).base", "3");
-		evalAndTestException("mirrorOn1.invoke(mirrorOn1.base, `foo, [2]).base", XSelectorNotFound.class);
+		evalAndCompareTo("mirrorOn1.invoke(mirrorOn1.base, `+, [2])", "3");
+		evalAndTestException("mirrorOn1.invoke(mirrorOn1.base, `foo, [2])", XSelectorNotFound.class);
 	}
 	
 	public void testRespondsTo() {
-		evalAndCompareTo("mirrorOn1.respondsTo(`+).base", "true");
-		evalAndCompareTo("mirrorOn1.respondsTo(`foo).base", "false");
-		evalAndCompareTo("(reflect: mirrorOn1).respondsTo(`invoke).base", "true");
+		evalAndCompareTo("mirrorOn1.respondsTo(`+)", "true");
+		evalAndCompareTo("mirrorOn1.respondsTo(`foo)", "false");
+		evalAndCompareTo("(reflect: mirrorOn1).respondsTo(`invoke)", "true");
 	}
 	
 	public void testSelection() {
 		try {
-			ATObject clo = evalAndReturn("mirrorOn1.select(mirrorOn1.base, `+).base");
+			ATObject clo = evalAndReturn("mirrorOn1.select(mirrorOn1.base, `+)");
 			assertTrue(clo.base_isClosure());
 			ATClosure c = clo.base_asClosure();
 			ATMethod m = c.base_getMethod();
@@ -53,12 +53,12 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 	
 	public void testAddition() {
 		evalAndTestException("mirrorOn1.addField(object: { nil })", XIllegalOperation.class);
-		evalAndTestException("mirrorOn1.addMethod(mirrorOn1.grabMethod(`+).base)", XIllegalOperation.class);
+		evalAndTestException("mirrorOn1.addMethod(mirrorOn1.grabMethod(`+))", XIllegalOperation.class);
 	}
 	
 	public void testAcquisition() {
 		try {
-			ATMethod nativeMethod = evalAndReturn("mirrorOn1.grabMethod(`+).base").base_asMethod();
+			ATMethod nativeMethod = evalAndReturn("mirrorOn1.grabMethod(`+)").base_asMethod();
 			assertEquals(NativeMethod.class, nativeMethod.getClass());
 			assertEquals(AGSymbol.jAlloc("+"), nativeMethod.base_getName());
 		} catch (InterpreterException e) {
@@ -68,10 +68,10 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 	
 	public void testListing() {
 		try {
-			evalAndReturn("mirrorOn1.listMethods().base").base_asTable();
-			evalAndCompareTo("mirrorOn1.listFields().base", "[]");
+			evalAndReturn("mirrorOn1.listMethods()").base_asTable();
+			evalAndCompareTo("mirrorOn1.listFields()", "[<native field:super of 1>]");
 			// when mirroring a mirror and querying its fields, the field 'base' should always be present
-			evalAndCompareTo("{ |exit| (reflect: mirrorOn1).listFields().base.each: { |field|" +
+			evalAndCompareTo("{ |exit| (reflect: mirrorOn1).listFields().each: { |field|" +
 					         "  if: (field.name == `base) then: { exit(`foundit) } } }.escape()", "foundit");
 		} catch (InterpreterException e) {
 			fail(e.getMessage());

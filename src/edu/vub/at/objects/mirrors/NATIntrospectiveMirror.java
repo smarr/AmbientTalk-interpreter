@@ -29,7 +29,6 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
-import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
@@ -43,7 +42,6 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -85,9 +83,9 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * @return either an introspective mirror (if the passed object is native), otherwise
 	 * a custom intercessive mirror.
 	 */
-	public static final ATObject atValue(ATObject objectRepresentation) {
+	public static final ATObject atValue(ATObject objectRepresentation) throws XTypeMismatch {
 		if(objectRepresentation instanceof NATMirage)
-			return ((NATMirage)objectRepresentation).getMirror();
+			return objectRepresentation.asMirage().getMirror();
 		else
 			return new NATIntrospectiveMirror(objectRepresentation);		
 	}
@@ -142,12 +140,13 @@ public class NATIntrospectiveMirror extends NATByRef {
 		String jSelector = Reflection.upMetaLevelSelector(atSelector);
 		
 		try {
-			return atValue(
-					Reflection.upInvocation(
+			return Reflection.upInvocation(
 								principal_, // implementor and self
 								jSelector,
-								arguments));
+								atSelector,
+								arguments);
 		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(atSelector);
 			// Principal does not have a corresponding meta_level method
 			// try for a base_level method of the mirror itself.
 			return super.meta_invoke(receiver, atSelector, arguments);
@@ -182,24 +181,21 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * referring to its principal.</p>
 	 */
 	public ATObject meta_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
-				
-		String jSelector = null;
+		String jSelector = Reflection.upMetaFieldAccessSelector(atSelector);
 		
 		try {
-			jSelector = Reflection.upMetaFieldAccessSelector(atSelector);
-			return atValue(
-					Reflection.upFieldSelection(principal_, jSelector));
-			
+			return Reflection.upFieldSelection(principal_, jSelector, atSelector);
 		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(atSelector);
 			try {
 				jSelector = Reflection.upMetaLevelSelector(atSelector);
 
-				return atValue(
-						Reflection.upMethodSelection(
+				return Reflection.upMethodSelection(
 								principal_, 
 								jSelector,
-								atSelector));
+								atSelector);
 			} catch (XSelectorNotFound e2) {
+				e2.catchOnlyIfSelectorEquals(atSelector);
 				// Principal does not have a corresponding meta_level field nor
 				// method try for a base_level field or method of the mirror itself.
 				return super.meta_select(receiver, atSelector);
@@ -229,15 +225,11 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * itself is changed.
 	 */
 	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-		String jSelector = null;
-		
+		String jSelector = Reflection.upMetaFieldMutationSelector(name);
 		try{
-			if(! value.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue)
-				throw new XIllegalArgument("Stratification violation : attempted to assign a non-mirror value to a meta field");
-			
-			jSelector = Reflection.upMetaFieldMutationSelector(name);
-			Reflection.upFieldAssignment(principal_, jSelector, value.meta_select(value, NATObject._BASE_NAME_));
+			Reflection.upFieldAssignment(principal_, jSelector, name, value);
 		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(name);
 			// Principal does not have a corresponding meta_level method
 			// OR the passed value is not a mirror object
 			// try for a base_level method of the mirror itself.
@@ -252,6 +244,7 @@ public class NATIntrospectiveMirror extends NATByRef {
         	    // try to find a meta_get / meta_set field in the principal_
 			return Reflection.downMetaLevelField(principal_, fieldName);
 		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(fieldName);
 			// try to find a base_get / base_set field in the mirror
 			return super.meta_grabField(fieldName);
 		}
@@ -262,6 +255,7 @@ public class NATIntrospectiveMirror extends NATByRef {
         	    // try to find a meta_ method in the principal
 			return Reflection.downMetaLevelMethod(principal_, methodName);
 		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(methodName);
 			// try to find a base_ method in the mirror
 			return super.meta_grabMethod(methodName);
 		}
@@ -291,17 +285,6 @@ public class NATIntrospectiveMirror extends NATByRef {
 	/* ------------------------------------
 	 * -- Extension and cloning protocol --
 	 * ------------------------------------ */
-
-	/**
-	 * We enforce the restriction that any object has but a single IntrospectiveMirror
-	 * by returning the mirror itself when asked to clone. The .new(object) operation, 
-	 * which invokes clone, still achieves the wanted behaviour since a new mirror can 
-	 * be properly initialised using base_init. The implementation of this method 
-	 * contacts the factory in order to create a new mirror.
-	 */
-	public ATObject meta_clone() throws InterpreterException {
-		return this;
-	}
 
 	/**
 	 * This method allows re-initialise a mirror object. However, since the link from a 

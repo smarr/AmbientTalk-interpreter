@@ -84,7 +84,7 @@ public class PrimitiveMethod extends NATMethod {
 		public ATTable base_getStatements() { return NATTable.of(NATNil._INSTANCE_); }
 		
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("Primitive body " + this);
+			return NATText.atValue("<primitive body>");
 		}
 		
 		public ATBegin base_asBegin() throws XTypeMismatch {

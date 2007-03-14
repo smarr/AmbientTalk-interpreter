@@ -36,7 +36,6 @@ import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -59,7 +58,6 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
-import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSplice;
@@ -107,9 +105,6 @@ import java.util.Vector;
  */
 public class NATObject extends NATCallframe implements ATObject {
 	
-	// The name of the field that points to the base_level representation of a custom mirror
-	public static final AGSymbol _BASE_NAME_ = AGSymbol.jAlloc("base");
-
 	// The name of the field that points to the dynamic parent
 	public static final AGSymbol _SUPER_NAME_ = AGSymbol.jAlloc("super");
 	
@@ -141,47 +136,9 @@ public class NATObject extends NATCallframe implements ATObject {
 	private static final PrimitiveMethod _PRIM_INI_ = new PrimitiveMethod(
 			_INI_NAME_, NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("initargs")) })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			return ctx.base_getLexicalScope().base_init(arguments.asNativeTable().elements_);
+			return ctx.base_getLexicalScope().asAmbientTalkObject().prim_init(ctx.base_getSelf(), arguments.asNativeTable().elements_);
 		}
 	};
-	
-	private static final class BaseField extends NATByRef implements ATField {
-
-		private NATMirage base_;
-		
-		public BaseField(ATObject mirror) {
-			base_ = new NATMirage(mirror);
-		}
-		
-		public ATSymbol base_getName() throws InterpreterException {
-			return _BASE_NAME_;
-		}
-
-		public ATObject base_readField() throws InterpreterException {
-			return base_;
-		}
-
-		public ATNil base_writeField(ATObject newValue) throws InterpreterException {
-			throw new XUnassignableField("base");
-		}
-		
-		public void initialiseField(NATMirage newValue) throws InterpreterException {
-			base_ = newValue;
-		}
-
-		// called upon installing a base field in a cloned mirror
-		public ATObject base_new(ATObject[] initargs) throws InterpreterException {
-			if (initargs.length != 1) {
-				throw new XArityMismatch("new", 1, initargs.length);
-			}
-			return new BaseField(initargs[0]);
-		}
-		
-		public ATField base_asField() throws InterpreterException {
-			return this;
-		}
-		
-	}
 	
 	/**
 	 * Does the selector signify a 'primitive' method, present in each AmbientTalk object?
@@ -222,13 +179,6 @@ public class NATObject extends NATCallframe implements ATObject {
 	 *  - 0: the object is pass-by-reference and can have any lexical parent
 	 */
 	private static final byte _IS_ISOLATE_FLAG_ = 1<<3;
-	
-	/**
-	 * This flag determines whether or not the object is an mirror and thus has a base field:
-	 *  - 1: the object is a mirror, install a read-only base field and the OBJMirrorRoot as dynamic parent
-	 *  - 0: the object is a base-level object
-	 */
-	private static final byte _IS_MIRROR_FLAG_ = 1<<4;
 
 	/**
 	 * An empty stripe array shared by those objects that do not have any stripes.
@@ -237,12 +187,11 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	/**
 	 * The flags of an AmbientTalk object encode the following boolean information:
-	 *  Format: 0b000midap where
+	 *  Format: 0b0000idap where
 	 *   p = parent flag: if set, dynamic parent is 'is-a' parent, otherwise 'shares-a' parent
 	 *   a = shares map flag: if set, the map of this object is shared between clones
 	 *   d = shares dictionary flag: if set, the method dictionary of this object is shared between clones
 	 *   i = is isolate flag: if set, the object is passed by copy in inter-actor communication
-	 *   m = is mirror flag: if set, the object is a mirror and requires a 'base' field denoting its base-level object
 	 */
 	private byte flags_;
 	
@@ -369,19 +318,6 @@ public class NATObject extends NATCallframe implements ATObject {
 				// isolates can only have the global lexical root as their lexical scope
 				lexicalParent_ = Evaluator.getGlobalLexicalScope();
 			}
-			
-			// if this object is striped as a mirror, set the flag accordingly
-	        // we cannot perform 'this.meta_isStripedWith(MIRROR)' because this would trigger mirages too early
-			if (isLocallyStripedWith(NativeStripes._MIRROR_) ||
-				dynamicParent.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
-				setFlag(_IS_MIRROR_FLAG_);
-				// mirrors need a read-only field which contains their baseField.
-				// note that the field is added to the custom fields list explicitly, rather than via
-				// meta_addField, such that mirages are not triggered too early
-				customFields_ = new LinkedList();
-				customFields_.add(new BaseField(this));
-			}
-
 		} catch (InterpreterException e) {
 			// some custom stripe failed to match agains the Isolate stripe,
 			// the object is not considered an Isolate
@@ -443,14 +379,29 @@ public class NATObject extends NATCallframe implements ATObject {
 				code.base_getMethod().base_getParameters(),
 				code.base_getContext());
 		code.base_applyInScope(copiedBindings, this);
-		
-		// if this object is a mirror, add a 'base' field to it
-		// done in constructor
-        /*if (isFlagSet(_IS_MIRROR_FLAG_)) {
-			// mirrors need a read-only field which contains their baseField.
-			meta_addField(new BaseField(this));
-		}*/
 	}
+
+	/**
+	 * Invoke NATObject's primitive implementation, such that Java invocations of this
+	 * method have the same behaviour as AmbientTalk invocations.
+	 */
+    public ATObject base_init(ATObject[] initargs) throws InterpreterException {
+    	return this.prim_init(this, initargs);
+    }
+	
+	/**
+	 * The primitive implementation of init in objects is to invoke the init
+	 * method of their parent.
+	 * @param self the object that originally received the 'init' message.
+	 * 
+	 * def init(@args) {
+	 *   super^init(@args)
+	 * }
+	 */
+    private ATObject prim_init(ATObject self, ATObject[] initargs) throws InterpreterException {
+    	ATObject parent = base_getSuper();
+    	return parent.meta_invoke(self, Evaluator._INIT_, NATTable.atValue(initargs));
+    }
 	
 	/* ------------------------------
 	 * -- Message Sending Protocol --
@@ -476,7 +427,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			//  ctx.self  = the late bound receiver, being the passed receiver
 			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver));
 		} else {
-			return meta_getDynamicParent().meta_invoke(receiver, selector, arguments);
+			return base_getSuper().meta_invoke(receiver, selector, arguments);
 		}
 	}
 	
@@ -488,7 +439,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		if (this.hasLocalField(selector) || this.hasLocalMethod(selector))
 			return NATBoolean._TRUE_;
 		else
-			return meta_getDynamicParent().meta_respondsTo(selector);
+			return base_getSuper().meta_respondsTo(selector);
 	}
 
 
@@ -526,7 +477,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			//  ctx.super = the parent of the implementor
 			return new NATClosure(this.getLocalMethod(selector), this, receiver);
 		} else {
-			return meta_getDynamicParent().meta_select(receiver, selector);
+			return base_getSuper().meta_select(receiver, selector);
 		}
 	}
 	
@@ -596,7 +547,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		if (this.setLocalField(selector, value)) {
 			return NATNil._INSTANCE_;
 		} else {
-			return meta_getDynamicParent().meta_assignField(receiver, selector, value);
+			return base_getSuper().meta_assignField(receiver, selector, value);
 		}
 	}
 	
@@ -623,10 +574,10 @@ public class NATObject extends NATCallframe implements ATObject {
 		ATObject dynamicParent;
 		if(this.isFlagSet(_ISAPARENT_FLAG_)) {
 			// IS-A Relation : clone the dynamic parent.
-			dynamicParent = meta_getDynamicParent().meta_clone();
+			dynamicParent = base_getSuper().meta_clone();
 		} else {
 			// SHARES_A Relation : share the dynamic parent.
-			dynamicParent = meta_getDynamicParent();
+			dynamicParent = base_getSuper();
 		}
 		
 		// ! set the shares flags of this object *and* of its clone
@@ -634,18 +585,13 @@ public class NATObject extends NATCallframe implements ATObject {
 		setFlag(_SHARE_DCT_FLAG_);
 		setFlag(_SHARE_MAP_FLAG_);
 		
-		NATObject clone = createClone(variableMap_,
+		NATObject clone = this.createClone(variableMap_,
 				          (Vector) stateVector_.clone(), // shallow copy
 				          customFields_, // must be re-initialized by clone!
 				          methodDictionary_,
 				          dynamicParent,
 				          lexicalParent_,
 				          flags_, stripes_);
-
-		// If this object is a mirror, reinitialise the base field of the cloned mirror
-		/*if(clone.isFlagSet(_IS_MIRROR_FLAG_)) {
-			clone.setBase( new NATMirage( clone ) );
-		}*/
 		
 		return clone;
 	}
@@ -667,6 +613,10 @@ public class NATObject extends NATCallframe implements ATObject {
 		return clone;
 	}
 
+	public ATBoolean meta_isExtensionOfParent() throws InterpreterException {
+		return NATBoolean.atValue(isFlagSet(_ISAPARENT_FLAG_));
+	}
+	
 	/* ---------------------------------
 	 * -- Structural Access Protocol  --
 	 * --------------------------------- */
@@ -768,7 +718,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		return this.meta_isCloneOf(object).base_or_(
 				new NativeClosure(this) {
 					public ATObject base_apply(ATTable args) throws InterpreterException {
-						return scope_.meta_getDynamicParent().meta_isRelatedTo(object);
+						return scope_.base_getSuper().meta_isRelatedTo(object);
 					}
 				}).base_asBoolean();
 	}
@@ -786,7 +736,7 @@ public class NATObject extends NATCallframe implements ATObject {
     		return NATBoolean._TRUE_;
     	} else {
         	// no stripes match, ask the parent
-        	return meta_getDynamicParent().meta_isStripedWith(stripe);
+        	return base_getSuper().meta_isStripedWith(stripe);
     	}
     }
     
@@ -839,7 +789,7 @@ public class NATObject extends NATCallframe implements ATObject {
      * -- Mirror Protocol --
      * --------------------- */
     
-    public ATObject base_getBase() throws InterpreterException {
+    /*public ATObject base_getBase() throws InterpreterException {
 		return meta_lookup(AGSymbol.jAlloc("base"));
 	}
     
@@ -850,7 +800,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		} else {
 			throw new XUnassignableField("base");
 		}
-	}
+	}*/
     
     /* ---------------------------------------
 	 * -- Conversion and Testing Protocol   --
@@ -958,7 +908,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public static ATField[] listTransitiveFields(ATObject obj) throws InterpreterException {
 		Vector fields = new Vector();
 		HashSet encounteredNames = new HashSet(); // to filter duplicates
-		for (; obj != NATNil._INSTANCE_ ; obj = obj.meta_getDynamicParent()) {
+		for (; obj != NATNil._INSTANCE_ ; obj = obj.base_getSuper()) {
 			ATObject[] localFields = obj.meta_listFields().asNativeTable().elements_;
 			for (int i = 0; i < localFields.length; i++) {
 				ATField field = localFields[i].base_asField();
@@ -979,7 +929,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public static ATMethod[] listTransitiveMethods(ATObject obj) throws InterpreterException {
 		Vector methods = new Vector();
 		HashSet encounteredNames = new HashSet(); // to filter duplicates		
-		for (; obj != NATNil._INSTANCE_ ; obj = obj.meta_getDynamicParent()) {
+		for (; obj != NATNil._INSTANCE_ ; obj = obj.base_getSuper()) {
 			// fast-path for native objects
 			if (obj instanceof NATObject) {
 				Collection localMethods = ((NATObject) obj).methodDictionary_.values();

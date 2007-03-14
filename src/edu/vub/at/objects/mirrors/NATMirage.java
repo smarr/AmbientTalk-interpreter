@@ -30,6 +30,7 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -45,7 +46,6 @@ import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
-import edu.vub.at.objects.natives.NATStripe;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -67,33 +67,59 @@ import java.util.Vector;
 public class NATMirage extends NATObject {
 
 	// Whenever this field is set, the object should be tested for the _MIRROR_ native stripe
-	protected ATObject mirror_;
+	private ATObject mirror_;
 	
-	public static NATMirage createMirage(ATClosure code, ATTable stripes, ATObject mirror) throws InterpreterException {
+	public static NATMirage createMirage(ATClosure code, ATObject dynamicParent, boolean parentType, ATStripe[] stripes, ATObject mirror) throws InterpreterException {
 		if (mirror.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
-			// clone the mirror, this implicitly also creates a new mirage
-			NATObject clone = mirror.meta_clone().asAmbientTalkObject();
+			// create a new, uninitialized mirage
+			NATMirage newMirage = new NATMirage(dynamicParent, code.base_getContext().base_getLexicalScope(), parentType, stripes);
 			
-			NATMirage newMirage = (NATMirage)clone.base_getBase();
+			// create a new instance of the mirror with the uninitialized mirage, this implicitly clones
+			// the mirror and re-initializes it, setting the base field to this new mirage
+			// def mirrorClone := mirror.new(<uninitialized mirage>)
+			// the init method of the mirror root will normally 
+			ATObject mirrorClone = mirror.meta_invoke(mirror, NATObject._NEW_NAME_, NATTable.of(newMirage));
 			
-			// make the lexical scope available to the new mirage
-			newMirage.lexicalParent_= code.base_getContext().base_getLexicalScope();
-			
-			// initialize the stripes of the new mirage
-			newMirage.stripes_ = NATStripe.toStripeArray(stripes);
-			newMirage.initializeWithCode(code);
+			// set the mirage's mirror to the cloned mirror
+			newMirage.initializeWithMirror(mirrorClone);
 			return newMirage;
 		} else {
-			throw new XIllegalArgument("Asked to create an object from an object without the mirror stripe: " + mirror);
+			throw new XIllegalArgument("Object used as a mirror without having the Mirror stripe: " + mirror);
 		}
 	}
 	
-	public NATMirage(ATObject mirror) {
+	/**
+	 * Dedicated constructor for creating the initial empty mirage tied to the mirror root prototype.
+	 */
+	protected NATMirage(OBJMirrorRoot mirror) {
+		super();
 		mirror_ = mirror;
 	}
 	
+	public NATMirage(ATObject dynamicParent, ATObject lexParent, boolean parentType, ATStripe[] stripes) {
+		super(dynamicParent, lexParent, parentType, stripes);
+		mirror_ = NATNil._INSTANCE_; // set to nil while not initialized
+	}
+	
 	/**
-	 * Constructs a new ambienttalk mirage as a clone of an existing one.
+	 * Private setter to be used in OBJMirrorRoot.init to break the chicken-and-egg cycle when
+	 * having to create both a mirror and its mirage simultaneously. The sequence is as follows:
+	 *  1) a new empty 'uninitialized' mirage is created, with mirror as nil
+	 *  2) a mirror is instantiated, leading to the invocation of its init method
+	 *  3) the initialization of a new OBJMirrorRoot assigns the uninitialized mirage to its 'base' field
+	 *  4) the mirror field of the uninitialized mirage is set to the newly created mirror, using this method.
+	 */
+	private void initializeWithMirror(ATObject realMirror) {
+		mirror_ = realMirror;
+	}
+	
+	/**
+	 * Constructs a new ambienttalk mirage as a clone of an existing one. This results in a new
+	 * uninitialized mirage (i.e. a mirage whose mirror points to nil). The code that clones the
+	 * mirage must ensure that the mirror is correctly bound to a new instance of the cloned mirage's mirror.
+	
+	 * 
+	 * 
 	 */
 	protected NATMirage(FieldMap map,
 			         Vector state,
@@ -102,10 +128,41 @@ public class NATMirage extends NATObject {
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
-			         ATStripe[] stripes,
-			         ATObject mirror) throws InterpreterException {
+			         ATStripe[] stripes) throws InterpreterException {
 		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
-		mirror_ = mirror;
+		mirror_ = NATNil._INSTANCE_;
+	}
+	
+	public NATMirage asMirage() throws XTypeMismatch {
+		return this;
+	}
+	
+	// Called by the default NATObject Cloning algorithm
+	protected NATObject createClone(FieldMap map,
+			Vector state,
+			LinkedList customFields,
+			MethodDictionary methodDict,
+			ATObject dynamicParent,
+			ATObject lexicalParent,
+			byte flags, ATStripe[] stripes) throws InterpreterException {
+		NATMirage clonedMirage = new NATMirage(map,
+				state,
+				customFields,
+				methodDict,
+				dynamicParent,
+				lexicalParent,
+				flags,
+				stripes);
+        // clonedMirage.mirror := myMirror.new(clonedMirage)
+		clonedMirage.mirror_ = mirror_.meta_invoke(mirror_, NATObject._NEW_NAME_, NATTable.of(clonedMirage));
+		return clonedMirage;
+	}
+	
+	/**
+	 * Access to the mirage's mirror, to enable a mirage to be 'upped' to a mirror value.
+	 */
+	protected ATObject getMirror() {
+		return mirror_;
 	}
 	
 	// MAGIC METHODS 
@@ -119,8 +176,11 @@ public class NATMirage extends NATObject {
 		return super.meta_assignField(receiver, selector, value);
 	}
 
-	public NATMirage magic_clone(ATObject cloneMirror) throws InterpreterException {
-
+	public ATObject magic_clone() throws InterpreterException {
+		return super.meta_clone();
+	}
+	
+	/*
 		if(cloneMirror.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
 			NATMirage clone = (NATMirage)super.meta_clone();
 			clone.mirror_ = cloneMirror;
@@ -128,45 +188,13 @@ public class NATMirage extends NATObject {
 		} else {
 			throw new XIllegalArgument("Stratification violation : attempted to create a mirage from an object which is not striped to be a valid mirror.");
 		}
-		
-
-	}
-
-	// CLONING AUXILIARY METHODS
-	
-	// Called by the default NATObject Cloning algorithm
-	protected NATObject createClone(FieldMap map,
-			Vector state,
-			LinkedList customFields,
-			MethodDictionary methodDict,
-			ATObject dynamicParent,
-			ATObject lexicalParent,
-			byte flags, ATStripe[] stripes) throws InterpreterException {
-		return new NATMirage(map,
-				state,
-				customFields,
-				methodDict,
-				dynamicParent,
-				lexicalParent,
-				flags,
-				stripes,
-				mirror_);
-	}
-	
-	// CALLED BY meta_clone ON INTERCESSIVE MIRRORS
-	ATObject getMirror() {
-		return mirror_;
-	}
+	}*/
 	
 	public ATNil magic_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		return super.meta_defineField(name, value);
 	}
 
-	public ATObject magic_extend(ATClosure code) throws InterpreterException {
-		return super.meta_extend(code, null);
-	}
-
-	public ATMethod magic_getMethod(ATSymbol selector) throws InterpreterException {
+	public ATMethod magic_grabMethod(ATSymbol selector) throws InterpreterException {
 		return super.meta_grabMethod(selector);
 	}
 
@@ -202,10 +230,6 @@ public class NATMirage extends NATObject {
 		return super.meta_select(receiver, selector);
 	}
 
-	public ATObject magic_share(ATClosure code) throws InterpreterException {
-		return super.meta_share(code, null);
-	}
-
 	public ATNil magic_addField(ATField field) throws InterpreterException {
 		return super.meta_addField(field);
 	}
@@ -221,7 +245,7 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATField magic_getField(ATSymbol selector) throws InterpreterException {
+	public ATField magic_grabField(ATSymbol selector) throws InterpreterException {
 		return super.meta_grabField(selector);
 	}
 
@@ -245,8 +269,8 @@ public class NATMirage extends NATObject {
 		return super.meta_quote(ctx);
 	}
 	
-	public ATObject magic_getDynamicParent() throws InterpreterException {
-		return super.meta_getDynamicParent();
+	public ATBoolean magic_isExtensionOfParent() throws InterpreterException {
+		return super.meta_isExtensionOfParent();
 	}
 
 	public ATObject magic_getLexicalParent() throws InterpreterException {
@@ -277,9 +301,11 @@ public class NATMirage extends NATObject {
 		return super.meta_isRelatedTo(object);
 	}
 	
-	// META Methods 
-	// Forward to our designated mirror object
-
+	/* ========================================================================
+	 * Each meta_x method defined in ATObject is implemented in a mirage as a
+	 * forwarding method that asks its mirror to perform the operation on itself
+	 * instead.
+	 * ======================================================================== */
 
 	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
 		mirror_.meta_invoke(
@@ -302,118 +328,91 @@ public class NATMirage extends NATObject {
 	}
 
 	public ATObject meta_clone() throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("clone"),
-				NATTable.EMPTY
-				));
+				NATTable.EMPTY);
 	}
 
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("defineField"),
-				NATTable.atValue(new ATObject[] { name, value })
-				);
-			
+				NATTable.atValue(new ATObject[] { name, value }));
 		return NATNil._INSTANCE_;
-	}
-
-	public ATObject meta_extend(ATClosure code, ATTable stripes) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
-				mirror_,
-				AGSymbol.jAlloc("extend"),
-				NATTable.atValue(new ATObject[] { code, stripes })
-				));
 	}
 	
 	public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("grabMethod"),
 				NATTable.atValue(new ATObject[] { selector })
-				)).base_asMethod();
+				).base_asMethod();
 	}
 
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("invoke"),
-				NATTable.atValue(new ATObject[] { receiver, selector, arguments })
-				));
+				NATTable.atValue(new ATObject[] { receiver, selector, arguments }));
 	}
 
 	public ATTable meta_listMethods() throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("listMethods"),
 				NATTable.EMPTY
-				)).base_asTable();
+				).base_asTable();
 	}
 
 	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("lookup"),
-				NATTable.atValue(new ATObject[] { selector })
-				));
+				NATTable.atValue(new ATObject[] { selector }));
 	}
 
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("newInstance"),
-				NATTable.atValue(new ATObject[] { initargs })
-				));
+				NATTable.atValue(new ATObject[] { initargs }));
 	}
 
 	public NATText meta_print() throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 					mirror_,
 					AGSymbol.jAlloc("print"),
-					NATTable.EMPTY
-					)).asNativeText();
+					NATTable.EMPTY).asNativeText();
 	}
 
 	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("receive"),
-				NATTable.atValue(new ATObject[] { message })));
+				NATTable.atValue(new ATObject[] { message }));
 	}
 	
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("respondsTo"),
 				NATTable.atValue(new ATObject[] { selector })
-				)).base_asBoolean();
+				).base_asBoolean();
 	}
 
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("select"),
-				NATTable.atValue(new ATObject[] { receiver, selector })
-				));
+				NATTable.atValue(new ATObject[] { receiver, selector }));
 	}
-
-	public ATObject meta_share(ATClosure code, ATTable stripes) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
-				mirror_,
-				AGSymbol.jAlloc("share"),
-				NATTable.atValue(new ATObject[] { code, stripes })
-				));
-	}
-
 
 	public ATNil meta_addField(ATField field) throws InterpreterException {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("addField"),
-				NATTable.atValue(new ATObject[] { field })
-				);
-			
+				NATTable.atValue(new ATObject[] { field }));
 		return NATNil._INSTANCE_;
 	}
 
@@ -422,37 +421,32 @@ public class NATMirage extends NATObject {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("assignVariable"),
-				NATTable.atValue(new ATObject[] { name, value })
-				);
-			
+				NATTable.atValue(new ATObject[] { name, value }));
 		return NATNil._INSTANCE_;
 	}
 
 
 	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("doesNotUnderstand"),
-				NATTable.atValue(new ATObject[] { selector })
-				));
+				NATTable.atValue(new ATObject[] { selector }));
 	}
 
 
 	public ATField meta_grabField(ATSymbol selector) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("grabField"),
-				NATTable.atValue(new ATObject[] { selector })
-		)).base_asField();
+				NATTable.atValue(new ATObject[] { selector })).base_asField();
 	}
 
 
 	public ATTable meta_listFields() throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("listFields"),
-				NATTable.EMPTY
-				)).base_asTable();
+				NATTable.EMPTY).base_asTable();
 	}
 
 
@@ -460,97 +454,71 @@ public class NATMirage extends NATObject {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("send"),
-				NATTable.atValue(new ATObject[] { message })
-				);
-			
+				NATTable.atValue(new ATObject[] { message }));
 		return NATNil._INSTANCE_;
 	}
 
 
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("eval"),
-				NATTable.atValue(new ATObject[] { ctx })
-				));
+				NATTable.atValue(new ATObject[] { ctx }));
 	}
 
 
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("quote"),
-				NATTable.atValue(new ATObject[] { ctx })
-				));
+				NATTable.atValue(new ATObject[] { ctx }));
 	}
 
-	public ATObject meta_getDynamicParent() throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_select(
+	public ATBoolean meta_isExtensionOfParent() throws InterpreterException {
+		return mirror_.meta_select(
 				mirror_,
-				AGSymbol.jAlloc("dynamicParent")));
+				AGSymbol.jAlloc("isExtensionOfParent")).base_asBoolean();
 	}
 
 	public ATObject meta_getLexicalParent() throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_select(
+		return mirror_.meta_select(
 				mirror_,
-				AGSymbol.jAlloc("lexicalParent")));
+				AGSymbol.jAlloc("lexicalParent"));
 	}
 	
     public ATObject meta_pass() throws InterpreterException {
-    	return Reflection.downObject(mirror_.meta_invoke(
-				mirror_, AGSymbol.jAlloc("pass"), NATTable.EMPTY));
+    	return mirror_.meta_invoke(
+				mirror_, AGSymbol.jAlloc("pass"), NATTable.EMPTY);
     }
     
     public ATObject meta_resolve() throws InterpreterException {
-    	return Reflection.downObject(mirror_.meta_invoke(
-				mirror_, AGSymbol.jAlloc("resolve"), NATTable.EMPTY));
+    	return mirror_.meta_invoke(
+				mirror_, AGSymbol.jAlloc("resolve"), NATTable.EMPTY);
     }
     
     public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException {
-    	return Reflection.downObject(mirror_.meta_invoke(
-				mirror_, AGSymbol.jAlloc("isStripedWith"), NATTable.of(stripe))).base_asBoolean();
+    	return mirror_.meta_invoke(
+				mirror_, AGSymbol.jAlloc("isStripedWith"), NATTable.of(stripe)).base_asBoolean();
     }
     
     public ATTable meta_getStripes() throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_select(
+		return mirror_.meta_select(
 				mirror_,
-				AGSymbol.jAlloc("stripes"))).base_asTable();
+				AGSymbol.jAlloc("stripes")).base_asTable();
     }
 	
 	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("isCloneOf"),
-				NATTable.atValue(new ATObject[] { original })
-				)).base_asBoolean();
+				NATTable.atValue(new ATObject[] { original })).base_asBoolean();
 	}
 
 	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
-		return Reflection.downObject(mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("isRelatedTo"),
-				NATTable.atValue(new ATObject[] { object })
-				)).base_asBoolean();
+				NATTable.atValue(new ATObject[] { object })).base_asBoolean();
 	}
-
-	// when passing a mirage as a parameter in an asynchronous message send,
-	// make the mirror decide what object to read or write
-	
-	/*public Object writeReplace() throws ObjectStreamException {
-		try {
-			// TODO: what to pass as client?
-			return meta_pass();
-		} catch (InterpreterException e) {
-			throw new WriteAbortedException("Mirage's mirror failed to pass", e);
-		}
-	}
-	
-	public Object readResolve() throws ObjectStreamException {
-		try {
-			return meta_resolve();
-		} catch (InterpreterException e) {
-			throw new WriteAbortedException("Mirage's mirror failed to resolve", e);
-		}
-	}*/
 	
 }

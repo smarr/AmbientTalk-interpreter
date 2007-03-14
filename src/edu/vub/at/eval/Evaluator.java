@@ -35,6 +35,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.OBJMirrorRoot;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -98,6 +99,18 @@ public final class Evaluator {
 	private static final ThreadLocal _JLOBBY_ROOT_ = new ThreadLocal() {
 	    protected synchronized Object initialValue() {
 	        return createJLobbyRoot();
+	    }
+	};
+	
+	/**
+	 * A thread-local variable is used to assign a unique mirror root to
+	 * each separate actor. The mirror root encapsulates the default semantics
+	 * for AmbientTalk objects and is the parent of most interecessive custom mirrors
+	 * defined by AmbientTalk programmers themselves.
+	 */
+	private static final ThreadLocal _MIRROR_ROOT_ = new ThreadLocal() {
+	    protected synchronized Object initialValue() {
+	        return createMirrorRoot();
 	    }
 	};
 	
@@ -398,12 +411,21 @@ public final class Evaluator {
 	}
 	
 	/**
+	 * @return the mirror root of an actor, from which intercessive mirrors usually inherit.
+	 */
+	public static OBJMirrorRoot getMirrorRoot() {
+		return (OBJMirrorRoot) _MIRROR_ROOT_.get();
+	}
+	
+	/**
 	 * Restores the global lexical scope to a fresh empty object.
 	 * Resets the lobby global namespace.
 	 */
 	public static void resetEnvironment() {
 		_GLOBAL_SCOPE_.set(createGlobalLexicalScope());
 		_LOBBY_NAMESPACE_.set(createLobbyNamespace());
+		_JLOBBY_ROOT_.set(createJLobbyRoot());
+		_MIRROR_ROOT_.set(createMirrorRoot());
 	}
 	
 	/**
@@ -427,7 +449,13 @@ public final class Evaluator {
 	private static NATObject createJLobbyRoot() {
 		return new JavaPackage("");
 	}
-	
+
+    /**
+     * The default mirror root, with an empty base-level object
+     */
+	private static OBJMirrorRoot createMirrorRoot() {
+		return new OBJMirrorRoot();
+	}
 	
 	public static final String valueNameOf(Class c) {
 		String name = getSimpleName(c);

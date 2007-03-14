@@ -27,101 +27,149 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
- * OBJMirrorRoot is a singleton which is shared by as a parent by all NATIntercessiveMirrors,
- * It encodes the default behaviour to deal with invocation, selection and field assignment
- * along the dynamic parent chain. This behaviour can be extracted, since these operations 
- * are always parameterised by a receiver object, namely the intercessive mirror in question.
- *
+ * OBJMirrorRoot denotes the root node of the intercessive mirrors delegation hierarchy.
+ * 
+ * Intercessive mirrors are always tied to a particular 'base' object.
+ * The default intercessive mirror is named 'mirrorroot' and is an object
+ * that understands all meta_* operations, implementing them using default semantics.
+ * It can be thought of as being defined as follows:
+ * 
+ * def mirrorroot := object: {
+ *   def base := object: { nil } mirroredBy: self // base of the mirror root is an empty mirage
+ *   def init(b) {
+ *     base := b
+ *   }
+ *   def invoke(@args) { <default native invocation behaviour on base> }
+ *   def select(@args) { <default native selection behaviour on base> }
+ *   ...
+ * } stripedWith: [ Mirror ]
+ * 
+ * This object can then simply be extended / composed by other objects to deviate from the default semantics.
+ * Note that the default semantics is applied to 'base' and *not* 'self.base', in other words:
+ * although child mirrors can define their own 'base' field, it is not taken into consideration
+ * by the mirror root. This also ensures that the mirror root is not abused to enact upon a mirage
+ * for which it was not assigned to be the mirror.
+ * 
+ * Hence, 'mirrors' are simply objects with the same interface as this mirrorroot object: they should be
+ * able to respond to all meta_* messages and have a 'base' field.
+ * 
  * @author smostinc
+ * @author tvcutsem
  */
-public class OBJMirrorRoot extends NATByCopy {
+public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 	
-	public static final ATSymbol _CLONE_ = AGSymbol.jAlloc("clone");
-	public static final ATSymbol _MIRROR_ = AGSymbol.jAlloc("mirror");
-	public static final OBJMirrorRoot _INSTANCE_ = new OBJMirrorRoot();
+	// The name of the field that points to the base_level representation of a custom mirror
+	public static final AGSymbol _BASE_NAME_ = AGSymbol.jAlloc("base");
 	
-	/* PRIVATE CONSTRUCTOR - SINGLETON PATTERN */
-	private OBJMirrorRoot() {};
+	// the native read-only 'base' field of the mirror root
+	private NATMirage base_;
 	
 	/**
-	 * <p>The effect of invoking methods on a mirror (through meta_invoke) consists of
-	 * checking whether the requested functionality is provided as a meta-operation
-	 * by the principal that is wrapped by this mirror. Since such meta-operations
-	 * are intercepted and forwarded to allow for interception, the mirage is expected
-	 * to have a method for the given selector albeit prefixed with 'magic_'.</p>
-	 *  
+	 * Constructor used to initialize the initial mirror root prototype.
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
-		
-		NATMirage principal = (NATMirage)receiver.meta_select(receiver, NATObject._BASE_NAME_);
+	public OBJMirrorRoot() {
+		base_ = new NATMirage(this);
+	};
 
-		// OBJMirrorRoot emulates it has a PrimitiveMethod clone
-		if(atSelector == _CLONE_) {
-			ATObject clone = receiver.meta_clone();
-			clone.asAmbientTalkObject().setBase( principal.magic_clone(clone) );
-			return clone;
+	/**
+	 * Constructor used for cloning: creates a shallow copy of the mirror root.
+	 * @param base the base field value of the original mirror root from which
+	 * this new one will be cloned.
+	 */
+	private OBJMirrorRoot(NATMirage base) {
+		base_ = base;
+	};
+
+	/**
+	 * OBJMirrorRoot's primitive 'init method, in pseudo-code:
+	 * 
+	 * def init(newBase) {
+	 *   base := newBase
+	 * }
+	 */
+	public ATObject base_init(ATObject[] initargs) throws InterpreterException {
+		if (initargs.length != 1) {
+			throw new XArityMismatch("init", 1, initargs.length);
 		}
 		
-		// Same as upMetaLevelSelector but with magic_ instead of meta_
-		// invoking a meta-level operation in the base would mean the operation
-		// would be reified and passed to the customMirror resulting in an endless
-		// loop. Therefore the magic_ methods, which are defined only on mirages
-		// are used to cut off the infinite meta-regress.
-		String jSelector = Reflection.upMagicLevelSelector(atSelector);
-		
-		try {
-			return NATIntrospectiveMirror.atValue(
-					Reflection.upInvocation(
-									principal, // implementor and self
-									jSelector,
-									arguments));
-		} catch (XSelectorNotFound e) {
-			// Several meta_methods actually throw this exception to indicate they failed to select or lookup a
-			// particular argument. Obviously these instances should be reported as is to the outside world. If,
-			// however, the principal does not have a corresponding meta_level method for the given selector,
-			// check whether the selector matches a base_level method of the mirror itself. This functionality 
-			// readily is accessible using the super class.
-			
-			if(e.selector_ != atSelector) {
-				throw e;
-			} else {
-				return super.meta_invoke(receiver, atSelector, arguments);
-			}
+		NATMirage newBase = initargs[0].asMirage();
+		// check whether the passed base field does not have a mirror assigned to it yet
+		if (newBase.getMirror() == NATNil._INSTANCE_) {
+			base_ = newBase;
+			return newBase;
+		} else {
+			throw new XIllegalArgument("mirror root's init method requires an uninitialized mirage, found: " + newBase);
 		}
 	}
 
+	/**
+	 * This implementation is actually an ad hoc modification of the NATObject implementation
+	 * of instance creation, dedicated for OBJMirrorRoot. Using the NATObject implementation
+	 * would work perfectly, but this one is more efficient.
+	 */
+	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
+		OBJMirrorRoot clone = new OBJMirrorRoot(base_); // same as this.meta_clone()
+		clone.base_init(initargs.asNativeTable().elements_);
+		return clone;
+	}
 	
 	/* ------------------------------------
 	 * -- Extension and cloning protocol --
 	 * ------------------------------------ */
 	
 	/**
-	 * OBJMirrorRoot is a singleton object.
+	 * The mirror root is cloned but the base field is only shallow-copied, i.e. it is shared
+	 * between the clones! Normally, mirrors are instantiated rather than cloned when assigned
+	 * to a new object, such that this new base field will be re-assigned to another mirage
+	 * (in OBJMirrorRoot's primitive 'init' method.
 	 */
 	public ATObject meta_clone() throws InterpreterException {
-		return this;
+		return new OBJMirrorRoot(base_);
 	}
-
+	
+    public ATTable meta_getStripes() throws InterpreterException {
+    	return NATTable.of(NativeStripes._MIRROR_);
+    }
+    
+    public NATText meta_print() throws InterpreterException {
+    	return NATText.atValue("<mirror on: "+base_+">");
+    }
+    
+	
+	/**
+	 * The read-only field containing the mirror's base-level mirage.
+	 */
+	public NATMirage base_getBase() throws InterpreterException {
+		return base_;
+	}
+	
+    
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
 	 * ------------------------------------------ */
 
-	/**
+	/*
 	 * <p>The effect of selecting fields or methods on a mirror (through meta_select) 
 	 * consists of checking whether the requested selector matches a field of the 
 	 * principal wrapped by this mirror. If this is the case, the principal's 
@@ -144,79 +192,127 @@ public class OBJMirrorRoot extends NATByCopy {
 	 * advantage of this technique is that it permits a mirror to have a field 
 	 * referring to its principal.</p>
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
-		NATMirage principal = (NATMirage)receiver.meta_select(receiver, NATObject._BASE_NAME_);
-		
-		// Same as upMetaLevelSelector but with magic_ instead of meta_
-		// invoking a meta-level operation in the base would mean the operation
-		// would be reified and passed to the customMirror resulting in an endless
-		// loop. Therefore the magic_ methods, which are defined only on mirages
-		// are used to cut off the infinite meta-regress.
-		String jSelector;
-		
-		try {
-			jSelector = Reflection.upMagicFieldAccessSelector(atSelector);
-			return NATIntrospectiveMirror.atValue(
-					Reflection.upFieldSelection(
-							principal,
-							jSelector));
-			
-		} catch (XSelectorNotFound e) {
-			try {
-				jSelector = Reflection.upMagicLevelSelector(atSelector);
+	
+	/* ========================================================================
+	 * OBJMirrorRoot has a base_x method for each meta_x method defined in ATObject.
+	 * Each base_x method invokes NATObject's default behaviour on the base_ NATMirage
+	 * via that mirage's magic_x methods.
+	 * ======================================================================== */
 
-				return NATIntrospectiveMirror.atValue(
-						Reflection.upMethodSelection(
-								principal, 
-								jSelector, atSelector));
-			} catch (XSelectorNotFound e2) {
-				// Principal does not have a corresponding meta_level field nor
-				// method try for a base_level field or method of the mirror itself.
-				return super.meta_select(receiver, atSelector);
-			}
-		}			
+	public ATObject base_clone() throws InterpreterException {
+		return base_getBase().magic_clone();
 	}
 	
-	/**
-	 * The effect of assigning a field on a mirror can be twofold. Either a meta_field
-	 * of the reflectee is altered (in this case, the passed value must be a mirror to
-	 * uphold stratification). Otherwise it is possible that a base field of the mirror
-	 * itself is changed.
-	 */
-	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-		NATMirage principal = (NATMirage)receiver.meta_select(receiver, NATObject._BASE_NAME_);
-		
-		String jSelector = Reflection.upMagicFieldMutationSelector(name);
-		
-		try{
-			JavaInterfaceAdaptor.invokeNativeATMethod(
-					principal.getClass(),
-					principal,
-					jSelector,
-					new ATObject[] { name.equals(_MIRROR_)? value : value.meta_select(receiver, NATObject._BASE_NAME_) });
-		} catch (XSelectorNotFound e) {
-			// Principal does not have a corresponding meta_level method
-			// OR the passed value is not a mirror object
-			// try for a base_level method of the mirror itself.
-			return super.meta_assignField(receiver, name, value);
-		}			
-		
-		return NATNil._INSTANCE_;
-	}
-	
-	/**
-	 * After deserialization, ensure that the mirror root remains unique.
-	 */
-	public ATObject meta_resolve() throws InterpreterException {
-		return OBJMirrorRoot._INSTANCE_;
-	}
-	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._MIRROR_);
+    public ATTable base_getStripes() throws InterpreterException {
+		return base_getBase().magic_getStripes();
     }
     
-    public NATText meta_print() throws InterpreterException {
-    	return NATText.atValue("<native object: mirrorroot>");
+    public NATText base_print() throws InterpreterException {
+		return base_getBase().magic_print();
     }
+	
+	public ATObject base_pass() throws InterpreterException {
+		return base_getBase().magic_pass();
+	}
+
+	public ATObject base_resolve() throws InterpreterException {
+		return base_getBase().magic_resolve();
+	}
+
+	public ATNil base_addField(ATField field) throws InterpreterException {
+		return base_getBase().magic_addField(field);
+	}
+
+	public ATNil base_addMethod(ATMethod method) throws InterpreterException {
+		return base_getBase().magic_addMethod(method);
+	}
+
+	public ATNil base_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
+		return base_getBase().magic_assignField(receiver, name, value);
+	}
+
+	public ATNil base_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
+		return base_getBase().magic_assignVariable(name, value);
+	}
+
+	public ATNil base_defineField(ATSymbol name, ATObject value) throws InterpreterException {
+		return base_getBase().magic_defineField(name, value);
+	}
+
+	public ATObject base_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
+		return base_getBase().magic_doesNotUnderstand(selector);
+	}
+
+	public ATObject base_eval(ATContext ctx) throws InterpreterException {
+		return base_getBase().magic_eval(ctx);
+	}
+
+	public ATBoolean base_isExtensionOfParent() throws InterpreterException {
+		return base_getBase().magic_isExtensionOfParent();
+	}
+
+	public ATObject base_getLexicalParent() throws InterpreterException {
+		return base_getBase().magic_getLexicalParent();
+	}
+
+	public ATField base_grabField(ATSymbol fieldName) throws InterpreterException {
+		return base_getBase().magic_grabField(fieldName);
+	}
+
+	public ATMethod base_grabMethod(ATSymbol methodName) throws InterpreterException {
+		return base_getBase().magic_grabMethod(methodName);
+	}
+
+	public ATObject base_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
+		return base_getBase().magic_invoke(receiver, atSelector, arguments);
+	}
+
+	public ATBoolean base_isCloneOf(ATObject original) throws InterpreterException {
+		return base_getBase().magic_isCloneOf(original);
+	}
+
+	public ATBoolean base_isRelatedTo(ATObject object) throws InterpreterException {
+		return base_getBase().magic_isRelatedTo(object);
+	}
+
+	public ATBoolean base_isStripedWith(ATStripe stripe) throws InterpreterException {
+		return base_getBase().magic_isStripedWith(stripe);
+	}
+
+	public ATTable base_listFields() throws InterpreterException {
+		return base_getBase().magic_listFields();
+	}
+
+	public ATTable base_listMethods() throws InterpreterException {
+		return base_getBase().magic_listMethods();
+	}
+
+	public ATObject base_lookup(ATSymbol selector) throws InterpreterException {
+		return base_getBase().magic_lookup(selector);
+	}
+
+	public ATObject base_newInstance(ATTable initargs) throws InterpreterException {
+		return base_getBase().magic_newInstance(initargs);
+	}
+
+	public ATObject base_quote(ATContext ctx) throws InterpreterException {
+		return base_getBase().magic_quote(ctx);
+	}
+
+	public ATObject base_receive(ATAsyncMessage message) throws InterpreterException {
+		return base_getBase().magic_receive(message);
+	}
+
+	public ATBoolean base_respondsTo(ATSymbol atSelector) throws InterpreterException {
+		return base_getBase().magic_respondsTo(atSelector);
+	}
+
+	public ATObject base_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
+		return base_getBase().magic_select(receiver, selector);
+	}
+
+	public ATObject base_send(ATAsyncMessage message) throws InterpreterException {
+		return base_getBase().magic_send(message);
+	}
 	
 }

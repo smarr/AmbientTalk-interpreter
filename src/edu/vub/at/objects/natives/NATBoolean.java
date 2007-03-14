@@ -124,6 +124,10 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 			return NATFalse._INSTANCE_;
 		}
 		
+		public ATObject meta_resolve() throws InterpreterException {
+			return NATTrue._INSTANCE_;
+		}
+		
 	}
 
 	public static class NATFalse extends NATBoolean {
@@ -166,6 +170,10 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		
 		public ATBoolean base_not() {
 			return NATTrue._INSTANCE_;
+		}
+		
+		public ATObject meta_resolve() throws InterpreterException {
+			return NATFalse._INSTANCE_;
 		}
 		
 	}

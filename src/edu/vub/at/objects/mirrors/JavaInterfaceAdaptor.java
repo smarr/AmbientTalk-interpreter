@@ -37,6 +37,7 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.signals.Signal;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.coercion.Coercer;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNumber;
@@ -82,12 +83,13 @@ public class JavaInterfaceAdaptor {
 	 * @param jClass the class of the receiver object
 	 * @param natReceiver the receiver (a native AmbientTalk object)
 	 * @param jSelector the java-level selector identifying the method to invoke
+	 * @param atSelector TODO
 	 * @param jArguments parameters, normally AT objects
 	 * @return the return value of the reflectively invoked method
 	 */	
 	public static ATObject invokeNativeATMethod(Class jClass, ATObject natReceiver,
-										String jSelector, ATObject[] jArguments) throws InterpreterException {
-		return invokeNativeATMethod(getNativeATMethod(jClass, natReceiver, jSelector), natReceiver, jArguments);
+										        String jSelector, ATSymbol atSelector, ATObject[] jArguments) throws InterpreterException {
+		return invokeNativeATMethod(getNativeATMethod(jClass, natReceiver, jSelector, atSelector), natReceiver, jArguments);
 	}
 	
 	/**
@@ -193,15 +195,15 @@ public class JavaInterfaceAdaptor {
 	public static Method getNativeATMethod(
 			Class baseInterface, 
 			ATObject receiver,
-			String methodName) throws InterpreterException {
+			String methodName, ATSymbol atSelector) throws InterpreterException {
 		Method[] applicable = getMethodsForSelector(baseInterface, methodName);
 		switch (applicable.length) {
 			case 0:
-				throw new XSelectorNotFound(Reflection.downBaseLevelSelector(methodName), receiver);
+				throw new XSelectorNotFound(atSelector, receiver);
 			case 1:
 				return applicable[0];
 			default:
-				throw new XIllegalOperation("Native method uses overloading: " + methodName + " in " + baseInterface);
+				throw new XIllegalOperation("Native method uses overloading: " + atSelector + " in " + baseInterface);
 		}
 	}
 	

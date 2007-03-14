@@ -144,17 +144,16 @@ public class MirageTest extends AmbientTalkTest {
 	}
 	
 	/**
-	 * This test ensures that extensions of mirrors have their own base object, which ensures
-	 * that they are properly cloned, each child mirror clone having their own base. 
+	 * This test ensures that default extensions of mirrors share the base object of the parent.
 	 */
-	public void testEachMirrorHasItsOwnBase() {
+	public void testChildMirrorSharesBase() throws InterpreterException {
 		ATObject result = evalAndReturn(
 				"def meta := mirror:  { nil }; \n" +
 				"def base := object:  { nil } mirroredBy: meta; \n" +
 				"    meta := reflect: base; \n" +
 				"def extension := extend: meta with: { nil }; \n" +
 				"(extension.base == meta.base);"); 
-		assertEquals(NATBoolean._FALSE_, result);
+		assertTrue(result.asNativeBoolean().javaValue);
 	}
 	
 	/**
@@ -215,11 +214,11 @@ public class MirageTest extends AmbientTalkTest {
 				"" +
 				"	mirror: {" +
 				"		def invoke(receiver, selector, args) {" +
-				"			echo: (spaces() + \"Invocation of method \" + selector + \" with arguments \" + args + \" on \" + receiver + \"(\" + base + \")\");" +
+				"			echo: (spaces() + \"Invocation of method \" + selector + \" with arguments \" + args + \" on \" + receiver + \"(\" + super.base + \")\");" +
 				"			indentLevel := indentLevel + 1;" +
 				"			def result := super^invoke(receiver, selector, args);" +
 				"			indentLevel := indentLevel - 1;" +
-				"			echo: (spaces() + \"Invocation of method \" + selector + \" yielded \" + result.print().base );" +
+				"			echo: (spaces() + \"Invocation of method \" + selector + \" yielded \" + result );" +
 				"			result;" +
 				"		}" +
 				"	};" +
@@ -237,8 +236,8 @@ public class MirageTest extends AmbientTalkTest {
 		assertEquals(
 				"Invocation of method m with arguments [] on " + parent + "(" + parent + ")\n" +
 				"  Invocation of method n with arguments [] on " + parent + "(" + parent + ")\n" +
-				"  Invocation of method n yielded \"ok\"\n" +
-				"Invocation of method m yielded \"ok\"\n" +
+				"  Invocation of method n yielded ok\n" +
+				"Invocation of method m yielded ok\n" +
 				"ok\n",
 				buffer.readOutput());
 		
@@ -259,8 +258,8 @@ public class MirageTest extends AmbientTalkTest {
 				"My parent will start logging now\n" +
 				"Invocation of method m with arguments [] on " + child + "(" + parent + ")\n" +
 				"  Invocation of method n with arguments [] on " + child + "(" + parent + ")\n" +
-				"  Invocation of method n yielded \"ok\"\n" +
-				"Invocation of method m yielded \"ok\"\n" +
+				"  Invocation of method n yielded ok\n" +
+				"Invocation of method m yielded ok\n" +
 				"ok\n",
 				buffer.readOutput());
 		

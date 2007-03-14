@@ -160,26 +160,6 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
 		throw new XIllegalOperation("Cannot create new instance of far reference " + this);
 	}
-
-	/**
-	 * TODO(discuss) Think about extending objects of another actor. The result should be
-	 * a far reference, although the child object may be hosted on your actor. This enforces
-	 * correct use of the sending operation the only concern is then to check no super 
-	 * invocations are made by the child.
-	 */
-	public ATObject meta_extend(ATClosure code, ATTable stripes) throws InterpreterException {
-		throw new XIllegalOperation("Cannot extend far reference " + this + " with " + code);
-	}
-
-	/**
-	 * TODO(discuss) Think about sharing objects of another actor. The result should be
-	 * a far reference, although the child object may be hosted on your actor. This enforces
-	 * correct use of the sending operation the only concern is then to check no super 
-	 * invocations are made by the child.
-	 */
-	public ATObject meta_share(ATClosure code, ATTable stripes) throws InterpreterException {
-		throw new XIllegalOperation("Cannot share far reference " + this + " with " + code);
-	}
 	
 	/* ------------------------------------------
      * -- Slot accessing and mutating protocol --
@@ -296,14 +276,6 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
     /* --------------------
      * -- Mirror Fields  --
      * -------------------- */
-
-	public ATObject meta_getDynamicParent() throws InterpreterException {
-		throw new XSelectorNotFound(AGSymbol.jAlloc("dynamicParent"), this);
-	}
-
-	public ATObject meta_getLexicalParent() throws InterpreterException {
-		throw new XSelectorNotFound(AGSymbol.jAlloc("lexicalParent"), this);
-	}
 	
 	/**
 	 * The stripes of a far reference are the stripes of the remote object

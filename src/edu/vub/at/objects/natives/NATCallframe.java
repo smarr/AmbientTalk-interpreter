@@ -306,8 +306,15 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 * -- Mirror Fields   --
 	 * --------------------- */
 	
-	public ATObject meta_getDynamicParent() throws InterpreterException {
-		return meta_select(this, NATObject._SUPER_NAME_);
+	/**
+	 * Auxiliary method to dynamically select the 'super' field from this object.
+	 * Note that this method is part of the base-level interface to an object.
+	 * 
+	 * Also note that this method performs the behaviour equivalent to evaluating
+	 * 'super' and not 'self.super', which could lead to infinite loops.
+	 */
+	public ATObject base_getSuper() throws InterpreterException {
+		return this.meta_lookup(NATObject._SUPER_NAME_);
 	};
 	
 	public ATObject meta_getLexicalParent() throws InterpreterException {

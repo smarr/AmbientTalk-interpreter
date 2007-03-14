@@ -36,10 +36,8 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATException;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.Symbiosis;
@@ -80,10 +78,6 @@ public final class Reflection {
 	public static final String _MGET_PREFIX_ = "meta_get";
 	public static final String _MSET_PREFIX_ = "meta_set";
 	
-	public static final String _MAGIC_PREFIX_ = "magic_";
-	public static final String _MAGET_PREFIX_ = "magic_get";
-	public static final String _MASET_PREFIX_ = "magic_set";
-	
 	/**
 	 * A selector passed from the Java to the AmbientTalk level undergoes the following transformations:
 	 * 
@@ -114,20 +108,7 @@ public final class Reflection {
 	public static final ATSymbol downBaseLevelSelector(String jSelector) throws InterpreterException {
 		if (jSelector.startsWith(Reflection._BASE_PREFIX_)) {
 			return downSelector(stripPrefix(jSelector, Reflection._BASE_PREFIX_));
-		} else 
-			
-		// In Exceptional Cases magic_ may be used to invoke special primitives, so this method needs to support them
-		// since they are in all other regards equal to base_ methods
-		if (jSelector.startsWith(Reflection._MAGET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, Reflection._MAGET_PREFIX_));
-		} else if (jSelector.startsWith(Reflection._MASET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, Reflection._MASET_PREFIX_));
-		} else if (jSelector.startsWith(Reflection._MAGIC_PREFIX_)) {
-			return downSelector(stripPrefix(jSelector, Reflection._MAGIC_PREFIX_));
-		} else
-		
-		
-		if (jSelector.startsWith(Reflection._MGET_PREFIX_)) {
+		} else if (jSelector.startsWith(Reflection._MGET_PREFIX_)) {
 			return downFieldName(stripPrefix(jSelector, Reflection._MGET_PREFIX_));
 		} else if (jSelector.startsWith(Reflection._MSET_PREFIX_)) {
 			return downFieldName(stripPrefix(jSelector, Reflection._MSET_PREFIX_));
@@ -271,13 +252,6 @@ public final class Reflection {
 	}
 	
 	/**
-	 * Transforms an AmbientTalk selector into a Java-level selector prefixed with magic_.
-	 */
-	public static final String upMagicLevelSelector(ATSymbol atSelector) throws InterpreterException {
-		return Reflection._MAGIC_PREFIX_ + upSelector(atSelector);
-	}
-	
-	/**
 	 * A field name "field" passed from the AmbientTalk to the Java level undergoes the following transformations:
 	 * 
 	 *  - the same transformations applicable to upSelector
@@ -332,26 +306,6 @@ public final class Reflection {
 	}
 	
 	/**
-	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "meta_get".
-	 * 
-	 * Example:
-	 *  upMetaFieldAccessSelector(ATSymbol('receiver')) => "meta_getReceiver"
-	 */
-	public static final String upMagicFieldAccessSelector(ATSymbol atName) throws InterpreterException {
-		return Reflection._MAGET_PREFIX_ + upFieldName(atName);
-	}
-	
-	/**
-	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "meta_set".
-	 * 
-	 * Example:
-	 *  upMetaFieldMutationSelector(ATSymbol('receiver')) => "meta_setReceiver"
-	 */
-	public static final String upMagicFieldMutationSelector(ATSymbol atName) throws InterpreterException {
-		return Reflection._MASET_PREFIX_ + upFieldName(atName);
-	}
-	
-	/**
 	 * Constructs an AmbientTalk ATField from a pair of accessor/mutator methods of
 	 * a Java object. Given an object obj and a String sel, it is checked whether
 	 *  a) obj has a method named getPrefix + Sel, if so, a field can be created
@@ -372,10 +326,10 @@ public final class Reflection {
 			                              String getPrefix, String setPrefix) throws InterpreterException {
 		String fieldName = upFieldName(atSelector);
 		try {
-			Method accessorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, getPrefix + fieldName);
+			Method accessorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, getPrefix + fieldName, atSelector);
 			Method mutatorMethod = null;
 			try {
-				mutatorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, setPrefix + fieldName);
+				mutatorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, setPrefix + fieldName, atSelector);
 			} catch (XSelectorNotFound e) {
 				// no setter, return a read-only field
 			}
@@ -414,7 +368,7 @@ public final class Reflection {
 	 * methods to specify the prefix of the method to be found
 	 */
 	public static final ATMethod downMethod(ATObject natObject, String jSelector, ATSymbol origName) throws InterpreterException {
-		return new NativeMethod(JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, jSelector), origName);
+		return new NativeMethod(JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, jSelector, origName), origName);
 	}
 	
 	public static final ATMethod downBaseLevelMethod(ATObject natObject, ATSymbol atSelector) throws InterpreterException {
@@ -506,12 +460,12 @@ public final class Reflection {
 	 *  => upInvocation(aNATTable, "meta_invoke", ATObject[] { aNATTable, ATSymbol('at'), ATTable([ATNumber(1)]) })
 	 *  => NATTable must have a method named meta_invoke
 	 */
-	public static final ATObject upInvocation(ATObject atOrigRcvr, String jSelector, ATTable atArgs) throws InterpreterException {
+	public static final ATObject upInvocation(ATObject atOrigRcvr, String jSelector, ATSymbol atSelector, ATTable atArgs) throws InterpreterException {
 		return JavaInterfaceAdaptor.invokeNativeATMethod(
 				    atOrigRcvr.getClass(),
 				    atOrigRcvr,
 					jSelector,
-					atArgs.asNativeTable().elements_);
+					atSelector, atArgs.asNativeTable().elements_);
 	}
 	
 	/**
@@ -568,12 +522,12 @@ public final class Reflection {
 	 *  => NATMessage must have a zero-argument method named getSelector
 	 *  
 	 */
-	public static final ATObject upFieldSelection(ATObject atOrigRcvr, String jSelector) throws InterpreterException {
+	public static final ATObject upFieldSelection(ATObject atOrigRcvr, String jSelector, ATSymbol atSelector) throws InterpreterException {
 		return JavaInterfaceAdaptor.invokeNativeATMethod(
 				atOrigRcvr.getClass(),
 				atOrigRcvr,
 				jSelector,
-				NATTable.EMPTY.elements_);		
+				atSelector, NATTable.EMPTY.elements_);		
 	}
 	
 	/**
@@ -591,12 +545,12 @@ public final class Reflection {
 	 *  => NATMessage must have a one-argument method named base_setSelector
 	 *  
 	 */
-	public static final ATObject upFieldAssignment(ATObject atOrigRcvr, String jSelector, ATObject value) throws InterpreterException {
+	public static final ATObject upFieldAssignment(ATObject atOrigRcvr, String jSelector, ATSymbol atSelector, ATObject value) throws InterpreterException {
 		return JavaInterfaceAdaptor.invokeNativeATMethod(
 				atOrigRcvr.getClass(),
 				atOrigRcvr,
 				jSelector,
-				new ATObject[] { value });		
+				atSelector, new ATObject[] { value });
 	}
 	
 	/**
@@ -614,7 +568,7 @@ public final class Reflection {
 	 *  => either NATTable must have a method base_at, which is then wrapped
 	 */
 	public static final NativeClosure upMethodSelection(ATObject atOrigRcvr, String jSelector, ATSymbol origSelector) throws InterpreterException {
-		Method m = JavaInterfaceAdaptor.getNativeATMethod(atOrigRcvr.getClass(), atOrigRcvr, jSelector);
+		Method m = JavaInterfaceAdaptor.getNativeATMethod(atOrigRcvr.getClass(), atOrigRcvr, jSelector, origSelector);
 		return new NativeClosure(atOrigRcvr, new NativeMethod(m, origSelector));
 	}
 	
@@ -645,11 +599,12 @@ public final class Reflection {
 	 * Pass an AmbientTalk meta-level object into the base-level
 	 */
 	public static final ATObject downObject(ATObject metaObject) throws InterpreterException {
-		if (metaObject.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
-			return metaObject.meta_select(metaObject, NATObject._BASE_NAME_);
+		return metaObject;
+		/*if (metaObject.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+			return metaObject.meta_select(metaObject, OBJMirrorRoot._BASE_NAME_);
 		} else {
 			return metaObject; // most native objects represent both the object at the base and at the meta-level
-		}
+		}*/
 	}
 	
 	/**
@@ -657,7 +612,7 @@ public final class Reflection {
 	 */
 	public static final ATObject upObject(ATObject baseObject) {
 		if (baseObject instanceof NATMirage) {
-			return ((NATMirage) baseObject).mirror_;
+			return ((NATMirage) baseObject).getMirror();
 		} else {
 			return baseObject;
 		}

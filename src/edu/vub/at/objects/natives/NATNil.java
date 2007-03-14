@@ -51,7 +51,6 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
@@ -61,6 +60,7 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
+import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
@@ -119,8 +119,9 @@ public class NATNil implements ATNil, Serializable {
     public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
         try {
 			String jSelector = Reflection.upBaseLevelSelector(atSelector);
-			return Reflection.upInvocation(this /*receiver*/, jSelector, arguments);
+			return Reflection.upInvocation(this /*receiver*/, jSelector, atSelector, arguments);
 		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(atSelector);
 			return receiver.meta_doesNotUnderstand(atSelector).base_asClosure().base_apply(arguments);
 		}
     }
@@ -156,17 +157,17 @@ public class NATNil implements ATNil, Serializable {
      *  base_m which means m is represented as a method
      */
     public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-        String jSelector = null;
-
+        String jSelector = Reflection.upBaseFieldAccessSelector(selector);
         try {
-        	jSelector = Reflection.upBaseFieldAccessSelector(selector);
-            return Reflection.upFieldSelection(receiver, jSelector);
+            return Reflection.upFieldSelection(this, jSelector, selector);
         } catch (XSelectorNotFound e) {
+        	e.catchOnlyIfSelectorEquals(selector);
             jSelector = Reflection.upBaseLevelSelector(selector);
 
             try {
-				return Reflection.upMethodSelection(receiver, jSelector, selector);
+				return Reflection.upMethodSelection(this, jSelector, selector);
 			} catch (XSelectorNotFound e2) {
+				e2.catchOnlyIfSelectorEquals(selector);
 				return receiver.meta_doesNotUnderstand(selector);
 			}
         }
@@ -212,12 +213,13 @@ public class NATNil implements ATNil, Serializable {
     }
 
     public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
+    	String jSelector = Reflection.upBaseFieldMutationSelector(name);
     	
         // try to invoke a native base_setName method
-        try {
-        	   String jSelector = Reflection.upBaseFieldMutationSelector(name);
-        	   Reflection.upFieldAssignment(receiver, jSelector, value);
+        try {	   
+           Reflection.upFieldAssignment(receiver, jSelector, name, value);
 		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(name);
 			// if such a method does not exist, the field assignment has failed
 			throw new XUnassignableField(name.base_getText().asNativeText().javaValue);
 		}
@@ -236,36 +238,6 @@ public class NATNil implements ATNil, Serializable {
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
         return Reflection.upInstanceCreation(this, initargs);
     }
-
-	/**
-	 * When creating children of objects, care must be taken that an extension
-	 * of an isolate itself remains an isolate.
-	 */
-	protected ATObject createChild(ATClosure code, boolean parentPointerType, ATStripe[] stripes) throws InterpreterException {
-
-		NATObject extension = new NATObject(
-				/* dynamic parent */
-				this,
-				/* lexical parent -> isolates don't inherit outer scope! */
-				this.meta_isStripedWith(NativeStripes._ISOLATE_).asNativeBoolean().javaValue ?
-						Evaluator.getGlobalLexicalScope() :
-						code.base_getContext().base_getLexicalScope(),
-				
-				/* parent porinter type */
-				parentPointerType,
-				stripes);
-		
-		extension.initializeWithCode(code);
-		return extension;
-	}
-	
-	public ATObject meta_extend(ATClosure code, ATTable stripes) throws InterpreterException {
-		return createChild(code, NATObject._IS_A_, NATStripe.toStripeArray(stripes));
-	}
-
-	public ATObject meta_share(ATClosure code, ATTable stripes) throws InterpreterException {
-		return createChild(code, NATObject._SHARES_A_, NATStripe.toStripeArray(stripes));
-	}
     
     /* ---------------------------------
       * -- Structural Access Protocol  --
@@ -292,7 +264,7 @@ public class NATNil implements ATNil, Serializable {
     }
 
     public ATTable meta_listMethods() throws InterpreterException {
-    	    return NATTable.atValue(Reflection.downBaseLevelMethods(this));
+    	return NATTable.atValue(Reflection.downBaseLevelMethods(this));
     }
 
     /* ---------------------------------
@@ -322,11 +294,10 @@ public class NATNil implements ATNil, Serializable {
       * ------------------------------ */
 
     /**
-     * Only true extending objects have a dynamic pointer, others return nil
-     * @throws InterpreterException 
+     * Native objects have a SHARES-A parent link to 'nil', by default.
      */
-    public ATObject meta_getDynamicParent() throws InterpreterException {
-        return NATNil._INSTANCE_;
+    public ATBoolean meta_isExtensionOfParent() throws InterpreterException {
+        return NATBoolean.atValue((NATObject._SHARES_A_));
     };
 
     /**
@@ -500,6 +471,10 @@ public class NATNil implements ATNil, Serializable {
     	throw new XTypeMismatch(NATObject.class, this);
     }
 
+    public NATMirage asMirage() throws XTypeMismatch {
+    	throw new XTypeMismatch(NATMirage.class, this);
+    }
+
     public NATNumber asNativeNumber() throws XTypeMismatch {
         throw new XTypeMismatch(NATNumber.class, this);
     }
@@ -543,6 +518,15 @@ public class NATNil implements ATNil, Serializable {
     public String toString() {
         return Evaluator.toString(this);
     }
+    
+    /**
+     * Only true objects have a dynamic pointer, native objects denote 'nil' to
+     * be their dynamic parent when asked for it. Note that, for native objects,
+     * 'super' is a read-only field (i.e. there is no base_setSuper).
+     */
+    public ATObject base_getSuper() throws InterpreterException {
+        return NATNil._INSTANCE_;
+    };
 
     public ATBoolean base__opeql__opeql_(ATObject comparand) {
         return NATBoolean.atValue(this.equals(comparand));

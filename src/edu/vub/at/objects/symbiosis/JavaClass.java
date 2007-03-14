@@ -184,6 +184,7 @@ public final class JavaClass extends NATObject implements ATStripe {
 			return Symbiosis.symbioticInvocation(
 					this, null, wrappedClass_, jSelector, arguments.asNativeTable().elements_);
 		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(atSelector);
     	    return super.meta_invoke(receiver, atSelector, arguments);
 		}
     }

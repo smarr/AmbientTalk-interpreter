@@ -407,7 +407,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			ATObject object = new NATObject(ctx_.base_getLexicalScope());
 
 			AGScopeTest expectedValues = 
-				new AGScopeTest(object, object, object.meta_getDynamicParent());
+				new AGScopeTest(object, object, object.base_getSuper());
 			
 			ATSymbol scopeTest = AGSymbol.jAlloc("scopeTest");
 			
@@ -434,8 +434,8 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			
 			NATObject child = new NATObject(parent, ctx_.base_getLexicalScope(), NATObject._IS_A_);
 			
-			AGScopeTest lateBoundSelfTest		= new AGScopeTest(parent, child, parent.meta_getDynamicParent());
-			AGScopeTest superSemanticsTest	= new AGScopeTest(child, child, child.meta_getDynamicParent());
+			AGScopeTest lateBoundSelfTest		= new AGScopeTest(parent, child, parent.base_getSuper());
+			AGScopeTest superSemanticsTest	= new AGScopeTest(child, child, child.base_getSuper());
 			
 			ATSymbol lateBoundSelf = AGSymbol.alloc(NATText.atValue("lateBoundSelf"));
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
@@ -467,8 +467,8 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			AGScopeTest superSemanticsTest = new AGScopeTest(null, null, null);
 			
 			// We explicitly need to write out the construction of this object extension
-			// (reflect: parent).extend({ def superSemantics { #superSemanticsTest }});
-			NATObject child = (NATObject)parent.meta_extend(
+			// extend: parent with: { def superSemantics() { #superSemanticsTest } };
+			ATObject child = OBJLexicalRoot._INSTANCE_.base_extend_with_(parent,
 					new NATClosure(
 							new NATMethod(AGSymbol.alloc(NATText.atValue("lambda")), NATTable.EMPTY,
 									new AGBegin(NATTable.atValue(new ATObject[] {
@@ -476,14 +476,14 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 													new AGBegin(
 															NATTable.atValue(new ATObject[] { superSemanticsTest })))}))),
 															ctx_.base_getLexicalScope(),
-															ctx_.base_getLexicalScope()), NATTable.EMPTY);
+															ctx_.base_getLexicalScope()));
 			
 			superSemanticsTest.scope_ = child;
 			superSemanticsTest.self_ = child;
-			superSemanticsTest.super_ = child.meta_getDynamicParent();
+			superSemanticsTest.super_ = child.base_getSuper();
 			
 			ATSymbol lateBoundSelf = AGSymbol.alloc(NATText.atValue("lateBoundSelf"));
-			AGScopeTest lateBoundSelfTest = new AGScopeTest(parent, child, parent.meta_getDynamicParent());
+			AGScopeTest lateBoundSelfTest = new AGScopeTest(parent, child, parent.base_getSuper());
 			
 			parent.meta_addMethod(lateBoundSelfTest.transformToMethodNamed(lateBoundSelf));
 			

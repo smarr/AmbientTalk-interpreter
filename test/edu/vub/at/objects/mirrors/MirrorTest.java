@@ -92,7 +92,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"def mirror := reflect: subject;",
 				"<mirror on:" + subject.toString() + ">");
 		evalAndCompareTo(
-				"mirror.dynamicParent;",
+				"mirror.base.super;",
 				NATNil._INSTANCE_);
 		evalAndCompareTo(
 				"mirror.listFields();",
@@ -148,10 +148,10 @@ public class MirrorTest extends AmbientTalkTest {
 	 * mirrors on mirrors as well. This test covers the creation and use of default introspective
 	 * mirrors on custom intercessive mirrors
 	 */
-	public void testReflectingOnIntercessiveMirrors() {
+	public void testReflectingOnIntercessiveMirrors() throws InterpreterException {
 		ATObject meta = evalAndReturn(
 				"def meta := mirror: { nil }; \n");
-		assertTrue(meta.toString().endsWith("[<stripe:Mirror>]>"));
+		assertTrue(meta.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
 		evalAndCompareTo(
 				"def metaMeta := reflect: meta;",
 				"<mirror on:"+ meta +">");
@@ -278,7 +278,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"  reflect: extendedMirroredClosure");
 		
 		evalAndTestException(
-				"intercessiveMirror.dynamicParent.apply([]); \n",
+				"intercessiveMirror.base.super.apply([]); \n",
 				XUserDefined.class);
 
 //		Can no longer set the mirror of a mirage the final 1-1 mapping is now stricly enforced

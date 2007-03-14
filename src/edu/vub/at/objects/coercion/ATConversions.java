@@ -51,6 +51,7 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
+import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATFraction;
@@ -120,6 +121,7 @@ public interface ATConversions {
 	public boolean isNativeField();
 	
 	public NATObject   asAmbientTalkObject() throws XTypeMismatch;
+	public NATMirage   asMirage() throws XTypeMismatch;
 	public NATNumber   asNativeNumber() throws XTypeMismatch;
 	public NATFraction asNativeFraction() throws XTypeMismatch;
 	public NATText     asNativeText() throws XTypeMismatch;

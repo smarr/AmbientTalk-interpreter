@@ -471,9 +471,9 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testSymbiontParents() {
 		try {
 			// the dynamic parent of atTestObject is atTestClass
-			assertEquals(atTestClass, atTestObject.meta_getDynamicParent());
+			assertEquals(atTestClass, atTestObject.base_getSuper());
 			// the dynamic parent of atTestClass is nil
-			assertEquals(NATNil._INSTANCE_, atTestClass.meta_getDynamicParent());
+			assertEquals(NATNil._INSTANCE_, atTestClass.base_getSuper());
 			
 			// the lexical parent of atTestObject is the lexical root
 			assertEquals(Evaluator.getGlobalLexicalScope(), atTestObject.meta_getLexicalParent());
@@ -664,7 +664,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 					NATTable.atValue(new ATObject[] { NATNumber.atValue(55) }));
 			
 			assertEquals(55, instance.meta_select(instance, AGSymbol.jAlloc("xtest")).asNativeNumber().javaValue);
-			assertEquals(atTestClass, instance.meta_getDynamicParent());
+			assertEquals(atTestClass, instance.base_getSuper());
 			assertEquals(jTestObject.xtest, atTestObject.meta_select(atTestObject,
 					AGSymbol.jAlloc("xtest")).asNativeNumber().javaValue);
 		} catch (InterpreterException e) {
