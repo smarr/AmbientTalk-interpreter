@@ -47,19 +47,15 @@ public class ActorTest extends AmbientTalkTest {
 	 * initialized behaviour.
 	 */
 	public void testActorCreation() throws Exception {
-		actorTest(new Actorscript() {
-			public void test() throws Exception {
-				// define a field x in the scope of the creating actor
-				evalAndReturn("def x := 1");
-				// define a new actor
-				ATObject behaviour = evalAndReturn("actor: { |x| def m() { x } }");
-				
-				assertEquals(NATLocalFarRef.class, behaviour.getClass());
-				
-				// TODO: does not work because async messages return no value
-				//assertEquals(NATNumber.ONE, evalAndReturn("<-m()").base_asAsyncMessage().base_sendTo(behaviour, NATNil._INSTANCE_));
-			}
-		});
+		// define a field x in the scope of the creating actor
+		evalAndReturn("def x := 1");
+		// define a new actor
+		ATObject behaviour = evalAndReturn("actor: { |x| def m() { x } }");
+
+		assertEquals(NATLocalFarRef.class, behaviour.getClass());
+
+		// TODO: does not work because async messages return no value
+		//assertEquals(NATNumber.ONE, evalAndReturn("<-m()").base_asAsyncMessage().base_sendTo(behaviour, NATNil._INSTANCE_));
 	}
 	
 	public void testActorMessageReception() throws Exception {

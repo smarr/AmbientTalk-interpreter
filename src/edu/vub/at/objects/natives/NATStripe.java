@@ -54,7 +54,7 @@ public class NATStripe extends NATByCopy implements ATStripe {
 		ATObject[] unwrapped = stripes.asNativeTable().elements_;
 		ATStripe[] unwrappedStripes = new ATStripe[unwrapped.length];
 		for (int i = 0; i < unwrappedStripes.length; i++) {
-			unwrappedStripes[i] = unwrapped[i].base_asStripe();
+			unwrappedStripes[i] = unwrapped[i].asStripe();
 		}
 		return unwrappedStripes;
 	}
@@ -121,7 +121,7 @@ public class NATStripe extends NATByCopy implements ATStripe {
 		} else {
 			ATObject found = parentStripes_.base_find_(new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					ATStripe sstripe = get(args, 1).base_asStripe();
+					ATStripe sstripe = get(args, 1).asStripe();
 					return sstripe.base_isSubstripeOf(superstripe);
 				}
 			});
@@ -141,9 +141,9 @@ public class NATStripe extends NATByCopy implements ATStripe {
 		}
 	}
 	
-	public boolean base_isStripe() { return true; }
+	public boolean isStripe() { return true; }
 	
-	public ATStripe base_asStripe() { return this; }
+	public ATStripe asStripe() { return this; }
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<stripe:"+stripeName_+">");

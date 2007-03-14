@@ -64,53 +64,51 @@ import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 
 /**
- * ATConversions is an interface defining all conversion functions between different
- * types of ambienttalk language elements. 
- * 
- * TODO: rename all base_is/as methods to meta_is/as and add global methods of the form
- * def isXXX: val { (reflect: val).isXXX() }
+ * ATConversions is an interface defining all conversion methods between different
+ * types of ambienttalk language elements. They are hidden from the language level
+ * because they neither belong to base- nor meta-level.
  * 
  * @author smostinc
  */
 public interface ATConversions {
 
-	public boolean base_isClosure() throws InterpreterException;
-	public boolean base_isSymbol() throws InterpreterException;
-	public boolean base_isTable() throws InterpreterException;
-	public boolean base_isBoolean() throws InterpreterException;
-	public boolean base_isCallFrame() throws InterpreterException;
-	public boolean base_isUnquoteSplice() throws InterpreterException;
-	public boolean base_isVariableAssignment() throws InterpreterException;
-	public boolean base_isSplice() throws InterpreterException;
-	public boolean base_isMethod() throws InterpreterException;
-	public boolean base_isMessageCreation() throws InterpreterException;
-	public boolean base_isStripe() throws InterpreterException;
-	public boolean base_isFarReference() throws InterpreterException;
+	public boolean isClosure() throws InterpreterException;
+	public boolean isSymbol() throws InterpreterException;
+	public boolean isTable() throws InterpreterException;
+	public boolean isBoolean() throws InterpreterException;
+	public boolean isCallFrame() throws InterpreterException;
+	public boolean isUnquoteSplice() throws InterpreterException;
+	public boolean isVariableAssignment() throws InterpreterException;
+	public boolean isSplice() throws InterpreterException;
+	public boolean isMethod() throws InterpreterException;
+	public boolean isMessageCreation() throws InterpreterException;
+	public boolean isStripe() throws InterpreterException;
+	public boolean isFarReference() throws InterpreterException;
 	
-	public ATClosure   base_asClosure() throws InterpreterException;
-	public ATSymbol    base_asSymbol() throws InterpreterException;
-	public ATTable     base_asTable() throws InterpreterException;
-	public ATBoolean   base_asBoolean() throws InterpreterException;
-	public ATNumber    base_asNumber() throws InterpreterException;
-	public ATMessage   base_asMessage() throws InterpreterException;
-	public ATField     base_asField() throws InterpreterException;
-	public ATMethod    base_asMethod() throws InterpreterException;
-	public ATHandler   base_asHandler() throws InterpreterException;
-	public ATStripe    base_asStripe() throws InterpreterException;
-	public ATFarReference base_asFarReference() throws InterpreterException;
-	public ATAsyncMessage base_asAsyncMessage() throws InterpreterException;
-	public ATActorMirror base_asActorMirror() throws InterpreterException;
+	public ATClosure   asClosure() throws InterpreterException;
+	public ATSymbol    asSymbol() throws InterpreterException;
+	public ATTable     asTable() throws InterpreterException;
+	public ATBoolean   asBoolean() throws InterpreterException;
+	public ATNumber    asNumber() throws InterpreterException;
+	public ATMessage   asMessage() throws InterpreterException;
+	public ATField     asField() throws InterpreterException;
+	public ATMethod    asMethod() throws InterpreterException;
+	public ATHandler   asHandler() throws InterpreterException;
+	public ATStripe    asStripe() throws InterpreterException;
+	public ATFarReference asFarReference() throws InterpreterException;
+	public ATAsyncMessage asAsyncMessage() throws InterpreterException;
+	public ATActorMirror asActorMirror() throws InterpreterException;
 	
 	// Abstract Grammar Elements
 	
-	public ATStatement  		base_asStatement() throws InterpreterException;
-	public ATDefinition 		base_asDefinition() throws InterpreterException;
-	public ATExpression 		base_asExpression() throws InterpreterException;
-	public ATBegin      		base_asBegin() throws InterpreterException;
-	public ATMessageCreation 	base_asMessageCreation() throws InterpreterException;
-	public ATUnquoteSplice 		base_asUnquoteSplice() throws InterpreterException;
-	public ATAssignVariable 	base_asVariableAssignment() throws InterpreterException;
-	public ATSplice 			base_asSplice() throws InterpreterException;
+	public ATStatement  		asStatement() throws InterpreterException;
+	public ATDefinition 		asDefinition() throws InterpreterException;
+	public ATExpression 		asExpression() throws InterpreterException;
+	public ATBegin      		asBegin() throws InterpreterException;
+	public ATMessageCreation 	asMessageCreation() throws InterpreterException;
+	public ATUnquoteSplice 		asUnquoteSplice() throws InterpreterException;
+	public ATAssignVariable 	asVariableAssignment() throws InterpreterException;
+	public ATSplice 			asSplice() throws InterpreterException;
 
 	// Native Value Elements
 	

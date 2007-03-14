@@ -72,7 +72,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	 * @return the value of the invoked method or NIL in the case of an asynchronous message send.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATMessage msg = message_.meta_eval(ctx).base_asMessage();
+		ATMessage msg = message_.meta_eval(ctx).asMessage();
 		ATObject rcvr = rcvExp_.meta_eval(ctx);
 		ATObject result = null;
 		InvocationStack stack = InvocationStack.getInvocationStack();
@@ -91,13 +91,13 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	 * AGMSGSEND(rcv,msg).quote(ctx) = AGMSGSEND(rcv.quote(ctx), msg.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGMessageSend(rcvExp_.meta_quote(ctx).base_asExpression(),
-				                message_.meta_quote(ctx).base_asMessageCreation());
+		return new AGMessageSend(rcvExp_.meta_quote(ctx).asExpression(),
+				                message_.meta_quote(ctx).asMessageCreation());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(rcvExp_.meta_print().javaValue +
-				               ((message_.base_isMessageCreation()) ? "" : "<+") + message_.meta_print().javaValue);
+				               ((message_.isMessageCreation()) ? "" : "<+") + message_.meta_print().javaValue);
 	}
 
 }

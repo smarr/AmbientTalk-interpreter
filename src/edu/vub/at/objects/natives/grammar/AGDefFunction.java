@@ -87,7 +87,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject current = ctx.base_getLexicalScope();
-		if (current.base_isCallFrame()) {
+		if (current.isCallFrame()) {
 			NATClosure clo = new NATClosure(new NATMethod(selectorExp_, argumentExps_, bodyStmts_), ctx);
 			current.meta_defineField(selectorExp_, clo);
 			return clo;
@@ -103,9 +103,9 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 * AGDEFFUN(nam,par,bdy).quote(ctx) = AGDEFFUN(nam.quote(ctx), par.quote(ctx), bdy.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGDefFunction(selectorExp_.meta_quote(ctx).base_asSymbol(),
-				              argumentExps_.meta_quote(ctx).base_asTable(),
-				              bodyStmts_.meta_quote(ctx).base_asBegin());
+		return new AGDefFunction(selectorExp_.meta_quote(ctx).asSymbol(),
+				              argumentExps_.meta_quote(ctx).asTable(),
+				              bodyStmts_.meta_quote(ctx).asBegin());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

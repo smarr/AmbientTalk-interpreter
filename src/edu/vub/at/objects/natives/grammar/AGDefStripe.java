@@ -77,7 +77,7 @@ public final class AGDefStripe extends NATAbstractGrammar implements ATDefStripe
 		// parentStripeExpressions_.map: { |parent| (reflect: parent).eval(ctx).base.asStripe() }
 		ATTable parentStripes = parentStripeExpressions_.base_map_(new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
-				return get(args,1).meta_eval(ctx).base_asStripe();
+				return get(args,1).meta_eval(ctx).asStripe();
 			}
 		});
 		
@@ -92,7 +92,7 @@ public final class AGDefStripe extends NATAbstractGrammar implements ATDefStripe
 	 * AGDEFSTRIPE(nam,parentExps).quote(ctx) = AGDEFSTRIPE(nam.quote(ctx), parentExps.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGDefStripe(stripeName_.meta_quote(ctx).base_asSymbol(), parentStripeExpressions_.meta_quote(ctx).base_asTable());
+		return new AGDefStripe(stripeName_.meta_quote(ctx).asSymbol(), parentStripeExpressions_.meta_quote(ctx).asTable());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

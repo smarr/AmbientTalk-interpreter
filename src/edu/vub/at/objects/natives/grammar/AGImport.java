@@ -105,9 +105,9 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 	 * AGIMPORT(exp,aliases,excludes).quote(ctx) = AGIMPORT(exp.quote(ctx), aliases.quote(ctx), excludes.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGImport(importedObjectExp_.meta_quote(ctx).base_asExpression(),
-							aliasDeclarations_.meta_quote(ctx).base_asTable(),
-							excludesDeclarations_.meta_quote(ctx).base_asTable());
+		return new AGImport(importedObjectExp_.meta_quote(ctx).asExpression(),
+							aliasDeclarations_.meta_quote(ctx).asTable(),
+							excludesDeclarations_.meta_quote(ctx).asTable());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

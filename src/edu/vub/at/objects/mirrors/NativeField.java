@@ -126,7 +126,7 @@ public class NativeField extends NATByRef implements ATField {
         return true;
     }
 	
-	public ATField base_asField() {
+	public ATField asField() {
 		return this;
 	}
 	

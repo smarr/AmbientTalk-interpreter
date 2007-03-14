@@ -97,7 +97,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			return this;
 		}
 		
-		public ATStatement base_asStatement() {
+		public ATStatement asStatement() {
 			return this;
 		}
 		
@@ -378,17 +378,13 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 	 * and isolates are prohibited access to any form of lexical scope so that they can 
 	 * be copied between actors, these mechanisms are irreconcilable.
 	 *
-	 * Design Principle: Isolates are sealed and can not be extended with externnaly defined
-	 * fields or methods.
+	 * Design Principle: isolates have a sealed scope which can not be extended from the
+	 * outside by means of external method definitions.
 	 */
 	public void testExternalDefinitionOnIsolates() {
 		evalAndTestException(
 				"def i := isolate: { nil }; \n" +
 				"def i.method() { nil }; \n",
-				XIllegalOperation.class);
-		
-		evalAndTestException(
-				"def i.field := 42;",
 				XIllegalOperation.class);
 	}
 	

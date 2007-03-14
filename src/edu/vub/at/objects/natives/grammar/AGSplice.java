@@ -65,16 +65,16 @@ public class AGSplice extends AGExpression implements ATSplice {
 	 * Quoting a splice means quoting its contained expression, and returning a new splice.
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGSplice(splExp_.meta_quote(ctx).base_asExpression());
+		return new AGSplice(splExp_.meta_quote(ctx).asExpression());
 	}
 
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("@"+ splExp_.meta_print().javaValue);
 	}
 
-	public boolean base_isSplice() { return true; }
+	public boolean isSplice() { return true; }
 	
-	public ATSplice base_asSplice() throws XTypeMismatch {
+	public ATSplice asSplice() throws XTypeMismatch {
 		return this;
 	}
 

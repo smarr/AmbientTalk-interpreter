@@ -95,11 +95,11 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		return NATText.atValue(txt_);
 	}
 	
-	public boolean base_isSymbol() {
+	public boolean isSymbol() {
 		return true;
 	}
 	
-	public ATSymbol base_asSymbol() {
+	public ATSymbol asSymbol() {
 		return this;
 	}
 	

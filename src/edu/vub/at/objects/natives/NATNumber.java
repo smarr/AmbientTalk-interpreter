@@ -70,7 +70,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 			   (javaValue == ((NATNumber) other).javaValue);
 	}
 	
-	public ATNumber base_asNumber() throws XTypeMismatch { return this; }
+	public ATNumber asNumber() throws XTypeMismatch { return this; }
 	
 	public NATNumber asNativeNumber() { return this; }
 	
@@ -169,9 +169,9 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 		// x *** y == x ** y-1 iff y > x
 		int stop = end.asNativeNumber().javaValue;
 		if (javaValue <= stop)
-		    return this.base__optms__optms_(end.base_inc().base_asNumber());
+		    return this.base__optms__optms_(end.base_inc().asNumber());
 		else
-			return this.base__optms__optms_(end.base_dec().base_asNumber());
+			return this.base__optms__optms_(end.base_dec().asNumber());
 	}
 
 	// Number arithmetic operations

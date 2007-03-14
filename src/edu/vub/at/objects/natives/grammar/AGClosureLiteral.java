@@ -76,8 +76,8 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 	 * AGCLOLIT(arg,bdy).quote(ctx) = AGCLOLIT(arg.quote(ctx), bdy.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGClosureLiteral(arguments_.meta_quote(ctx).base_asTable(),
-				                   body_.meta_quote(ctx).base_asBegin());
+		return new AGClosureLiteral(arguments_.meta_quote(ctx).asTable(),
+				                   body_.meta_quote(ctx).asBegin());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

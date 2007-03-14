@@ -404,12 +404,12 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testFirstClassFields() {
 		try {
 			// def result := (reflect: atTestObject).grabField("xtest")
-			ATField result = atTestObject.meta_grabField(AGSymbol.jAlloc("xtest")).base_asField();
+			ATField result = atTestObject.meta_grabField(AGSymbol.jAlloc("xtest")).asField();
 			assertEquals("xtest", result.base_getName().toString());
 			assertEquals(TEST_OBJECT_INIT, result.base_readField().asNativeNumber().javaValue);
 			
 			// result := (reflect: atTestClass).grabField("ytest")
-			result = atTestClass.meta_grabField(AGSymbol.jAlloc("ytest")).base_asField();
+			result = atTestClass.meta_grabField(AGSymbol.jAlloc("ytest")).asField();
 			assertEquals("ytest", result.base_getName().toString());
 			assertEquals(ytest, result.base_readField().asNativeText().javaValue);
 		} catch (InterpreterException e) {
@@ -423,19 +423,19 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testFirstClassMethods() {
 		try {
 			// def result := (reflect: atTestObject).grabMethod("gettertest")
-			ATMethod result = atTestObject.meta_grabMethod(AGSymbol.jAlloc("gettertest")).base_asMethod();
+			ATMethod result = atTestObject.meta_grabMethod(AGSymbol.jAlloc("gettertest")).asMethod();
 			assertEquals("gettertest", result.base_getName().toString());
 			// assert (42 == result())
 			assertEquals(TEST_OBJECT_INIT, result.base_apply(NATTable.EMPTY,
 					new NATContext(atTestObject, atTestObject)).asNativeNumber().javaValue);
 			
 			// clo := atTestObject.gettertest
-			ATClosure clo = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("gettertest")).base_asClosure();
+			ATClosure clo = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("gettertest")).asClosure();
 			// assert (42 == clo())
 			assertEquals(TEST_OBJECT_INIT, clo.base_apply(NATTable.EMPTY).asNativeNumber().javaValue);
 			
 			// result := (reflect: atTestClass).grabMethod("prefix")
-			result = atTestClass.meta_grabMethod(AGSymbol.jAlloc("prefix")).base_asMethod();
+			result = atTestClass.meta_grabMethod(AGSymbol.jAlloc("prefix")).asMethod();
 			assertEquals("prefix", result.base_getName().toString());
 			// assert ("AmbientTalk" == result(""))
 			assertEquals(ytest, result.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue("") }),
@@ -457,8 +457,8 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testCasting() {
 		try {
 			// invokes overloadedmatch2(SymbiosisTest) via explicit casting
-			ATClosure method = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("overloadedmatch2")).base_asClosure();
-			ATClosure castedMethod = method.meta_invoke(method, AGSymbol.jAlloc("cast"), NATTable.atValue(new ATObject[] { atTestClass })).base_asClosure();
+			ATClosure method = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("overloadedmatch2")).asClosure();
+			ATClosure castedMethod = method.meta_invoke(method, AGSymbol.jAlloc("cast"), NATTable.atValue(new ATObject[] { atTestClass })).asClosure();
 			castedMethod.base_apply(NATTable.atValue(new ATObject[] { atTestObject }));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -495,7 +495,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals(NATNumber.ONE, atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("x")));
 			
 			// (reflect: atTestObject).addMethod(<method:"foo",[x],{x}>)
-			ATMethod foo = evalAndReturn("def foo(x) { x }; foo").base_asClosure().base_getMethod();
+			ATMethod foo = evalAndReturn("def foo(x) { x }; foo").asClosure().base_getMethod();
 			atTestObject.meta_addMethod(foo);
 			// assert(atTestObject.foo(0) == 0)
 			assertEquals(NATNumber.ZERO, atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("foo"),
@@ -519,7 +519,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			}
 			try {
 				// def atTestObject.gettertest() { nil }
-				ATMethod getter = evalAndReturn("def gettertest() { nil }; gettertest").base_asClosure().base_getMethod();
+				ATMethod getter = evalAndReturn("def gettertest() { nil }; gettertest").asClosure().base_getMethod();
 				atTestObject.meta_addMethod(getter);
 				fail("expected a duplicate slot exception");
 			} catch (XDuplicateSlot e) {
@@ -544,7 +544,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals(NATNumber.ONE, atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("z")));
 			
 			// (reflect: atTestClass).addMethod(<method:"get",[],{self.xtest}>)
-			ATMethod get = evalAndReturn("def get() { self.xtest }; get").base_asClosure().base_getMethod();
+			ATMethod get = evalAndReturn("def get() { self.xtest }; get").asClosure().base_getMethod();
 			atTestClass.meta_addMethod(get);
 			// assert(atTestObject.xtest == atTestObject.get())
 			assertEquals(atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("xtest")),
@@ -683,7 +683,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testCustomInstanceCreation() {
 		try {
 			// def orignew := atTestClass.new; def atTestClass.new(x,y) { def o := orignew(x); def o.ytest := y; o }
-			ATClosure newClo = evalAndReturn("def new(x,y) { def o := orignew(x); def o.ytest := y; o }; new").base_asClosure();
+			ATClosure newClo = evalAndReturn("def new(x,y) { def o := orignew(x); def o.ytest := y; o }; new").asClosure();
 			atTestClass.meta_defineField(AGSymbol.jAlloc("orignew"), atTestClass.meta_select(atTestClass, AGSymbol.jAlloc("new")));
 			atTestClass.meta_addMethod(newClo.base_getMethod());
 			
@@ -777,8 +777,8 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testInterfacesAndStripes() throws InterpreterException {
 		JavaClass jSet = JavaClass.wrapperFor(Set.class);
 		JavaClass jCollection = JavaClass.wrapperFor(Collection.class);
-		ATStripe atSet = jSet.base_asStripe();
-		ATStripe atCollection = jCollection.base_asStripe();
+		ATStripe atSet = jSet.asStripe();
+		ATStripe atCollection = jCollection.asStripe();
 		// stripe name = 'java.util.Set'
 		assertEquals(AGSymbol.jAlloc("java.util.Set"), atSet.base_getStripeName());
 		// stripe parents = [ java.util.Collection ]
@@ -801,10 +801,10 @@ public class SymbiosisTest extends AmbientTalkTest {
 		JavaClass jVector = JavaClass.wrapperFor(Vector.class);
 		JavaObject vec = jVector.meta_newInstance(NATTable.EMPTY).asJavaObjectUnderSymbiosis();
 		
-		ATStripe jListStripe = JavaClass.wrapperFor(List.class).base_asStripe();
-		ATStripe jCollectionStripe = JavaClass.wrapperFor(Collection.class).base_asStripe();
-		ATStripe jSerializableStripe = JavaClass.wrapperFor(Serializable.class).base_asStripe();
-		ATStripe jSetStripe = JavaClass.wrapperFor(Set.class).base_asStripe();
+		ATStripe jListStripe = JavaClass.wrapperFor(List.class).asStripe();
+		ATStripe jCollectionStripe = JavaClass.wrapperFor(Collection.class).asStripe();
+		ATStripe jSerializableStripe = JavaClass.wrapperFor(Serializable.class).asStripe();
+		ATStripe jSetStripe = JavaClass.wrapperFor(Set.class).asStripe();
 		
 		// vec is striped with List? true
 		assertTrue(vec.meta_isStripedWith(jListStripe).asNativeBoolean().javaValue);

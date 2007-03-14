@@ -46,7 +46,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	public void testCustomFieldAddition() throws Exception {
 		assertNull(testHost_.customFields_);
 		// (reflect: testHost).addField(testField)
-		testHost_.meta_addField(testField_.base_asField());
+		testHost_.meta_addField(testField_.asField());
 		assertNotNull(testHost_.customFields_);
 		assertEquals(1, testHost_.customFields_.size());
 		assertTrue(testHost_.meta_respondsTo(foo_).asNativeBoolean().javaValue);
@@ -58,7 +58,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	 * Tests whether a custom field can be read via readField
 	 */
 	public void testCustomFieldRead() throws Exception {
-		testHost_.meta_addField(testField_.base_asField());
+		testHost_.meta_addField(testField_.asField());
 		assertEquals(NATNil._INSTANCE_, testHost_.meta_select(testHost_, foo_));
 	}
 
@@ -66,7 +66,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	 * Tests whether a custom field can be written via writeField
 	 */
 	public void testCustomFieldWrite() throws Exception {
-		testHost_.meta_addField(testField_.base_asField());
+		testHost_.meta_addField(testField_.asField());
 		// testHost.foo := 1
 		assertEquals(NATNil._INSTANCE_, testHost_.meta_assignField(testHost_, foo_, NATNumber.ONE));
 		// testHost.foo == 2
@@ -77,7 +77,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	 * Tests that duplicate slots are still trapped, even with custom fields
 	 */
 	public void testCustomDuplicate() throws Exception {
-		testHost_.meta_addField(testField_.base_asField());
+		testHost_.meta_addField(testField_.asField());
 		try {
 			// try to add a native field for which a custom one is already defined
 			testHost_.meta_defineField(foo_, NATNumber.ONE);
@@ -87,7 +87,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 		}
 		try {
 			// try to add a custom field for which another custom one is already defined
-			testHost_.meta_addField(testField_.meta_clone().base_asField());
+			testHost_.meta_addField(testField_.meta_clone().asField());
 			fail("expected a duplicate slot exception");
 		} catch (XDuplicateSlot e) {
 			// expected exception: success
@@ -98,7 +98,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	 * Tests whether custom fields appear in the listFields table
 	 */
 	public void testFieldListing() throws Exception {
-		testHost_.meta_addField(testField_.meta_clone().base_asField());
+		testHost_.meta_addField(testField_.meta_clone().asField());
 		assertEquals(3, testHost_.meta_listFields().base_getLength().asNativeNumber().javaValue);
 	}
 	
@@ -106,7 +106,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	 * Tests whether the fields of clones are properly re-initialized
 	 */
 	public void testCloneFieldReinit() throws Exception {
-		testHost_.meta_addField(testField_.meta_clone().base_asField());
+		testHost_.meta_addField(testField_.meta_clone().asField());
 		// set foo field of testHost to 1
 		testHost_.meta_assignField(testHost_, foo_, NATNumber.ONE);
 		ATObject clone = testHost_.meta_clone();
@@ -121,7 +121,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	 * but again as native fields
 	 */
 	public void testNativeFieldAdd() throws Exception {
-		testHost_.meta_addField(testField_.meta_clone().base_asField());
+		testHost_.meta_addField(testField_.meta_clone().asField());
 		NATObject empty = new NATObject();
 		assertNull(empty.customFields_);
 		empty.meta_addField(testHost_.meta_grabField(AGSymbol.jAlloc("x")));

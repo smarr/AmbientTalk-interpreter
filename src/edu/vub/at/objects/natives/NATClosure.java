@@ -113,7 +113,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 		ATBoolean cond;
 		while (true) {
 			// cond = self.apply()
-			cond = this.base_apply(NATTable.EMPTY).base_asBoolean();
+			cond = this.base_apply(NATTable.EMPTY).asBoolean();
 			if(cond.isNativeBoolean()) {
 				// cond is a native boolean, perform the conditional ifTrue: test natively
 				if (cond.asNativeBoolean().javaValue) {
@@ -179,7 +179,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 					} else {
 						val = get(args, 1);
 					}
-					throw new SignalEscape(this.scope_.base_asClosure(), val);
+					throw new SignalEscape(this.scope_.asClosure(), val);
 				}
 			}
 		};
@@ -212,11 +212,11 @@ public class NATClosure extends NATByRef implements ATClosure {
 		return method_;
 	}
 
-	public boolean base_isClosure() {
+	public boolean isClosure() {
 		return true;
 	}
 
-	public ATClosure base_asClosure() {
+	public ATClosure asClosure() {
 		return this;
 	}
 	

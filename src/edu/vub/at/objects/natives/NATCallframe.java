@@ -110,7 +110,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		// assert(this == receiver)
-		return this.getLocalField(selector).base_asClosure().base_apply(arguments);
+		return this.getLocalField(selector).asClosure().base_apply(arguments);
 	}
 	
 	/**
@@ -243,7 +243,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 			throw new XDuplicateSlot(XDuplicateSlot._FIELD_, name);			
 		} else {
 			// add a clone of the field initialized with its new host
-			field = field.base_new(new ATObject[] { this }).base_asField();
+			field = field.base_new(new ATObject[] { this }).asField();
 			
 			// add the field to the list of custom fields, which is created lazily
 			if (customFields_ == null) {
@@ -325,7 +325,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 * -- Conversion Protocol  --
 	 * -------------------------- */
 	
-	public boolean base_isCallFrame() {
+	public boolean isCallFrame() {
 		return true;
 	}
 	

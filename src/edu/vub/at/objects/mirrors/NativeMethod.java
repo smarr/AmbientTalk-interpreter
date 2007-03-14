@@ -102,11 +102,11 @@ public final class NativeMethod extends NATByRef implements ATMethod {
 		return base_apply(arguments, ctx);
 	}
 
-	public ATMethod base_asMethod() throws XTypeMismatch {
+	public ATMethod asMethod() throws XTypeMismatch {
 		return this;
 	}
 
-	public boolean base_isMethod() {
+	public boolean isMethod() {
 		return true;
 	}
 	

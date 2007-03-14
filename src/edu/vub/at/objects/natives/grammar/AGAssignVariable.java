@@ -76,18 +76,18 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 	 * AGASSVAR(nam,val).quote(ctx) = AGASSVAR(nam.quote(ctx), val.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGAssignVariable(variableName_.meta_quote(ctx).base_asSymbol(), valueExp_.meta_quote(ctx).base_asExpression());
+		return new AGAssignVariable(variableName_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(variableName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
     
-    public boolean base_isVariableAssignment() {
+    public boolean isVariableAssignment() {
         return true;
     }
     
-    public ATAssignVariable base_asVariableAssignment() throws XTypeMismatch {
+    public ATAssignVariable asVariableAssignment() throws XTypeMismatch {
         return this;
     }
 }

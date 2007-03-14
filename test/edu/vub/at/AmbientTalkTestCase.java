@@ -25,7 +25,7 @@ public class AmbientTalkTestCase extends TestCase {
 	
 	protected ATClosure unittest_ = new NativeClosure(null) {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
-			ATClosure body = arguments.base_at(NATNumber.ONE).base_asClosure();
+			ATClosure body = arguments.base_at(NATNumber.ONE).asClosure();
 			return OBJUnit._INSTANCE_.base_unittest_(body);
 		};
 	};

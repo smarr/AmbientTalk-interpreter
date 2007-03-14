@@ -31,7 +31,6 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATDefExternalField;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -68,21 +67,13 @@ public class AGDefExternalField extends NATAbstractGrammar implements ATDefExter
 	 * AGDEFEXTFLD(rcv,nam,val).eval(ctx) =
 	 *   rcv.eval(ctx).addField(nam, val.eval(ctx))
 	 *   
-	 * This method may fail with an XIllegalOperation if the receiver is an instance of a native 
-	 * type (whose field maps are sealed) or if the receiver is an isolate. 
+	 * @throws XIllegalOperation if the receiver is an instance of a native type (whose field maps are sealed).
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject receiver = rcvNam_.meta_eval(ctx);
-		if(receiver.meta_isStripedWith(NativeStripes._ISOLATE_)
-				.asNativeBoolean().javaValue) {
-			
-			throw new XIllegalOperation("Cannot define external fields on isolates");
-			
-		} else {
-			ATObject val = valueExp_.meta_eval(ctx);
-			receiver.meta_defineField(name_, val);
-			return val;
-		}		
+		ATObject val = valueExp_.meta_eval(ctx);
+		receiver.meta_defineField(name_, val);
+		return val;
 	}
 
 	/**
@@ -91,9 +82,9 @@ public class AGDefExternalField extends NATAbstractGrammar implements ATDefExter
 	 * AGDEFEXTFLD(rcv,nam,val).quote(ctx) = AGDEFEXTFLD(rcv.quote(ctx), nam.quote(ctx), val.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGDefExternalField(rcvNam_.meta_quote(ctx).base_asSymbol(),
-									name_.meta_quote(ctx).base_asSymbol(),
-									valueExp_.meta_quote(ctx).base_asExpression());
+		return new AGDefExternalField(rcvNam_.meta_quote(ctx).asSymbol(),
+									name_.meta_quote(ctx).asSymbol(),
+									valueExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

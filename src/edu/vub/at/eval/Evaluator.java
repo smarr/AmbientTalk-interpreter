@@ -157,8 +157,8 @@ public final class Evaluator {
 		LinkedList result = new LinkedList();
 		int siz = els.length;
 		for (int i = 0; i < els.length; i++) {
-			if (els[i].base_isSplice()) {
-				ATObject[] tbl = els[i].base_asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
+			if (els[i].isSplice()) {
+				ATObject[] tbl = els[i].asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -227,7 +227,7 @@ public final class Evaluator {
 		ATObject scope = context.base_getLexicalScope();
 		
 		// determine number of mandatory arguments
-		for (; paridx < pars.length && pars[paridx].base_isSymbol(); paridx++) {
+		for (; paridx < pars.length && pars[paridx].isSymbol(); paridx++) {
 			numMandatoryArguments++;
 		}
 		
@@ -240,7 +240,7 @@ public final class Evaluator {
 		// bind all mandatory arguments
 		for (paridx = 0; paridx < numMandatoryArguments; paridx++) {
 			// bind formal to actual
-			binder.bindParamToArg(scope, pars[paridx].base_asSymbol(), args[paridx]);			
+			binder.bindParamToArg(scope, pars[paridx].asSymbol(), args[paridx]);			
 		}
 		
 		// if there are no more parameters, make sure all actuals are processed
@@ -253,13 +253,13 @@ public final class Evaluator {
 		    // if there are more parameters, process optionals first and then rest parameter
 			int numDefaultOptionals = 0; // count the number of optional arguments that had no corresponding actual
 			// determine number of optional arguments
-			for (; paridx < pars.length && pars[paridx].base_isVariableAssignment(); paridx++) {
+			for (; paridx < pars.length && pars[paridx].isVariableAssignment(); paridx++) {
 				if (paridx < args.length) {
 					// bind formal to actual and ignore default initialization expression
-					binder.bindParamToArg(scope, pars[paridx].base_asVariableAssignment().base_getName(), args[paridx]);	
+					binder.bindParamToArg(scope, pars[paridx].asVariableAssignment().base_getName(), args[paridx]);	
 				} else {
 					// no more actuals: bind optional parameter to default initialization expression
-					ATAssignVariable param = pars[paridx].base_asVariableAssignment();
+					ATAssignVariable param = pars[paridx].asVariableAssignment();
 					binder.bindParamToArg(scope, param.base_getName(), param.base_getValueExpression().meta_eval(context));
 					numDefaultOptionals++;
 				}
@@ -274,14 +274,14 @@ public final class Evaluator {
 			} else {
 				// all that is left to process is an optional rest-parameter
 				// check whether last param is spliced, which indicates variable parameter list
-				if (pars[paridx].base_isSplice()) {
+				if (pars[paridx].isSplice()) {
 					// bind the last parameter to the remaining arguments
 					int numRemainingArgs = args.length - paridx + numDefaultOptionals; // #actuals - #actuals used to fill in mandatory or optional args 
 					ATObject[] restArgs = new ATObject[numRemainingArgs];
 					for (int i = 0; i < numRemainingArgs; i++) {
 						restArgs[i] = args[i + paridx];
 					}
-					ATSymbol restArgsName = pars[paridx].base_asSplice().base_getExpression().base_asSymbol();
+					ATSymbol restArgsName = pars[paridx].asSplice().base_getExpression().asSymbol();
 					binder.bindParamToArg(scope, restArgsName, NATTable.atValue(restArgs));
 					
 					// rest parameter should always be last
@@ -334,14 +334,14 @@ public final class Evaluator {
 			ATObject[] pars = formals.asNativeTable().elements_;
 			int numMandatory;
 			for (numMandatory = 0; numMandatory < pars.length; numMandatory++) {
-				if (!pars[numMandatory].base_isSymbol()) {
+				if (!pars[numMandatory].isSymbol()) {
 					break;
 				}
 			}
 			if (numMandatory > 0) {
 				ATObject[] bindings = new ATObject[numMandatory];
 				for (int i = 0; i < bindings.length; i++) {
-					bindings[i] = pars[i].base_asSymbol().meta_eval(ctx);
+					bindings[i] = pars[i].asSymbol().meta_eval(ctx);
 				}
 				return NATTable.atValue(bindings);
 			} else {

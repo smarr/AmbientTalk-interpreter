@@ -75,7 +75,7 @@ public final class ELDiscoveryActor extends ELActor {
 		this.receive(new Event("servicePublished("+pub.providedStripe_+")") {
 			public void process(Object myself) {
 				try {
-					pub.deserializedTopic_ = pub.providedStripe_.unpack().base_asStripe();
+					pub.deserializedTopic_ = pub.providedStripe_.unpack().asStripe();
 					discoveryManager_.addLocalPublication(pub);
 					// broadcast the new publication to all currently connected VMs
 					new CMDProvideService(pub.providedStripe_, pub.exportedService_).send(host_.messageDispatcher_);
@@ -100,7 +100,7 @@ public final class ELDiscoveryActor extends ELActor {
 		this.receive(new Event("clientSubscribed("+sub.requiredStripe_+")") {
 			public void process(Object myself) {
 				try {
-					sub.deserializedTopic_ = sub.requiredStripe_.unpack().base_asStripe();
+					sub.deserializedTopic_ = sub.requiredStripe_.unpack().asStripe();
 					sub.deserializedHandler_ = sub.registeredHandler_.unpack();
 					discoveryManager_.addLocalSubscription(sub);
 					// broadcast the new subscription to all currently connected VMs
@@ -154,7 +154,7 @@ public final class ELDiscoveryActor extends ELActor {
 		this.receive(new Event("remotePublication("+serializedProvidedTopic+")") {
 			public void process(Object myself) {
 				try {
-					ATStripe providedTopic = serializedProvidedTopic.unpack().base_asStripe();
+					ATStripe providedTopic = serializedProvidedTopic.unpack().asStripe();
 					ATObject providedService = serializedProvidedService.unpack();
 					// notify subscribers of the new provided service
 					Logging.VirtualMachine_LOG.debug("notifyOfExternalPublication("+providedTopic+","+providedService+")");
@@ -181,7 +181,7 @@ public final class ELDiscoveryActor extends ELActor {
 				for (Iterator iter = topics.iterator(); iter.hasNext();) {
 					try {
 						Packet serializedTopic = (Packet) iter.next();
-						ATStripe unserializedTopic = serializedTopic.unpack().base_asStripe();
+						ATStripe unserializedTopic = serializedTopic.unpack().asStripe();
 						Set matchingServices = (Set) matchingPublications.get(serializedTopic);
 						Logging.VirtualMachine_LOG.debug("matchingPublications.get("+serializedTopic+") = "+matchingServices);
 						// for each serialized object exported under the topic
@@ -209,7 +209,7 @@ public final class ELDiscoveryActor extends ELActor {
 		this.receive(new Event("remoteSubscription("+serializedRequiredTopic+")") {
 			public void process(Object myself) {
 				try {
-					ATStripe requiredTopic = serializedRequiredTopic.unpack().base_asStripe();
+					ATStripe requiredTopic = serializedRequiredTopic.unpack().asStripe();
 					// query local discoverymanager for matching topic
 			    	Set matchingServices = discoveryManager_.getLocalPublishedServicesMatching(requiredTopic);
 			    	Logging.VirtualMachine_LOG.debug("getLocalPubServMatching("+requiredTopic+") = "+matchingServices+" ("+matchingServices.size()+" items)");
@@ -267,7 +267,7 @@ public final class ELDiscoveryActor extends ELActor {
 		    	for (Iterator iter = subscriptionTopics.iterator(); iter.hasNext();) {
 					try {
 						Packet serializedTopic = (Packet) iter.next();
-						ATStripe topic = serializedTopic.unpack().base_asStripe();
+						ATStripe topic = serializedTopic.unpack().asStripe();
 						Set matchingServices = discoveryManager_.getLocalPublishedServicesMatching(topic);
 						Logging.VirtualMachine_LOG.debug("getLocalPubServMatching("+topic+") ="+matchingServices+" ("+matchingServices.size()+" items)");
 						if (!matchingServices.isEmpty()) {

@@ -285,11 +285,11 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
     	return NATTable.atValue(stripes_);
     }
 	
-	public boolean base_isFarReference() {
+	public boolean isFarReference() {
 		return true;
 	}
 
-    public ATFarReference base_asFarReference() throws XTypeMismatch {
+    public ATFarReference asFarReference() throws XTypeMismatch {
   	    return this;
   	}
     

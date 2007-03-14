@@ -109,11 +109,11 @@ public final class JavaMethod extends NATByRef implements ATMethod {
     	return NATTable.of(NativeStripes._METHOD_);
     }
 	
-	public ATMethod base_asMethod() throws XTypeMismatch {
+	public ATMethod asMethod() throws XTypeMismatch {
 		return this;
 	}
 
-	public boolean base_isMethod() {
+	public boolean isMethod() {
 		return true;
 	}
 	

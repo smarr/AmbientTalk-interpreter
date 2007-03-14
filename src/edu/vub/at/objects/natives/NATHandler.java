@@ -60,7 +60,7 @@ public class NATHandler extends NATByRef implements ATHandler {
 		return handler_.base_apply(NATTable.atValue(new ATObject[] { anException }));
 	}
 	
-	public ATHandler base_asHandler() {
+	public ATHandler asHandler() {
 		return this;
 	}
 	

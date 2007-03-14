@@ -91,9 +91,7 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject receiver = rcvNam_.meta_eval(ctx);
-		if(receiver.meta_isStripedWith(NativeStripes._ISOLATE_)
-				.asNativeBoolean().javaValue) {
-			
+		if (receiver.meta_isStripedWith(NativeStripes._ISOLATE_).asNativeBoolean().javaValue) {
 			throw new XIllegalOperation("Cannot define external methods on isolates");
 			
 		} else {
@@ -111,10 +109,10 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 	 * AGDEFEXTMTH(rcv,nam,par,bdy).quote(ctx) = AGDEFEXTMTH(rcv.quote(ctx),nam.quote(ctx), par.quote(ctx), bdy.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGDefExternalMethod(rcvNam_.meta_quote(ctx).base_asSymbol(),
-				               selectorExp_.meta_quote(ctx).base_asSymbol(),
-				               argumentExps_.meta_quote(ctx).base_asTable(),
-				               bodyStmts_.meta_quote(ctx).base_asBegin());
+		return new AGDefExternalMethod(rcvNam_.meta_quote(ctx).asSymbol(),
+				               selectorExp_.meta_quote(ctx).asSymbol(),
+				               argumentExps_.meta_quote(ctx).asTable(),
+				               bodyStmts_.meta_quote(ctx).asBegin());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

@@ -66,8 +66,8 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 			if (arity != 1) {
 				throw new XArityMismatch("process", 1, arity);
 			}
-			return ctx.base_getLexicalScope().base_asAsyncMessage().prim_process(
-					ctx.base_getSelf().base_asAsyncMessage(),
+			return ctx.base_getLexicalScope().asAsyncMessage().prim_process(
+					ctx.base_getSelf().asAsyncMessage(),
 					arguments.base_at(NATNumber.ONE));
 		}
 	};
@@ -121,14 +121,14 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException {
         // fill in the receiver first
         super.meta_assignField(self, _RECEIVER_, receiver);
-        return sender.meta_send(self.base_asAsyncMessage());
+        return sender.meta_send(self.asAsyncMessage());
     }
     
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<asynchronous message:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
 	}
 
-    public ATAsyncMessage base_asAsyncMessage() throws XTypeMismatch {
+    public ATAsyncMessage asAsyncMessage() throws XTypeMismatch {
   	    return this;
   	}
 

@@ -115,11 +115,11 @@ public final class NATClosureMethod extends NATByRef implements ATMethod {
 		return NATText.atValue("<closure:"+method_.base_getName()+">");
 	}
 
-	public ATMethod base_asMethod() throws XTypeMismatch {
+	public ATMethod asMethod() throws XTypeMismatch {
 		return this;
 	}
 
-	public boolean base_isMethod() {
+	public boolean isMethod() {
 		return true;
 	}
 	

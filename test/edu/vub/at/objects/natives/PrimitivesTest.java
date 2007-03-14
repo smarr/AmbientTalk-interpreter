@@ -240,7 +240,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 	
 	public void testTablePrimitives() {
 		try {
-			ATTable vowels = evalAndReturn("[\"a\", \"e\", \"i\", \"o\", \"u\"]").base_asTable();
+			ATTable vowels = evalAndReturn("[\"a\", \"e\", \"i\", \"o\", \"u\"]").asTable();
 
 			// vowels.length = 5
 			assertEquals(5, vowels.base_getLength().asNativeNumber().javaValue);

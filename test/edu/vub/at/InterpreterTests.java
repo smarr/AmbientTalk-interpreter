@@ -91,5 +91,4 @@ public class InterpreterTests {
 		//$JUnit-END$
 		return suite;
 	}
-
 }

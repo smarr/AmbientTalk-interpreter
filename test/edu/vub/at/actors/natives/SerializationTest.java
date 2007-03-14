@@ -106,7 +106,7 @@ public class SerializationTest extends AmbientTalkTest {
 	 */
 	public void testCoercerSerialization() throws InterpreterException {
 		NATObject isolate = new NATObject(new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._TABLE_ });
-		ATTable coercer = isolate.base_asTable();
+		ATTable coercer = isolate.asTable();
 		assertTrue(coercer instanceof SymbioticATObjectMarker);
 		Packet p = new Packet("test", coercer);
 		ATObject obj = p.unpack();

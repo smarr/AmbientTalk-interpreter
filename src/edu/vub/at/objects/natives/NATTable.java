@@ -103,7 +103,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		elements_ = elements;
 	}
 	
-    public ATTable base_asTable() { return this; }
+    public ATTable asTable() { return this; }
 	
 	public NATTable asNativeTable() { return this; }
 	
@@ -121,8 +121,8 @@ public final class NATTable extends AGExpression implements ATTable {
 		LinkedList result = new LinkedList();
 		int siz = elements_.length;
 		for (int i = 0; i < elements_.length; i++) {
-			if (elements_[i].base_isSplice()) {
-				ATObject[] tbl = elements_[i].base_asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
+			if (elements_[i].isSplice()) {
+				ATObject[] tbl = elements_[i].asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -146,8 +146,8 @@ public final class NATTable extends AGExpression implements ATTable {
 		LinkedList result = new LinkedList();
 		int siz = elements_.length;
 		for (int i = 0; i < elements_.length; i++) {
-			if (elements_[i].base_isUnquoteSplice()) {
-				ATObject[] tbl = elements_[i].base_asUnquoteSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
+			if (elements_[i].isUnquoteSplice()) {
+				ATObject[] tbl = elements_[i].asUnquoteSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -253,7 +253,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		final LinkedList selection = new LinkedList();
 		first.base_to_do_(last, new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
-			    selection.add(base_at(args.base_at(NATNumber.ONE).base_asNumber()));
+			    selection.add(base_at(args.base_at(NATNumber.ONE).asNumber()));
 			    return NATNil._INSTANCE_;
 			}
 		});

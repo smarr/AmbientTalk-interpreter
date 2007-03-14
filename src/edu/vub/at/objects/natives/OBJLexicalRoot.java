@@ -50,7 +50,6 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeStripes;
-import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
 import edu.vub.at.parser.NATParser;
@@ -725,7 +724,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a mirror reflecting the given object
 	 */
 	public ATObject base_reflect_(ATObject reflectee) throws InterpreterException {
-		return NATIntrospectiveMirror.atValue(reflectee);
+		return base_getActor().base_createMirror(reflectee);
 	}
 	
 	/**
@@ -797,7 +796,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 			
 			// find the appropriate handler
 			for (int i = 0; i < handlers.length; i++) {
-				ATHandler handler = handlers[i].base_asHandler();
+				ATHandler handler = handlers[i].asHandler();
 				ATObject exc = e.getAmbientTalkRepresentation();
 				if (handler.base_canHandle(exc).asNativeBoolean().javaValue) {
 					return handler.base_handle(exc);

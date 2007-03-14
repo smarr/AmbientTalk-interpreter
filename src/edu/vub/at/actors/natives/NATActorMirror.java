@@ -44,6 +44,7 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATMethod;
@@ -140,6 +141,10 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return new NATAsyncMessage(sender, selector, arguments);
 	}
 	
+	public ATObject base_createMirror(ATObject reflectee) throws InterpreterException {
+		return NATIntrospectiveMirror.atValue(reflectee);
+	}
+	
 	/**
 	 * A publication object is defined as:
 	 * object: {
@@ -230,7 +235,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		if(length != 1)
 			throw new XArityMismatch("newInstance", 1, length);
 		
-		ATClosure closure = initargs.base_at(NATNumber.ONE).base_asClosure();
+		ATClosure closure = initargs.base_at(NATNumber.ONE).asClosure();
 		return OBJLexicalRoot._INSTANCE_.base_actor_(closure);
 	}
 	
@@ -249,7 +254,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 */
 	public ATObject meta_send(ATAsyncMessage msg) throws InterpreterException {
 		ATObject rcv = msg.base_getReceiver();
-		if (rcv.base_isFarReference()) {
+		if (rcv.isFarReference()) {
 			return rcv.meta_receive(msg);
 		} else {
 			return this.meta_receive(msg);
@@ -334,7 +339,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		}
 	}*/
 	
-    public ATActorMirror base_asActorMirror() throws XTypeMismatch {
+    public ATActorMirror asActorMirror() throws XTypeMismatch {
     	return this;
     }
 		

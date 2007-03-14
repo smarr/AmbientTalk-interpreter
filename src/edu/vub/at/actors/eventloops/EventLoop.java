@@ -105,7 +105,6 @@ public abstract class EventLoop {
 		  EventProcessor processor = (EventProcessor) current;
 	      return processor.serving();
 		} catch (ClassCastException e) {
-			e.printStackTrace();
 			throw new IllegalStateException("Asked for current event loop when none was active");
 		}
 	}

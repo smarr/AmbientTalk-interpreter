@@ -45,7 +45,7 @@ public abstract class AmbientTalkTest extends TestCase {
 		return evalActor_;
 	}
 	
-	public AmbientTalkTest() {
+	public AmbientTalkTest() {	
 		ATObject supr = new NATObject();
 		ATObject self =
 			new NATObject(supr, NATObject._SHARES_A_); // self has root as lex parent and supr as dyn parent

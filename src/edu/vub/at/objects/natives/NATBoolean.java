@@ -62,7 +62,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		javaValue = b;
 	}
 	
-	public boolean base_isBoolean() {
+	public boolean isBoolean() {
 		return true;
 	}
 	
@@ -70,7 +70,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		return true;
 	}
 
-	public ATBoolean base_asBoolean() {
+	public ATBoolean asBoolean() {
 		return this;
 	}
 	
@@ -113,7 +113,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		}
 		
 		public ATBoolean base_and_(ATClosure other) throws InterpreterException {
-			return other.base_apply(NATTable.EMPTY).base_asBoolean();
+			return other.base_apply(NATTable.EMPTY).asBoolean();
 		}
 		
 		public ATBoolean base_or_(ATClosure other) throws InterpreterException {
@@ -165,7 +165,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		}
 		
 		public ATBoolean base_or_(ATClosure other) throws InterpreterException {
-			return other.base_apply(NATTable.EMPTY).base_asBoolean();
+			return other.base_apply(NATTable.EMPTY).asBoolean();
 		}
 		
 		public ATBoolean base_not() {

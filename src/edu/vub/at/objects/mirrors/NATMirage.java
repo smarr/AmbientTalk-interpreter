@@ -347,7 +347,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.jAlloc("grabMethod"),
 				NATTable.atValue(new ATObject[] { selector })
-				).base_asMethod();
+				).asMethod();
 	}
 
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
@@ -362,7 +362,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.jAlloc("listMethods"),
 				NATTable.EMPTY
-				).base_asTable();
+				).asTable();
 	}
 
 	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
@@ -398,7 +398,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.jAlloc("respondsTo"),
 				NATTable.atValue(new ATObject[] { selector })
-				).base_asBoolean();
+				).asBoolean();
 	}
 
 	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
@@ -438,7 +438,7 @@ public class NATMirage extends NATObject {
 		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("grabField"),
-				NATTable.atValue(new ATObject[] { selector })).base_asField();
+				NATTable.atValue(new ATObject[] { selector })).asField();
 	}
 
 
@@ -446,7 +446,7 @@ public class NATMirage extends NATObject {
 		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("listFields"),
-				NATTable.EMPTY).base_asTable();
+				NATTable.EMPTY).asTable();
 	}
 
 
@@ -477,7 +477,7 @@ public class NATMirage extends NATObject {
 	public ATBoolean meta_isExtensionOfParent() throws InterpreterException {
 		return mirror_.meta_select(
 				mirror_,
-				AGSymbol.jAlloc("isExtensionOfParent")).base_asBoolean();
+				AGSymbol.jAlloc("isExtensionOfParent")).asBoolean();
 	}
 
 	public ATObject meta_getLexicalParent() throws InterpreterException {
@@ -498,27 +498,27 @@ public class NATMirage extends NATObject {
     
     public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException {
     	return mirror_.meta_invoke(
-				mirror_, AGSymbol.jAlloc("isStripedWith"), NATTable.of(stripe)).base_asBoolean();
+				mirror_, AGSymbol.jAlloc("isStripedWith"), NATTable.of(stripe)).asBoolean();
     }
     
     public ATTable meta_getStripes() throws InterpreterException {
 		return mirror_.meta_select(
 				mirror_,
-				AGSymbol.jAlloc("stripes")).base_asTable();
+				AGSymbol.jAlloc("stripes")).asTable();
     }
 	
 	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
 		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("isCloneOf"),
-				NATTable.atValue(new ATObject[] { original })).base_asBoolean();
+				NATTable.atValue(new ATObject[] { original })).asBoolean();
 	}
 
 	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
 		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("isRelatedTo"),
-				NATTable.atValue(new ATObject[] { object })).base_asBoolean();
+				NATTable.atValue(new ATObject[] { object })).asBoolean();
 	}
 	
 }

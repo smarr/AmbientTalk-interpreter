@@ -40,8 +40,8 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 	public void testSelection() {
 		try {
 			ATObject clo = evalAndReturn("mirrorOn1.select(mirrorOn1.base, `+)");
-			assertTrue(clo.base_isClosure());
-			ATClosure c = clo.base_asClosure();
+			assertTrue(clo.isClosure());
+			ATClosure c = clo.asClosure();
 			ATMethod m = c.base_getMethod();
 			assertEquals(NativeMethod.class, m.getClass());
 			assertEquals(AGSymbol.jAlloc("+"), m.base_getName());
@@ -58,7 +58,7 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 	
 	public void testAcquisition() {
 		try {
-			ATMethod nativeMethod = evalAndReturn("mirrorOn1.grabMethod(`+)").base_asMethod();
+			ATMethod nativeMethod = evalAndReturn("mirrorOn1.grabMethod(`+)").asMethod();
 			assertEquals(NativeMethod.class, nativeMethod.getClass());
 			assertEquals(AGSymbol.jAlloc("+"), nativeMethod.base_getName());
 		} catch (InterpreterException e) {
@@ -68,7 +68,7 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 	
 	public void testListing() {
 		try {
-			evalAndReturn("mirrorOn1.listMethods()").base_asTable();
+			evalAndReturn("mirrorOn1.listMethods()").asTable();
 			evalAndCompareTo("mirrorOn1.listFields()", "[<native field:super of 1>]");
 			// when mirroring a mirror and querying its fields, the field 'base' should always be present
 			evalAndCompareTo("{ |exit| (reflect: mirrorOn1).listFields().each: { |field|" +

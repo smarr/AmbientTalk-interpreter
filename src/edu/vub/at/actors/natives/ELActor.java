@@ -48,6 +48,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATContext;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
@@ -65,13 +66,41 @@ import edu.vub.at.objects.natives.OBJLexicalRoot;
  */
 public class ELActor extends EventLoop {
 	
+	/**
+	 * A thread-local variable that contains the 'default actor' to use
+	 * when there is currently no ELActor event loop thread running.
+	 * This is primarily useful for performing unit tests where an actor
+	 * is automatically created when actor semantics is required.
+	 * 
+	 * A warning is printed to the log because using the default actor should
+	 * only be used for testing purposes.
+	 */
+	private static final ThreadLocal _DEFAULT_ACTOR_ = new ThreadLocal() {
+	    protected synchronized Object initialValue() {
+	    	Logging.Actor_LOG.warn("Creating a default actor for thread " + Thread.currentThread());
+	    	try {
+				ELVirtualMachine host = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
+				return NATActorMirror.createEmptyActor(host, new NATActorMirror(host)).getFarHost();
+			} catch (InterpreterException e) {
+				throw new RuntimeException("Failed to initialize default actor",e);
+			}
+	    }
+	};
+	
+	/**
+	 * Retrieves the currently running actor. If there is no running actor thread,
+	 * this returns the value stored in the thread-local default actor field.
+	 */
 	public static final ELActor currentActor() {
 		try {
 			return ((ELActor) EventLoop.currentEventLoop());
 		} catch (ClassCastException e) {
-			Logging.Actor_LOG.fatal("Asked for an actor in a non-event loop thread?", e);
-			throw new RuntimeException("Asked for an actor outside of an event loop");
+			// current event loop is not an actor event loop
+		} catch (IllegalStateException e) {
+			// current thread is not an event loop
 		}
+		Logging.Actor_LOG.warn("Asked for an actor in non-actor thread " + Thread.currentThread());
+		return (ELActor) _DEFAULT_ACTOR_.get();
 	}
 
 	private ATActorMirror mirror_;
@@ -201,8 +230,8 @@ public class ELActor extends EventLoop {
 					// pass far ref to behaviour to creator actor who is waiting for this
 					future.resolve(receptionists_.exportObject(behaviour_));
 					
-					ATTable params = parametersPkt.unpack().base_asTable();
-					ATMethod initCode = initcodePkt.unpack().base_asMethod();
+					ATTable params = parametersPkt.unpack().asTable();
+					ATMethod initCode = initcodePkt.unpack().asMethod();
 					
 					// initialize the behaviour using the parameters and the code
 					initCode.base_applyInScope(params, new NATContext(behaviour_, behaviour_));
@@ -240,7 +269,7 @@ public class ELActor extends EventLoop {
 		receive(new Event("accept("+serializedMessage+")") {
 			public void process(Object myActorMirror) {
 			  try {
-				ATAsyncMessage msg = serializedMessage.unpack().base_asAsyncMessage();
+				ATAsyncMessage msg = serializedMessage.unpack().asAsyncMessage();
 				performAccept(msg);
 			  } catch (InterpreterException e) {
 				Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
@@ -317,8 +346,8 @@ public class ELActor extends EventLoop {
 		receive(new Event("serviceJoined") {
 			public void process(Object myActorMirror) {
 				try {
-					ATStripe requiredStripe = requiredStripePkt.unpack().base_asStripe();
-					ATStripe discoveredStripe = discoveredStripePkt.unpack().base_asStripe();
+					ATStripe requiredStripe = requiredStripePkt.unpack().asStripe();
+					ATStripe discoveredStripe = discoveredStripePkt.unpack().asStripe();
 					// is there a match?
 					if (discoveredStripe.base_isSubstripeOf(requiredStripe).asNativeBoolean().javaValue) {
 						ATObject remoteService = remoteServicePkt.unpack();

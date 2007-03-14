@@ -93,8 +93,7 @@ public class DistributionTest extends TestCase {
 		setUpSuccessTrigger(subscriber);
 		
 		subscriber.sync_event_eval(
-				NATParser.parse(
-						"DistributionTest#setUpConnectionObservers()",
+				NATParser.parse("DistributionTest#setUpConnectionObservers()",
 						"defstripe Service; \n" +
 						"when: Service discovered: { | ref |" +
 						"  when: ref disconnected: { success(); }; \n" +
@@ -105,8 +104,7 @@ public class DistributionTest extends TestCase {
 						"} \n;"));
 		
 		provider.sync_event_eval(
-				NATParser.parse(
-						"DistributionTest#setUpConnectionObservers()",
+				NATParser.parse("DistributionTest#setUpConnectionObservers()",
 						"defstripe Service; \n" +
 						"export: (object: { nil }) as: Service"));
 	}
@@ -345,8 +343,7 @@ public class DistributionTest extends TestCase {
 		setUpSuccessTrigger(subscriber);
 		
 		subscriber.sync_event_eval(
-				NATParser.parse(
-						"DistributionTest#testRetract()",
+				NATParser.parse("DistributionTest#testRetract()",
 						"def messages := nil;" +
 						"def far := nil;" +
 						"defstripe Service; \n" +
@@ -360,8 +357,7 @@ public class DistributionTest extends TestCase {
 						"} \n;"));
 		
 		provider.sync_event_eval(
-				NATParser.parse(
-						"DistributionTest#testRetract()",
+				NATParser.parse("DistributionTest#testRetract()",
 						"defstripe Service; \n" +
 						"export: (object: { def inc(num) { num + 1; }; }) as: Service"));
 		
@@ -381,8 +377,7 @@ public class DistributionTest extends TestCase {
 			public void run() {
 				try {
 					subscriber.sync_event_eval(
-							NATParser.parse(
-									"DistributionTest#testRetract()",
+							NATParser.parse("DistributionTest#testRetract()",
 									"1.to: 5 do: { | i | \n" +
 									"  far<-inc(i); \n" +
 									"}; \n" +
@@ -398,7 +393,7 @@ public class DistributionTest extends TestCase {
 				}
 			};
 		};
-		
+
 		sender.start();
 		
 		// wait till some messages were sent
@@ -417,8 +412,7 @@ public class DistributionTest extends TestCase {
 		sender.join();
 		
 		ATObject messages = subscriber.sync_event_eval(
-				NATParser.parse(
-						"DistributionTest#testRetract()",
+				NATParser.parse("DistributionTest#testRetract()",
 						"messages"));
 		
 		
@@ -430,16 +424,14 @@ public class DistributionTest extends TestCase {
 			ELActor bob = setUpActor(virtual2_);
 			
 			alice.sync_event_eval(
-					NATParser.parse(
-							"CrossVMCommunicationTest#testSimple()", 
+					NATParser.parse("CrossVMCommunicationTest#testSimple()", 
 							"defstripe HelloWorld; \n" +
 							"whenever: HelloWorld discovered: { | ref | \n" +
 							"  ref <- hello(\"alice\"); \n" +
 							"}; \n"));
 			
 			bob.sync_event_eval(
-					NATParser.parse(
-							"CrossVMCommunicationTest#testSimple()", 
+					NATParser.parse("CrossVMCommunicationTest#testSimple()", 
 							"defstripe HelloWorld; \n" +
 							"def english := object: { \n" +
 							"  def hello( name ) { \"hello \" + name }; \n" +
@@ -457,13 +449,11 @@ public class DistributionTest extends TestCase {
 				try {
 					this.wait(10000);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 			
 		} catch (InterpreterException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
 	}

@@ -75,14 +75,14 @@ public final class JavaPackage extends NATObject {
 	private static final PrimitiveMethod _PRIM_CLS_ = new PrimitiveMethod(
 			AGSymbol.jAlloc("class"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("name")})) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			return ((JavaPackage)ctx.base_getLexicalScope()).base_class(arguments.base_at(NATNumber.ONE).base_asSymbol());
+			return ((JavaPackage)ctx.base_getLexicalScope()).base_class(arguments.base_at(NATNumber.ONE).asSymbol());
 		}
 	};
 	/** def package(name) { nil } */
 	private static final PrimitiveMethod _PRIM_PKG_ = new PrimitiveMethod(
 			AGSymbol.jAlloc("package"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("name")})) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			return ((JavaPackage)ctx.base_getLexicalScope()).base_package(arguments.base_at(NATNumber.ONE).base_asSymbol());
+			return ((JavaPackage)ctx.base_getLexicalScope()).base_package(arguments.base_at(NATNumber.ONE).asSymbol());
 		}
 	};
 	

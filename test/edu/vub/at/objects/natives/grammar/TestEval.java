@@ -55,7 +55,7 @@ public class TestEval extends AmbientTalkTest {
 	public void testDefFunction() throws InterpreterException {
         evalAndCompareTo("def x() { 3 }", "<closure:x>");
         try {
-        	  ATClosure clo = ctx_.base_getLexicalScope().meta_lookup(atX_).base_asClosure();
+        	  ATClosure clo = ctx_.base_getLexicalScope().meta_lookup(atX_).asClosure();
         	  assertEquals(atX_, clo.base_getMethod().base_getName());
         } catch(XSelectorNotFound e) {
         	  fail("broken definition:"+e.getMessage());
@@ -66,8 +66,8 @@ public class TestEval extends AmbientTalkTest {
         evalAndCompareTo("def x[3] { 1; 2; 3 }", "[3, 3, 3]");
         try {
         	  ATObject tab = ctx_.base_getLexicalScope().meta_lookup(atX_);
-        	  assertEquals(atThree_, tab.base_asTable().base_getLength());
-        	  assertEquals(atThree_, tab.base_asTable().base_at(NATNumber.ONE));
+        	  assertEquals(atThree_, tab.asTable().base_getLength());
+        	  assertEquals(atThree_, tab.asTable().base_at(NATNumber.ONE));
         } catch(XSelectorNotFound e) {
         	  fail("broken definition:"+e.getMessage());
         }
@@ -79,7 +79,7 @@ public class TestEval extends AmbientTalkTest {
 		ctx_.base_getLexicalScope().meta_defineField(rcvnam, rcvr);
         evalAndCompareTo("def o.x() { self }", "<closure:x>");
         try {
-        	  ATClosure clo = rcvr.meta_lookup(atX_).base_asClosure();
+        	  ATClosure clo = rcvr.meta_lookup(atX_).asClosure();
         	  assertEquals(atX_, clo.base_getMethod().base_getName());
         	  assertEquals(rcvr, rcvr.meta_invoke(rcvr, atX_, NATTable.EMPTY));
         } catch(XSelectorNotFound e) {
@@ -156,7 +156,7 @@ public class TestEval extends AmbientTalkTest {
 	}
 	
 	public void testClosureLiteral() throws InterpreterException {
-	  ATClosure clo = evalAndReturn("{| x, y | 3 }").base_asClosure();
+	  ATClosure clo = evalAndReturn("{| x, y | 3 }").asClosure();
 	  ATSymbol nam = clo.base_getMethod().base_getName();
 	  ATTable arg = clo.base_getMethod().base_getParameters();
 	  ATAbstractGrammar bdy = clo.base_getMethod().base_getBodyExpression();
@@ -164,7 +164,7 @@ public class TestEval extends AmbientTalkTest {
 	  assertEquals(AGSymbol.alloc(NATText.atValue("lambda")), nam);
 	  assertEquals(atX_, arg.base_at(NATNumber.ONE));
 	  assertEquals(atY_, arg.base_at(NATNumber.atValue(2)));
-	  assertEquals(atThree_, bdy.base_asBegin().base_getStatements().base_at(NATNumber.ONE));
+	  assertEquals(atThree_, bdy.asBegin().base_getStatements().base_at(NATNumber.ONE));
 	  assertEquals(ctx_, ctx);
 	}
 	
@@ -183,11 +183,11 @@ public class TestEval extends AmbientTalkTest {
 		x.meta_addMethod(y);
 		ctx_.base_getLexicalScope().meta_defineField(atX_, x);
 
-		assertEquals(evalAndReturn("x.y").base_asClosure().base_getMethod(), y);
+		assertEquals(evalAndReturn("x.y").asClosure().base_getMethod(), y);
 	}
 	
 	public void testFirstClassMessage() throws InterpreterException {
-		ATMessage methInv = evalAndReturn(".m(3)").base_asMessage();
+		ATMessage methInv = evalAndReturn(".m(3)").asMessage();
 
 		assertEquals(atM_, methInv.base_getSelector());
 		assertEquals(atThree_, methInv.base_getArguments().base_at(NATNumber.ONE));
@@ -195,16 +195,12 @@ public class TestEval extends AmbientTalkTest {
 	}
 	
 	public void testFirstClassAsyncMessage() throws Exception {
-		actorTest(new Actorscript() {
-			public void test() throws Exception {
-				ATMessage asyncMsg = evalAndReturn("<-m(3)").base_asMessage();
-				
-				assertEquals(atM_, asyncMsg.base_getSelector());
-				assertEquals(atThree_, asyncMsg.base_getArguments().base_at(NATNumber.ONE));
-				assertTrue(asyncMsg instanceof ATAsyncMessage);
-				assertEquals(NATNil._INSTANCE_, ((ATAsyncMessage) asyncMsg).base_getReceiver());	
-			}
-		});
+		ATMessage asyncMsg = evalAndReturn("<-m(3)").asMessage();
+
+		assertEquals(atM_, asyncMsg.base_getSelector());
+		assertEquals(atThree_, asyncMsg.base_getArguments().base_at(NATNumber.ONE));
+		assertTrue(asyncMsg instanceof ATAsyncMessage);
+		assertEquals(NATNil._INSTANCE_, ((ATAsyncMessage) asyncMsg).base_getReceiver());	
 	}
 	
 	public void testMethodApplication() throws InterpreterException {
@@ -248,7 +244,7 @@ public class TestEval extends AmbientTalkTest {
 	public void testDelegation() throws InterpreterException {
         // def x := object: { def m() { self.y + 1 } } ; def y := 2
 		NATObject x = new NATObject(ctx_.base_getLexicalScope());
-		ATMethod m = evalAndReturn("def m() { self.y + 1 }").base_asClosure().base_getMethod();
+		ATMethod m = evalAndReturn("def m() { self.y + 1 }").asClosure().base_getMethod();
 		x.meta_addMethod(m);
 		ctx_.base_getSelf().meta_defineField(atY_, NATNumber.atValue(2));
 		ctx_.base_getLexicalScope().meta_defineField(atX_, x);

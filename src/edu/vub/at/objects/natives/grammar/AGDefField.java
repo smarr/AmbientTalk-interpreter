@@ -75,7 +75,7 @@ public final class AGDefField extends NATAbstractGrammar implements ATDefField {
 	 * AGDEFFIELD(nam,val).quote(ctx) = AGDEFFIELD(nam.quote(ctx), val.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGDefField(name_.meta_quote(ctx).base_asSymbol(), valueExp_.meta_quote(ctx).base_asExpression());
+		return new AGDefField(name_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

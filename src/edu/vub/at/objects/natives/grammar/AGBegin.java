@@ -77,7 +77,7 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	 * AGBEGIN(statements*).quote(ctx) = AGBEGIN((statements*).quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGBegin(statements_.meta_quote(ctx).base_asTable());
+		return new AGBegin(statements_.meta_quote(ctx).asTable());
 	}
 	
 	public ATTable base_getStatements() { return statements_; }
@@ -86,7 +86,7 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 		return Evaluator.printAsStatements(statements_);
 	}
 	
-	public ATBegin base_asBegin() throws XTypeMismatch {
+	public ATBegin asBegin() throws XTypeMismatch {
 		return this;
 	}
 

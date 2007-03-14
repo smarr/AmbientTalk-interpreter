@@ -61,8 +61,8 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 			if (arity != 2) {
 				throw new XArityMismatch("sendTo", 2, arity);
 			}
-			return ctx.base_getLexicalScope().base_asMessage().prim_sendTo(
-					ctx.base_getSelf().base_asMessage(),
+			return ctx.base_getLexicalScope().asMessage().prim_sendTo(
+					ctx.base_getSelf().asMessage(),
 					arguments.base_at(NATNumber.ONE), arguments.base_at(NATNumber.atValue(2)));
 		}
 	};
@@ -76,11 +76,11 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 	}
 
 	public ATSymbol base_getSelector() throws InterpreterException {
-		return super.meta_select(this, _SELECTOR_).base_asSymbol();
+		return super.meta_select(this, _SELECTOR_).asSymbol();
 	}
 
 	public ATTable base_getArguments() throws InterpreterException {
-		return super.meta_select(this, _ARGUMENTS_).base_asTable();
+		return super.meta_select(this, _ARGUMENTS_).asTable();
 	}
 	
 	public ATNil base_setArguments(ATTable arguments) throws InterpreterException {
@@ -95,7 +95,7 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 		return this.prim_sendTo(this, receiver, sender);
 	}
 
-	public ATMessage base_asMessage() {
+	public ATMessage asMessage() {
 		return this;
 	}
 	

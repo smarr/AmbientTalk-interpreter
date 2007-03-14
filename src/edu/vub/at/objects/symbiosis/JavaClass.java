@@ -122,7 +122,7 @@ public final class JavaClass extends NATObject implements ATStripe {
 			if (!arguments.base_getLength().equals(NATNumber.ONE)) {
 				throw new XArityMismatch("isSubstripeOf", 1, arguments.base_getLength().asNativeNumber().javaValue);
 			}
-			return ctx.base_getLexicalScope().asJavaClassUnderSymbiosis().base_isSubstripeOf(arguments.base_at(NATNumber.ONE).base_asStripe());
+			return ctx.base_getLexicalScope().asJavaClassUnderSymbiosis().base_isSubstripeOf(arguments.base_at(NATNumber.ONE).asStripe());
 		}
 	};
 	
@@ -393,11 +393,11 @@ public final class JavaClass extends NATObject implements ATStripe {
      * are wrappers for all interfaces extended by this Java interface type
      */
 	public ATTable base_getParentStripes() throws InterpreterException {
-		return super.meta_select(this, _PST_NAME_).base_asTable();
+		return super.meta_select(this, _PST_NAME_).asTable();
 	}
 
 	public ATSymbol base_getStripeName() throws InterpreterException {
-		return super.meta_select(this, _SNM_NAME_).base_asSymbol();
+		return super.meta_select(this, _SNM_NAME_).asSymbol();
 	}
 
 	/**

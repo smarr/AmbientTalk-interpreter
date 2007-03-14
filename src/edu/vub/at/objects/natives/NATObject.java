@@ -361,7 +361,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			Iterator it = originalCustomFields.iterator();
 			while (it.hasNext()) {
 				ATField field = (ATField) it.next();
-				customFields_.add(field.base_new(new ATObject[] { this }).base_asField());
+				customFields_.add(field.base_new(new ATObject[] { this }).asField());
 			}
 		}
 	}
@@ -420,7 +420,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		if (this.hasLocalField(selector)) {
-			return this.getLocalField(selector).base_asClosure().base_apply(arguments);
+			return this.getLocalField(selector).asClosure().base_apply(arguments);
 		} else if (this.hasLocalMethod(selector)) {
 			// immediately execute the method in the context ctx where
 			//  ctx.scope = the implementing scope, being this object, under which an additional callframe will be inserted
@@ -669,7 +669,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		}
 	}
 	
-	public boolean base_isCallFrame() {
+	public boolean isCallFrame() {
 		return false;
 	}
 	
@@ -720,7 +720,7 @@ public class NATObject extends NATCallframe implements ATObject {
 					public ATObject base_apply(ATTable args) throws InterpreterException {
 						return scope_.base_getSuper().meta_isRelatedTo(object);
 					}
-				}).base_asBoolean();
+				}).asBoolean();
 	}
 	
     /* ---------------------------------
@@ -823,26 +823,26 @@ public class NATObject extends NATCallframe implements ATObject {
 		}
 	}
 	
-	public ATBoolean base_asBoolean() throws InterpreterException { return (ATBoolean) coerce(NativeStripes._BOOLEAN_, ATBoolean.class); }
-	public ATClosure base_asClosure() throws InterpreterException { return (ATClosure) coerce(NativeStripes._CLOSURE_, ATClosure.class); }
-	public ATExpression base_asExpression() throws InterpreterException { return (ATExpression) coerce(NativeStripes._EXPRESSION_, ATExpression.class); }
-	public ATField base_asField() throws InterpreterException { return (ATField) coerce(NativeStripes._FIELD_, ATField.class); }
-	public ATMessage base_asMessage() throws InterpreterException { return (ATMessage) coerce(NativeStripes._MESSAGE_, ATMessage.class); }
-	public ATMethod base_asMethod() throws InterpreterException { return (ATMethod) coerce(NativeStripes._METHOD_, ATMethod.class); }
-	public ATHandler base_asHandler() throws InterpreterException { return (ATHandler) coerce(NativeStripes._HANDLER_, ATHandler.class); }
-	public ATNumber base_asNumber() throws InterpreterException { return (ATNumber) coerce(NativeStripes._NUMBER_, ATNumber.class); }
-	public ATTable base_asTable() throws InterpreterException { return (ATTable) coerce(NativeStripes._TABLE_, ATTable.class); }
-    public ATAsyncMessage base_asAsyncMessage() throws InterpreterException { return (ATAsyncMessage) coerce(NativeStripes._ASYNCMSG_, ATAsyncMessage.class);}
-    public ATActorMirror base_asActorMirror() throws InterpreterException { return (ATActorMirror) coerce(NativeStripes._ACTORMIRROR_, ATActorMirror.class); }
-    public ATStripe base_asStripe() throws InterpreterException { return (ATStripe) coerce(NativeStripes._STRIPE_, ATStripe.class); }
+	public ATBoolean asBoolean() throws InterpreterException { return (ATBoolean) coerce(NativeStripes._BOOLEAN_, ATBoolean.class); }
+	public ATClosure asClosure() throws InterpreterException { return (ATClosure) coerce(NativeStripes._CLOSURE_, ATClosure.class); }
+	public ATExpression asExpression() throws InterpreterException { return (ATExpression) coerce(NativeStripes._EXPRESSION_, ATExpression.class); }
+	public ATField asField() throws InterpreterException { return (ATField) coerce(NativeStripes._FIELD_, ATField.class); }
+	public ATMessage asMessage() throws InterpreterException { return (ATMessage) coerce(NativeStripes._MESSAGE_, ATMessage.class); }
+	public ATMethod asMethod() throws InterpreterException { return (ATMethod) coerce(NativeStripes._METHOD_, ATMethod.class); }
+	public ATHandler asHandler() throws InterpreterException { return (ATHandler) coerce(NativeStripes._HANDLER_, ATHandler.class); }
+	public ATNumber asNumber() throws InterpreterException { return (ATNumber) coerce(NativeStripes._NUMBER_, ATNumber.class); }
+	public ATTable asTable() throws InterpreterException { return (ATTable) coerce(NativeStripes._TABLE_, ATTable.class); }
+    public ATAsyncMessage asAsyncMessage() throws InterpreterException { return (ATAsyncMessage) coerce(NativeStripes._ASYNCMSG_, ATAsyncMessage.class);}
+    public ATActorMirror asActorMirror() throws InterpreterException { return (ATActorMirror) coerce(NativeStripes._ACTORMIRROR_, ATActorMirror.class); }
+    public ATStripe asStripe() throws InterpreterException { return (ATStripe) coerce(NativeStripes._STRIPE_, ATStripe.class); }
 	
-	public ATBegin base_asBegin() throws InterpreterException { return (ATBegin) coerce(NativeStripes._BEGIN_, ATBegin.class); }
-	public ATStatement base_asStatement() throws InterpreterException { return (ATStatement) coerce(NativeStripes._STATEMENT_, ATStatement.class); }
-    public ATUnquoteSplice base_asUnquoteSplice() throws InterpreterException { return (ATUnquoteSplice) coerce(NativeStripes._UQSPLICE_, ATUnquoteSplice.class); }
-    public ATSymbol base_asSymbol() throws InterpreterException { return (ATSymbol) coerce(NativeStripes._SYMBOL_, ATSymbol.class); }
-    public ATSplice base_asSplice() throws InterpreterException { return (ATSplice) coerce(NativeStripes._SPLICE_, ATSplice.class); }
-	public ATDefinition base_asDefinition() throws InterpreterException { return (ATDefinition) coerce(NativeStripes._DEFINITION_, ATDefinition.class); }
-	public ATMessageCreation base_asMessageCreation() throws InterpreterException { return (ATMessageCreation) coerce(NativeStripes._MSGCREATION_, ATMessageCreation.class); }
+	public ATBegin asBegin() throws InterpreterException { return (ATBegin) coerce(NativeStripes._BEGIN_, ATBegin.class); }
+	public ATStatement asStatement() throws InterpreterException { return (ATStatement) coerce(NativeStripes._STATEMENT_, ATStatement.class); }
+    public ATUnquoteSplice asUnquoteSplice() throws InterpreterException { return (ATUnquoteSplice) coerce(NativeStripes._UQSPLICE_, ATUnquoteSplice.class); }
+    public ATSymbol asSymbol() throws InterpreterException { return (ATSymbol) coerce(NativeStripes._SYMBOL_, ATSymbol.class); }
+    public ATSplice asSplice() throws InterpreterException { return (ATSplice) coerce(NativeStripes._SPLICE_, ATSplice.class); }
+	public ATDefinition asDefinition() throws InterpreterException { return (ATDefinition) coerce(NativeStripes._DEFINITION_, ATDefinition.class); }
+	public ATMessageCreation asMessageCreation() throws InterpreterException { return (ATMessageCreation) coerce(NativeStripes._MSGCREATION_, ATMessageCreation.class); }
 	
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
@@ -850,14 +850,14 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	// objects can only be 'cast' to a native category if they are marked with
 	// the appropriate native stripe
-	public boolean base_isBoolean() throws InterpreterException { return meta_isStripedWith(NativeStripes._BOOLEAN_).asNativeBoolean().javaValue; }
-	public boolean base_isClosure() throws InterpreterException { return meta_isStripedWith(NativeStripes._CLOSURE_).asNativeBoolean().javaValue; }
-	public boolean base_isMethod() throws InterpreterException { return meta_isStripedWith(NativeStripes._METHOD_).asNativeBoolean().javaValue; }
-	public boolean base_isSplice() throws InterpreterException { return meta_isStripedWith(NativeStripes._SPLICE_).asNativeBoolean().javaValue; }
-	public boolean base_isSymbol() throws InterpreterException { return meta_isStripedWith(NativeStripes._SYMBOL_).asNativeBoolean().javaValue; }
-	public boolean base_isTable() throws InterpreterException { return meta_isStripedWith(NativeStripes._TABLE_).asNativeBoolean().javaValue; }
-	public boolean base_isUnquoteSplice() throws InterpreterException { return meta_isStripedWith(NativeStripes._UQSPLICE_).asNativeBoolean().javaValue; }
-	public boolean base_isStripe() throws InterpreterException { return meta_isStripedWith(NativeStripes._STRIPE_).asNativeBoolean().javaValue; }
+	public boolean isBoolean() throws InterpreterException { return meta_isStripedWith(NativeStripes._BOOLEAN_).asNativeBoolean().javaValue; }
+	public boolean isClosure() throws InterpreterException { return meta_isStripedWith(NativeStripes._CLOSURE_).asNativeBoolean().javaValue; }
+	public boolean isMethod() throws InterpreterException { return meta_isStripedWith(NativeStripes._METHOD_).asNativeBoolean().javaValue; }
+	public boolean isSplice() throws InterpreterException { return meta_isStripedWith(NativeStripes._SPLICE_).asNativeBoolean().javaValue; }
+	public boolean isSymbol() throws InterpreterException { return meta_isStripedWith(NativeStripes._SYMBOL_).asNativeBoolean().javaValue; }
+	public boolean isTable() throws InterpreterException { return meta_isStripedWith(NativeStripes._TABLE_).asNativeBoolean().javaValue; }
+	public boolean isUnquoteSplice() throws InterpreterException { return meta_isStripedWith(NativeStripes._UQSPLICE_).asNativeBoolean().javaValue; }
+	public boolean isStripe() throws InterpreterException { return meta_isStripedWith(NativeStripes._STRIPE_).asNativeBoolean().javaValue; }
 	
 	
 	// private methods
@@ -879,7 +879,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
 	private ATMethod getLocalMethod(ATSymbol selector) throws InterpreterException {
-		ATMethod result = ((ATObject) methodDictionary_.get(selector)).base_asMethod();
+		ATMethod result = ((ATObject) methodDictionary_.get(selector)).asMethod();
 		if(result == null) {
 			throw new XSelectorNotFound(selector, this);
 		} else {
@@ -911,7 +911,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		for (; obj != NATNil._INSTANCE_ ; obj = obj.base_getSuper()) {
 			ATObject[] localFields = obj.meta_listFields().asNativeTable().elements_;
 			for (int i = 0; i < localFields.length; i++) {
-				ATField field = localFields[i].base_asField();
+				ATField field = localFields[i].asField();
 				ATSymbol fieldName = field.base_getName();
 				if (!encounteredNames.contains(fieldName)) {
 					fields.add(field);
@@ -944,7 +944,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			} else {
 				ATObject[] localMethods = obj.meta_listMethods().asNativeTable().elements_;
 				for (int i = 0; i < localMethods.length; i++) {
-					ATMethod localMethod = localMethods[i].base_asMethod();
+					ATMethod localMethod = localMethods[i].asMethod();
 					ATSymbol methodName = localMethod.base_getName();
 					if (!encounteredNames.contains(methodName)) {
 						methods.add(localMethod);

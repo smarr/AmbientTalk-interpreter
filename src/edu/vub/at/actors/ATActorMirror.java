@@ -76,6 +76,12 @@ public interface ATActorMirror extends ATObject {
 	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments) throws InterpreterException;
 	
 	/**
+	 * Creates a mirror on the given object. This method serves as the 'mirror factory'
+	 * for the current actor.
+	 */
+	public ATObject base_createMirror(ATObject onObject) throws InterpreterException;
+	
+	/**
 	 * This method implements the default asynchronous message sending semantics for
 	 * this particular actor. In addition to the ability to override the send meta-
 	 * operation on a single object to have specific adaptions, this hook allows the

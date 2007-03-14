@@ -68,7 +68,7 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 	 * @return the evaluated arguments table
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATTable args = valueExp_.meta_eval(ctx).base_asTable();
+		ATTable args = valueExp_.meta_eval(ctx).asTable();
 		PartialBinder.assignArgsToParams(binderPartialFunction_, ctx, args);
 		return args;
 	}
@@ -77,7 +77,7 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 	 * AGMULTIASS(par,val).quote(ctx) = AGMULTIASS(par.quote(ctx), val.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGMultiAssignment(parameters_.meta_quote(ctx).base_asTable(), valueExp_.meta_quote(ctx).base_asExpression());
+		return new AGMultiAssignment(parameters_.meta_quote(ctx).asTable(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

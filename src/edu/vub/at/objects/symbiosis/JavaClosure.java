@@ -90,7 +90,7 @@ public final class JavaClosure extends NATClosure implements ATJavaClosure {
 			// problem: cannot do base_isTable because JavaObject/JavaClass objects will say yes!
 			if (types[i] instanceof NATTable) {
 				// Array.newInstance([Type][1],0).getClass()
-				actualTypes[i] = Array.newInstance(types[i].base_asTable().
+				actualTypes[i] = Array.newInstance(types[i].asTable().
 				    base_at(NATNumber.ONE).asJavaClassUnderSymbiosis().getWrappedClass(), 0).getClass();
 			} else {
 				actualTypes[i] = types[i].asJavaClassUnderSymbiosis().getWrappedClass();

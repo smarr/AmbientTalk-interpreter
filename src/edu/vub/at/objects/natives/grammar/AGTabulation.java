@@ -66,10 +66,10 @@ public final class AGTabulation extends AGExpression implements ATTabulation {
 	 * @return the value of the indexed table slot.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATTable tab = tblExp_.meta_eval(ctx).base_asTable();
+		ATTable tab = tblExp_.meta_eval(ctx).asTable();
 		ATNumber idx = null;
 		try {
-			idx = idxExp_.meta_eval(ctx).base_asNumber();
+			idx = idxExp_.meta_eval(ctx).asNumber();
 		} catch (XTypeMismatch e) {
 			throw new XIllegalIndex(e.getMessage());
 		}
@@ -82,8 +82,8 @@ public final class AGTabulation extends AGExpression implements ATTabulation {
 	 * AGTBL(tbl,idx).quote(ctx) = AGTBL(tbl.quote(ctx),idx.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGTabulation(tblExp_.meta_quote(ctx).base_asExpression(),
-				               idxExp_.meta_quote(ctx).base_asExpression());
+		return new AGTabulation(tblExp_.meta_quote(ctx).asExpression(),
+				               idxExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

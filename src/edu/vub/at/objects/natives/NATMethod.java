@@ -139,11 +139,11 @@ public class NATMethod extends NATByCopy implements ATMethod {
 		return NATText.atValue("<method:"+name_.meta_print().javaValue+">");
 	}
 
-	public ATMethod base_asMethod() throws XTypeMismatch {
+	public ATMethod asMethod() throws XTypeMismatch {
 		return this;
 	}
 
-	public boolean base_isMethod() {
+	public boolean isMethod() {
 		return true;
 	}
 	

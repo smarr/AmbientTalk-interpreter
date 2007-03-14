@@ -79,7 +79,7 @@ public class NATField extends NATByRef implements ATField {
         return true;
     }
 
-	public ATField base_asField() throws XTypeMismatch {
+	public ATField asField() throws XTypeMismatch {
 		return this;
 	}
 	

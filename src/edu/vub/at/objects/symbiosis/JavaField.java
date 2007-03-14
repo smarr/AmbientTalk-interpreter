@@ -76,7 +76,7 @@ public final class JavaField extends NATByRef implements ATField {
 		return NATText.atValue("<java field:"+field_+">");
 	}
 	
-	public ATField base_asField() {
+	public ATField asField() {
 		return this;
 	}
 	

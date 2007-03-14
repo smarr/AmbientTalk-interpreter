@@ -80,7 +80,7 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 	 * AGASSFIELD(rcv,nam,val).quote(ctx) = AGASSFIELD(rcv.quote(ctx), nam.quote(ctx), val.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGAssignField(rcvExp_.meta_quote(ctx).base_asExpression(), fieldName_.meta_quote(ctx).base_asSymbol(), valueExp_.meta_quote(ctx).base_asExpression());
+		return new AGAssignField(rcvExp_.meta_quote(ctx).asExpression(), fieldName_.meta_quote(ctx).asSymbol(), valueExp_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

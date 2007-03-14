@@ -87,7 +87,7 @@ public class PrimitiveMethod extends NATMethod {
 			return NATText.atValue("<primitive body>");
 		}
 		
-		public ATBegin base_asBegin() throws XTypeMismatch {
+		public ATBegin asBegin() throws XTypeMismatch {
 			return this;
 		}
 		

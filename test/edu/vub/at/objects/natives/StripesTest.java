@@ -39,7 +39,7 @@ public class StripesTest extends AmbientTalkTest {
 	public void testParentlessStripe() throws InterpreterException {
 		assertTrue(stripeA_.base_getParentStripes().base_getLength().equals(NATNumber.ONE));
 		
-		ATStripe root = stripeA_.base_getParentStripes().base_at(NATNumber.ONE).base_asStripe();
+		ATStripe root = stripeA_.base_getParentStripes().base_at(NATNumber.ONE).asStripe();
 		assertEquals(NATStripe.OBJRootStripe._INSTANCE_, root);
 	}
 	

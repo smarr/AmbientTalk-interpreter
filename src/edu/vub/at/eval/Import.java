@@ -87,8 +87,8 @@ public final class Import {
 			  ATObject[] mappings = aliases.asNativeTable().elements_;
 			  for (int i = 0; i < mappings.length; i++) {
 				  // expecting tuples [ oldname, newname ]
-				  ATTable alias = mappings[i].base_asTable();
-				  aliasMap.put(alias.base_at(NATNumber.ONE).base_asSymbol(), alias.base_at(two).base_asSymbol());
+				  ATTable alias = mappings[i].asTable();
+				  aliasMap.put(alias.base_at(NATNumber.ONE).asSymbol(), alias.base_at(two).asSymbol());
 			  }  
 		  }		  
 		  return aliasMap;
@@ -106,7 +106,7 @@ public final class Import {
 			ATObject[] excludedNames = exclusions.asNativeTable().elements_;
 			for (int i = 0; i < excludedNames.length; i++) {
 			  // expecting symbols
-			  exclude.add(excludedNames[i].base_asSymbol());
+			  exclude.add(excludedNames[i].asSymbol());
 			}
 			  
 			return exclude;	
@@ -253,7 +253,7 @@ public final class Import {
 				 */
 
 				try {
-					if (hostObject.base_isCallFrame()) {
+					if (hostObject.isCallFrame()) {
 						NATClosure clo = new NATClosure(delegate, ctx.base_withLexicalEnvironment(delegateScope));
 						hostObject.meta_defineField(origMethodName, clo);
 					} else {

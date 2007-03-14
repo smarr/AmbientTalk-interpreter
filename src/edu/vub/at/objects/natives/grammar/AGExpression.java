@@ -40,7 +40,7 @@ import edu.vub.at.objects.natives.NATTable;
  */
 public abstract class AGExpression extends NATAbstractGrammar implements ATExpression {
 
-	public ATExpression base_asExpression() { return this; }
+	public ATExpression asExpression() { return this; }
 
     public ATTable meta_getStripes() throws InterpreterException {
     	return NATTable.of(NativeStripes._EXPRESSION_);
