@@ -35,6 +35,7 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -55,91 +56,104 @@ public class MirageTest extends AmbientTalkTest {
 		evalAndReturn("def let: clo { clo(); };");
 	}
 	
+	
 	/**
-	 * This test tests invariants with respect to the cloning of both intercessive mirrors and 
-	 * mirages in all possible forms.
+	 * This test verifies invariants with respect to the creation of mirages in AmbientTalk.
+	 * First of all, it tests the relationship between the original mirror and the mirage's
+	 * mirror (they should be non-identical yet cloned from each other).
 	 */
-	public void testMirageCloning() throws InterpreterException {
-		ATObject meta    = evalAndReturn(
-				"def meta := mirror: { nil }"); 
+	public void testMirageCreation() throws InterpreterException {
+		ATObject mirrorP = evalAndReturn(
+				"def mirrorP := mirror: { \n" +
+				"  def iAm := \"the original\"; \n" +
+				"  def init(@args) { \n" +
+				"    iAm := \"a clone\"; \n" +
+				"    super^init(@args); \n" +
+				"  } \n" +
+				"} \n");
+		ATObject baseP   = evalAndReturn(
+				"def baseP   := mirrorP.base;");
+		
+		// when creating a mirror, its base field is initialised to an empty mirage
+		assertEquals(baseP.getClass(), NATMirage.class);
+		evalAndCompareTo( // default objects have three primitve methods
+				"mirrorP.listMethods()",
+				"[<primitive method:new>, <primitive method:init>, <primitive method:==>]");
+		evalAndCompareTo( // default objects have one primitive field super
+				"mirrorP.listFields()",
+				"[<field:super>]");
+				
+		// when creating an ex nihilo object, the init is not called
+		evalAndCompareTo(
+				"mirrorP.iAm",
+				"\"the original\"");
+
 		ATObject subject = evalAndReturn(
 				"def subject := object: { \n" +
 				"  def field := `field; \n" +
 				"  def canonical() { nil }; \n" +
 				"  def keyworded: arg1 message: arg2 { nil }; \n" +
-				"} mirroredBy: meta; \n");
-		// test whether the new mirage has a clone of the mirror as parent
-		ATObject result = evalAndReturn(
-				"meta := reflect: subject;");
-		
-		assertNotSame(meta, result);
-		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);
-		
-		// For future comparisons wrt to cloning use the current mirror
-		meta = result;
-		
-		// Sending clone to an intercessive mirror clones that mirror
-		// as well as cloning the base object in that mirror
-		result = evalAndReturn(
-				"def cloneMirrored := meta.clone()");
-		
-		// Stratification & Cloning : result is a mirror, cloned from meta
-		assertTrue(result.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
-		assertNotSame(result, meta);
-		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);
-		
-		// For future comparisons wrt to cloning use the current mirror
-		meta = result;
-		
-		result = evalAndReturn(
-				"cloneMirrored.base");
-		
-		// Cloning : Base should be a mirage, cloned from subject
-		assertTrue(result instanceof NATMirage);
-		assertNotSame(result, subject);
-		assertTrue(result.meta_isCloneOf(subject).asNativeBoolean().javaValue);
-		
-		// For future comparisons wrt to cloning use the current base object
-		subject = result;
-		
-		// Cloning a mirror, created a clone of the mirror with an empty mirage
-		result = evalAndReturn(
-				"def cloned := clone: cloneMirrored");
-		
-		// Stratification & Cloning : result is a mirror, cloned from meta
-		assertTrue(result.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
-		assertNotSame(result, meta);
-		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);
+				"} mirroredBy: mirrorP; \n");
+		ATObject mirror  = evalAndReturn(
+				"def mirror  := reflect: subject;");
 
-		// For future comparisons wrt to cloning use the current mirror
-		meta = result;
-
-		result = evalAndReturn(
-				"subject := cloned.base");
-
-		// Mirror Cloning : Base should be a mirage, yet not cloned from subject
-		assertTrue(result instanceof NATMirage);
-		assertNotSame(result, subject);
-		assertFalse(result.meta_isCloneOf(subject).asNativeBoolean().javaValue);
+		// mirror should be a clone of the mirrorP prototype
+		assertNotSame(mirrorP, mirror);
+		assertTrue(mirror.meta_isCloneOf(mirrorP).asNativeBoolean().javaValue);
 		
-		// For future comparisons wrt to cloning use the current base object
-		subject = result;
-
-		result = evalAndReturn(
-				"subject := subject.new();");
+		// test for identical methods by printing the table of methods (both return a new table)
+		assertEquals( 
+				mirrorP.meta_listMethods().toString(),
+				mirror.meta_listMethods().toString());
 		
-		// Mirage.new() : Base should be a mirage, cloned from subject
-		assertTrue(result instanceof NATMirage);
-		assertNotSame(result, subject);
-		assertTrue(result.meta_isCloneOf(subject).asNativeBoolean().javaValue);
-		
-		result = evalAndReturn(
-				"reflect: subject;");
+		// the init method should have been called, which has set the iAm field
+		evalAndCompareTo(
+				"mirror.iAm",
+				"\"a clone\"");
+	}
+	
 
-		// Mirage.new() : Mirror should be a NATObject, with the mirror stripe which is cloned from the original mirror
-		assertTrue(result.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
-		assertNotSame(result, meta);
-		assertTrue(result.meta_isCloneOf(meta).asNativeBoolean().javaValue);	
+	/**
+	 * This test verifies invariants with respect to the cloning of custom mirrors in AmbientTalk.
+	 * First of all, it tests the relationship between the original mirror and the clone to ensure
+	 * they are proper clones of each other. Secondly, when cloning custom mirrors their base field
+	 * is also cloned.
+	 *  
+	 * @throws InterpreterException
+	 */	public void testCustomMirrorCloning() throws InterpreterException {
+		ATObject subject = evalAndReturn(
+				"def subject  := object: { \n" +
+				"  def field  := `field; \n" +
+				"  def canonical() { nil }; \n" +
+				"  def keyworded: arg1 message: arg2 { nil }; \n" +
+				"} mirroredBy: (mirror: { nil }); \n");
+		ATObject mirror  = evalAndReturn(
+				"def mirror   := reflect: subject;");
+		
+		// clone the mirror
+		ATObject mirrorC  = evalAndReturn(
+				"def mirrorC  := clone: mirror;");
+
+		// mirror should be a clone of the mirrorP prototype
+		assertNotSame(mirror, mirrorC);
+		assertTrue(mirrorC.meta_isCloneOf(mirror).asNativeBoolean().javaValue);
+		
+		// test for identical methods by printing the table of methods (both return a new table)
+		assertEquals( 
+				mirror.meta_listMethods().toString(),
+				mirrorC.meta_listMethods().toString());
+		
+		ATObject subjectC = evalAndReturn(
+				"def subjectC := mirrorC.base;");
+		
+		// mirror should be a clone of the mirrorP prototype
+		assertNotSame(subject, subjectC);
+		assertTrue(subjectC.meta_isCloneOf(subject).asNativeBoolean().javaValue);
+		
+		// test for identical methods by printing the table of methods (both return a new table)
+		assertEquals( 
+				subject.meta_listMethods().toString(),
+				subjectC.meta_listMethods().toString());
 
 	}
 	

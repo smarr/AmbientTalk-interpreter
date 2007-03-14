@@ -149,8 +149,15 @@ public class MirrorTest extends AmbientTalkTest {
 	 * mirrors on custom intercessive mirrors
 	 */
 	public void testReflectingOnIntercessiveMirrors() throws InterpreterException {
+		
+		
+		// When they are never instantiated the mirror is a direct child of the mirror root
+		// implying that their base object is the default base object, changes to this object
+		// can corrupt future mirrors. Therefore we explicitly instantiate the mirror which 
+		// clones the ObjectMirrorRoot and gives the mirror its own base object. 
 		ATObject meta = evalAndReturn(
-				"def meta := mirror: { nil }; \n");
+		//		"def meta := mirror: { nil }; \n");
+		 		"def meta := reflect: (object: { nil } mirroredBy: (mirror: { nil })); \n");
 		assertTrue(meta.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
 		evalAndCompareTo(
 				"def metaMeta := reflect: meta;",
