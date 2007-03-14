@@ -34,6 +34,9 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUserDefined;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 public class MirrorTest extends AmbientTalkTest {
@@ -90,34 +93,34 @@ public class MirrorTest extends AmbientTalkTest {
 				"<mirror on:" + subject.toString() + ">");
 		evalAndCompareTo(
 				"mirror.dynamicParent;",
-				"<mirror on:nil>");
+				NATNil._INSTANCE_);
 		evalAndCompareTo(
 				"mirror.listFields();",
-				"<mirror on:[<field:super>, <field:field>]>");
+				"[<field:super>, <field:field>]");
 		evalAndCompareTo(
 				"mirror.listMethods();",
-				"<mirror on:[<method:keyworded:message:>, <primitive method:new>, <primitive method:init>, <primitive method:==>, <method:canonical>]>");
+				"[<method:keyworded:message:>, <primitive method:new>, <primitive method:init>, <primitive method:==>, <method:canonical>]");
 		evalAndCompareTo(
 				"mirror.eval(context);",
-				"<mirror on:" + subject.toString() + ">");
+				subject);
 		evalAndCompareTo(
 				"mirror.quote(context);",
-				"<mirror on:" + subject.toString() + ">");
+				subject);
 		evalAndCompareTo(
 				"mirror.print();",
-				"<mirror on:\"" + subject.toString() + "\">");
+				"\"" + subject.toString() + "\"");
 		evalAndCompareTo(
 				"mirror.isRelatedTo(nil);",
-				"<mirror on:true>");
+				NATBoolean._TRUE_);
 		evalAndCompareTo(
 				"mirror.isCloneOf(object: { nil });",
-				"<mirror on:false>");
+				NATBoolean._FALSE_);
 		evalAndCompareTo(
 				"mirror.getStripes();",
-				"<mirror on:[]>");
+				NATTable.EMPTY);
 		evalAndCompareTo(
 				"mirror.isStripedWith(Mirror);",
-				"<mirror on:false>");
+				NATBoolean._FALSE_);
 
 	}
 
@@ -132,7 +135,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"def metaMeta := reflect: meta;",
 				"<mirror on:<mirror on:false>>");
 		evalAndCompareTo(
-				"def select := metaMeta.select(meta, `select).base.base",
+				"def select := metaMeta.select(meta, `select)",
 				"<native closure:select>");
 		evalAndCompareTo(
 				"def succeeded := select(false, `not)(); \n",
@@ -153,7 +156,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"def metaMeta := reflect: meta;",
 				"<mirror on:"+ meta +">");
 		evalAndCompareTo(
-				"def defineField := metaMeta.select(meta, `defineField).base.base",
+				"def defineField := metaMeta.select(meta, `defineField)",
 				"<native closure:defineField>");
 		evalAndCompareTo(
 				"defineField(`boolValue, true); \n" +
@@ -186,42 +189,6 @@ public class MirrorTest extends AmbientTalkTest {
 		assertEquals("<mirror on:"+ base.toString() + ">", meta.toString());
 		
 	}
-	/**
-	 * This test creates a mirror and attempts to use it in a non-stratified way.
-	 * The test assumes failure if these attempts succeed, and continues if they
-	 * result in the proper exception. The following tests are performed :
-	 * 
-	 * - Invoking base-level reflectee behaviour on a mirror
-	 * - Return values of meta_operations are mirrors
-	 * - Field selection from a mirror results in a mirror
-	 * - TODO Field assignment on a mirror with a non-mirror value
-	 *
-	 */
-	public void testStratification() { 
-		
-		evalAndReturn("def mirror  := reflect: true;");
-		
-		// Invoking base-level reflectee behaviour on a mirror. 
-		// Throws XSelectorNotFound as: 
-		// - the method meta_ifTrue on NATBoolean does not exist
-		// - the method base_ifTrue on NATMirror does not exist
-		evalAndTestException(
-				"mirror.ifTrue: { nil }; \n",
-				XSelectorNotFound.class);
-		
-		// Mirror consistency : return values are mirrors too.
-		evalAndReturn(
-				"def responds    := mirror.respondsTo( symbol(\"ifTrue:\") );" +
-				"(is: responds stripedWith: Mirror)" +
-				"   .ifFalse: { at.unit.fail(\"Return value is not a mirror\") };");
-		
-		// Throws XSelectorNotFound as responds is a mirror and: 
-		// - the method meta_ifTrue on NATBoolean does not exist
-		// - the method base_ifTrue on NATMirror does not exist
-		evalAndTestException(
-				"responds.ifTrue: { at.unit.fail(\"Can invoke base-level methods through a mirror\") };",
-				XSelectorNotFound.class);		
-	};
 	
 	
 //	/**
@@ -298,8 +265,7 @@ public class MirrorTest extends AmbientTalkTest {
 		evalAndReturn(
 				"def trueMirror  := at.mirrors.Factory.createMirror(true);" +
 				"def responds    := trueMirror.respondsTo( symbol( \"ifTrue:\" ) );" +
-				"def base        := responds.base;" +
-				"base.ifFalse: { at.unit.fail(\"Incorrect Mirror Invocation\"); }");
+				"responds.ifFalse: { at.unit.fail(\"Incorrect Mirror Invocation\"); }");
 	}
 			
 	public void testMirrorFieldAccess() {
@@ -312,7 +278,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"  reflect: extendedMirroredClosure");
 		
 		evalAndTestException(
-				"intercessiveMirror.dynamicParent.base.apply([]); \n",
+				"intercessiveMirror.dynamicParent.apply([]); \n",
 				XUserDefined.class);
 
 //		Can no longer set the mirror of a mirage the final 1-1 mapping is now stricly enforced
@@ -346,34 +312,34 @@ public class MirrorTest extends AmbientTalkTest {
 		evalAndCompareTo(
 				"def test := object: { nil }; \n" +
 				"(reflect: test).listMethods(); \n",
-				"<mirror on:[<primitive method:new>, <primitive method:init>, <primitive method:==>]>");
+				"[<primitive method:new>, <primitive method:init>, <primitive method:==>]");
 		evalAndCompareTo(
 				"def testMirrored := object: { nil } mirroredBy: (mirror: { nil }); \n" +
 				"(reflect: testMirrored).listMethods(); \n",
-				"<mirror on:[<primitive method:new>, <primitive method:init>, <primitive method:==>]>");
+				"[<primitive method:new>, <primitive method:init>, <primitive method:==>]");
 		evalAndCompareTo(
 				"test := object: { \n" +
 				"  def init(); \n" +
 				"}; \n" +
 				"(reflect: test).listMethods(); \n",
-				"<mirror on:[<primitive method:new>, <method:init>, <primitive method:==>]>");
+				"[<primitive method:new>, <method:init>, <primitive method:==>]");
 		evalAndCompareTo(
 				"testMirrored := object: { \n" +
 				"  def init(); \n" +
 				"} mirroredBy: (mirror: { nil });  \n" +
 				"(reflect: testMirrored).listMethods(); \n",
-				"<mirror on:[<primitive method:new>, <method:init>, <primitive method:==>]>");
+				"[<primitive method:new>, <method:init>, <primitive method:==>]");
 		evalAndCompareTo(
 				"def test.hello() { \"hello world\" }; \n" +
 				"(reflect: test).listMethods(); \n",
-				"<mirror on:[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]>");
+				"[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]");
 		evalAndCompareTo(
 				"def testMirrored.hello() { \"hello world\" }; \n" +
 				"(reflect: test).listMethods(); \n",
-				"<mirror on:[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]>");
+				"[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]");
 //		evalAndCompareTo(
 //				"(reflect: test).defineMethod(`hola, `(\"hola mundo, estoy aqui\")); \n",
-//				"<mirror on:[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]>");
+//				"[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]");
 	}
 	
 	/**
