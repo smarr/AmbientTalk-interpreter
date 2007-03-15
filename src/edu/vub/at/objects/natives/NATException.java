@@ -75,4 +75,8 @@ public class NATException extends NATByCopy {
     public ATTable meta_getStripes() throws InterpreterException {
     	return NATTable.of(wrappedException_.getStripeType());
     }
+    
+    public NATText meta_print() throws InterpreterException {
+    	return NATText.atValue("<exception:"+wrappedException_+">");
+    }
 }

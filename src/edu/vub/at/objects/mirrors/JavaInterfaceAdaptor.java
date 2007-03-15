@@ -142,13 +142,13 @@ public class JavaInterfaceAdaptor {
 			throw new XIllegalArgument("Illegal argument for native method "+Reflection.downSelector(javaMethod.getName()) + ": " + e.getMessage(), e);
 		} catch (InvocationTargetException e) {
 			// the invoked method threw an exception
-			if (e.getCause() instanceof InterpreterException)
-				throw (InterpreterException) e.getCause();
-			else if (e.getCause() instanceof Signal) {
-			    throw (Signal) e.getCause();	
+			if (e.getTargetException() instanceof InterpreterException)
+				throw (InterpreterException) e.getTargetException();
+			else if (e.getTargetException() instanceof Signal) {
+			    throw (Signal) e.getTargetException();	
 			} else {
 				e.printStackTrace();
-				throw new XReflectionFailure("Native method "+Reflection.downSelector(javaMethod.getName())+" threw internal exception", e.getCause());
+				throw new XReflectionFailure("Native method "+Reflection.downSelector(javaMethod.getName())+" threw internal exception", e.getTargetException());
 		    }
 		}
 	}
@@ -176,10 +176,10 @@ public class JavaInterfaceAdaptor {
 					continue; // private or protected constructor, may find another one
 				} catch (InvocationTargetException e) {
 					// an exception was raised by the constructor
-					if (e.getCause() instanceof InterpreterException)
-						throw ((InterpreterException) e.getCause());
-					else if (e.getCause() instanceof Signal) {
-					    throw (Signal) e.getCause();	
+					if (e.getTargetException() instanceof InterpreterException)
+						throw ((InterpreterException) e.getTargetException());
+					else if (e.getTargetException() instanceof Signal) {
+					    throw (Signal) e.getTargetException();	
 					} else // fatal exception
 						throw new XIllegalOperation("Instance creation of type " + jClass.getName() + " failed: " + e.getMessage());
 				}

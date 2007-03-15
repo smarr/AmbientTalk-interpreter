@@ -559,7 +559,14 @@ public final class Symbiosis {
 			// sometimes this may happen when accessing inner classes, try again with an interface method:
 			Method interfaceMethod = toInterfaceMethod(javaMethod);
 			if (interfaceMethod == null) { // no success
-			    throw new XReflectionFailure("Java method "+Reflection.downSelector(javaMethod.getName()) + " is not accessible.", e);
+				// try to perform the call without access protection
+				if (!javaMethod.isAccessible()) {
+					javaMethod.setAccessible(true);
+					return invokeUniqueSymbioticMethod(symbiont, javaMethod, jArgs);
+				} else {
+					// if access protection was already disabled, bail out
+		            throw new XReflectionFailure("Java method "+Reflection.downSelector(javaMethod.getName()) + " is not accessible.", e);
+				}
 			} else {
 				return invokeUniqueSymbioticMethod(symbiont, interfaceMethod, jArgs);
 			}
@@ -568,12 +575,12 @@ public final class Symbiosis {
 			throw new RuntimeException("[broken at2java conversion?] Illegal argument for Java method "+javaMethod.getName(), e);
 		} catch (InvocationTargetException e) {
 			// the invoked method threw an exception
-			if (e.getCause() instanceof InterpreterException)
-				throw (InterpreterException) e.getCause();
+			if (e.getTargetException() instanceof InterpreterException)
+				throw (InterpreterException) e.getTargetException();
 			else if (e.getCause() instanceof Signal) {
-			    throw (Signal) e.getCause();	
+			    throw (Signal) e.getTargetException();	
 			} else {
-				throw new XJavaException(symbiont, javaMethod, e.getCause());
+				throw new XJavaException(symbiont, javaMethod, e.getTargetException());
 		    }
 		}
 	}
@@ -592,10 +599,10 @@ public final class Symbiosis {
 			throw new XNotInstantiatable(ctor.getDeclaringClass(), e);
 		} catch (InvocationTargetException e) {
 			// the invoked method threw an exception
-			if (e.getCause() instanceof InterpreterException)
-				throw (InterpreterException) e.getCause();
-			else if (e.getCause() instanceof Signal) {
-			    throw (Signal) e.getCause();	
+			if (e.getTargetException() instanceof InterpreterException)
+				throw (InterpreterException) e.getTargetException();
+			else if (e.getTargetException() instanceof Signal) {
+			    throw (Signal) e.getTargetException();	
 			} else {
 				throw new XJavaException(null, ctor, e.getCause());
 		    }
