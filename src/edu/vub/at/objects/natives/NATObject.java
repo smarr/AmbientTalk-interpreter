@@ -661,7 +661,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		if (stripes_ == _NO_STRIPES_) {
+		if (stripes_.length == 0) {
 			return NATText.atValue("<object:"+this.hashCode()+">");
 		} else {
 			return NATText.atValue("<object:"+this.hashCode()+
@@ -746,9 +746,13 @@ public class NATObject extends NATCallframe implements ATObject {
     public ATTable meta_getStripes() throws InterpreterException {
     	// make a copy of the internal stripes array to ensure that the stripes
     	// of the object are immutable. Tables allow assignment!
-    	ATStripe[] stripes = new ATStripe[stripes_.length];
-    	System.arraycopy(stripes_, 0, stripes, 0, stripes_.length);
-    	return NATTable.atValue(stripes);
+    	if (stripes_.length == 0) {
+    		return NATTable.EMPTY;
+    	} else { 
+    		ATStripe[] stripes = new ATStripe[stripes_.length];
+        	System.arraycopy(stripes_, 0, stripes, 0, stripes_.length);
+        	return NATTable.atValue(stripes);
+    	}
     }
     
     
@@ -784,23 +788,6 @@ public class NATObject extends NATCallframe implements ATObject {
     		return super.meta_resolve();
     	}
     }
-
-    /* ---------------------
-     * -- Mirror Protocol --
-     * --------------------- */
-    
-    /*public ATObject base_getBase() throws InterpreterException {
-		return meta_lookup(AGSymbol.jAlloc("base"));
-	}
-    
-	public void setBase(NATMirage base) throws InterpreterException {
-		if(isFlagSet(_IS_MIRROR_FLAG_)) {
-			BaseField field = (BaseField)meta_grabField(AGSymbol.jAlloc("base"));
-			field.initialiseField(base);
-		} else {
-			throw new XUnassignableField("base");
-		}
-	}*/
     
     /* ---------------------------------------
 	 * -- Conversion and Testing Protocol   --

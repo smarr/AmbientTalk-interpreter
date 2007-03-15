@@ -353,7 +353,7 @@ public class ELActor extends EventLoop {
 						ATObject remoteService = remoteServicePkt.unpack();
 						// myhandler<-apply([remoteService])
 						myHandler.meta_receive(
-							new NATAsyncMessage(myHandler, myHandler, Evaluator._APPLY_,
+							NATAsyncMessage.createAsyncMessage(myHandler, myHandler, Evaluator._APPLY_,
 								NATTable.atValue(new ATObject[] {
 									NATTable.atValue(new ATObject[] { remoteService })
 								})

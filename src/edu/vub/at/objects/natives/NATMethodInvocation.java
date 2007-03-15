@@ -32,9 +32,13 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
+
+import java.util.LinkedList;
+import java.util.Vector;
 
 /**
  * Instances of the class NATMethodInvocation represent first-class method invocations.
@@ -46,8 +50,22 @@ import edu.vub.at.objects.grammar.ATSymbol;
 public final class NATMethodInvocation extends NATMessage implements ATMethodInvocation {
 
 	public NATMethodInvocation(ATSymbol sel, ATTable arg) throws InterpreterException {
-		super(sel, arg, NativeStripes._METHODINV_);
+		super(sel, arg, new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._METHODINV_ });
 	}
+	
+    /**
+     * Copy constructor.
+     */
+    private NATMethodInvocation(FieldMap map,
+            Vector state,
+            LinkedList originalCustomFields,
+            MethodDictionary methodDict,
+            ATObject dynamicParent,
+            ATObject lexicalParent,
+            byte flags,
+            ATStripe[] stripes) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
+    }
 
 	/**
 	 * To evaluate a method invocation, invoke the method corresponding to the encapsulated
@@ -61,6 +79,24 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<method invocation:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
+	}
+	
+	protected NATObject createClone(FieldMap map,
+			Vector state,
+			LinkedList originalCustomFields,
+			MethodDictionary methodDict,
+			ATObject dynamicParent,
+			ATObject lexicalParent,
+			byte flags,
+			ATStripe[] stripes) throws InterpreterException {
+		return new NATMethodInvocation(map,
+				state,
+				originalCustomFields,
+				methodDict,
+				dynamicParent,
+				lexicalParent,
+				flags,
+				stripes);
 	}
 	
 }

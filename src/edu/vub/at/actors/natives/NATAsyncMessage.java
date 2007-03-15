@@ -35,16 +35,22 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
+import edu.vub.at.objects.natives.FieldMap;
+import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATMessage;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+
+import java.util.LinkedList;
+import java.util.Vector;
 
 /**
  * Instances of the class NATAsyncMessage represent first-class asynchronous messages.
@@ -74,21 +80,78 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 	
     /**
      * @param sdr the sender of the asynchronous message
+     * @param rcv the receiver of the message, fill in 'nil' if none is determined yet
      * @param sel the selector of the asynchronous message
      * @param arg the arguments of the asynchronous message
+     * @param stripes the stripes for the message. Isolate and AsyncMessage stripes are automatically appended.
      */
-    public NATAsyncMessage(ATObject sender, ATSymbol sel, ATTable arg) throws InterpreterException {
-        this(sender, NATNil._INSTANCE_, sel, arg);
+    public static NATAsyncMessage createAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg, ATTable stripes) throws InterpreterException {
+		if (stripes == NATTable.EMPTY) {
+			return createAsyncMessage(sdr, rcv, sel, arg);
+		}
+    	
+        ATObject[] unwrapped = stripes.asNativeTable().elements_;
+		ATStripe[] fullstripes = new ATStripe[unwrapped.length+2];
+		for (int i = 0; i < fullstripes.length; i++) {
+			fullstripes[i] = unwrapped[i].asStripe();
+		}
+		fullstripes[fullstripes.length+1] = NativeStripes._ISOLATE_;
+		fullstripes[fullstripes.length+2] = NativeStripes._ASYNCMSG_;
+        return new NATAsyncMessage(sdr, rcv, sel, arg, fullstripes);
     }
     
-    public NATAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
-    	super(sel, arg, NativeStripes._ASYNCMSG_);
+    /**
+     * Version without stripes.
+     */
+    public static NATAsyncMessage createAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
+        return new NATAsyncMessage(sdr, rcv, sel, arg, new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._ASYNCMSG_ });
+    }
+    
+    private NATAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg, ATStripe[] stripes) throws InterpreterException {
+    	super(sel, arg, stripes);
         super.meta_defineField(_SENDER_, sdr);
         super.meta_defineField(_RECEIVER_, rcv);
         super.meta_addMethod(_PRIM_PRO_);
     }
+    
+    /**
+     * Copy constructor.
+     */
+    private NATAsyncMessage(FieldMap map,
+            Vector state,
+            LinkedList originalCustomFields,
+            MethodDictionary methodDict,
+            ATObject dynamicParent,
+            ATObject lexicalParent,
+            byte flags,
+            ATStripe[] stripes) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
+    }
+    
+    /**
+     * If cloning is not adapted for asynchronous messages, the result of cloning a
+     * NATAsyncMessage is a NATObject, which is fine except that NATObject does not know
+     * of prim_sendTo!
+     */
+    protected NATObject createClone(FieldMap map,
+    		                        Vector state,
+    		                        LinkedList originalCustomFields,
+    		                        MethodDictionary methodDict,
+    		                        ATObject dynamicParent,
+    		                        ATObject lexicalParent,
+    		                        byte flags,
+    		                        ATStripe[] stripes) throws InterpreterException {
+		return new NATAsyncMessage(map,
+				                   state,
+				                   originalCustomFields,
+				                   methodDict,
+				                   dynamicParent,
+				                   lexicalParent,
+				                   flags,
+				                   stripes);
+	}
 
-    public ATObject base_getSender() throws InterpreterException {
+	public ATObject base_getSender() throws InterpreterException {
     	return super.meta_select(this, _SENDER_);
     }
     

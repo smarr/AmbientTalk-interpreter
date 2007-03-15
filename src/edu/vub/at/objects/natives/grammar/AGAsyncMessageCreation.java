@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 
 /**
@@ -58,7 +59,7 @@ public class AGAsyncMessageCreation extends AGMessageCreation {
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		return OBJLexicalRoot._INSTANCE_.base_getActor().base_createMessage(
 				ctx.base_getSelf(), this.base_getSelector(),
-				Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
+				Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx), NATTable.EMPTY);
 	}
 	
 	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {

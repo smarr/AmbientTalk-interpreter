@@ -35,10 +35,12 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+
+import java.util.LinkedList;
+import java.util.Vector;
 
 /**
  * Instances of the class NATMessage represent first-class messages.
@@ -67,14 +69,31 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 		}
 	};
 	
-	protected NATMessage(ATSymbol sel, ATTable arg, ATStripe stripe) throws InterpreterException {
-		// tag object as a Message and as an Isolate
-		super(new ATStripe[] { NativeStripes._ISOLATE_, stripe });
+	/**
+	 * @param stripes expects that the Isolate stripe is already present in the stripes array,
+	 * as well as the appropriate Message substripe!
+	 */
+	protected NATMessage(ATSymbol sel, ATTable arg, ATStripe[] stripes) throws InterpreterException {
+		super(stripes);
 		super.meta_defineField(_SELECTOR_, sel);
 		super.meta_defineField(_ARGUMENTS_, arg);
 		super.meta_addMethod(_PRIM_SND_);
 	}
 
+    /**
+     * Copy constructor.
+     */
+    protected NATMessage(FieldMap map,
+            Vector state,
+            LinkedList originalCustomFields,
+            MethodDictionary methodDict,
+            ATObject dynamicParent,
+            ATObject lexicalParent,
+            byte flags,
+            ATStripe[] stripes) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
+    }
+	
 	public ATSymbol base_getSelector() throws InterpreterException {
 		return super.meta_select(this, _SELECTOR_).asSymbol();
 	}

@@ -137,8 +137,8 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
      * -- Language Construct to Actor Protocol --
      * ------------------------------------------ */
 
-	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments) throws InterpreterException {
-		return new NATAsyncMessage(sender, selector, arguments);
+	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments, ATTable stripes) throws InterpreterException {
+		return NATAsyncMessage.createAsyncMessage(sender, NATNil._INSTANCE_, selector, arguments, stripes);
 	}
 	
 	public ATObject base_createMirror(ATObject reflectee) throws InterpreterException {

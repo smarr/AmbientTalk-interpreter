@@ -110,7 +110,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		if (!connected_) {
 			try {
 
-				owner_.event_acceptSelfSend(new NATAsyncMessage(listener,
+				owner_.event_acceptSelfSend(NATAsyncMessage.createAsyncMessage(listener,
 						listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
 			} catch (InterpreterException e) {
 				Logging.RemoteRef_LOG.error(
@@ -278,7 +278,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 				ATObject listener = (ATObject) reconnectedIter.next();
 				try {
 					owner_.event_acceptSelfSend(
-							new NATAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
+							NATAsyncMessage.createAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
 				} catch (InterpreterException e) {
 					Logging.RemoteRef_LOG.error("error invoking when:reconnected: listener", e);
 				}
@@ -297,7 +297,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 				ATObject listener = (ATObject) disconnectedIter.next();
 				try {
 					owner_.event_acceptSelfSend(
-							new NATAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
+							NATAsyncMessage.createAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
 				} catch (InterpreterException e) {
 					Logging.RemoteRef_LOG.error("error invoking when:disconnected: listener", e);
 				}

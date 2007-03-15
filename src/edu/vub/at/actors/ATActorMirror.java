@@ -71,9 +71,12 @@ public interface ATActorMirror extends ATObject {
 	 * message does not have a receiver yet. This field will be set once the message
 	 * is actually being sent, a fact which can be intercepted by overriding the sendTo
 	 * base-level method.
-	 * @throws InterpreterException 
+	 * @param sender the object that is creating the message
+	 * @param selector the name of the method to trigger remotely
+	 * @param arguments the actual arguments of the message
+	 * @param stripes the stripes with which the message will be born
 	 */
-	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments) throws InterpreterException;
+	public ATAsyncMessage base_createMessage(ATObject sender, ATSymbol selector, ATTable arguments, ATTable stripes) throws InterpreterException;
 	
 	/**
 	 * Creates a mirror on the given object. This method serves as the 'mirror factory'

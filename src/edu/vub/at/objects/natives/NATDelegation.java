@@ -32,10 +32,14 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+
+import java.util.LinkedList;
+import java.util.Vector;
 
 /**
  * Instances of the class NATMethodInvocation represent first-class method invocations.
@@ -49,9 +53,23 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 	private final static AGSymbol _DELEGATOR_ = AGSymbol.jAlloc("delegator");
 	
 	public NATDelegation(ATObject delegator, ATSymbol sel, ATTable arg) throws InterpreterException {
-		super(sel, arg, NativeStripes._METHODINV_);
+		super(sel, arg, new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._METHODINV_ });
 		super.meta_defineField(_DELEGATOR_, delegator);
 	}
+	
+    /**
+     * Copy constructor.
+     */
+    private NATDelegation(FieldMap map,
+            Vector state,
+            LinkedList originalCustomFields,
+            MethodDictionary methodDict,
+            ATObject dynamicParent,
+            ATObject lexicalParent,
+            byte flags,
+            ATStripe[] stripes) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
+    }
 
 	/**
 	 * To evaluate a delegating message send, invoke the method corresponding to the encapsulated
@@ -66,6 +84,24 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<delegation:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
+	}
+	
+	protected NATObject createClone(FieldMap map,
+			Vector state,
+			LinkedList originalCustomFields,
+			MethodDictionary methodDict,
+			ATObject dynamicParent,
+			ATObject lexicalParent,
+			byte flags,
+			ATStripe[] stripes) throws InterpreterException {
+		return new NATDelegation(map,
+				state,
+				originalCustomFields,
+				methodDict,
+				dynamicParent,
+				lexicalParent,
+				flags,
+				stripes);
 	}
 	
 }
