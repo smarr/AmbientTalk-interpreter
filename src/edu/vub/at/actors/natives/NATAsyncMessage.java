@@ -92,11 +92,11 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     	
         ATObject[] unwrapped = stripes.asNativeTable().elements_;
 		ATStripe[] fullstripes = new ATStripe[unwrapped.length+2];
-		for (int i = 0; i < fullstripes.length; i++) {
+		for (int i = 0; i < unwrapped.length; i++) {
 			fullstripes[i] = unwrapped[i].asStripe();
 		}
-		fullstripes[fullstripes.length] = NativeStripes._ISOLATE_;
-		fullstripes[fullstripes.length+1] = NativeStripes._ASYNCMSG_;
+		fullstripes[unwrapped.length] = NativeStripes._ISOLATE_;
+		fullstripes[unwrapped.length+1] = NativeStripes._ASYNCMSG_;
         return new NATAsyncMessage(sdr, rcv, sel, arg, fullstripes);
     }
     
