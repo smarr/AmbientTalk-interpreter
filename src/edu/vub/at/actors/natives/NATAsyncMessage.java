@@ -95,8 +95,8 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 		for (int i = 0; i < fullstripes.length; i++) {
 			fullstripes[i] = unwrapped[i].asStripe();
 		}
-		fullstripes[fullstripes.length+1] = NativeStripes._ISOLATE_;
-		fullstripes[fullstripes.length+2] = NativeStripes._ASYNCMSG_;
+		fullstripes[fullstripes.length] = NativeStripes._ISOLATE_;
+		fullstripes[fullstripes.length+1] = NativeStripes._ASYNCMSG_;
         return new NATAsyncMessage(sdr, rcv, sel, arg, fullstripes);
     }
     
