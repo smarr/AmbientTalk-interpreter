@@ -230,6 +230,9 @@ public class ELActor extends EventLoop {
 					// pass far ref to behaviour to creator actor who is waiting for this
 					future.resolve(receptionists_.exportObject(behaviour_));
 					
+					// initialize lexically visible fields
+					initSharedFields();
+
 					ATTable params = parametersPkt.unpack().asTable();
 					ATMethod initCode = initcodePkt.unpack().asMethod();
 					
@@ -238,10 +241,8 @@ public class ELActor extends EventLoop {
 					
 					// go on to initialize the root and all lexically visible fields
 					initRootObject();
-					initSharedFields();
 				} catch (InterpreterException e) {
-					if (!future.isDetermined())
-					  future.ruin(e);
+					Logging.Actor_LOG.error(behaviour_ + ": could not initialize actor behaviour", e);
 				}
 			}
 		});
