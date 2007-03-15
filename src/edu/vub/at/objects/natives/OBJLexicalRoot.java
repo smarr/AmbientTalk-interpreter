@@ -237,9 +237,9 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
-	 * mirrorroot (the default mirror on objects)
+	 * defaultMirror (the default mirror on objects)
 	 */
-	public ATObject base_getMirrorroot() {
+	public ATObject base_getDefaultMirror() {
 		return Evaluator.getMirrorRoot();
 	}
 	
@@ -515,7 +515,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_object_(ATClosure code) throws InterpreterException {
 		// TODO: delegate to actor mirror?
-		return base_object_childOf_extends_stripedWith_mirroredBy_(code, NATNil._INSTANCE_, NATBoolean._FALSE_ /* SHARES-A link */, NATTable.EMPTY, base_getMirrorroot());
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, NATNil._INSTANCE_, NATBoolean._FALSE_ /* SHARES-A link */, NATTable.EMPTY, base_getDefaultMirror());
 	}
 	
 	/**
@@ -534,12 +534,12 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_extend_with_(ATObject parent, ATClosure code) throws InterpreterException {
 		// TODO: delegate to actor mirror?
-		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._TRUE_ /* IS-A link */, NATTable.EMPTY, base_getMirrorroot());
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._TRUE_ /* IS-A link */, NATTable.EMPTY, base_getDefaultMirror());
 	}
 	
 	public ATObject base_extend_with_stripedWith_(ATObject parent, ATClosure code, ATTable stripes) throws InterpreterException {
 		// TODO: delegate to actor mirror?
-		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._TRUE_ /* IS-A link */, stripes, base_getMirrorroot());
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._TRUE_ /* IS-A link */, stripes, base_getDefaultMirror());
 	}
 	
 	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, ATObject mirror) throws InterpreterException {
@@ -568,12 +568,12 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_share_with_(ATObject parent, ATClosure code) throws InterpreterException {
 		// TODO: delegate to actor mirror?
-		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._FALSE_ /* SHARES-A link */, NATTable.EMPTY, base_getMirrorroot());
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._FALSE_ /* SHARES-A link */, NATTable.EMPTY, base_getDefaultMirror());
 	}
 
 	public ATObject base_share_with_stripedWith_(ATObject parent, ATClosure code, ATTable stripes) throws InterpreterException {
 		// TODO: delegate to actor mirror?
-		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._FALSE_ /* SHARES-A link */, stripes, base_getMirrorroot());
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, parent, NATBoolean._FALSE_ /* SHARES-A link */, stripes, base_getDefaultMirror());
 	}
 	
 	public ATObject base_share_with_mirroredBy_(ATObject parent, ATClosure code, ATObject mirror) throws InterpreterException {
@@ -593,7 +593,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_object_stripedWith_(ATClosure code, ATTable stripes) throws InterpreterException {
 		// TODO: delegate to actor mirror?
-		return base_object_childOf_extends_stripedWith_mirroredBy_(code, NATNil._INSTANCE_, NATBoolean._FALSE_ /* SHARES-A link */, stripes, base_getMirrorroot());
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, NATNil._INSTANCE_, NATBoolean._FALSE_ /* SHARES-A link */, stripes, base_getDefaultMirror());
 	}
 	
 	/**
@@ -622,7 +622,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_mirror_(ATClosure code) throws InterpreterException {
 		// TODO: delegate to actor mirror?
-		return base_object_childOf_extends_stripedWith_mirroredBy_(code, base_getMirrorroot(), NATBoolean._TRUE_ /* IS-A link */, NATTable.EMPTY, base_getMirrorroot());
+		return base_object_childOf_extends_stripedWith_mirroredBy_(code, base_getDefaultMirror(), NATBoolean._TRUE_ /* IS-A link */, NATTable.EMPTY, base_getDefaultMirror());
 	}
 	
 	/**
@@ -680,36 +680,6 @@ public final class OBJLexicalRoot extends NATByCopy {
 		newObject.initializeWithCode(code);
 		return newObject;
 	}
-	
-//	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
-//		
-//		// Initialise a new pair of mirror-mirage : note that we don't use clone here
-//		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
-//		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._IS_A_);
-//		mirrorClone.setBase(newMirage);
-//		
-//		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-//				code.base_getMethod().base_getParameters(),
-//				code.base_getContext());
-//		code.base_applyInScope(copiedBindings, newMirage);
-//		
-//		return newMirage;
-//	}
-//	
-//	public ATObject base_share_with_mirroredBy_(ATObject parent, ATClosure code, NATIntercessiveMirror mirror) throws InterpreterException {
-//		
-//		// Initialise a new pair of mirror-mirage : note that we don't use clone here
-//		NATIntercessiveMirror mirrorClone = mirror.magic_clone();
-//		NATMirage newMirage = new NATMirage(parent, code.base_getContext().base_getLexicalScope(), mirrorClone, NATObject._SHARES_A_);
-//		mirrorClone.setBase(newMirage);
-//		
-//		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-//				code.base_getMethod().base_getParameters(),
-//				code.base_getContext());
-//		code.base_applyInScope(copiedBindings, newMirage);
-//		
-//		return newMirage;
-//	}
 	
 	/**
 	 * The reflect: primitive, which returns a mirror on an object.
@@ -961,13 +931,14 @@ public final class OBJLexicalRoot extends NATByCopy {
 		return obj.meta_print();
 	}
 	
-	// custom implementation of the default object methods == and new
-	// the reason for this custom implementation: during the execution
-	// of these methods, 'this' should refer to the global lexical scope object (the root),
-	// not to the OBJLexicalRoot instance.
-	// hence, when invoking one of these methods lexically, the receiver is always 'root'
-	// For example, "==(obj)" is equivalent to "root == obj" (or "root.==(obj)")
-
+	/**
+	 * custom implementation of the default object methods == and new
+	 * the reason for this custom implementation: during the execution
+	 * of these methods, 'this' should refer to the global lexical scope object (the root),
+	 * not to the OBJLexicalRoot instance.
+	 * hence, when invoking one of these methods lexically, the receiver is always 'root'
+	 * For example, "==(obj)" is equivalent to "root == obj" (or "root.==(obj)")
+	 */
     public ATBoolean base__opeql__opeql_(ATObject comparand) {
         return Evaluator.getGlobalLexicalScope().base__opeql__opeql_(comparand);
     }
@@ -984,7 +955,7 @@ public final class OBJLexicalRoot extends NATByCopy {
      * silently returning the root itself.
      */
     public ATObject base_new(ATObject[] initargs) throws InterpreterException {
-    	    // root.new(@initargs)
+    	// root.new(@initargs)
 	    return Evaluator.getGlobalLexicalScope().base_new(initargs);
     }
     

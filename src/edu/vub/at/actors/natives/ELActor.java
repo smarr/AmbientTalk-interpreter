@@ -274,6 +274,8 @@ public class ELActor extends EventLoop {
 				performAccept(msg);
 			  } catch (InterpreterException e) {
 				Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
+			  } catch (RuntimeException e) {
+				  throw e;
 			  }
 		    }
 		});
