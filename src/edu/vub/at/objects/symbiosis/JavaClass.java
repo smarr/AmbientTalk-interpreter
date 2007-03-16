@@ -56,7 +56,7 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.lang.ref.SoftReference;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 
 /**
  * A JavaClass instance represents a Java Class under symbiosis.
@@ -86,12 +86,12 @@ public final class JavaClass extends NATObject implements ATStripe {
 	 */
 	private static final ThreadLocal _JAVACLASS_POOL_ = new ThreadLocal() {
         protected synchronized Object initialValue() {
-            return new HashMap();
+            return new IdentityHashMap();
         }
 	};
 	
 	public static final JavaClass wrapperFor(Class c) {
-		HashMap map = (HashMap) _JAVACLASS_POOL_.get();
+		IdentityHashMap map = (IdentityHashMap) _JAVACLASS_POOL_.get();
 		if (map.containsKey(c)) {
 			SoftReference ref = (SoftReference) map.get(c);
 			JavaClass cls = (JavaClass) ref.get();

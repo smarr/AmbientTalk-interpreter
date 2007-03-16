@@ -51,7 +51,7 @@ import edu.vub.at.objects.natives.NATText;
 
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 
 /**
  * JavaObject instances represent java objects under symbiosis.
@@ -70,18 +70,24 @@ public final class JavaObject extends NATObject implements ATObject {
 
 	
 	/**
-	 * A thread-local hashmap pooling all of the JavaObject wrappers for
+	 * A thread-local identity hashmap pooling all of the JavaObject wrappers for
 	 * the current actor, referring to them using SOFT references, such
 	 * that unused wrappers can be GC-ed when running low on memory.
+	 * 
+	 * Note that the use of an identity hashmap rather than a normal hashmap
+	 * is crucial here! Using a normal hashmap compares objects by means of their
+	 * equals method, which means that two distinct Java objects could be assigned
+	 * the same wrapper, which is obviously unwanted. Using an identity hashmap
+	 * avoids this.
 	 */
 	private static final ThreadLocal _JAVAOBJECT_POOL_ = new ThreadLocal() {
         protected synchronized Object initialValue() {
-            return new HashMap();
+            return new IdentityHashMap();
         }
 	};
 	
 	public static final JavaObject wrapperFor(Object o) {
-		HashMap map = (HashMap) _JAVAOBJECT_POOL_.get();
+		IdentityHashMap map = (IdentityHashMap) _JAVAOBJECT_POOL_.get();
 		if (map.containsKey(o)) {
 			SoftReference ref = (SoftReference) map.get(o);
 			JavaObject obj = (JavaObject) ref.get();
