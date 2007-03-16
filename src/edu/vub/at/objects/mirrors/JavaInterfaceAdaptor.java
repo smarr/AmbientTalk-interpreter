@@ -271,7 +271,8 @@ public class JavaInterfaceAdaptor {
 				c == Boolean.class ||
 				c == Byte.class ||
 				c == Long.class ||
-				c == Short.class);
+				c == Short.class ||
+				c == Void.class);
 	}
 	
 	public static final ATObject primitiveJavaToATObject(Object jObj) throws XReflectionFailure {
@@ -333,6 +334,8 @@ public class JavaInterfaceAdaptor {
 		} else if (type == short.class || type == Short.class) {
 			throw new XTypeMismatch(Short.class, atObj);
 			//return Short.valueOf((short) atObj.asNativeNumber().javaValue);
+		} else if (type == void.class || type == Void.class) {
+			return null;
 		} else {
 		    throw new XIllegalArgument("Expected a primitive Java type, given: " + type);
 		}
