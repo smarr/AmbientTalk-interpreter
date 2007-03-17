@@ -27,7 +27,7 @@
  */
 package edu.vub.at.actors.net.cmd;
 
-import edu.vub.at.actors.id.GUID;
+import edu.vub.at.actors.id.VirtualMachineID;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.net.Logging;
 
@@ -39,22 +39,22 @@ import org.jgroups.blocks.MessageDispatcher;
 
 /**
  * A handshake command is sent when a VM discovers another VM in its environment.
- * It sends its own GUID to the newly discovered VM, which can then add this GUID
+ * It sends its own VirtualMachineID to the newly discovered VM, which can then add this VirtualMachineID
  * to its VM address book.
  *
  * SENDER: the discovering VM
  * RECEIVER: the discovered VM
  * MODE: ASYNCHRONOUS, UNICAST
- * PROPERTIES: GUID of sender
+ * PROPERTIES: VirtualMachineID of sender
  * REPLY: none
  * 
  * @author tvcutsem
  */
 public class CMDHandshake extends VMCommand {
 
-	private final GUID senderVMId_;
+	private final VirtualMachineID senderVMId_;
 	
-	public CMDHandshake(GUID senderVMId) {
+	public CMDHandshake(VirtualMachineID senderVMId) {
 		super("handshake");
 		senderVMId_ = senderVMId;
 	}

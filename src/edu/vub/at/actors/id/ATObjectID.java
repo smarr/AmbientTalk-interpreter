@@ -28,16 +28,19 @@
 package edu.vub.at.actors.id;
 
 
+import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.natives.OBJLexicalRoot;
 
 import java.io.Serializable;
+import java.util.Random;
 
 /**
  * An ATObjectID instance represents a globally unique identifier denoting
  * an AmbientTalk/2 object. It is represented by a triplet:
- *  ( VM id, Host actor id, object id )
+ *  - object ID (uniquely identifying an object within one actor)
+ *  - actor ID (uniquely identifying an object within 
+ *  - virtual machine ID (uniquely identifying a virtual machine in the network)
  *
  * @author tvcutsem
  */
@@ -45,20 +48,23 @@ public class ATObjectID implements Serializable {
 
 	private static final long serialVersionUID = -2108704271907943887L;
 
-	// Virtual Machines are identified by IP address + port
-	private final GUID virtualMachineId_;
+	private static final Random generator_ = new Random(System.currentTimeMillis());
 	
-	// Inside a Virtual Machine actors (which accept the messages for this far object)
-	// are denoted by their hashcode
-	private final int actorId_;
+	private final VirtualMachineID virtualMachineId_;
+	private final ActorID actorId_;
+	private final long objectId_;
+	private final String description_;
 	
-	// Inside an NATActorMirror, objects are denoted by their hashcode
-	private final int objectId_;
-	
-	public ATObjectID(GUID vmId, int actorId, int objectId) {
+	/**
+	 * Creates a new unique object identifier for an object that lives on the given
+	 * VM and is hosted by the given actor. The description parameter is used in
+	 * the printed representation of far references.
+	 */
+	public ATObjectID(VirtualMachineID vmId, ActorID actorId, String description) {
 		virtualMachineId_ = vmId;
 		actorId_ = actorId;
-		objectId_ = objectId;
+		objectId_ = generator_.nextLong();
+		description_ = description;
 	}
 	
 	/*
@@ -69,7 +75,7 @@ public class ATObjectID implements Serializable {
 	 *   - hosted by a remote actor (isFar -> true, isRemote -> true)
 	 */
 	public boolean isFar() throws InterpreterException {
-		return (actorId_ != OBJLexicalRoot._INSTANCE_.base_getActor().hashCode());
+		return (!actorId_.equals(ELActor.currentActor().getActorID()));
 	}
 	
 	public boolean isRemote() {
@@ -80,35 +86,37 @@ public class ATObjectID implements Serializable {
 	 * -- Structural Access --
 	 * ----------------------- */
 	
-	public int getActorId() {
+	public ActorID getActorId() {
 		return actorId_;
 	}
 
-	public int getObjectId() {
-		return objectId_;
-	}
-
-	public GUID getVirtualMachineId() {
+	public VirtualMachineID getVirtualMachineId() {
 		return virtualMachineId_;
 	}
 	
 	public int hashCode() {
-		return virtualMachineId_.hashCode() | actorId_ | objectId_;
+		return virtualMachineId_.hashCode() |
+		       actorId_.hashCode() |
+		       (int) objectId_;
 	}
 	
 	public boolean equals(Object other) {
 		if (other instanceof ATObjectID) {
 			ATObjectID id = (ATObjectID) other;
 			return (id.getVirtualMachineId().equals(virtualMachineId_)
-					&& (id.getActorId() == actorId_)
-					&& (id.getObjectId() == objectId_));
+					&& (id.getActorId().equals(actorId_))
+					&& (id.objectId_ == objectId_));
 		} else {
 			return false;
 		}
 	}
 	
+	public String getDescription() {
+		return description_;
+	}
+	
 	public String toString() {
-		return virtualMachineId_.toString() + ":" + actorId_ + ":" + objectId_;
+		return virtualMachineId_ + "|" + actorId_ + "|" + objectId_;
 	}
 	
 }

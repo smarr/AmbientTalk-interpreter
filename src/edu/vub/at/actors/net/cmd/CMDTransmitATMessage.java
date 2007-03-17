@@ -27,6 +27,7 @@
  */
 package edu.vub.at.actors.net.cmd;
 
+import edu.vub.at.actors.id.ActorID;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.natives.Packet;
 
@@ -51,9 +52,9 @@ import org.jgroups.blocks.MessageDispatcher;
 public class CMDTransmitATMessage extends VMCommand {
 
 	private final Packet serializedATMessage_;
-	private final int destinationActorId_;
+	private final ActorID destinationActorId_;
 	
-	public CMDTransmitATMessage(int destinationActorId, Packet atMessage) {
+	public CMDTransmitATMessage(ActorID destinationActorId, Packet atMessage) {
 		super("transmitATMessage("+atMessage+")");
 		serializedATMessage_ = atMessage;
 		destinationActorId_ = destinationActorId;

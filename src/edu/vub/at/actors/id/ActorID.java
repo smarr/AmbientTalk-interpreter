@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * GUID.java created on 21-dec-2006 at 13:43:24
+ * ActorID.java created on 17-mrt-2007 at 15:50:03
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,48 +27,36 @@
  */
 package edu.vub.at.actors.id;
 
-import edu.vub.at.actors.net.Logging;
-
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.Random;
 
 /**
- * This class is used to generate globally unique identifiers.
- * Implementation adapted from AmbientTalk/1.
+ * An ActorID is a serializable representation of the identity of an actor.
+ * Meant to uniquely identify an actor on one AmbientTalk virtual machine.
+ * Identity implemented by a pseudo-randomly generated integer.
  * 
  * @author tvcutsem
  */
-public final class GUID implements Serializable {
+public final class ActorID implements Serializable {
 
-	private static final long serialVersionUID = -1876309467164128162L;
+	private static final Random generator_ = new Random(System.currentTimeMillis());
 	
-	//private InetAddress address_;
-	private String guid_;
-
-	public GUID() {
-		try {
-			InetAddress address = InetAddress.getLocalHost();
-			guid_ = String.valueOf(System.currentTimeMillis()) + address.toString();
-		} catch (UnknownHostException e) {
-			// should not occur for the local host
-			Logging.VirtualMachine_LOG.error("Unable to generate proper GUID:", e);
-			guid_ = String.valueOf(System.currentTimeMillis());
-		}
+	private final int id_;
+	
+	public ActorID() {
+		id_ = generator_.nextInt();
 	}
-
-	public String toString() {
-		return guid_;
+	
+	public boolean equals(Object other) {
+		return ((other instanceof ActorID) && ((ActorID) other).id_ == id_);
 	}
 	
 	public int hashCode() {
-		return guid_.hashCode();
+		return id_;
 	}
 	
-	public boolean equals(Object o) {
-		if (o instanceof GUID) {
-			return guid_.equals(((GUID)o).guid_);
-		}
-		return false;
+	public String toString() {
+		return "actorid["+id_+"]";
 	}
+	
 }

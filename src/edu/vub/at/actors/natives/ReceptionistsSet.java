@@ -55,7 +55,10 @@ public class ReceptionistsSet {
 	/** object id (ATObjectID) -> local object (ATObject) */
 	private final HashMap exportedObjectsTable_;	
 	
-	/** local object (ATObject) -> remote clients pointing to this object (Set of ATFarReference) */
+	/**
+	 * local object (ATObject) -> remote clients pointing to this object (Set of ATFarReference)
+	 * @deprecated currently not in use
+	 */
 	private final MultiMap objectToClients_;
 	
 	private final ELActor owner_;
@@ -125,8 +128,9 @@ public class ReceptionistsSet {
 		// get the host VM
 		ELVirtualMachine currentVM = owner_.getHost();
 
-		// combine VM guid, actor hash and object hash into an ATObjectID
-		ATObjectID objId = new ATObjectID(currentVM.getGUID(), owner_.hashCode(), object.hashCode());
+		// create a new unique ID for the exported object, but make sure that the unique identity
+		// remembers the VM id and actor ID from which the object originated
+		ATObjectID objId = new ATObjectID(currentVM.getGUID(), owner_.getActorID(), object.toString());
 		
 		// store the object if it was not previously exported */ 
 		if(!exportedObjectsTable_.containsKey(objId)) {
@@ -148,9 +152,9 @@ public class ReceptionistsSet {
 	 * @throws InterpreterException
 	 */
 	public ATObject resolveObject(ATObjectID objectId, ATStripe[] stripes) throws XObjectOffline {
-		if (objectId.getActorId() == owner_.hashCode()) {
-			// object should be found in this actor
+		if (objectId.getActorId().equals(owner_.getActorID())) { // does objectId denote a local object?
 			
+			// object should be found in this actor
 			ATObject localObject = (ATObject) exportedObjectsTable_.get(objectId);
 			if (localObject == null) {
 				throw new XObjectOffline(objectId); // could not find the object locally
@@ -177,6 +181,7 @@ public class ReceptionistsSet {
 	 * 
 	 * This method is related to a simple reference listing strategy which should be 
 	 * the basis for a distributed garbage collector.
+	 * @deprecated currently not in use
 	 */
 	public void addClient(ATObject service, ATFarReference client) throws InterpreterException {
 		objectToClients_.put(service, client);
@@ -186,6 +191,7 @@ public class ReceptionistsSet {
 	 * Called upon the collection of a service on a remote device, or possibly when 
 	 * the conditions negotiated for the use of the service (e.g. its lease period)
 	 * have expired.
+	 * @deprecated currently not in use
 	 */
 	public void removeClient(ATObject service, ATFarReference client) throws InterpreterException {
 		objectToClients_.removeValue(service, client);

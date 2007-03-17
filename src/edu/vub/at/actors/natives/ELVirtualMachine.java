@@ -29,7 +29,8 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
-import edu.vub.at.actors.id.GUID;
+import edu.vub.at.actors.id.ActorID;
+import edu.vub.at.actors.id.VirtualMachineID;
 import edu.vub.at.actors.net.DiscoveryListener;
 import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.MembershipNotifier;
@@ -59,9 +60,6 @@ import org.jgroups.blocks.RequestHandler;
  *
  * TODO: use pure JChannel to send pure async messages rather than using a MessageDispatcher?
  * Or use dispatcher only for message transmission.
- * 
- * TODO: urgently clean up the vm address book: race conditions exist wher ELFarRefs
- * query the address book when there is no entry for the remote VM's address
  *
  * @author tvcutsem
  * @author smostinc
@@ -81,17 +79,17 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	/** startup parameter to the VM: the list of fields to be initialized in every hosted actor */
 	private final SharedActorField[] sharedFields_;
 	
-	/** the GUID of this VM */
-	private final GUID vmId_;
+	/** the VirtualMachineID of this VM */
+	private final VirtualMachineID vmId_;
 
 	/** the JGroups Address of the VM */
 	private Address vmAddress_;
 	
 	/**
 	 * A table mapping VM GUIDs to Address objects.
-	 * Each time a VM connects, it sends its GUID and an entry
-	 * mapping that GUID to its current Address is registered in this table. When a remote reference
-	 * needs to send a message to the remote object, the VM is contacted based on its GUID and this
+	 * Each time a VM connects, it sends its VirtualMachineID and an entry
+	 * mapping that VirtualMachineID to its current Address is registered in this table. When a remote reference
+	 * needs to send a message to the remote object, the VM is contacted based on its VirtualMachineID and this
 	 * table. When a VM disconnects, the disconnecting address is removed from this table. 
 	 */
 	public final VMAddressBook vmAddressBook_;
@@ -105,7 +103,9 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	/** the JGroups discovery bus for this Virtual Machine */
 	public MembershipNotifier membershipNotifier_;
 	
+	/** the actor responsible for hosting the publications and subscriptions of this VM's actors */
 	public final ELDiscoveryActor discoveryActor_;
+	
 	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields) {
 		super("virtual machine");
 		
@@ -116,7 +116,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		// used to allow actors to send messages to remote vms/actors
 		vmAddressBook_ = new VMAddressBook();
 
-		vmId_ = new GUID();
+		vmId_ = new VirtualMachineID();
 		localActors_ = new Hashtable();
 		discoveryActor_ = new ELDiscoveryActor(this);
 		
@@ -126,7 +126,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		initializeNetwork();
 	}
 		
-	public GUID getGUID() { return vmId_; }
+	public VirtualMachineID getGUID() { return vmId_; }
 		
 	public ATAbstractGrammar getInitialisationCode() {
 		return initialisationCode_;
@@ -148,8 +148,16 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		event.process(this);
 	}
 	
-	public ELActor getActor(int id) {
-		ELActor entry = (ELActor) localActors_.get(new Integer(id));
+	/**
+	 * returns the local actor corresponding to the given actor Id.
+	 * This method synchronizes on the localActors_ table to ensure that
+	 * insertion and lookup are properly synchronized.
+	 */
+	public ELActor getActor(ActorID id) {
+		ELActor entry;
+		synchronized (localActors_) {
+			entry = (ELActor) localActors_.get(id);
+		}
 		if (entry != null) {
 			return entry;
 		} else {
@@ -159,6 +167,17 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	
 	public Address getLocalVMAddress() {
 		return vmAddress_;
+	}
+	
+	/**
+	 * Signals the creation of a new actor on this virtual machine.
+	 */
+	public void actorCreated(ELActor actor) {
+		// lock the localActors_ table first to ensure addition is
+		// atomic w.r.t. lookup in getActor
+		synchronized (localActors_) {
+			localActors_.put(actor.getActorID(), actor);
+		}
 	}
 	
 	/* =================================
@@ -246,8 +265,8 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 			public void process(Object myself) {
 				Logging.VirtualMachine_LOG.info(this + ": VM disconnected: " + virtualMachine);
 				
-				// Identify the GUID that corresponds to this address
-				GUID disconnected = vmAddressBook_.getGUIDOf(virtualMachine);
+				// Identify the VirtualMachineID that corresponds to this address
+				VirtualMachineID disconnected = vmAddressBook_.getGUIDOf(virtualMachine);
 				
 				// disconnected may be null if the memberJoined event was ignored because this VM 
 				// was already offline when the event was beiing processed.
@@ -270,17 +289,6 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	
 	// All methods prefixed by event_ denote asynchronous message sends that will be
 	// scheduled in the receiving event loop's event queue
-	
-	/**
-	 * Event that signals the creation of a new actor on this virtual machine.
-	 */
-	public void event_actorCreated(final ELActor actor) {
-		this.receive(new Event("actorCreated("+actor+")") {
-			public void process(Object myself) {
-				localActors_.put(new Integer(actor.hashCode()), actor);
-			}
-		});
-	}
 	
 	/* ============================
 	 * == JGroups -> VM Protocol ==

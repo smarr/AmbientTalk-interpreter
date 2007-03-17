@@ -31,13 +31,13 @@ import java.util.Hashtable;
 
 import org.jgroups.Address;
 
-import edu.vub.at.actors.id.GUID;
+import edu.vub.at.actors.id.VirtualMachineID;
 
 /**
  * 
  * The VMAddressBook encapsulates the bi-directional mapping:
- *  AmbientTalk VM GUID  -->  JGroups Address
- *  JGroups Address      -->  AmbientTalk VM GUID
+ *  AmbientTalk VM VirtualMachineID  -->  JGroups Address
+ *  JGroups Address      -->  AmbientTalk VM VirtualMachineID
  *
  * It is necessary to maintain such a mapping to correctly identify and restore
  * the connection between AmbientTalk VMs. A JGroups address cannot be used as
@@ -60,7 +60,7 @@ public class VMAddressBook {
 		addressToGuid_ = new Hashtable();
 	}
 	
-	public synchronized void addEntry( GUID vmId, Address vmAddress ){
+	public synchronized void addEntry( VirtualMachineID vmId, Address vmAddress ){
 		guidToAddress_.put(vmId, vmAddress);
 		addressToGuid_.put(vmAddress, vmId);
 	}
@@ -70,7 +70,7 @@ public class VMAddressBook {
 	 */
 	public synchronized void removeEntry(Address vmAddress ){
 		
-		GUID vmId = (GUID) addressToGuid_.get(vmAddress);
+		VirtualMachineID vmId = (VirtualMachineID) addressToGuid_.get(vmAddress);
 		Logging.VirtualMachine_LOG.debug("Removed VM binding " + vmAddress + " -> " + vmId);
 
 		guidToAddress_.remove(vmId);
@@ -81,7 +81,7 @@ public class VMAddressBook {
 	/**
 	 * Resolve a remote VM's unique identifier to a concrete network address.
 	 */
-	public synchronized Address getAddressOf(GUID vmId) {
+	public synchronized Address getAddressOf(VirtualMachineID vmId) {
 			Address a = (Address) guidToAddress_.get(vmId);
 			if (a == null) {
 				Logging.VirtualMachine_LOG.error("Asked for the address of an unknown vmId: " + vmId);
@@ -93,11 +93,11 @@ public class VMAddressBook {
 	/**
 	 * Resolve a concrete network address to a remote VM's unique identifier.
 	 */
-	public synchronized GUID getGUIDOf(Address vmAddress) {
-			return (GUID) addressToGuid_.get(vmAddress);
+	public synchronized VirtualMachineID getGUIDOf(Address vmAddress) {
+			return (VirtualMachineID) addressToGuid_.get(vmAddress);
 //			if (g == null) {
-//				Logging.VirtualMachine_LOG.error("Asked for the GUID of an unknown vmAddress: " + vmAddress);
-//				throw new RuntimeException("Asked for the GUID of an unknown vmAddress: " + vmAddress);
+//				Logging.VirtualMachine_LOG.error("Asked for the VirtualMachineID of an unknown vmAddress: " + vmAddress);
+//				throw new RuntimeException("Asked for the VirtualMachineID of an unknown vmAddress: " + vmAddress);
 //			}
 //			return g;
 	}

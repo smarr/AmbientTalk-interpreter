@@ -102,7 +102,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 */
 	public ATObject meta_resolve() throws InterpreterException {
 		// it may be that the once local target object is now remote!
-		return ELActor.currentActor().resolve(getObjectId(), stripes_);
+		return ELActor.currentActor().resolve(objectId_, stripes_);
 	}
 
 	/* ------------------------------
@@ -270,7 +270,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
      * ---------------------- */
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<far ref:"+objectId_+">");
+		return NATText.atValue("<far ref to:"+objectId_.getDescription()+">");
 	}
 	
     /* --------------------

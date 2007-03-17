@@ -35,6 +35,7 @@ import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.id.ActorID;
 import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -104,6 +105,7 @@ public class ELActor extends EventLoop {
 	}
 
 	private ATActorMirror mirror_;
+	private final ActorID id_;
 	protected final ELVirtualMachine host_;
 	protected final ReceptionistsSet receptionists_;
 	
@@ -115,6 +117,7 @@ public class ELActor extends EventLoop {
 	
 	public ELActor(ATActorMirror mirror, ELVirtualMachine host) {
 		super("actor " + mirror.toString());
+		id_ = new ActorID();
 		mirror_ = mirror;
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
@@ -123,6 +126,7 @@ public class ELActor extends EventLoop {
 	/** constructor dedicated to initialization of discovery actor */
 	protected ELActor(ELVirtualMachine host) {
 		super("discovery actor");
+		id_ = new ActorID();
 		mirror_ = new NATActorMirror(host);
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
@@ -142,6 +146,10 @@ public class ELActor extends EventLoop {
 	
 	public ELVirtualMachine getHost() {
 		return host_;
+	}
+	
+	public ActorID getActorID() {
+		return id_;
 	}
 	
 	/**
