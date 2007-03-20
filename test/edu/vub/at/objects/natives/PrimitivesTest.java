@@ -307,7 +307,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			}));
 			
 			// true & false => false
-			assertFalse(NATBoolean._TRUE_.base__opamp_(NATBoolean._FALSE_).asNativeBoolean().javaValue);
+			assertFalse(NATBoolean._TRUE_.base__opand_(NATBoolean._FALSE_).asNativeBoolean().javaValue);
 			
 			// false + true => true
 			assertTrue(NATBoolean._FALSE_.base__oppls_(NATBoolean._TRUE_).asNativeBoolean().javaValue);

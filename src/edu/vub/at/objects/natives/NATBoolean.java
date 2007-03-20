@@ -104,7 +104,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 			return consequent.base_apply(NATTable.EMPTY);
 		}
 		
-		public ATBoolean base__opamp_(ATBoolean other) throws InterpreterException {
+		public ATBoolean base__opand_(ATBoolean other) throws InterpreterException {
 			return other; // true & something = something
 		}
 
@@ -152,7 +152,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 			return alternative.base_apply(NATTable.EMPTY);
 		}
 		
-		public ATBoolean base__opamp_(ATBoolean other) throws InterpreterException {
+		public ATBoolean base__opand_(ATBoolean other) throws InterpreterException {
 			return this; // false & something = false
 		}
 

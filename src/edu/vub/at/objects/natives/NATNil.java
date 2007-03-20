@@ -31,6 +31,7 @@ import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.natives.NATFarReference;
+import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -516,10 +517,6 @@ public class NATNil implements ATNil, Serializable {
     		return new NATException(new XUserDefined(this));
     }
     
-    public String toString() {
-        return Evaluator.toString(this);
-    }
-    
     /**
      * Only true objects have a dynamic pointer, native objects denote 'nil' to
      * be their dynamic parent when asked for it. Note that, for native objects,
@@ -529,7 +526,14 @@ public class NATNil implements ATNil, Serializable {
         return NATNil._INSTANCE_;
     };
 
-
+    public String toString() {
+        return Evaluator.toString(this);
+    }
+    
+    /**
+     * Java method invocations of equals are transformed into
+     * AmbientTalk '==' method invocations.
+     */
 	public boolean equals(Object other) {
 		try {
 			if (other instanceof ATObject) {
@@ -538,7 +542,9 @@ public class NATNil implements ATNil, Serializable {
 				return this.base__opeql__opeql_(
 						((SymbioticATObjectMarker) other)._returnNativeAmbientTalkObject()).asNativeBoolean().javaValue;
 			}
-		} catch (InterpreterException e) { }
+		} catch (InterpreterException e) {
+			Logging.Actor_LOG.warn("Error during equality testing:", e);
+		}
 		return false; 
 	}
     

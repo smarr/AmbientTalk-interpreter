@@ -41,7 +41,7 @@ public interface ATBoolean extends ATObject {
 	public ATObject base_ifFalse_(ATClosure alt) throws InterpreterException;
 	public ATObject base_ifTrue_ifFalse_(ATClosure cons, ATClosure alt) throws InterpreterException;
 	
-	public ATBoolean base__opamp_(ATBoolean other) throws InterpreterException;
+	public ATBoolean base__opand_(ATBoolean other) throws InterpreterException;
 	public ATBoolean base__oppls_(ATBoolean other) throws InterpreterException;
 	
 	public ATBoolean base_and_(ATClosure other) throws InterpreterException;
