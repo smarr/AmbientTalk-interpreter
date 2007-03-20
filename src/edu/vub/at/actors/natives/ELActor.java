@@ -242,7 +242,7 @@ public class ELActor extends EventLoop {
 	 * The initial event sent by the actor mirror to its event loop to intialize itself.
 	 * @param future the synchronization point with the creating actor, needs to be fulfilled with a far ref to the behaviour.
 	 * @param parametersPkt the serialized parameters for the initialization code
-	 * @param initcodePkt the serialized initialization code
+	 * @param initcodePkt the serialized initialization code (e.g. the code in 'actor: { code }')
 	 */
 	protected void event_init(final BlockingFuture future, final Packet parametersPkt, final Packet initcodePkt) {
 		receive(new Event("init("+this+")") {
@@ -256,14 +256,14 @@ public class ELActor extends EventLoop {
 					// initialize lexically visible fields
 					initSharedFields();
 
+					// go on to initialize the root and all lexically visible fields
+					initRootObject();
+
 					ATTable params = parametersPkt.unpack().asTable();
-					ATMethod initCode = initcodePkt.unpack().asMethod();
+					ATMethod initCode = initcodePkt.unpack().asMethod();					
 					
 					// initialize the behaviour using the parameters and the code
 					initCode.base_applyInScope(params, new NATContext(behaviour_, behaviour_));
-					
-					// go on to initialize the root and all lexically visible fields
-					initRootObject();
 				} catch (InterpreterException e) {
 					Logging.Actor_LOG.error(behaviour_ + ": could not initialize actor behaviour", e);
 				}
@@ -277,7 +277,7 @@ public class ELActor extends EventLoop {
 	 * to serialize and deserialize the message parameter in a Packet.
 	 */
 	public void event_acceptSelfSend(final ATAsyncMessage msg) {
-		receive(new Event("accept("+msg+")") {
+		receive(new Event("selfAccept("+msg+")") {
 			public void process(Object myActorMirror) {
 				performAccept(msg);
 			}
