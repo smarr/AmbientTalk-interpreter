@@ -577,7 +577,7 @@ public final class Symbiosis {
 			// the invoked method threw an exception
 			if (e.getTargetException() instanceof InterpreterException)
 				throw (InterpreterException) e.getTargetException();
-			else if (e.getCause() instanceof Signal) {
+			else if (e.getTargetException() instanceof Signal) {
 			    throw (Signal) e.getTargetException();	
 			} else {
 				throw new XJavaException(symbiont, javaMethod, e.getTargetException());

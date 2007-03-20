@@ -39,13 +39,6 @@ import edu.vub.at.objects.ATObject;
  * @author tvc
  */
 public interface ATAsyncMessage extends ATMessage {
-
-    /**
-     * Signifies the object on behalf of which this asynchronous message
-     * is sent. For a 'normal' message send, it is bound to the active
-     * 'self' object that executed obj<-m().
-     */
-    public ATObject base_getSender() throws InterpreterException;
 	
     /**
      * Messages also have an explicitly named receiver, which may either be a local

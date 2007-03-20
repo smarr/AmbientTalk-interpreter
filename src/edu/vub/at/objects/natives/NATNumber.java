@@ -30,6 +30,7 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATFraction;
 import edu.vub.at.objects.ATNil;
@@ -64,11 +65,15 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	private NATNumber(int javaNumber) {
 		javaValue = javaNumber;
 	}
+
+    public ATBoolean base__opeql__opeql_(ATObject comparand) {
+		return NATBoolean.atValue(this.equals(comparand));
+    }
 	
-	public boolean equals(Object other) {
-		return (other instanceof NATNumber) &&
-			   (javaValue == ((NATNumber) other).javaValue);
-	}
+    public boolean equals(Object comparand) {
+		return (comparand instanceof NATNumber) &&
+		       (javaValue == ((NATNumber) comparand).javaValue);
+    }
 	
 	public ATNumber asNumber() throws XTypeMismatch { return this; }
 	

@@ -2,9 +2,6 @@ package edu.vub.at;
 
 import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.natives.ELActor;
-import edu.vub.at.actors.natives.ELVirtualMachine;
-import edu.vub.at.actors.natives.NATActorMirror;
-import edu.vub.at.actors.natives.SharedActorField;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIOProblem;
@@ -28,22 +25,6 @@ import junit.framework.TestCase;
 public abstract class AmbientTalkTest extends TestCase {
 
 	protected final ATContext ctx_;
-	
-	private ELActor evalActor_ = null;
-	
-	protected ELActor evalActor() {
-		if (evalActor_ == null) {
-			try {
-				ELVirtualMachine host = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
-				evalActor_ = NATActorMirror.createEmptyActor(host, new NATActorMirror(host)).getFarHost();
-			} catch (InterpreterException e) {
-				e.printStackTrace();
-				fail(e.getMessage());
-				throw new RuntimeException(e.getMessage(), e);
-			}
-		}
-		return evalActor_;
-	}
 	
 	public AmbientTalkTest() {	
 		ATObject supr = new NATObject();
@@ -123,7 +104,7 @@ public abstract class AmbientTalkTest extends TestCase {
         try {
 			ATAbstractGrammar ptree = 
 				NATParser._INSTANCE_.base_parse(NATText.atValue(input));
-			return evalActor().sync_event_eval(ptree);
+			return ELActor.currentActor().sync_event_eval(ptree);
 		} catch (XParseError e) {
 			fail("Parse error: "+e.getMessage());
 		} catch (InterpreterException e) {
@@ -143,7 +124,7 @@ public abstract class AmbientTalkTest extends TestCase {
 	
 	public void actorTest(Actorscript test) throws Exception {
         try {
-			evalActor().sync_event_performTest(test);
+        	ELActor.currentActor().sync_event_performTest(test);
 		} catch (XParseError e) {
 			fail("Parse error: "+e.getMessage());
 		} catch (InterpreterException e) {

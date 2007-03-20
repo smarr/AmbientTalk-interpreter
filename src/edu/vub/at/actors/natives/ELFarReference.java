@@ -35,15 +35,12 @@ import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.net.ConnectionListener;
 import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.cmd.CMDTransmitATMessage;
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIOProblem;
-import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATTable;
 
-import java.util.Iterator;
 import java.util.Vector;
 
 import org.jgroups.Address;
@@ -99,7 +96,6 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	private final MessageDispatcher dispatcher_;
 	
 	private boolean connected_;
-		
 		
 	public ELFarReference(ATObjectID destination, ELActor owner, NATRemoteFarRef ref) {
 		super("far reference " + destination);
@@ -245,7 +241,6 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		Logging.RemoteRef_LOG.info(this + ": disconnected from " + destination_);
 		connected_ = false;
 		farRef_.notifyDisconnected();
-		
 	}
 	
 	public synchronized void expired(){

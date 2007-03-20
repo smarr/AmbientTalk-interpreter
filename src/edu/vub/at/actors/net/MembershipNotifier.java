@@ -51,9 +51,6 @@ import edu.vub.util.MultiMap;
  *  B) All connected ConnectionListeners, which will usually be remote references pointing to
  *     objects hosted by the connecting/disconnecting VM.
  *
- *
- * TODO: change Address keys of ConnectionListeners to GUIDs to support changing addresses.
- *
  * @author tvcutsem
  */
 public class MembershipNotifier extends ExtendedReceiverAdapter implements MembershipListener {

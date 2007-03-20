@@ -132,14 +132,13 @@ public class NATStripe extends NATByCopy implements ATStripe {
 	/**
 	 * Identity of stripes is based on their name
 	 */
-	public boolean equals(Object other) {
-		try {
-			return (other instanceof NATStripe) &&
-			       ((ATStripe) other).base_getStripeName().equals(stripeName_);
-		} catch (InterpreterException e) {
-			return false;
-		}
-	}
+    public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
+    	if (comparand.isStripe()) {
+    		return comparand.asStripe().base_getStripeName().base__opeql__opeql_(stripeName_);
+    	} else {
+    		return NATBoolean._FALSE_;
+    	}
+    }
 	
 	public boolean isStripe() { return true; }
 	

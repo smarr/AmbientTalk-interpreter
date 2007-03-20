@@ -119,7 +119,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		if (!connected_) {
 			try {
 
-				owner_.event_acceptSelfSend(NATAsyncMessage.createAsyncMessage(listener,
+				owner_.event_acceptSelfSend(NATAsyncMessage.createAsyncMessage(
 						listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
 			} catch (InterpreterException e) {
 				Logging.RemoteRef_LOG.error(
@@ -169,7 +169,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 				ATObject listener = (ATObject) reconnectedIter.next();
 				try {
 					owner_.event_acceptSelfSend(
-							NATAsyncMessage.createAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
+							NATAsyncMessage.createAsyncMessage(listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
 				} catch (InterpreterException e) {
 					Logging.RemoteRef_LOG.error("error invoking when:reconnected: listener", e);
 				}
@@ -184,7 +184,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 				ATObject listener = (ATObject) disconnectedIter.next();
 				try {
 					owner_.event_acceptSelfSend(
-							NATAsyncMessage.createAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
+							NATAsyncMessage.createAsyncMessage(listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
 				} catch (InterpreterException e) {
 					Logging.RemoteRef_LOG.error("error invoking when:disconnected: listener", e);
 				}
@@ -204,7 +204,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 				ATObject listener = (ATObject) expiredIter.next();
 				try {
 					owner_.event_acceptSelfSend(
-							NATAsyncMessage.createAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
+							NATAsyncMessage.createAsyncMessage(listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
 				} catch (InterpreterException e) {
 					Logging.RemoteRef_LOG.error("error invoking when:expired: listener", e);
 				}

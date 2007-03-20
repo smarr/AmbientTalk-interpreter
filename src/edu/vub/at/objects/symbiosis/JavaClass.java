@@ -163,6 +163,10 @@ public final class JavaClass extends NATObject implements ATStripe {
 	
 	public JavaClass asJavaClassUnderSymbiosis() throws XTypeMismatch { return this; }
 	
+    public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
+        return NATBoolean.atValue(this.equals(comparand));
+    }
+	
 	public boolean equals(Object other) {
 		return ((other instanceof JavaClass) &&
 				(wrappedClass_.equals(((JavaClass) other).wrappedClass_)));

@@ -33,7 +33,6 @@ import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.natives.NATActorMirror;
 import edu.vub.at.actors.natives.NATFarReference;
-import edu.vub.at.actors.natives.NATRemoteFarRef;
 import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.actors.net.OBJNetwork;
 import edu.vub.at.eval.Evaluator;
@@ -960,7 +959,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * hence, when invoking one of these methods lexically, the receiver is always 'root'
 	 * For example, "==(obj)" is equivalent to "root == obj" (or "root.==(obj)")
 	 */
-    public ATBoolean base__opeql__opeql_(ATObject comparand) {
+    public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
         return Evaluator.getGlobalLexicalScope().base__opeql__opeql_(comparand);
     }
 	

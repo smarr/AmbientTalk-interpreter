@@ -58,8 +58,9 @@ public class AGAsyncMessageCreation extends AGMessageCreation {
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		return OBJLexicalRoot._INSTANCE_.base_getActor().base_createMessage(
-				ctx.base_getSelf(), this.base_getSelector(),
-				Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx), NATTable.EMPTY);
+				this.base_getSelector(),
+				Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx),
+				NATTable.EMPTY);
 	}
 	
 	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {

@@ -69,8 +69,10 @@ import edu.vub.at.objects.ATAbstractGrammar;
 public final class ELVirtualMachine extends EventLoop implements RequestHandler, DiscoveryListener {
 	
 	
+	public static final String _DEFAULT_GROUP_NAME_ = "AmbientTalk";
+	
 	/** the name of the multicast group joined by all AmbientTalk VMs */
-	private static final String _GROUP_NAME_ = "AmbientTalk";
+	private final String groupName_;
 		
 	/** startup parameter to the VM: the code of the init.at file to use */
 	private final ATAbstractGrammar initialisationCode_;
@@ -105,8 +107,17 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	/** the actor responsible for hosting the publications and subscriptions of this VM's actors */
 	public final ELDiscoveryActor discoveryActor_;
 	
-	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields) {
+	/**
+	 * Construct a new AmbientTalk virtual machine where...
+	 * @param initCode is the code to be executed in each new created actor (the content of the init.at file)
+	 * @param fields are all of the fields that should be present in each new created actor (e.g. the 'system' object of IAT)
+	 * @param groupName is the name of the JGroups group communication channel to join
+	 */
+	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields, String groupName) {
+		
 		super("virtual machine");
+		
+		groupName_ = groupName;
 		
 		// used to initialize actors
 		initialisationCode_ = initCode;
@@ -119,7 +130,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		localActors_ = new Hashtable();
 		discoveryActor_ = new ELDiscoveryActor(this);
 		
-		Logging.VirtualMachine_LOG.info(this + ": VM created, initializing network connection");
+		Logging.VirtualMachine_LOG.info(this + ": VM created on network " + groupName);
 		
 		// initialize the message dispatcher using a JChannel
 		initializeNetwork();
@@ -205,7 +216,7 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 			public void process(Object myself) {
 				try {
 					Channel channel = messageDispatcher_.getChannel();
-					channel.connect(_GROUP_NAME_);
+					channel.connect(groupName_);
 					vmAddress_ = channel.getLocalAddress();
 					Logging.VirtualMachine_LOG.info(this + ": interpreter online, address = " + vmAddress_);
 				} catch (Exception e) {

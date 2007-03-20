@@ -60,7 +60,6 @@ import java.util.Vector;
 public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 
 	private final static AGSymbol _RECEIVER_ = AGSymbol.jAlloc("receiver");
-	private final static AGSymbol _SENDER_ = AGSymbol.jAlloc("sender");
 	
 	// The primitive methods of a native asynchronous message
 	
@@ -79,15 +78,14 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 	};
 	
     /**
-     * @param sdr the sender of the asynchronous message
      * @param rcv the receiver of the message, fill in 'nil' if none is determined yet
      * @param sel the selector of the asynchronous message
      * @param arg the arguments of the asynchronous message
      * @param stripes the stripes for the message. Isolate and AsyncMessage stripes are automatically appended.
      */
-    public static NATAsyncMessage createAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg, ATTable stripes) throws InterpreterException {
+    public static NATAsyncMessage createAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg, ATTable stripes) throws InterpreterException {
 		if (stripes == NATTable.EMPTY) {
-			return createAsyncMessage(sdr, rcv, sel, arg);
+			return createAsyncMessage(rcv, sel, arg);
 		}
     	
         ATObject[] unwrapped = stripes.asNativeTable().elements_;
@@ -97,19 +95,18 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 		}
 		fullstripes[unwrapped.length] = NativeStripes._ISOLATE_;
 		fullstripes[unwrapped.length+1] = NativeStripes._ASYNCMSG_;
-        return new NATAsyncMessage(sdr, rcv, sel, arg, fullstripes);
+        return new NATAsyncMessage(rcv, sel, arg, fullstripes);
     }
     
     /**
      * Version without stripes.
      */
-    public static NATAsyncMessage createAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
-        return new NATAsyncMessage(sdr, rcv, sel, arg, new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._ASYNCMSG_ });
+    public static NATAsyncMessage createAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
+        return new NATAsyncMessage(rcv, sel, arg, new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._ASYNCMSG_ });
     }
     
-    private NATAsyncMessage(ATObject sdr, ATObject rcv, ATSymbol sel, ATTable arg, ATStripe[] stripes) throws InterpreterException {
+    private NATAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg, ATStripe[] stripes) throws InterpreterException {
     	super(sel, arg, stripes);
-        super.meta_defineField(_SENDER_, sdr);
         super.meta_defineField(_RECEIVER_, rcv);
         super.meta_addMethod(_PRIM_PRO_);
     }
@@ -150,10 +147,6 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 				                   flags,
 				                   stripes);
 	}
-
-	public ATObject base_getSender() throws InterpreterException {
-    	return super.meta_select(this, _SENDER_);
-    }
     
     public ATObject base_getReceiver() throws InterpreterException {
     	return super.meta_select(this, _RECEIVER_);

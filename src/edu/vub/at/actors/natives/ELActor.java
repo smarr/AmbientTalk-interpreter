@@ -83,7 +83,9 @@ public class ELActor extends EventLoop {
 	    protected synchronized Object initialValue() {
 	    	Logging.Actor_LOG.warn("Creating a default actor for thread " + Thread.currentThread());
 	    	try {
-				ELVirtualMachine host = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
+				ELVirtualMachine host = new ELVirtualMachine(NATNil._INSTANCE_,
+						                                     new SharedActorField[] { },
+						                                     ELVirtualMachine._DEFAULT_GROUP_NAME_);
 				return NATActorMirror.createEmptyActor(host, new NATActorMirror(host)).getFarHost();
 			} catch (InterpreterException e) {
 				throw new RuntimeException("Failed to initialize default actor",e);
@@ -401,7 +403,7 @@ public class ELActor extends EventLoop {
 						ATObject remoteService = remoteServicePkt.unpack();
 						// myhandler<-apply([remoteService])
 						myHandler.meta_receive(
-							NATAsyncMessage.createAsyncMessage(myHandler, myHandler, Evaluator._APPLY_,
+							NATAsyncMessage.createAsyncMessage(myHandler, Evaluator._APPLY_,
 								NATTable.atValue(new ATObject[] {
 									NATTable.atValue(new ATObject[] { remoteService })
 								})

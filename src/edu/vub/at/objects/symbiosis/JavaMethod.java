@@ -30,6 +30,7 @@ package edu.vub.at.objects.symbiosis;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -38,6 +39,7 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -116,6 +118,10 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 	public boolean isMethod() {
 		return true;
 	}
+	
+    public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
+        return NATBoolean.atValue(this.equals(comparand));
+    }
 	
 	/**
 	 * Two JavaMethod instances are equal if they both represent a set of methods

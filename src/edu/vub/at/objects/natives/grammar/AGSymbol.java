@@ -28,10 +28,12 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATText;
 
 import java.util.HashMap;
@@ -109,6 +111,10 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		// pointer equality is valid for symbols as they are pooled
 		return this == other;
 	}
+	
+    public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
+        return NATBoolean.atValue(this == comparand);
+    }
 	
 	// important as AGSymbols are often used as keys in hash tables
 	

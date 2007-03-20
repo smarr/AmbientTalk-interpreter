@@ -79,8 +79,8 @@ import java.util.Vector;
  * for reusing the field definition/assignment protocol and for inheriting the
  * variable map, the state vector and the lexical parent.
  * 
- * NATObjects are one of the five native classes that fully implement the ATObject interface
- * (next to NATCallFrame, NATNil, NATMirage and NATSuperObject). The implementation is such that
+ * NATObjects are one of the five native classes that (almost) fully implement the ATObject interface
+ * (next to NATCallFrame, NATNil, NATMirage and JavaObject). The implementation is such that
  * a NATObject instance represents *both* a base-level AmbientTalk object, as well as a meta-level
  * AmbientTalk mirror on that object.
  * 
@@ -90,7 +90,6 @@ import java.util.Vector;
  *   - whether the object shares its variable map with clones
  *   - whether the object shares its method dictionary with clones
  *   - whether the object is an isolate (i.e. pass-by-copy)
- *   - whether the object is a mirror (a meta-level object of a corresponding base-level object)
  * - a variable map, mapping variable names to indices into the state vector
  * - a state vector, containing the field values of the object
  * - a linked list containing custom field objects
@@ -122,7 +121,8 @@ public class NATObject extends NATCallframe implements ATObject {
 			if (!arguments.base_getLength().equals(NATNumber.ONE)) {
 				throw new XArityMismatch("==", 1, arguments.base_getLength().asNativeNumber().javaValue);
 			}
-			return ctx.base_getLexicalScope().base__opeql__opeql_(arguments.base_at(NATNumber.ONE));
+			// primitive implementation uses pointer equality (as dictated by NATNil)
+			return NATBoolean.atValue(ctx.base_getLexicalScope() == arguments.base_at(NATNumber.ONE));
 		}
 	};
 	/** def new(@initargs) { nil } */
@@ -401,6 +401,10 @@ public class NATObject extends NATCallframe implements ATObject {
     private ATObject prim_init(ATObject self, ATObject[] initargs) throws InterpreterException {
     	ATObject parent = base_getSuper();
     	return parent.meta_invoke(self, Evaluator._INIT_, NATTable.atValue(initargs));
+    }
+    
+    public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
+    	return this.meta_invoke(this, _EQL_NAME_, NATTable.of(comparand)).asBoolean();
     }
 	
 	/* ------------------------------

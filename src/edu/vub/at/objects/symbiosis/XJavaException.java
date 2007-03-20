@@ -77,10 +77,10 @@ public final class XJavaException extends InterpreterException {
 	public String getMessage() {
 		if (originatingObject_ != null) {
 			return "Java exception from " + originatingObject_.toString() + "."
-			           + originatingMethod_.getName() + ": " + wrappedJavaException_.getMessage();
+			           + originatingMethod_.getName() + ": " + wrappedJavaException_.getClass().getName() + wrappedJavaException_.getMessage();
 		} else if (originatingMethod_ != null) {
 			return "Java exception from constructor " + originatingMethod_.getName()
-			   + ": " + wrappedJavaException_.getMessage();
+			   + ": " + wrappedJavaException_.getClass().getName() + wrappedJavaException_.getMessage();
 		} else {
 			return wrappedJavaException_.getMessage();
 		}

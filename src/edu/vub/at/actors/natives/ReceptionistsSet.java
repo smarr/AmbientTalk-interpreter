@@ -29,8 +29,6 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.id.ATObjectID;
-import edu.vub.at.actors.net.ConnectionListener;
-import edu.vub.at.actors.net.Logging;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XObjectOffline;

@@ -19,6 +19,11 @@ public class DistributionTest extends TestCase {
 	private ELVirtualMachine virtual1_;
 	private ELVirtualMachine virtual2_;
 	
+	/**
+	 * the VMs from this unit test join a dedicated test group (not the default group)
+	 * to avoid as much interference as possible with other running AmbientTalk interpreters.
+	 */
+	private static final String _TEST_GROUP_NAME_ = "AmbientTalkTest";
 	
 	private static final int _TIMEOUT_ = 10000;
 	
@@ -44,8 +49,8 @@ public class DistributionTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		virtual1_ = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
-		virtual2_ = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { });
+		virtual1_ = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { }, _TEST_GROUP_NAME_);
+		virtual2_ = new ELVirtualMachine(NATNil._INSTANCE_, new SharedActorField[] { }, _TEST_GROUP_NAME_);
 	}
 	
 	protected void tearDown() throws Exception {

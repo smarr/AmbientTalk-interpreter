@@ -529,8 +529,26 @@ public class NATNil implements ATNil, Serializable {
         return NATNil._INSTANCE_;
     };
 
-    public ATBoolean base__opeql__opeql_(ATObject comparand) {
-        return NATBoolean.atValue(this.equals(comparand));
+
+	public boolean equals(Object other) {
+		try {
+			if (other instanceof ATObject) {
+				return this.base__opeql__opeql_((ATObject) other).asNativeBoolean().javaValue;
+			} else if (other instanceof SymbioticATObjectMarker) {
+				return this.base__opeql__opeql_(
+						((SymbioticATObjectMarker) other)._returnNativeAmbientTalkObject()).asNativeBoolean().javaValue;
+			}
+		} catch (InterpreterException e) { }
+		return false; 
+	}
+    
+	/**
+	 * By default, two AmbientTalk objects are equal if they are the
+	 * same object, or one is a proxy for the same object.
+	 */
+    public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
+		// by default, ATObjects use pointer equality
+		return NATBoolean.atValue(this == other);
     }
     
     public ATObject base_new(ATObject[] initargs) throws InterpreterException {
@@ -620,18 +638,6 @@ public class NATNil implements ATNil, Serializable {
 			throw e2; 
 		} catch(InterpreterException e) {
 			throw new InvalidObjectException("Failed to resolve object " + this + ": " + e.getMessage());
-		}
-	}
-	
-	/**
-	 * By default, two AmbientTalk objects are equal if they are the
-	 * same object, or one is a proxy for the same object.
-	 */
-	public boolean equals(Object other) {
-		if (other instanceof SymbioticATObjectMarker) {
-			return this.equals(((SymbioticATObjectMarker) other)._returnNativeAmbientTalkObject());
-		} else {
-			return super.equals(other);
 		}
 	}
 

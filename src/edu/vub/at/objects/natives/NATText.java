@@ -79,10 +79,14 @@ public final class NATText extends AGExpression implements ATText {
 		
 		// comparison and identity operations
 		
-		public boolean equals(Object other) {
-			return (other instanceof NATText) &&
-			       ((NATText) other).javaValue.equals(this.javaValue);
-		}
+	    public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
+			return NATBoolean.atValue(this.equals(comparand));
+	    }
+	    
+	    public boolean equals(Object comparand) {
+			return (comparand instanceof NATText) &&
+		           ((NATText) comparand).javaValue.equals(this.javaValue);
+	    }
 		
 		public int hashCode() {
 			return javaValue.hashCode();
