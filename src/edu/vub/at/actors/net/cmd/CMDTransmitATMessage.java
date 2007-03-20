@@ -69,7 +69,7 @@ public class CMDTransmitATMessage extends VMCommand {
 	}
 	
 	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
-		remoteHost.getActor(destinationActorId_).event_accept(serializedATMessage_);
+		remoteHost.getActor(destinationActorId_).event_remoteAccept(wrapper.getSrc(), serializedATMessage_);
 		return null; // null return value means OK
 	}
 }

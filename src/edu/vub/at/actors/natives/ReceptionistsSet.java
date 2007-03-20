@@ -29,6 +29,8 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.net.ConnectionListener;
+import edu.vub.at.actors.net.Logging;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XObjectOffline;
@@ -39,6 +41,8 @@ import edu.vub.util.MultiMap;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * An NATActorMirror's ReceptionistsSet keeps a mapping between identifiers and local objects
@@ -107,7 +111,7 @@ public class ReceptionistsSet {
 			}
 		}
 
-		farref = new NATLocalFarRef(actor, objectId, stripes);
+		farref = new NATLocalFarRef(actor, objectId, stripes, owner_);
 		farReferences_.put(objectId, new WeakReference(farref));
 		return farref;
 	}
@@ -134,7 +138,7 @@ public class ReceptionistsSet {
 		
 		// store the object if it was not previously exported */ 
 		if(!exportedObjectsTable_.containsKey(objId)) {
-		   exportedObjectsTable_.put(objId, object);
+			exportedObjectsTable_.put(objId, object);
 		}
 		
 		// copy stripes of local object
@@ -145,11 +149,40 @@ public class ReceptionistsSet {
 	}
 	
 	/**
+	 * Take offline a local object which was exported to the outside world. 
+	 *  
+	 * @param object - the local object exported to the outside world
+	 * @throws XIllegalOperation if the object was not found locally
+	 */
+	public void takeOfflineObject(ATObject object) throws XIllegalOperation {
+		
+		if (exportedObjectsTable_.containsValue(object)){
+			
+			for (Iterator i = exportedObjectsTable_.entrySet().iterator(); i.hasNext();) {
+				Map.Entry entry = (Map.Entry) i.next();
+				ATObject obj = (ATObject) entry.getValue();
+				
+				if (obj.equals(object)){
+					i.remove();
+					//notify the rest of VM that this object was taken offline
+					owner_.getHost().event_objectTakenOffline((ATObjectID) entry.getKey(), null);
+	
+				}
+			}
+		}else{
+			//the object was not previously exported or it has already been taken offline
+			//I don't know the objectId => throw XIllegalOperation
+			
+			throw new XIllegalOperation("Cannot take offline an object that is not online: " + object);
+		}
+	}
+	
+	/**
 	 * Try to resolve a remote object reference into a local (near) reference.
 	 * 
 	 * @param objectId the identifier of the remote object
 	 * @return either the local object corresponding to that identifier, or a far reference designating the id
-	 * @throws InterpreterException
+	 * @throws XObjectOffline if the object was not found locally
 	 */
 	public ATObject resolveObject(ATObjectID objectId, ATStripe[] stripes) throws XObjectOffline {
 		if (objectId.getActorId().equals(owner_.getActorID())) { // does objectId denote a local object?

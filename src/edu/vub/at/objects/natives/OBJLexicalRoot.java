@@ -452,11 +452,11 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * when: farReference disconnected: { code }
 	 *  => when the remote reference is broken due to network disconnections, trigger the code
 	 * returns a subscription object that can be used to cancel the listener
+	 * 
+	 * The code of block will be also fired when the object referenced is taken offline.
 	 */
 	public ATObject base_when_disconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
-		if(farReference.asNativeFarReference().getObjectId().isRemote()) {
-			((NATRemoteFarRef)farReference).onDisconnection(listener);
-		}
+		farReference.asNativeFarReference().addDisconnectionListener(listener);
 		return new NATFarReference.NATDisconnectionSubscription(farReference.asNativeFarReference(), listener);
 	}
 	
@@ -466,11 +466,20 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * returns a subscription object that can be used to cancel the listener
 	 */
 	public ATObject base_when_reconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
-		if(farReference.asNativeFarReference().getObjectId().isRemote()) {
-			((NATRemoteFarRef)farReference).onReconnection(listener);
-		}
+		farReference.asNativeFarReference().addReconnectionListener(listener);
 		return new NATFarReference.NATReconnectionSubscription(farReference.asNativeFarReference(), listener);
 	}
+	
+	/**
+	 * when: farReference expired: { code }
+	 *  => when the (remote/local) reference is broken because the object referenced expired ( i.e. it was 
+	 *  taken offline), trigger the code returns a subscription object that can be used to cancel the listener
+	 */
+	public ATObject base_when_expired_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
+		farReference.asNativeFarReference().addExpiredListener(listener);
+		return new NATFarReference.NATExpiredSubscription(farReference.asNativeFarReference(), listener);
+	}
+	
 
 	/**
 	 * retract: farReference 
@@ -725,6 +734,18 @@ public final class OBJLexicalRoot extends NATByCopy {
 			return original.meta_clone();
 		}
 	}
+	
+	/**
+	 * takeOffline: obj 
+	 * => removes an object from the export table of an actor -i.e. the object is no longer 
+	 * remotely accessible.
+	 * @return NIL
+	 */
+	 public ATNil base_takeOffline_ (ATObject object) throws InterpreterException{
+		 
+		ELActor.currentActor().takeOffline(object);
+		return NATNil._INSTANCE_;
+	 }
 	
 	/* -------------------
 	 * -- Stripe Support -

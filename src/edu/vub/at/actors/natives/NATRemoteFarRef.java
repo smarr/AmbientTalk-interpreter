@@ -54,8 +54,8 @@ public class NATRemoteFarRef extends NATFarReference {
 	private transient final ELFarReference sendLoop_;
 
 	public NATRemoteFarRef(ATObjectID objectId, ELActor hostActor, ATStripe[] stripes) {
-		super(objectId, stripes);
-		sendLoop_ = new ELFarReference(objectId, hostActor);
+		super(objectId, stripes, hostActor);
+		sendLoop_ = new ELFarReference(objectId, hostActor, this);
 	}
 	
 	protected ATObject transmit(ATAsyncMessage message) throws InterpreterException {
@@ -65,21 +65,5 @@ public class NATRemoteFarRef extends NATFarReference {
 	
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {
 		return sendLoop_.retractUnsentMessages();
-	}
-	
-	public void onDisconnection(ATClosure listener) throws InterpreterException {
-		sendLoop_.addDisconnectionListener(listener);
-	}
-
-	public void onReconnection(ATClosure listener) throws InterpreterException {
-		sendLoop_.addReconnectionListener(listener);
-	}
-	
-	public void removeDisconnectionListener(ATObject listener) {
-		sendLoop_.removeDisconnectionListener(listener);
-	}
-	
-	public void removeReconnectionListener(ATObject listener) {
-		sendLoop_.removeReconnectionListener(listener);
 	}
 }

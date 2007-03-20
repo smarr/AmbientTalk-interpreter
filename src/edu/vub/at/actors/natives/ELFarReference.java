@@ -38,6 +38,7 @@ import edu.vub.at.actors.net.cmd.CMDTransmitATMessage;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIOProblem;
+import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATTable;
@@ -93,54 +94,17 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	}
 	
 	private final ELActor owner_;
+	private final NATRemoteFarRef farRef_;
 	private final ATObjectID destination_;
 	private final MessageDispatcher dispatcher_;
 	
 	private boolean connected_;
-	
-	private Vector disconnectedListeners_; // lazy initialization
-	private Vector reconnectedListeners_; // lazy initialization
-	
-	public synchronized void addDisconnectionListener(ATObject listener) {
-		if (disconnectedListeners_ == null) {
-			disconnectedListeners_ = new Vector(1);
-		}
-		disconnectedListeners_.add(listener);
 		
-		if (!connected_) {
-			try {
-
-				owner_.event_acceptSelfSend(NATAsyncMessage.createAsyncMessage(listener,
-						listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
-			} catch (InterpreterException e) {
-				Logging.RemoteRef_LOG.error(
-						"error invoking when:disconnected: listener", e);
-			}
-		}
-	}
-	
-	public synchronized void addReconnectionListener(ATObject listener) {
-		if (reconnectedListeners_ == null) {
-			reconnectedListeners_ = new Vector(1);
-		}
-		reconnectedListeners_.add(listener);
-	}
-
-	public synchronized void removeDisconnectionListener(ATObject listener) {
-		if (disconnectedListeners_ != null) {
-			disconnectedListeners_.remove(listener);
-		}
-	}
-	
-	public synchronized void removeReconnectionListener(ATObject listener) {
-		if (reconnectedListeners_ != null) {
-			reconnectedListeners_.remove(listener);
-		}
-	}
 		
-	public ELFarReference(ATObjectID destination, ELActor owner) {
+	public ELFarReference(ATObjectID destination, ELActor owner, NATRemoteFarRef ref) {
 		super("far reference " + destination);
 		
+		farRef_ = ref;
 		destination_ = destination;
 		owner_ = owner;
 		
@@ -272,18 +236,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		Logging.RemoteRef_LOG.info(this + ": reconnected to " + destination_);
 		connected_ = true;
 		this.notify();
-		
-		if (reconnectedListeners_ != null) {
-			for (Iterator reconnectedIter = reconnectedListeners_.iterator(); reconnectedIter.hasNext();) {
-				ATObject listener = (ATObject) reconnectedIter.next();
-				try {
-					owner_.event_acceptSelfSend(
-							NATAsyncMessage.createAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
-				} catch (InterpreterException e) {
-					Logging.RemoteRef_LOG.error("error invoking when:reconnected: listener", e);
-				}
-			}	
-		}
+		farRef_.notifyConnected();
 	}
 
 	public synchronized void disconnected() {
@@ -291,22 +244,23 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		// If currently sending, the message will time out first.
 		Logging.RemoteRef_LOG.info(this + ": disconnected from " + destination_);
 		connected_ = false;
+		farRef_.notifyDisconnected();
 		
-		if (disconnectedListeners_ != null) {
-			for (Iterator disconnectedIter = disconnectedListeners_.iterator(); disconnectedIter.hasNext();) {
-				ATObject listener = (ATObject) disconnectedIter.next();
-				try {
-					owner_.event_acceptSelfSend(
-							NATAsyncMessage.createAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
-				} catch (InterpreterException e) {
-					Logging.RemoteRef_LOG.error("error invoking when:disconnected: listener", e);
-				}
-			}	
-		}
+	}
+	
+	public synchronized void expired(){
+		
+		Logging.RemoteRef_LOG.info(this + ": " + destination_ + " expired");
+		connected_ = false;
+		farRef_.notifyExpired();
 	}
 	
 	private Address getDestinationVMAddress() {
 		return owner_.getHost().vmAddressBook_.getAddressOf(destination_.getVirtualMachineId());
+	}
+	
+	public ATObjectID getDestination(){
+		return destination_;
 	}
 	
 	

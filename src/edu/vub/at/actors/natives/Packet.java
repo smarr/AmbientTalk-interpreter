@@ -29,6 +29,7 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.exceptions.XClassNotFound;
 import edu.vub.at.exceptions.XIOProblem;
+import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATObject;
 
 import java.io.ByteArrayInputStream;
@@ -63,14 +64,18 @@ public class Packet implements Serializable {
 		this(object.toString(), object);
 	}
 	
-	public ATObject unpack() throws XIOProblem, XClassNotFound {
+	public ATObject unpack() throws XIOProblem, XClassNotFound, XObjectOffline {
 		try {
 			return (ATObject) deserialize(payload_);
 		} catch (IOException e) {
-			throw new XIOProblem(e);
+			if ( e.getCause() instanceof XObjectOffline){
+				throw new XObjectOffline(((XObjectOffline) e.getCause()).getObjectId());
+			}else{
+				throw new XIOProblem(e);
+			}
 		} catch (ClassNotFoundException e) {
 			throw new XClassNotFound(e.getMessage(), e);
-		}
+		} 
 	}
 	
 	public String toString() { return "packet["+description_+"]"; }

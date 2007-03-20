@@ -27,18 +27,6 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.eventloops.Event;
-import edu.vub.at.actors.eventloops.EventLoop;
-import edu.vub.at.actors.id.ActorID;
-import edu.vub.at.actors.id.VirtualMachineID;
-import edu.vub.at.actors.net.DiscoveryListener;
-import edu.vub.at.actors.net.Logging;
-import edu.vub.at.actors.net.MembershipNotifier;
-import edu.vub.at.actors.net.VMAddressBook;
-import edu.vub.at.actors.net.cmd.CMDHandshake;
-import edu.vub.at.actors.net.cmd.VMCommand;
-import edu.vub.at.objects.ATAbstractGrammar;
-
 import java.net.URL;
 import java.util.Hashtable;
 
@@ -50,6 +38,20 @@ import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
+
+import edu.vub.at.actors.eventloops.Event;
+import edu.vub.at.actors.eventloops.EventLoop;
+import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.id.ActorID;
+import edu.vub.at.actors.id.VirtualMachineID;
+import edu.vub.at.actors.net.DiscoveryListener;
+import edu.vub.at.actors.net.Logging;
+import edu.vub.at.actors.net.MembershipNotifier;
+import edu.vub.at.actors.net.VMAddressBook;
+import edu.vub.at.actors.net.cmd.CMDHandshake;
+import edu.vub.at.actors.net.cmd.CMDObjectTakenOffline;
+import edu.vub.at.actors.net.cmd.VMCommand;
+import edu.vub.at.objects.ATAbstractGrammar;
 
 /**
  * A ELVirtualMachine represents a virtual machine which hosts several actors. The 
@@ -66,9 +68,6 @@ import org.jgroups.blocks.RequestHandler;
  */
 public final class ELVirtualMachine extends EventLoop implements RequestHandler, DiscoveryListener {
 	
-	public static final ELVirtualMachine currentVM() {
-		return ELActor.currentActor().getHost();
-	}
 	
 	/** the name of the multicast group joined by all AmbientTalk VMs */
 	private static final String _GROUP_NAME_ = "AmbientTalk";
@@ -124,6 +123,10 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		
 		// initialize the message dispatcher using a JChannel
 		initializeNetwork();
+	}
+	
+	public static final ELVirtualMachine currentVM() {
+		return ELActor.currentActor().getHost();
 	}
 		
 	public VirtualMachineID getGUID() { return vmId_; }
@@ -283,12 +286,31 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		});
 	}
 	
+	
 	/* ==========================
 	 * == Actor -> VM Protocol ==
 	 * ========================== */
 	
 	// All methods prefixed by event_ denote asynchronous message sends that will be
 	// scheduled in the receiving event loop's event queue
+	
+	/**
+	 * Event that signals the deletion of an object from the export table of an actor on this virtual machine.
+	 */
+	public void event_objectTakenOffline(final ATObjectID objId, final Address receiver) {
+		 this.receive( new Event("objectTakenOffline(" + objId +")") {
+			 public void process(Object myself){
+				 if ( receiver == null){
+					 //broadcast to other virtual machines that an object has gone offline.
+					 new CMDObjectTakenOffline(objId).broadcast(messageDispatcher_);
+				 } else{
+					 //sending to a known virtual machine in response to an XObjectOffline exception.
+					 new CMDObjectTakenOffline(objId).send(messageDispatcher_, receiver);
+				 }
+				 
+			 }
+		 });
+	}
 	
 	/* ============================
 	 * == JGroups -> VM Protocol ==

@@ -49,13 +49,13 @@ public class NATLocalFarRef extends NATFarReference {
 	/** when serializing a far reference, the event loop stays home */
 	private transient final ELActor farObjectHost_;
 	
-	public NATLocalFarRef(ELActor farObjectHost, ATObjectID objectId, ATStripe[] stripes) {
-		super(objectId, stripes);
+	public NATLocalFarRef(ELActor farObjectHost, ATObjectID objectId, ATStripe[] stripes, ELActor myHost) {
+		super(objectId, stripes, myHost);
 		farObjectHost_ = farObjectHost;
 	}
 
 	protected ATObject transmit(ATAsyncMessage passedMessage) throws InterpreterException {
-		farObjectHost_.event_accept(new Packet(passedMessage.toString(), passedMessage));
+		farObjectHost_.event_localAccept(this, new Packet(passedMessage.toString(), passedMessage));
 		return NATNil._INSTANCE_;
 	}
 	

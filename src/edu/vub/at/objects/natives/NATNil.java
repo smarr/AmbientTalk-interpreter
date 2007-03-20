@@ -34,6 +34,7 @@ import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
@@ -613,6 +614,10 @@ public class NATNil implements ATNil, Serializable {
 	public Object readResolve() throws ObjectStreamException {
 		try {
 			return this.meta_resolve();
+		} catch(XObjectOffline e) {
+			InvalidObjectException e2 = new InvalidObjectException("Failed to resolve an expired object " + this + ": " + e.getMessage());
+			e2.initCause(e);
+			throw e2; 
 		} catch(InterpreterException e) {
 			throw new InvalidObjectException("Failed to resolve object " + this + ": " + e.getMessage());
 		}

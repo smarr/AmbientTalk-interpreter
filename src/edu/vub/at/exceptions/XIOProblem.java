@@ -46,7 +46,7 @@ public class XIOProblem extends InterpreterException {
 	}
 
 	public String getMessage() {
-		return getCause().getMessage();
+		return  getCause().getClass() + ": " + getCause().getMessage();
 	}
 
 	public ATStripe getStripeType() {

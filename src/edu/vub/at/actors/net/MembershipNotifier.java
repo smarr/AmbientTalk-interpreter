@@ -27,9 +27,6 @@
  */
 package edu.vub.at.actors.net;
 
-import edu.vub.at.actors.id.VirtualMachineID;
-import edu.vub.util.MultiMap;
-
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
@@ -38,6 +35,11 @@ import org.jgroups.Address;
 import org.jgroups.ExtendedReceiverAdapter;
 import org.jgroups.MembershipListener;
 import org.jgroups.View;
+
+import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.id.VirtualMachineID;
+import edu.vub.at.actors.natives.ELFarReference;
+import edu.vub.util.MultiMap;
 
 /**
  * An instance of the class MembershipNotifier is registered with an instance of the JGroups
@@ -184,4 +186,20 @@ public class MembershipNotifier extends ExtendedReceiverAdapter implements Membe
 		// clear the set of known members
 		knownMembers_.clear();
 	}
+	
+	public synchronized void notifyObjectExpired(ATObjectID objId){
+		 
+		//notify the connectionlistener for this objId
+		Set listeners = (Set)connectionListeners_.get(objId.getVirtualMachineId());
+		if(listeners != null) {
+			for (Iterator i = listeners.iterator(); i.hasNext();) {
+				ConnectionListener listener = (ConnectionListener) i.next();
+				ATObjectID destination = ((ELFarReference)listener).getDestination();
+				if (destination.equals(objId)){
+					((ELFarReference)listener).expired();
+				}
+			}
+		}
+	}
+	
 }

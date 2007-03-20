@@ -27,6 +27,9 @@
  */
 package edu.vub.at.actors.natives;
 
+
+import org.jgroups.Address;
+
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
@@ -157,11 +160,21 @@ public class ELActor extends EventLoop {
 	 * returned object id.
 	 * @param object a **near** reference to the object to export
 	 * @return a unique identifier by which this object can be retrieved via the resolve method.
-	 * @throws XIllegalOperation if the passed object is a far reference, i.e. non-local
+	 * @throws XObjectOffline if the passed object is a far reference, i.e. non-local
 	 */
 	public NATLocalFarRef export(ATObject object) throws InterpreterException {
 		// receptionist set will check whether ATObject is really local to me
 		return receptionists_.exportObject(object);
+	}
+	
+	/**
+	 * Takes offline a given remote object such that it is no longer remotely accessible.
+	 * @param object a **far?** reference to the object to export
+	 * @throws XIllegalOperation if the passed object is not part of the export table - i.e. non-remotely accessible.
+	 */
+	public void takeOffline(ATObject object) throws InterpreterException {
+		// receptionist set will check whether ATObject is really remote to me
+		receptionists_.takeOfflineObject(object);
 	}
 	
 	/**
@@ -271,20 +284,44 @@ public class ELActor extends EventLoop {
 	
 	/**
 	 * The main entry point for any asynchronous messages sent to this actor
-	 * by external sources (e.g. the VM or other local actors).
+	 * by external sources.
+	 * @param sender address of the sending actor, used to notify when the receiver has gone offline.
 	 * @param msg the asynchronous AmbientTalk base-level message to enqueue
 	 */
-	public void event_accept(final Packet serializedMessage) {
-		receive(new Event("accept("+serializedMessage+")") {
+	public void event_remoteAccept(final Address sender, final Packet serializedMessage) {
+		receive(new Event("remoteAccept("+serializedMessage+")") {
 			public void process(Object myActorMirror) {
 			  try {
 				ATAsyncMessage msg = serializedMessage.unpack().asAsyncMessage();
 				performAccept(msg);
-			  } catch (InterpreterException e) {
+			  } catch (XObjectOffline e) {
+				 host_.event_objectTakenOffline(e.getObjectId(), sender);
 				Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
-			  } catch (RuntimeException e) {
-				  throw e;
-			  }
+			  }  catch (InterpreterException e) {
+				Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
+			  } 
+		    }
+		});
+	}
+	
+	/**
+	 * The main entry point for any asynchronous messages sent to this actor 
+	 * by local actors.
+	 * @param ref the local reference of the sending actor, used to notify when the receiver has gone offline.
+	 * @param serializedMessage the asynchronous AmbientTalk base-level message to enqueue
+	 */
+	public void event_localAccept(final NATLocalFarRef ref, final Packet serializedMessage) {
+		receive(new Event("localAccept("+serializedMessage+")") {
+			public void process(Object myActorMirror) {
+			  try {
+				ATAsyncMessage msg = serializedMessage.unpack().asAsyncMessage();
+				performAccept(msg);
+			  } catch (XObjectOffline e) {
+				  ref.notifyExpired();
+				  Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
+			  } catch (InterpreterException e) {
+				  Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
+			  } 
 		    }
 		});
 	}
@@ -294,7 +331,7 @@ public class ELActor extends EventLoop {
 			ATObject result = msg.base_getReceiver().meta_receive(msg);
 			// TODO what to do with return value?
 			Logging.Actor_LOG.info(mirror_ + ": "+ msg + " returned " + result);
-		} catch (InterpreterException e) {
+			} catch (InterpreterException e) {
 			// TODO what to do with exception?
 			Logging.Actor_LOG.error(mirror_ + ": "+ msg + " failed ", e);
 		}

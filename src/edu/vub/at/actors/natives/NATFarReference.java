@@ -27,11 +27,17 @@
  */
 package edu.vub.at.actors.natives;
 
+import java.util.Iterator;
+import java.util.Vector;
+
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.net.Logging;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
@@ -83,9 +89,17 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	// the stripes with which the remote object is tagged
 	private final ATStripe[] stripes_;
 
-	protected NATFarReference(ATObjectID objectId, ATStripe[] stripes) {
+	private transient Vector disconnectedListeners_; // lazy initialization
+	private transient Vector reconnectedListeners_; // lazy initialization
+	private transient Vector expiredListeners_; // lazy initialization
+    private transient boolean connected_;
+    private final transient ELActor owner_;
+	
+	protected NATFarReference(ATObjectID objectId, ATStripe[] stripes, ELActor owner) {
 		objectId_ = objectId;
 		stripes_ = stripes;
+		connected_ = true;
+		owner_ = owner;
 	}
 	
 	public ATObjectID getObjectId() {
@@ -95,12 +109,116 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	public NATFarReference asNativeFarReference() throws XTypeMismatch {
 		return this;
 	}
+		
+	public synchronized void addDisconnectionListener(ATObject listener) {
+		if (disconnectedListeners_ == null) {
+			disconnectedListeners_ = new Vector(1);
+		}
+		disconnectedListeners_.add(listener);
+		
+		if (!connected_) {
+			try {
+
+				owner_.event_acceptSelfSend(NATAsyncMessage.createAsyncMessage(listener,
+						listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
+			} catch (InterpreterException e) {
+				Logging.RemoteRef_LOG.error(
+						"error invoking when:disconnected: listener", e);
+			}
+		}
+	}
+	
+	public synchronized void addReconnectionListener(ATObject listener) {
+		if (reconnectedListeners_ == null) {
+			reconnectedListeners_ = new Vector(1);
+		}
+		reconnectedListeners_.add(listener);
+	}
+
+	public synchronized void removeDisconnectionListener(ATObject listener) {
+		if (disconnectedListeners_ != null) {
+			disconnectedListeners_.remove(listener);
+		}
+	}
+	
+	public synchronized void removeReconnectionListener(ATObject listener) {
+		if (reconnectedListeners_ != null) {
+			reconnectedListeners_.remove(listener);
+		}
+	}
+	
+	public synchronized void addExpiredListener(ATObject listener) {
+		if (expiredListeners_ == null) {
+			expiredListeners_ = new Vector(1);
+		}
+		expiredListeners_.add(listener);
+	}
+
+	public synchronized void removeExpiredListener(ATObject listener) {
+		if (expiredListeners_ != null) {
+			expiredListeners_.remove(listener);
+		}
+	}
+	
+	
+	public synchronized void notifyConnected(){
+		
+		connected_= true;
+		if (reconnectedListeners_ != null) {
+			for (Iterator reconnectedIter = reconnectedListeners_.iterator(); reconnectedIter.hasNext();) {
+				ATObject listener = (ATObject) reconnectedIter.next();
+				try {
+					owner_.event_acceptSelfSend(
+							NATAsyncMessage.createAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
+				} catch (InterpreterException e) {
+					Logging.RemoteRef_LOG.error("error invoking when:reconnected: listener", e);
+				}
+			}	
+		}
+	}
+	public synchronized void notifyDisconnected(){
+		
+		connected_ = false;
+		if (disconnectedListeners_ != null) {
+			for (Iterator disconnectedIter = disconnectedListeners_.iterator(); disconnectedIter.hasNext();) {
+				ATObject listener = (ATObject) disconnectedIter.next();
+				try {
+					owner_.event_acceptSelfSend(
+							NATAsyncMessage.createAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
+				} catch (InterpreterException e) {
+					Logging.RemoteRef_LOG.error("error invoking when:disconnected: listener", e);
+				}
+			}	
+		}
+	}
+	
+	public synchronized void notifyExpired(){
+		
+		//Taking offline an object results in a "logical" disconnection of the far remote reference.
+		//This means that the ref becomes expired but also disconnected.
+		//Thus, all disconnectedlisteners and expiredlisteners are notified. 
+
+		connected_ = false;
+		if (expiredListeners_ != null) {
+			for (Iterator expiredIter = expiredListeners_.iterator(); expiredIter.hasNext();) {
+				ATObject listener = (ATObject) expiredIter.next();
+				try {
+					owner_.event_acceptSelfSend(
+							NATAsyncMessage.createAsyncMessage(listener, listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
+				} catch (InterpreterException e) {
+					Logging.RemoteRef_LOG.error("error invoking when:expired: listener", e);
+				}
+			}	
+		}
+		notifyDisconnected();
+		
+	}
 	
 	/**
 	 * After deserialization, ensure that only one unique remote reference exists for
 	 * my target.
 	 */
-	public ATObject meta_resolve() throws InterpreterException {
+	public ATObject meta_resolve() throws InterpreterException, XObjectOffline {
 		// it may be that the once local target object is now remote!
 		return ELActor.currentActor().resolve(objectId_, stripes_);
 	}
@@ -338,6 +456,30 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		}
 		public NATText meta_print() throws InterpreterException {
 			return NATText.atValue("<reconnection subscription:"+ this.meta_select(this, _REFERENCE_)+">");
+		}
+	}
+	
+	public static class NATExpiredSubscription extends NATObject {
+		private static final AGSymbol _REFERENCE_ = AGSymbol.jAlloc("reference");
+		private static final AGSymbol _HANDLER_ = AGSymbol.jAlloc("handler");
+		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
+		public NATExpiredSubscription(final NATFarReference reference, ATClosure handler) throws InterpreterException {
+			this.meta_defineField(_REFERENCE_, reference);
+			this.meta_defineField(_HANDLER_, handler);
+			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					NATFarReference reference = scope_.meta_select(scope_, _REFERENCE_).asNativeFarReference();
+					if(reference instanceof NATRemoteFarRef) {
+						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
+						ATObject handler = scope_.meta_select(scope_, _HANDLER_);
+						remote.removeExpiredListener(handler);
+					}
+					return NATNil._INSTANCE_;
+				}
+			});
+		}
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("<expired subscription:"+ this.meta_select(this, _REFERENCE_)+">");
 		}
 	}
 	

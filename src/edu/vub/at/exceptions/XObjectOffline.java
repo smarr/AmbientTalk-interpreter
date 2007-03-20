@@ -38,14 +38,23 @@ import edu.vub.at.objects.coercion.NativeStripes;
  *
  * @author tvcutsem
  */
-public class XObjectOffline extends InterpreterException {
+public final class XObjectOffline extends InterpreterException {
 
+	private static final long serialVersionUID = -4121266169861882140L;
+
+	ATObjectID objectId_;
+	
 	public XObjectOffline(ATObjectID id) {
 		super("Asked for an object id that was taken offline: " + id);
+		objectId_ = id;
 	}
 	
 	public ATStripe getStripeType() {
 		return NativeStripes._OBJECTOFFLINE_;
+	}
+	
+	 public ATObjectID getObjectId(){
+		return objectId_;
 	}
 
 }
