@@ -52,8 +52,8 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 
 	private final static AGSymbol _DELEGATOR_ = AGSymbol.jAlloc("delegator");
 	
-	public NATDelegation(ATObject delegator, ATSymbol sel, ATTable arg) throws InterpreterException {
-		super(sel, arg, new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._METHODINV_ });
+	public NATDelegation(ATObject delegator, ATSymbol sel, ATTable arg, ATTable annotations) throws InterpreterException {
+		super(sel, arg, annotations, NativeStripes._DELEGATION_);
 		super.meta_defineField(_DELEGATOR_, delegator);
 	}
 	

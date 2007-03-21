@@ -27,11 +27,12 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATMethodInvocation;
 
@@ -42,8 +43,8 @@ import edu.vub.at.objects.natives.NATMethodInvocation;
  */
 public final class AGMethodInvocationCreation extends AGMessageCreation {
 	
-	public AGMethodInvocationCreation(ATSymbol sel, ATTable args) {
-		super(sel, args);
+	public AGMethodInvocationCreation(ATSymbol sel, ATTable args, ATExpression annotations) {
+		super(sel, args, annotations);
 	}
 
 	/**
@@ -51,17 +52,19 @@ public final class AGMethodInvocationCreation extends AGMessageCreation {
 	 * and evaluated arguments into a first-class MethodInvocation.
 	 * It is important to note that the arguments are all eagerly evaluated.
 	 * 
-	 * AGMSG(sel,arg).eval(ctx) = NATMSG(sel, map eval(ctx) over arg )
+	 * AGMSG(sel,arg,ann).eval(ctx) = NATMSG(sel, map eval(ctx) over arg, map eval(ctx) over ann)
 	 * 
 	 * @return a first-class method invocation
 	 */
-	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return new NATMethodInvocation(this.base_getSelector(),
-				                      Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
+	public ATMessage createMessage(ATContext ctx, ATSymbol selector, ATTable evaluatedArgs, ATTable annotations) throws InterpreterException {
+		return new NATMethodInvocation(selector,
+				                       evaluatedArgs,
+				                       annotations);
 	}
+	
 
-	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {
-		return new AGMethodInvocationCreation(quotedSel, quotedArgs);
+	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs, ATExpression quotedAnnotations) {
+		return new AGMethodInvocationCreation(quotedSel, quotedArgs, quotedAnnotations);
 	}
 	
 	protected String getMessageToken() { return "."; }

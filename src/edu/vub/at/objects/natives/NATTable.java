@@ -105,6 +105,8 @@ public final class NATTable extends AGExpression implements ATTable {
 	
     public ATTable asTable() { return this; }
 	
+    public boolean isTable() { return true; }
+    
 	public NATTable asNativeTable() { return this; }
 	
 	/**

@@ -229,7 +229,7 @@ public final class Import {
 								//sourceObject^origName(@args)
 								new AGMessageSend(_IMPORTED_OBJECT_NAME_,
 										new AGDelegationCreation(origMethodName,
-												Evaluator._ANON_MTH_ARGS_)))));
+												Evaluator._ANON_MTH_ARGS_, NATTable.EMPTY)))));
 
 				/*
 				 * Notice that the body of the delegate method is

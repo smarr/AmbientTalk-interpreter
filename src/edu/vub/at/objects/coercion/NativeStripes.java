@@ -41,6 +41,9 @@ public final class NativeStripes {
 
 //defstripe Isolate;
 	public final static NATStripe _ISOLATE_ = NATStripe.atValue("Isolate");
+
+//defstripe Meta;
+	public final static NATStripe _META_ = NATStripe.atValue("Meta");
 	
 //defstripe Boolean;
 	public final static NATStripe _BOOLEAN_ = NATStripe.atValue("Boolean");
@@ -65,6 +68,9 @@ public final class NativeStripes {
 	
 //defstripe MethodInvocation <: Message;
 	public final static NATStripe _METHODINV_ = NATStripe.atValue("MethodInvocation", _MESSAGE_);
+
+//defstripe Delegation <: Message;
+	public final static NATStripe _DELEGATION_ = NATStripe.atValue("Delegation", _MESSAGE_);
 	
 //defstripe AsyncMessage <: Message;
 	public final static NATStripe _ASYNCMSG_ = NATStripe.atValue("AsyncMessage", _MESSAGE_);

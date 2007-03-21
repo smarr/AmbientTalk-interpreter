@@ -35,6 +35,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -69,12 +70,37 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 		}
 	};
 	
+	
+    /**
+     * Converts the given table of annotations into an ATStripe array.
+     * Each element of the annotations table is converted into a stripe.
+     * Moreover, because messages are isolates, the Isolate stripe is automatically appended to the resulting array.
+     * Also, each type of message has its own type of stripe, so a substripe of Message is also added.
+     */
+    protected static ATStripe[] annotationsToStripes(ATStripe msgStripe, ATTable annotations) throws InterpreterException {
+		if (annotations == NATTable.EMPTY) {
+			return new ATStripe[] { NativeStripes._ISOLATE_, msgStripe };
+		}
+    	
+        ATObject[] unwrapped = annotations.asNativeTable().elements_;
+		ATStripe[] fullstripes = new ATStripe[unwrapped.length+2];
+		for (int i = 0; i < unwrapped.length; i++) {
+			fullstripes[i] = unwrapped[i].asStripe();
+		}
+		fullstripes[unwrapped.length] = NativeStripes._ISOLATE_;
+		fullstripes[unwrapped.length+1] = msgStripe;
+        return fullstripes;
+    }
+	
 	/**
-	 * @param stripes expects that the Isolate stripe is already present in the stripes array,
-	 * as well as the appropriate Message substripe!
+	 * Construct a new message from the given selector, arguments and annotations.
+	 * The annotations become this message's stripes.
+	 * 
+	 * @param annotations a table of objects that should be convertible to stripes
+	 * @param msgStripe a substripe of the Message stripe, added by subclasses to mark which kind of native message is created
 	 */
-	protected NATMessage(ATSymbol sel, ATTable arg, ATStripe[] stripes) throws InterpreterException {
-		super(stripes);
+	protected NATMessage(ATSymbol sel, ATTable arg, ATTable annotations, ATStripe msgStripe) throws InterpreterException {
+		super(annotationsToStripes(msgStripe, annotations));
 		super.meta_defineField(_SELECTOR_, sel);
 		super.meta_defineField(_ARGUMENTS_, arg);
 		super.meta_addMethod(_PRIM_SND_);

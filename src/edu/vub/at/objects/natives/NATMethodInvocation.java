@@ -49,8 +49,8 @@ import java.util.Vector;
  */
 public final class NATMethodInvocation extends NATMessage implements ATMethodInvocation {
 
-	public NATMethodInvocation(ATSymbol sel, ATTable arg) throws InterpreterException {
-		super(sel, arg, new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._METHODINV_ });
+	public NATMethodInvocation(ATSymbol sel, ATTable arg, ATTable annotations) throws InterpreterException {
+		super(sel, arg, annotations, NativeStripes._METHODINV_);
 	}
 	
     /**

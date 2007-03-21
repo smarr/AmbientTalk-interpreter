@@ -138,7 +138,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
      * ------------------------------------------ */
 
 	public ATAsyncMessage base_createMessage(ATSymbol selector, ATTable arguments, ATTable stripes) throws InterpreterException {
-		return NATAsyncMessage.createAsyncMessage(NATNil._INSTANCE_, selector, arguments, stripes);
+		return new NATAsyncMessage(NATNil._INSTANCE_, selector, arguments, stripes);
 	}
 	
 	public ATObject base_createMirror(ATObject reflectee) throws InterpreterException {

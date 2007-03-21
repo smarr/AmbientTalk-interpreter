@@ -119,8 +119,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		if (!connected_) {
 			try {
 
-				owner_.event_acceptSelfSend(NATAsyncMessage.createAsyncMessage(
-						listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
+				owner_.event_acceptSelfSend(new NATAsyncMessage(
+						listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY }), NATTable.EMPTY));
 			} catch (InterpreterException e) {
 				Logging.RemoteRef_LOG.error(
 						"error invoking when:disconnected: listener", e);
@@ -160,58 +160,37 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		}
 	}
 	
-	
-	public synchronized void notifyConnected(){
-		
+	public synchronized void notifyConnected() {	
 		connected_= true;
 		if (reconnectedListeners_ != null) {
 			for (Iterator reconnectedIter = reconnectedListeners_.iterator(); reconnectedIter.hasNext();) {
-				ATObject listener = (ATObject) reconnectedIter.next();
-				try {
-					owner_.event_acceptSelfSend(
-							NATAsyncMessage.createAsyncMessage(listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
-				} catch (InterpreterException e) {
-					Logging.RemoteRef_LOG.error("error invoking when:reconnected: listener", e);
-				}
-			}	
-		}
-	}
-	public synchronized void notifyDisconnected(){
-		
-		connected_ = false;
-		if (disconnectedListeners_ != null) {
-			for (Iterator disconnectedIter = disconnectedListeners_.iterator(); disconnectedIter.hasNext();) {
-				ATObject listener = (ATObject) disconnectedIter.next();
-				try {
-					owner_.event_acceptSelfSend(
-							NATAsyncMessage.createAsyncMessage(listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
-				} catch (InterpreterException e) {
-					Logging.RemoteRef_LOG.error("error invoking when:disconnected: listener", e);
-				}
+				triggerListener((ATObject) reconnectedIter.next(), "when:reconnected:");
 			}	
 		}
 	}
 	
-	public synchronized void notifyExpired(){
-		
-		//Taking offline an object results in a "logical" disconnection of the far remote reference.
-		//This means that the ref becomes expired but also disconnected.
-		//Thus, all disconnectedlisteners and expiredlisteners are notified. 
+	public synchronized void notifyDisconnected(){
+		connected_ = false;
+		if (disconnectedListeners_ != null) {
+			for (Iterator disconnectedIter = disconnectedListeners_.iterator(); disconnectedIter.hasNext();) {
+				triggerListener((ATObject) disconnectedIter.next(), "when:disconnected:");
+			}	
+		}
+	}
 
+	/**
+	 * Taking offline an object results in a "logical" disconnection of the far remote reference.
+	 * This means that the ref becomes expired but also disconnected.
+	 * Thus, all disconnectedlisteners and expiredlisteners are notified.
+	 */
+	public synchronized void notifyExpired(){
 		connected_ = false;
 		if (expiredListeners_ != null) {
 			for (Iterator expiredIter = expiredListeners_.iterator(); expiredIter.hasNext();) {
-				ATObject listener = (ATObject) expiredIter.next();
-				try {
-					owner_.event_acceptSelfSend(
-							NATAsyncMessage.createAsyncMessage(listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY })));
-				} catch (InterpreterException e) {
-					Logging.RemoteRef_LOG.error("error invoking when:expired: listener", e);
-				}
-			}	
+				triggerListener((ATObject) expiredIter.next(), "when:expired:");
+			}
 		}
 		notifyDisconnected();
-		
 	}
 	
 	/**
@@ -410,6 +389,24 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
     public ATFarReference asFarReference() throws XTypeMismatch {
   	    return this;
   	}
+    
+    /**
+     * Performs listener&lt;-apply([ [] ])
+     * 
+     * @param type the kind of listener, used for logging/debugging purposes only
+     */
+    private void triggerListener(ATObject listener, String type) {
+		try {
+			// listener<-apply([ [] ])
+			owner_.event_acceptSelfSend(
+					new NATAsyncMessage(listener,
+							            Evaluator._APPLY_,
+							            NATTable.atValue(new ATObject[] { NATTable.EMPTY }),
+							            NATTable.EMPTY));
+		} catch (InterpreterException e) {
+			Logging.RemoteRef_LOG.error("error invoking " + type +" listener", e);
+		}
+    }
     
 	public static class NATDisconnectionSubscription extends NATObject {
 		private static final AGSymbol _REFERENCE_ = AGSymbol.jAlloc("reference");

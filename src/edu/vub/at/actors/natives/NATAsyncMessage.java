@@ -78,35 +78,14 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 	};
 	
     /**
+     * Create a new asynchronous message.
      * @param rcv the receiver of the message, fill in 'nil' if none is determined yet
      * @param sel the selector of the asynchronous message
      * @param arg the arguments of the asynchronous message
-     * @param stripes the stripes for the message. Isolate and AsyncMessage stripes are automatically appended.
+     * @param stripes the stripes for the message. Isolate and AsyncMessage stripes are automatically added.
      */
-    public static NATAsyncMessage createAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg, ATTable stripes) throws InterpreterException {
-		if (stripes == NATTable.EMPTY) {
-			return createAsyncMessage(rcv, sel, arg);
-		}
-    	
-        ATObject[] unwrapped = stripes.asNativeTable().elements_;
-		ATStripe[] fullstripes = new ATStripe[unwrapped.length+2];
-		for (int i = 0; i < unwrapped.length; i++) {
-			fullstripes[i] = unwrapped[i].asStripe();
-		}
-		fullstripes[unwrapped.length] = NativeStripes._ISOLATE_;
-		fullstripes[unwrapped.length+1] = NativeStripes._ASYNCMSG_;
-        return new NATAsyncMessage(rcv, sel, arg, fullstripes);
-    }
-    
-    /**
-     * Version without stripes.
-     */
-    public static NATAsyncMessage createAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg) throws InterpreterException {
-        return new NATAsyncMessage(rcv, sel, arg, new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._ASYNCMSG_ });
-    }
-    
-    private NATAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg, ATStripe[] stripes) throws InterpreterException {
-    	super(sel, arg, stripes);
+    public NATAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg, ATTable stripes) throws InterpreterException {
+    	super(sel, arg, stripes, NativeStripes._ASYNCMSG_);
         super.meta_defineField(_RECEIVER_, rcv);
         super.meta_addMethod(_PRIM_PRO_);
     }

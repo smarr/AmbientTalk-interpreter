@@ -403,12 +403,11 @@ public class ELActor extends EventLoop {
 						ATObject remoteService = remoteServicePkt.unpack();
 						// myhandler<-apply([remoteService])
 						myHandler.meta_receive(
-							NATAsyncMessage.createAsyncMessage(myHandler, Evaluator._APPLY_,
+							new NATAsyncMessage(myHandler, Evaluator._APPLY_,
 								NATTable.atValue(new ATObject[] {
 									NATTable.atValue(new ATObject[] { remoteService })
-								})
-							)
-						);
+								}),
+								NATTable.EMPTY));
 					}
 				} catch (XIOProblem e) {
 					Logging.Actor_LOG.error("Error deserializing joined stripes or services: ", e.getCause());

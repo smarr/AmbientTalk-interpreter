@@ -27,11 +27,12 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATDelegation;
 
@@ -42,27 +43,19 @@ import edu.vub.at.objects.natives.NATDelegation;
  */
 public final class AGDelegationCreation extends AGMessageCreation {
 	
-	public AGDelegationCreation(ATSymbol sel, ATTable args) {
-		super(sel, args);
+	public AGDelegationCreation(ATSymbol sel, ATTable args, ATExpression annotations) {
+		super(sel, args, annotations);
 	}
-
-	/**
-	 * To evaluate a first-class delegation message creation AG element, transform the selector
-	 * and evaluated arguments into a first-class NATDelegation object.
-	 * It is important to note that the arguments are all eagerly evaluated.
-	 * 
-	 * AGDEL(sel,arg).eval(ctx) = NATDEL(sel, map eval(ctx) over arg )
-	 * 
-	 * @return a first-class delegating message send
-	 */
-	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
+	
+	public ATMessage createMessage(ATContext ctx, ATSymbol selector, ATTable evaluatedArgs, ATTable annotations) throws InterpreterException {
 		return new NATDelegation(ctx.base_getSelf(), // the current 'self' is the delegator, to which 'self' should remain bound
-				                 this.base_getSelector(),
-				                 Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx));
+				                 selector,
+				                 evaluatedArgs,
+				                 annotations);
 	}
 
-	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {
-		return new AGDelegationCreation(quotedSel, quotedArgs);
+	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs, ATExpression quotedAnnotations) {
+		return new AGDelegationCreation(quotedSel, quotedArgs, quotedAnnotations);
 	}
 	
 	protected String getMessageToken() { return "^"; }

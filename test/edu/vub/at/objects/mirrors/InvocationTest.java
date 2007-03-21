@@ -202,6 +202,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 		try {
 			ATMessage message = new NATMethodInvocation(
 					AGSymbol.jAlloc("at"), 
+					NATTable.EMPTY,
 					NATTable.EMPTY);
 			
 			message.base_setArguments( 
@@ -230,6 +231,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 		try {
 			ATMessage message = new NATMethodInvocation(
 					AGSymbol.jAlloc("at"), 
+					NATTable.EMPTY,
 					NATTable.EMPTY);
 			
 			message.meta_assignVariable(

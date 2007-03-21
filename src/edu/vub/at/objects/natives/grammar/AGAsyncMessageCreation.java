@@ -27,44 +27,34 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 
 /**
  * AGAsyncMessageCreation implements the ATAsyncMessageCreation interface natively. It is a container for the
- * message's sender, selector, and optionally a receiver and table of arguments.
+ * message's selector, a table of arguments and a number of annotations (which later become the message's stripes)
  * 
+ * @author tvcutsem
  * @author smostinc
  */
 public class AGAsyncMessageCreation extends AGMessageCreation {
 
-	public AGAsyncMessageCreation(ATSymbol selector, ATTable arguments) {
-		super(selector, arguments);
+	public AGAsyncMessageCreation(ATSymbol selector, ATTable arguments, ATExpression annotations) {
+		super(selector, arguments, annotations);
 	}
 	
-	/**
-	 * To evaluate an async message creation element, simply return a new native asynchronous message.
-	 * It is important to note that the arguments are all eagerly evaluated.
-	 * 
-	 * AGAMS(sel,arg).eval(ctx) = NATAMS(ctx.self,sel, map eval(ctx) over arg)
-	 * 
-	 * @return a first-class asynchronous message
-	 */
-	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return OBJLexicalRoot._INSTANCE_.base_getActor().base_createMessage(
-				this.base_getSelector(),
-				Evaluator.evaluateArguments(this.base_getArguments().asNativeTable(), ctx),
-				NATTable.EMPTY);
+	protected ATMessage createMessage(ATContext ctx, ATSymbol selector, ATTable evaluatedArgs, ATTable annotations) throws InterpreterException {
+		return OBJLexicalRoot._INSTANCE_.base_getActor().base_createMessage(selector, evaluatedArgs, annotations);
 	}
 	
-	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs) {
-		return new AGAsyncMessageCreation(quotedSel, quotedArgs);
+	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs, ATExpression quotedAnnotations) {
+		return new AGAsyncMessageCreation(quotedSel, quotedArgs, quotedAnnotations);
 	}
 
 	protected String getMessageToken() { return "<-"; }

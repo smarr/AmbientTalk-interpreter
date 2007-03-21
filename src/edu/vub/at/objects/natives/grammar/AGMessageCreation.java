@@ -31,32 +31,39 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author tvc
- *
  * The common superclass of AGAsyncMessageCreation and AGMethodInvocationCreation.
  * This class serves as a common repository for both kinds of first-class message AG elements.
+ * 
+ * @author tvcutsem
  */
 public abstract class AGMessageCreation extends AGExpression implements ATMessageCreation {
 
-	protected final ATSymbol selector_;
-	protected final ATTable arguments_;
+	private final ATSymbol selector_;
+	private final ATTable arguments_;
+	private final ATExpression annotations_;
 	
-	public AGMessageCreation(ATSymbol sel, ATTable args) {
+	public AGMessageCreation(ATSymbol sel, ATTable args, ATExpression annotations) {
 		selector_ = sel;
 		arguments_ = args;
+		annotations_ = annotations;
 	}
 	
 	public ATSymbol base_getSelector() { return selector_; }
 
 	public ATTable base_getArguments() { return arguments_; }
 
+	public ATExpression base_getAnnotations() { return annotations_; }
+	
 	public boolean isMessageCreation() {
    	    return true;
     }
@@ -66,29 +73,66 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 	}
 	
 	/**
+	 * To evaluate a message send, transform the selector
+	 * and evaluated arguments into a first-class Message object.
+	 * It is important to note that the arguments are all eagerly evaluated.
+	 * 
+	 * The annotation to the message send is either included in the generated message
+	 * as a table of stripes, if it evaluates to a table, or a one-sized table of the
+	 * evaluated annotation is added as stripes. This means that <code>o.m(x)@y</code> is
+	 * evaluated as <code>o.m(x)@[y]</code>, for example.
+	 * 
+	 * AGMSG(sel,arg,ann).eval(ctx) = NATMSG(sel, map eval(ctx) over arg, (a:ann.eval(ctx).isTable? ? a : [a]))
+	 * 
+	 * @return a first-class method invocation
+	 */
+	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
+		NATTable evaluatedArgs = Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx);
+		ATObject annotations = annotations_.meta_eval(ctx);
+		return this.createMessage(ctx,
+				                  selector_,
+				                  evaluatedArgs,
+				                  (annotations.isTable()) ? annotations.asTable() : NATTable.of(annotations));
+	}
+	
+	/**
 	 * Quoting a message creation element returns a new quoted message creation element.
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return this.newQuoted(selector_.meta_quote(ctx).asSymbol(),
-				             arguments_.meta_quote(ctx).asTable());
+				              arguments_.meta_quote(ctx).asTable(),
+				              annotations_.meta_quote(ctx).asTable());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue(this.getMessageToken() +
-				               selector_.meta_print().javaValue +
-				               Evaluator.printAsList(arguments_).javaValue);
+		if (annotations_ == NATTable.EMPTY) {
+			return NATText.atValue(this.getMessageToken() +
+		               selector_.meta_print().javaValue +
+		               Evaluator.printAsList(arguments_).javaValue);
+		} else {
+			return NATText.atValue(this.getMessageToken() +
+		               selector_.meta_print().javaValue +
+		               Evaluator.printAsList(arguments_).javaValue +
+		               "@" + annotations_.meta_print().javaValue);
+		}
 	}
 	
 	/**
 	 * Subclasses must implement this method in order to return a new instance of themselves
 	 * parameterized with their quoted arguments.
 	 */
-	protected abstract ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs);
+	protected abstract ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs, ATExpression quotedAnnotations);
 	
 	/**
 	 * Subclasses must implement this method such that the correct messaging token
 	 * can be displayed when printing an AGMessageCreation element.
 	 */
 	protected abstract String getMessageToken();
+	
+	/**
+	 * Subclasses must implement this method such that the correct kind of message is created
+	 * for a given selector, evaluated arguments and annotation
+	 */
+	protected abstract ATMessage createMessage(ATContext ctx, ATSymbol selector, ATTable evaluatedArgs, ATTable annotations) throws InterpreterException;
 	
 }

@@ -30,14 +30,17 @@ package edu.vub.at.objects.grammar;
 import edu.vub.at.objects.ATTable;
 
 /**
- * @author tvc
- *
  * The public interface to a first-class message AG element.
- * An ATMessageCreation may either be an ATAsyncMessageCreation or an ATMethodInvocationCreation.
+ * An ATMessageCreation may represent synchronous, asynchronous or delegation messages.
+ * An abstract message at least contains a selector, arguments and annotations (stripes)
+ * 
+ * 
+ * @author tvcutsem
  */
 public interface ATMessageCreation extends ATExpression {
 	
 	public ATSymbol base_getSelector();
 	public ATTable base_getArguments();
+	public ATExpression base_getAnnotations();
 
 }
