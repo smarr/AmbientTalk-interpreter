@@ -201,7 +201,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		return atValue(result);
 	}
 	
-	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws InterpreterException {
+	public ATObject base_inject_into_(ATObject init, ATClosure clo) throws InterpreterException {
 		ATObject total = init;
 		for (int i = 0; i < elements_.length; i++) {
 			total = clo.base_apply(atValue(new ATObject[] { total, elements_[i] }));
@@ -226,6 +226,15 @@ public final class NATTable extends AGExpression implements ATTable {
 			}
 		}
 		return NATNil._INSTANCE_;
+	}
+	
+	public ATBoolean base_contains(ATObject obj) throws InterpreterException {
+		for (int i = 0; i < elements_.length; i++) {
+			if (obj.base__opeql__opeql_(elements_[i]).asNativeBoolean().javaValue) {
+				return NATBoolean._TRUE_;
+			}
+		}
+		return NATBoolean._FALSE_;
 	}
 	
 	public ATText base_implode() throws InterpreterException {

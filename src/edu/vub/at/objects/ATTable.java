@@ -62,9 +62,9 @@ public interface ATTable extends ATExpression {
 	/**
 	 * Collect all elements of the table by combining them using the given closure.
 	 * The first time closure is called, the initialization element is passed as first argument.
-	 * result := [ tab ].with: 0 collect: { |total, next| total + next }
+	 * result := [ tab ].inject: 0 into: { |total, next| total + next }
 	 */
-	public ATObject base_with_collect_(ATObject init, ATClosure clo) throws InterpreterException;
+	public ATObject base_inject_into_(ATObject init, ATClosure clo) throws InterpreterException;
 	
 	/**
 	 * Keep only those elements of the table for which the closure evaluates to true.
@@ -78,6 +78,12 @@ public interface ATTable extends ATExpression {
 	 * result := [ tabl ].find: { |elt| booleanCondition(elt) }
 	 */
 	public ATObject base_find_(ATClosure clo) throws InterpreterException;
+	
+	/**
+	 * Returns true if and only if there exists an element e in the table for which
+	 *  'obj == e' evaluates to true.
+	 */
+	public ATBoolean base_contains(ATObject obj) throws InterpreterException;
 	
 	/**
 	 * Implode the receiver table of characters into a text string
