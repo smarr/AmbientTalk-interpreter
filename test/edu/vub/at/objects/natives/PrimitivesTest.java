@@ -262,7 +262,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			evalAndCompareTo("[1,2,3].map: { |i| i + 1 }", "[2, 3, 4]");
 			
 			// with: init collect: ablock
-			evalAndCompareTo("[1,2,3].with: 0 collect: { |total, next| total + next }", "6");
+			evalAndCompareTo("[1,2,3].inject: 0 into: { |total, next| total + next }", "6");
 			
 			// filter: ablock
 			evalAndCompareTo("[1,2,3].filter: {|e| e != 2 }", "[1, 3]");
