@@ -213,9 +213,13 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	protected abstract ATObject transmit(ATAsyncMessage passedMessage) throws InterpreterException;
 
 	/**
+	 * The only operation that is allowed to be synchronously invoked on far references is '=='
 	 * @throws XIllegalOperation Cannot synchronously invoke a method on a far reference
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
+		if (atSelector.equals(NATObject._EQL_NAME_)) {
+			return super.meta_invoke(receiver, atSelector, arguments);
+		}
 		throw new XIllegalOperation("Cannot invoke " + atSelector + " on far reference " + this);
 	}
 
@@ -391,6 +395,28 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
   	}
     
     /**
+     * Two far references are equal if and only if they point to the same object Id.
+     */
+    public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
+		if (this == other) {
+			return NATBoolean._TRUE_;
+		} else if (other instanceof NATFarReference) {
+			ATObjectID otherId = ((NATFarReference) other).getObjectId();
+			return NATBoolean.atValue(objectId_.equals(otherId));
+		} else {
+			return NATBoolean._FALSE_;
+		}
+	}
+
+	public ATObject base_init(ATObject[] initargs) throws InterpreterException {
+		throw new XIllegalOperation("Cannot initialize far reference " + this);
+	}
+
+	public ATObject base_new(ATObject[] initargs) throws InterpreterException {
+		throw new XIllegalOperation("Cannot instantiate far reference " + this);
+	}
+
+	/**
      * Performs listener&lt;-apply([ [] ])
      * 
      * @param type the kind of listener, used for logging/debugging purposes only

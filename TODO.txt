@@ -20,17 +20,6 @@ by the mirror.
 For those NAT classes that need access to native Java objects, we might be able to use the Symbiosis.
 As such we may be able to confine the AT/2 kernel to only a handful of classes (NATNil, NATObject, JavaObject)
 
-Conversions:
-============
-base_isXXX and base_asXXX methods must become meta_isXXX and meta_asXXX
-I.e. they should be moved to the mirror, in order to minimize the number of base-level methods of normal objects.
-
-At the base-level meta_isXXX and meta_asXXX should be exposed as natives in the
-root: def isNumber(x) { (reflect: x).isNumber() }
-
-NATObject implementation should not implement all meta_asXXX methods by creating a coercer by default.
-Should only create a coercer if the object explicitly declares itself to be a number, mirror etc. via a stripe test or something?
-
 Prototypes:
 ===========
 
@@ -210,14 +199,8 @@ that are imported into the host. These objects are currently not isolates, so wh
 uses import, it will probably lose its delegate methods when being passed by copy.
 
 Perhaps the methods should be actually copied when being imported into an isolate?
-
+(problem: this loses lexical scoping rules: a copied variable ref 'x' has a different binding!)
 Import should also become dedicated syntax.
-
-Far References:
-===============
-
-Proper implementation for ==, new and init on far refs
-(== should work, new and init can throw exception)
 
 Mirrors:
 ========
@@ -275,6 +258,11 @@ From that point on, the mirage is considered initialized and can be used.
 An 'uninitialized' mirage is one whose mirror is assigned to 'nil'.
 When explicitly making a new instance of a mirror, OBJMirrorRoot checks whether the object
 is receives in its init method is indeed a NATMirage, and whether its mirror is != nil.
+
+The only problem currently with object:mirroredBy: is that the mirror is *implicitly* instantiated,
+which also means that the arguments to new are always [base]. This is annoying if the mirror should be
+parameterized with other properties as well. Perhaps introduce
+object: { ... } mirroredBy: aMirror initialize: [ extra args ]
 
 ----------------------
 Implementation issues:
