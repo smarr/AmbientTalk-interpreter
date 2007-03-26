@@ -35,12 +35,6 @@ import edu.vub.at.objects.natives.NATException;
 import java.io.PrintStream;
 
 /**
- * ATException is the superclass of all exceptions thrown by the AmbientTalk interpreter. 
- * 
- * TODO tvcutsem Should NATException not implement the interface ATException, such
- * that all of our code can be typed by 'throws ATException' clauses instead of
- * 'throws NATException' clauses. The latter will cause problems with reflection.
- * 
  * TODO tvcutsem Shouldn't we parameterize NATExceptions with an ATContext and possibly
  * also an ATAbstractGrammar for evaluation errors. This allows the user to inspect
  * both which expression was evaluated at exception-raising-time and allows him to inspect

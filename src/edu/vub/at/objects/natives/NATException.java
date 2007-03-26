@@ -34,11 +34,16 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.Reflection;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 /**
  * Instances of the class NATException provide a AmbientTalk representation for the 
  * default instances of all InterpreterExceptions. They allow catching exceptions 
  * thrown by the interpreter in AmbientTalk, as well as raising them for within
  * custom code. 
+ *
+ * TODO: should provide an interface ATException
  *
  * @author smostinc
  */
@@ -56,6 +61,16 @@ public class NATException extends NATByCopy {
 	
 	public InterpreterException getWrappedException() {
 		return wrappedException_;
+	}
+
+	public NATText base_getMessage() throws InterpreterException {
+		return NATText.atValue(wrappedException_.getMessage());
+	}
+	
+	public NATText base_getStackTrace() throws InterpreterException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		wrappedException_.printAmbientTalkStackTrace(new PrintStream(out));
+		return NATText.atValue(out.toString());
 	}
 	
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
