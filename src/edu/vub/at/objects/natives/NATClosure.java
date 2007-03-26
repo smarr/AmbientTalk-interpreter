@@ -228,4 +228,8 @@ public class NATClosure extends NATByRef implements ATClosure {
     	return NATTable.of(NativeStripes._CLOSURE_);
     }
     
+	public ATObject meta_clone() throws InterpreterException {
+		return this;
+	}
+    
 }

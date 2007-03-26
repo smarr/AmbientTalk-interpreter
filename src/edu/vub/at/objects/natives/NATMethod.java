@@ -138,6 +138,10 @@ public class NATMethod extends NATByCopy implements ATMethod {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<method:"+name_.meta_print().javaValue+">");
 	}
+	
+	public ATObject meta_clone() throws InterpreterException {
+		return this;
+	}
 
 	public ATMethod asMethod() throws XTypeMismatch {
 		return this;

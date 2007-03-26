@@ -67,6 +67,10 @@ public class NATHandler extends NATByRef implements ATHandler {
     public ATTable meta_getStripes() throws InterpreterException {
 		return NATTable.of(NativeStripes._HANDLER_);
 	}
+    
+	public ATObject meta_clone() throws InterpreterException {
+		return this;
+	}
 
 	// TODO(exception handling) meta_pass on a handler
 }

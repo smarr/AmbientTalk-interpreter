@@ -148,6 +148,13 @@ public class NATStripe extends NATByCopy implements ATStripe {
 		return NATText.atValue("<stripe:"+stripeName_+">");
 	}
 	
+	/**
+	 * Stripes are singletons
+	 */
+	public ATObject meta_clone() throws InterpreterException {
+		return this;
+	}
+	
     public ATTable meta_getStripes() throws InterpreterException {
     	return NATTable.of(NativeStripes._STRIPE_);
     }

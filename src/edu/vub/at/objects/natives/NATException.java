@@ -79,4 +79,8 @@ public class NATException extends NATByCopy {
     public NATText meta_print() throws InterpreterException {
     	return NATText.atValue("<exception:"+wrappedException_+">");
     }
+    
+	public ATObject meta_clone() throws InterpreterException {
+		return this;
+	}
 }

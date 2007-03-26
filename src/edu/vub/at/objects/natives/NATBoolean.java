@@ -78,6 +78,10 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		return this;
 	}
 	
+	public ATObject meta_clone() throws InterpreterException {
+		return this;
+	}
+	
     public ATTable meta_getStripes() throws InterpreterException {
     	return NATTable.of(NativeStripes._BOOLEAN_);
     }

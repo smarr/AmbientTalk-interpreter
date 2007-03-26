@@ -73,6 +73,10 @@ public final class NATText extends AGExpression implements ATText {
 	        return NATText.atValue("\"" + javaValue + "\"");
 		}
 		
+		public ATObject meta_clone() throws InterpreterException {
+			return this;
+		}
+		
 	    public ATTable meta_getStripes() throws InterpreterException {
 	    	return NATTable.of(NativeStripes._TEXT_);
 	    }

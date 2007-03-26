@@ -52,7 +52,7 @@ import java.util.Vector;
  * An important distinction between AT tables and Java arrays is that
  * ATTable objects are indexed from [1..size] rather than [0..size[
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public final class NATTable extends AGExpression implements ATTable {
 
@@ -294,6 +294,12 @@ public final class NATTable extends AGExpression implements ATTable {
 	    System.arraycopy(ary1, 0, union, 0, siz1);
 	    System.arraycopy(ary2, 0, union, siz1, siz2);
 	    return union;
+	}
+	
+	public ATObject meta_clone() throws InterpreterException {
+		ATObject[] clonedArray = new ATObject[elements_.length];
+		System.arraycopy(elements_, 0, clonedArray, 0, elements_.length);
+		return NATTable.atValue(clonedArray);
 	}
 	
 	public ATObject meta_resolve() throws InterpreterException {

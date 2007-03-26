@@ -74,5 +74,9 @@ public class NATContext extends NATByCopy implements ATContext {
     public ATTable meta_getStripes() throws InterpreterException {
     	return NATTable.of(NativeStripes._CONTEXT_);
     }
+    
+	public ATObject meta_clone() throws InterpreterException {
+		return this;
+	}
 
 }

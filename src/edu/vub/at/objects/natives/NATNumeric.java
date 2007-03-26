@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATFraction;
 import edu.vub.at.objects.ATNumeric;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.natives.grammar.AGExpression;
@@ -55,6 +56,11 @@ public abstract class NATNumeric extends AGExpression implements ATNumeric {
     public ATTable meta_getStripes() throws InterpreterException {
     	return NATTable.of(NativeStripes._NUMERIC_);
     }
+    
+    // numbers and fractions are singletons
+	public ATObject meta_clone() throws InterpreterException {
+		return this;
+	}
 	
 	// trigonometric functions
 	
