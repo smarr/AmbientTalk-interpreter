@@ -508,9 +508,12 @@ public final class Symbiosis {
 	 * @throws XTypeMismatch if the object cannot be converted into the correct Java targetType
 	 */
 	public static final Object ambientTalkToJava(ATObject atObj, Class targetType) throws InterpreterException {
+		// -- PRIMITIVE TYPES --
+        if (JavaInterfaceAdaptor.isPrimitiveType(targetType)) {
+		    return JavaInterfaceAdaptor.atObjectToPrimitiveJava(atObj, targetType);
 		// -- WRAPPED JAVA OBJECTS --
-	    if (atObj.isJavaObjectUnderSymbiosis()) {
-	    		Object jObj = atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
+        } else if (atObj.isJavaObjectUnderSymbiosis()) {
+	    	Object jObj = atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
 		    Class jCls = jObj.getClass();
 		    // dynamic subtype test: is jCls a subclass of targetType?
 		    if (targetType.isAssignableFrom(jCls)) {
@@ -522,9 +525,6 @@ public final class Symbiosis {
 	    } else if (targetType.isInstance(atObj)) {
 			// target type is a subtype of ATObject, return the implementation-level object itself
 			return atObj;
-		// -- PRIMITIVE TYPES --
-	    } else if (JavaInterfaceAdaptor.isPrimitiveType(targetType)) {
-			return JavaInterfaceAdaptor.atObjectToPrimitiveJava(atObj, targetType);
 		// -- STRINGS --
 		} else if (targetType == String.class) {
 			return atObj.asNativeText().javaValue;

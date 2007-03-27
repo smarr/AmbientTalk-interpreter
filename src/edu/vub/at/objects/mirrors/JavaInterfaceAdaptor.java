@@ -42,6 +42,7 @@ import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.symbiosis.JavaObject;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -275,6 +276,25 @@ public class JavaInterfaceAdaptor {
 				c == Void.class);
 	}
 	
+	/**
+	 * Convert an primitive Java value to an AmbientTalk object
+	 * Supported mappings are:
+	 *  int -> NATNumber
+	 *  double -> NATFraction
+	 *  char -> NATText
+	 *  boolean -> NATBoolean
+	 *  void -> NIL
+	 *  
+	 *  float, byte, long and short are left as JavaObjects.
+	 *  They are not 'converted' into AmbientTalk primitives because of the opposite
+	 *  reasons why e.g. numbers cannot be converted automatically to long, short, etc.
+	 *  See the description of the 'atObjectToPrimitiveJava' method.
+	 *  
+	 *  Conversion from e.g. a java.lang.Long to a NATNumber is still possible by
+	 *  using code such as:
+	 *    
+	 *    <code>aWrappedLongValue.intValue();</code>
+	 */
 	public static final ATObject primitiveJavaToATObject(Object jObj) throws XReflectionFailure {
 		// integer
 		if (jObj instanceof Integer) {
@@ -282,29 +302,52 @@ public class JavaInterfaceAdaptor {
 		// double
 		} else if (jObj instanceof Double) {
 			return NATFraction.atValue(((Double) jObj).doubleValue());
-		// float
-		} else if (jObj instanceof Float) {
-			return NATFraction.atValue(((Float) jObj).floatValue());
 		// char
 		} else if (jObj instanceof Character) {
 			return NATText.atValue(((Character) jObj).toString());
 		// boolean
 		} else if (jObj instanceof Boolean) {
 			return NATBoolean.atValue(((Boolean) jObj).booleanValue());
+		// float
+		} else if (jObj instanceof Float) {
+			return JavaObject.wrapperFor(jObj);
+			//return NATFraction.atValue(((Float) jObj).floatValue());
 		// byte
 		} else if (jObj instanceof Byte) {
-			return NATNumber.atValue(((Byte) jObj).byteValue());
+			return JavaObject.wrapperFor(jObj);
+			//return NATNumber.atValue(((Byte) jObj).byteValue());
 		// long
 		} else if (jObj instanceof Long) {
-			return NATFraction.atValue(((Long) jObj).longValue());
+			return JavaObject.wrapperFor(jObj);
+			//return NATFraction.atValue(((Long) jObj).longValue());
 		// short
 		} else if (jObj instanceof Short) {
-			return NATNumber.atValue(((Short) jObj).shortValue());
+			return JavaObject.wrapperFor(jObj);
+			//return NATNumber.atValue(((Short) jObj).shortValue());
 		} else {
 		    throw new XReflectionFailure("Expected a primitive Java value, given: " + jObj);
 		}
 	}
 	
+	/**
+	 * Convert an ambienttalk object to a primitive type.
+	 * Supported mappings are:
+	 *  NATNumber -> int
+	 *  NATFraction -> double
+	 *  NATText -> char
+	 *  NATBoolean -> boolean
+	 *  ATObject -> void
+	 *  
+	 *  Conversion to float, byte, long and short is not supported.
+	 *  The reason for this is that otherwise, symbiotic invocations
+	 *  will match with a lot of method signatures, and we would have to keep
+	 *  track of the 'best fitting match'. E.g. given methods m(int) m(long) and m(short)
+	 *  then invoking 'o.m(10)' in AmbientTalk would match all three methods.
+	 *  By disabling conversions from NATNumber to long and short, only one match remains.
+	 *  If conversion to any one of these primitive types is needed, use code such as:
+	 *    
+	 *    <code>jlobby.java.lang.Integer.new(10).longValue();</code>
+	 */
 	public static final Object atObjectToPrimitiveJava(ATObject atObj, Class type) throws InterpreterException {
 		// integer
 		if (type == int.class || type == Integer.class) {
@@ -320,18 +363,46 @@ public class JavaInterfaceAdaptor {
 			return Boolean.valueOf(atObj.asNativeBoolean().javaValue);
 		// float
 		} else if (type == float.class || type == Float.class) {
+			// can only convert wrapped java.lang.Float
+			if (atObj.isJavaObjectUnderSymbiosis()) {
+				Object wrapped = atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
+				if (wrapped instanceof Float) {
+					return wrapped;
+				}
+			}
 			throw new XTypeMismatch(Float.class, atObj);
 			//return Float.valueOf((float) atObj.asNativeFraction().javaValue);
 		// byte
 		} else if (type == byte.class || type == Byte.class) {
+			// can only convert wrapped java.lang.Byte
+			if (atObj.isJavaObjectUnderSymbiosis()) {
+				Object wrapped = atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
+				if (wrapped instanceof Byte) {
+					return wrapped;
+				}
+			}
 			throw new XTypeMismatch(Byte.class, atObj);
 			//return Byte.valueOf((byte) atObj.asNativeNumber().javaValue);
 		// long
 		} else if (type == long.class || type == Long.class) {
+			// can only convert wrapped java.lang.Long
+			if (atObj.isJavaObjectUnderSymbiosis()) {
+				Object wrapped = atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
+				if (wrapped instanceof Long) {
+					return wrapped;
+				}
+			}
 			throw new XTypeMismatch(Long.class, atObj);
 			//return Long.valueOf((long) atObj.asNativeFraction().javaValue);
 		// short
 		} else if (type == short.class || type == Short.class) {
+			// can only convert wrapped java.lang.Short
+			if (atObj.isJavaObjectUnderSymbiosis()) {
+				Object wrapped = atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
+				if (wrapped instanceof Short) {
+					return wrapped;
+				}
+			}
 			throw new XTypeMismatch(Short.class, atObj);
 			//return Short.valueOf((short) atObj.asNativeNumber().javaValue);
 		} else if (type == void.class || type == Void.class) {
