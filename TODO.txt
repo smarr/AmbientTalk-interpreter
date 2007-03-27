@@ -137,6 +137,13 @@ and a mirror on the result, which are usually immediately discarded.
 Next to efficiency considerations, the meta-send is also a more concise way
 of sending messages to mirrors.
 
+Update: now that we have message annotations, we could use them to express this
+operation as obj.msg(args)@Meta
+
+The only problem is that, if such messages are sent *directly* to the mirror,
+this would circumvent the mirror factory (e.g. the use of reflect: to obtain a mirror
+on an object).
+
 Annotations:
 ============
 
@@ -199,8 +206,8 @@ that are imported into the host. These objects are currently not isolates, so wh
 uses import, it will probably lose its delegate methods when being passed by copy.
 
 Perhaps the methods should be actually copied when being imported into an isolate?
-(problem: this loses lexical scoping rules: a copied variable ref 'x' has a different binding!)
-Import should also become dedicated syntax.
+The problem with this is that this loses lexical scoping rules:
+a copied variable ref 'x' has a different binding!
 
 Mirrors:
 ========

@@ -54,7 +54,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 /**
- * TODO document the class Import
+ * Auxiliary class that provides the implementation of the native 'import' statement.
  *
  * @author tvcutsem
  */
@@ -224,9 +224,10 @@ public final class Import {
 					alias = origMethodName;
 				}
 
+				// def alias(@args) { importedObject^origMethodName(@args) }
 				ATMethod delegate = new NATMethod(alias, Evaluator._ANON_MTH_ARGS_,
 						new AGBegin(NATTable.of(
-								//sourceObject^origName(@args)
+								//importedObject^origMethodName(@args)@[]
 								new AGMessageSend(_IMPORTED_OBJECT_NAME_,
 										new AGDelegationCreation(origMethodName,
 												Evaluator._ANON_MTH_ARGS_, NATTable.EMPTY)))));
