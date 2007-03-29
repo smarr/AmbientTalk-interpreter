@@ -12,7 +12,9 @@ log4j.appender.console.target=System.err
 # see http://logging.apache.org/log4j/docs/api/org/apache/log4j/PatternLayout.html
 # for a listing of possible pattern variables
 # d = date, t = thread, p = priority, c = category, m = message, n = newline
-log4j.appender.console.layout.ConversionPattern=%d{HH:mm:ss} %-5p %c - %m%n
+# apparently in the CDC version of Log4J, the conversion date pattern is ignored
+#log4j.appender.console.layout.ConversionPattern=%d{HH:mm:ss} %-5p %c - %m%n
+log4j.appender.console.layout.ConversionPattern=%d %-5p %c - %m%n
 
 # JGroups output can be configured here
 log4j.logger.org.jgroups=ERROR, console
