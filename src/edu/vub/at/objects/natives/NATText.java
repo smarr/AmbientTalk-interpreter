@@ -39,10 +39,15 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.natives.grammar.AGExpression;
+import edu.vub.util.Matcher;
+import edu.vub.util.Pattern;
+import edu.vub.util.PatternSyntaxException;
 
+/*
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+*/
 
 /**
  * The native implementation of an AmbientTalk text string.
@@ -105,7 +110,7 @@ public final class NATText extends AGExpression implements ATText {
 			ATObject[] chars = new ATObject[javaValue.length()];
 			char[] rawchars = javaValue.toCharArray();
 			for (int i = 0; i < chars.length; i++) {
-				chars[i] = NATText.atValue(Character.toString(rawchars[i]));
+				chars[i] = NATText.atValue(new Character(rawchars[i]).toString());
 			}
 			return NATTable.atValue(chars);
 		}
@@ -117,7 +122,9 @@ public final class NATText extends AGExpression implements ATText {
 		public ATTable base_split(ATText regexp) throws InterpreterException {
 			String[] elements = null;
 			 try {
-				 elements = javaValue.split(regexp.asNativeText().javaValue);
+                 // Backport from JDK 1.4 to 1.3
+                 // elements = javaValue.split(regexp.asNativeText().javaValue);
+				 elements = Pattern.compile(regexp.asNativeText().javaValue).split(new StringBuffer(javaValue));
 			 } catch (PatternSyntaxException e) {
 				throw new XIllegalArgument("Illegal argument to split: " + e.getMessage());
 			 }
@@ -138,7 +145,7 @@ public final class NATText extends AGExpression implements ATText {
 				throw new XIllegalArgument("Illegal argument to find:do: " + e.getMessage());
 			 }
 			 
-			 Matcher m = p.matcher(javaValue);
+			 Matcher m = p.matcher(new StringBuffer(javaValue));
 			 while (m.find()) {
 				 consumer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(m.group()) }));
 			 }
@@ -154,7 +161,7 @@ public final class NATText extends AGExpression implements ATText {
 				throw new XIllegalArgument("Illegal argument to replace:by: " + e.getMessage());
 			 }
 			 
-			 Matcher m = p.matcher(javaValue);
+			 Matcher m = p.matcher(new StringBuffer(javaValue));
 			 StringBuffer sb = new StringBuffer();
 			 while (m.find()) {
 				 ATObject replacement = transformer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(m.group()) }));
@@ -191,9 +198,9 @@ public final class NATText extends AGExpression implements ATText {
 				return NATNumber.ZERO;
 		}
 		
-		public ATBoolean base__optil__opeql_(ATText other) throws InterpreterException {
+		public ATBoolean base__optil__opeql_(ATText regexp) throws InterpreterException {
 			try {
-				return NATBoolean.atValue(javaValue.matches(other.asNativeText().javaValue));
+				return NATBoolean.atValue(Pattern.matches(regexp.asNativeText().javaValue, new StringBuffer(javaValue)));
 			} catch (PatternSyntaxException e) {
 				throw new XIllegalArgument("Illegal regular expression for ~=: " + e.getMessage());
 			}

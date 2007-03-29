@@ -271,6 +271,17 @@ which also means that the arguments to new are always [base]. This is annoying i
 parameterized with other properties as well. Perhaps introduce
 object: { ... } mirroredBy: aMirror initialize: [ extra args ]
 
+Lexical Scope vs External Definitions:
+======================================
+
+When performing e.g. def o.x := 5
+and 'x' was already lexically visible in the scope of 'o', should this
+definition become visible, or should all references to 'x' in the scope of o
+remain bound to the lexically visible x?
+
+Currently, the external definition will 'shadow' the lexically visible 'x'.
+Using lexical addressing might solve such issues.
+
 ----------------------
 Implementation issues:
 ----------------------

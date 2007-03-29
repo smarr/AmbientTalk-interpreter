@@ -31,11 +31,9 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
-import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -76,9 +74,7 @@ public class MirageTest extends AmbientTalkTest {
 		
 		// when creating a mirror, its base field is initialised to an empty mirage
 		assertEquals(baseP.getClass(), NATMirage.class);
-		evalAndCompareTo( // default objects have three primitve methods
-				"mirrorP.listMethods()",
-				"[<primitive method:new>, <primitive method:init>, <primitive method:==>]");
+		evalAndCompareTo("mirrorP.listMethods().length", "3"); // default objects have three primitve methods
 		evalAndCompareTo( // default objects have one primitive field super
 				"mirrorP.listFields()",
 				"[<field:super>]");

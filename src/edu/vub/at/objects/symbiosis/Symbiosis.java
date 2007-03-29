@@ -572,7 +572,9 @@ public final class Symbiosis {
 			}
 		} catch (IllegalArgumentException e) {
 			// illegal argument types were supplied, should not happen because the conversion should have already failed earlier (in atArgsToJavaArgs)
-			throw new RuntimeException("[broken at2java conversion?] Illegal argument for Java method "+javaMethod.getName(), e);
+            // Backport from JDK 1.4 to 1.3
+            // throw new RuntimeException("[broken at2java conversion?] Illegal argument for Java method "+javaMethod.getName(), e);
+			throw new RuntimeException("[broken at2java conversion?] Illegal argument for Java method "+javaMethod.getName());
 		} catch (InvocationTargetException e) {
 			// the invoked method threw an exception
 			if (e.getTargetException() instanceof InterpreterException)
@@ -593,7 +595,9 @@ public final class Symbiosis {
 			throw new XReflectionFailure("Java constructor "+Reflection.downSelector(ctor.getName()) + " is not accessible.", e);
 		} catch (IllegalArgumentException e) {
 			// illegal argument types were supplied, should not happen because the conversion should have already failed earlier (in atArgsToJavaArgs)
-			throw new RuntimeException("[broken at2java conversion?] Illegal argument for Java constructor "+ctor.getName(), e);
+		    // Backport from JDK 1.4 to 1.3
+            // throw new RuntimeException("[broken at2java conversion?] Illegal argument for Java constructor "+ctor.getName(), e);
+			throw new RuntimeException("[broken at2java conversion?] Illegal argument for Java constructor "+ctor.getName());
 		} catch (InstantiationException e) {
 			// the given class is abstract
 			throw new XNotInstantiatable(ctor.getDeclaringClass(), e);
@@ -604,7 +608,7 @@ public final class Symbiosis {
 			else if (e.getTargetException() instanceof Signal) {
 			    throw (Signal) e.getTargetException();	
 			} else {
-				throw new XJavaException(null, ctor, e.getCause());
+				throw new XJavaException(null, ctor, e.getTargetException());
 		    }
 		}
 	}

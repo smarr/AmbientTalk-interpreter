@@ -43,14 +43,14 @@ import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.JavaPackage;
+import edu.vub.util.Matcher;
+import edu.vub.util.Pattern;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The Evaluator class serves as a repository for auxiliary evaluation methods.
@@ -483,12 +483,15 @@ public final class Evaluator {
 	}
 	
 	private static final String classnameToValuename(String classname, String prefix) {
-		 // replace all uppercased letters "L" by " l"
-		 Pattern p = Pattern.compile("[A-Z]");
-		 Matcher m = p.matcher(classname.replaceFirst(prefix, ""));
+		 // replace all uppercased letters "L" by " l"		 
+         // Backport from JDK 1.4 to 1.3
+         // Matcher m = p.matcher(classname.replaceFirst(prefix, ""));
+         Pattern p = Pattern.compile("[A-Z]");
+         Matcher m = p.matcher(new StringBuffer(Pattern.compile(prefix).matcher(new StringBuffer(classname)).replaceFirst("")));
+		 // Matcher m = p.matcher(classname.replaceFirst(prefix, ""));
 		 StringBuffer sb = new StringBuffer();
 		 while (m.find()) {
-		     m.appendReplacement(sb, " " + Character.toString(Character.toLowerCase(m.group().charAt(0))));
+		     m.appendReplacement(sb, " " + new Character(Character.toLowerCase(m.group().charAt(0))).toString());
 		 }
 		 m.appendTail(sb);
 		 return sb.toString();

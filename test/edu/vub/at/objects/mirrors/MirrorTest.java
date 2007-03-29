@@ -33,6 +33,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUserDefined;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
@@ -76,12 +77,23 @@ public class MirrorTest extends AmbientTalkTest {
 	}
 	
 	/**
+	 * Tests to see whether all symbol names defined in 'names' are present in the table of symbols resulting
+	 * from the evaluation of 'toEval'.
+	 */
+	private void evalAndTestContainsAll(String toEval, String[] names) throws InterpreterException {
+		ATTable methodNames = evalAndReturn(toEval).asTable();
+		for (int i = 0; i < names.length; i++) {
+			assertTrue(methodNames.base_contains(AGSymbol.jAlloc(names[i])).asNativeBoolean().javaValue);
+		}
+	}
+	
+	/**
 	 * This test invokes all meta-level operations defined on objects and tests whether they 
 	 * return the proper results. As all these meta-level operations should return mirrors on
 	 * the 'actual' return values, this test also covers the stratification with respect to
 	 * return values. A full test of stratified mirror access is provided below.
 	 */
-	public void testObjectMetaOperations() {
+	public void testObjectMetaOperations() throws InterpreterException {
 		ATObject subject = evalAndReturn(
 				"def subject := object: { \n" +
 				"  def field := `field; \n" +
@@ -94,12 +106,19 @@ public class MirrorTest extends AmbientTalkTest {
 		evalAndCompareTo(
 				"mirror.base.super;",
 				NATNil._INSTANCE_);
-		evalAndCompareTo(
+		
+		/*evalAndCompareTo( => bad unit test: order of field names is undefined
 				"mirror.listFields();",
-				"[<field:super>, <field:field>]");
-		evalAndCompareTo(
-				"mirror.listMethods();",
-				"[<method:keyworded:message:>, <primitive method:new>, <primitive method:init>, <primitive method:==>, <method:canonical>]");
+				"[<field:super>, <field:field>]");*/
+		
+		evalAndTestContainsAll("mirror.listFields().map: { |field| field.name };",
+		                   new String[] { "super", "field" });
+		
+		evalAndTestContainsAll("mirror.listMethods().map: { |meth| meth.name };",
+				           new String[] { "keyworded:message:", "new", "init", "==", "canonical" });
+		// methodNames should equal the following table (apart from the ordering of the elements):
+        // [<method:keyworded:message:>, <primitive method:new>, <primitive method:init>, <primitive method:==>, <method:canonical>]
+		
 		evalAndCompareTo(
 				"mirror.eval(context);",
 				subject);
@@ -315,38 +334,36 @@ public class MirrorTest extends AmbientTalkTest {
 	 * of methods. Whether an object has a intercessive or introspective mirror does not matter
 	 * unless the intercessive mirror intercepts the listMethods operation.
 	 */
-	public void testListMethods() {
-		evalAndCompareTo(
+	public void testListMethods() throws InterpreterException {
+		
+		evalAndTestContainsAll(
 				"def test := object: { nil }; \n" +
-				"(reflect: test).listMethods(); \n",
-				"[<primitive method:new>, <primitive method:init>, <primitive method:==>]");
-		evalAndCompareTo(
+				"(reflect: test).listMethods().map: { |meth| meth.name }; \n",
+				new String[] { "new", "init", "==" });
+		evalAndTestContainsAll(
 				"def testMirrored := object: { nil } mirroredBy: (mirror: { nil }); \n" +
-				"(reflect: testMirrored).listMethods(); \n",
-				"[<primitive method:new>, <primitive method:init>, <primitive method:==>]");
-		evalAndCompareTo(
+				"(reflect: testMirrored).listMethods().map: { |meth| meth.name }; \n",
+				new String[] { "new", "init", "==" });
+		evalAndTestContainsAll(
 				"test := object: { \n" +
 				"  def init(); \n" +
 				"}; \n" +
-				"(reflect: test).listMethods(); \n",
-				"[<primitive method:new>, <method:init>, <primitive method:==>]");
-		evalAndCompareTo(
+				"(reflect: test).listMethods().map: { |meth| meth.name }; \n",
+				new String[] { "new", "init", "==" });
+		evalAndTestContainsAll(
 				"testMirrored := object: { \n" +
 				"  def init(); \n" +
 				"} mirroredBy: (mirror: { nil });  \n" +
-				"(reflect: testMirrored).listMethods(); \n",
-				"[<primitive method:new>, <method:init>, <primitive method:==>]");
-		evalAndCompareTo(
+				"(reflect: testMirrored).listMethods().map: { |meth| meth.name }; \n",
+				new String[] { "new", "init", "==" });
+		evalAndTestContainsAll(
 				"def test.hello() { \"hello world\" }; \n" +
-				"(reflect: test).listMethods(); \n",
-				"[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]");
-		evalAndCompareTo(
+				"(reflect: test).listMethods().map: { |meth| meth.name }; \n",
+				new String[] { "new", "init", "==", "hello" });
+		evalAndTestContainsAll(
 				"def testMirrored.hello() { \"hello world\" }; \n" +
-				"(reflect: test).listMethods(); \n",
-				"[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]");
-//		evalAndCompareTo(
-//				"(reflect: test).defineMethod(`hola, `(\"hola mundo, estoy aqui\")); \n",
-//				"[<primitive method:new>, <method:init>, <primitive method:==>, <closure:hello>]");
+				"(reflect: test).listMethods().map: { |meth| meth.name }; \n",
+				new String[] { "new", "init", "==", "hello" });
 	}
 	
 	/**

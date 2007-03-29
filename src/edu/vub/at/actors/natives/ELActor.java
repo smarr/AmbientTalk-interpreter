@@ -88,7 +88,9 @@ public class ELActor extends EventLoop {
 						                                     ELVirtualMachine._DEFAULT_GROUP_NAME_);
 				return NATActorMirror.createEmptyActor(host, new NATActorMirror(host)).getFarHost();
 			} catch (InterpreterException e) {
-				throw new RuntimeException("Failed to initialize default actor",e);
+			  // Backport from JDK 1.4 to 1.3
+              // throw new RuntimeException("Failed to initialize default actor",e);
+              throw new RuntimeException("Failed to initialize default actor");
 			}
 	    }
 	};

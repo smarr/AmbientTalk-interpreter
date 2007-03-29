@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.natives.NATException;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
 
 /**
  * TODO tvcutsem Shouldn't we parameterize NATExceptions with an ATContext and possibly
@@ -47,24 +48,32 @@ public abstract class InterpreterException extends Exception {
 	private static final long serialVersionUID = 511962997881825680L;
 
 	private final InvocationStack runtimeStack_;
+    private final Throwable cause_;
 	
 	public InterpreterException() {
 		super();
 		runtimeStack_ = InvocationStack.captureInvocationStack();
+        cause_ = null;
 	}
 
 	public InterpreterException(String message, Throwable cause) {
-		super(message, cause);
+        super(message);
+        // Backport from JDK 1.4 to 1.3
+        // super(message, cause);
+        cause_ = cause;
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 
 	public InterpreterException(String message) {
 		super(message);
 		runtimeStack_ = InvocationStack.captureInvocationStack();
+        cause_ = null;
 	}
 
 	public InterpreterException(Throwable cause) {
-		super(cause);
+	    // Backport from JDK 1.4 to 1.3
+        // super(cause);
+        cause_ = cause;
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 	
@@ -77,5 +86,46 @@ public abstract class InterpreterException extends Exception {
 	}
 	
 	public abstract ATStripe getStripeType();
+
+    public String getMessage() {
+      if (cause_ == null) {
+        return super.getMessage();
+      } else {
+        return super.getMessage() + " caused by " + cause_.getMessage();
+      }
+    }
+
+    
+    /* backport from 1.4 interface to 1.3 */
+    
+    public Throwable getCause() { return cause_; }
+    
+    public void printStackTrace(PrintStream out) {
+      if (cause_ == null) {
+        super.printStackTrace(out);
+      } else {
+        super.printStackTrace(out);
+        out.print(" caused by:");
+        cause_.printStackTrace(out);
+      }
+    }
+
+    public void printStackTrace(PrintWriter out) {
+      if (cause_ == null) {
+        super.printStackTrace(out);
+      } else {
+        super.printStackTrace(out);
+        out.print(" caused by:");
+        cause_.printStackTrace(out);
+      }
+    }
+    
+    public String toString() {
+      if (cause_ == null) {
+        return super.toString();
+      } else {
+        return super.toString() + " caused by " + cause_.toString();
+      }
+    }
 	
 }

@@ -4,7 +4,6 @@ import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
@@ -15,10 +14,10 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.NATParser;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import junit.framework.TestCase;
 
@@ -40,8 +39,31 @@ public abstract class AmbientTalkTest extends TestCase {
 	 * should be located in the same directory as the Foo.class file.
 	 */
 	public static final ATObject evalSnippet(Class forTestClass, String name, ATContext inContext) throws InterpreterException {
-		try {
-			File inFile = new File(new URI(forTestClass.getResource(Evaluator.getSimpleName(forTestClass) + "-" + name).toString()));
+		// Backport from JDK 1.4 to 1.3 -> no more URI, construct file directly from URL instead
+	    // Open a stream to the file using the URL
+	    try {
+	    	String fileName = Evaluator.getSimpleName(forTestClass) + "-" + name;
+	        InputStream in = forTestClass.getResource(fileName).openStream();
+	        BufferedReader dis = new BufferedReader(new InputStreamReader(in));
+	        StringBuffer fBuf = new StringBuffer();
+	        String line;
+
+	        while ( (line = dis.readLine()) != null) {
+	          fBuf.append (line + "\n");
+	        }
+	        in.close();
+	      
+		    // parse and evaluate the code in the proper context and return its result
+			ATAbstractGrammar source = NATParser.parse(fileName, fBuf.toString());
+			return source.meta_eval(inContext);
+	    }
+	    catch (IOException e) {
+	       fail(e.getMessage());
+	       return NATNil._INSTANCE_;
+	    }
+		
+		/*try {
+			File inFile = new File(forTestClass.getResource(Evaluator.getSimpleName(forTestClass) + "-" + name));
             // load the code from the file
 			String code = Evaluator.loadContentOfFile(inFile);
 		    
@@ -53,7 +75,7 @@ public abstract class AmbientTalkTest extends TestCase {
 		} catch (URISyntaxException e) {
 			fail(e.getMessage());
 			return NATNil._INSTANCE_;
-		}
+		}*/
 	}
 	
 	public ATObject evalAndReturn(String input) {

@@ -62,10 +62,6 @@ public final class XJavaException extends InterpreterException {
 	
 	// throwable interface implemented through composition with wrappedJavaException_
 
-	public Throwable getCause() {
-		return wrappedJavaException_.getCause();
-	}
-
 	public String getLocalizedMessage() {
 		return wrappedJavaException_.getLocalizedMessage();
 	}
@@ -85,14 +81,15 @@ public final class XJavaException extends InterpreterException {
 			return wrappedJavaException_.getMessage();
 		}
 	}
+//  Backport from JDK 1.4 to 1.3
+//	public StackTraceElement[] getStackTrace() {
+//		return wrappedJavaException_.getStackTrace();
+//	}
 
-	public StackTraceElement[] getStackTrace() {
-		return wrappedJavaException_.getStackTrace();
-	}
-
-	public synchronized Throwable initCause(Throwable arg) {
-		return wrappedJavaException_.initCause(arg);
-	}
+//  Backport from JDK 1.4 to 1.3
+//	public synchronized Throwable initCause(Throwable arg) {
+//		return wrappedJavaException_.initCause(arg);
+//	}
 
 	public void printStackTrace() {
 		wrappedJavaException_.printStackTrace();
@@ -106,9 +103,9 @@ public final class XJavaException extends InterpreterException {
 		wrappedJavaException_.printStackTrace(arg);
 	}
 
-	public void setStackTrace(StackTraceElement[] arg) {
-		wrappedJavaException_.setStackTrace(arg);
-	}
+//	public void setStackTrace(StackTraceElement[] arg) {
+//		wrappedJavaException_.setStackTrace(arg);
+//	}
 
 	public String toString() {
 		return wrappedJavaException_.toString();

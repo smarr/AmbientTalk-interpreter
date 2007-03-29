@@ -54,9 +54,9 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.util.IdentityHashMap;
 
 import java.lang.ref.SoftReference;
-import java.util.IdentityHashMap;
 
 /**
  * A JavaClass instance represents a Java Class under symbiosis.

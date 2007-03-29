@@ -360,7 +360,7 @@ public class JavaInterfaceAdaptor {
 			return new Character(atObj.asNativeText().asChar());
 		// boolean
 		} else if (type == boolean.class || type == Boolean.class) {
-			return Boolean.valueOf(atObj.asNativeBoolean().javaValue);
+			return new Boolean(atObj.asNativeBoolean().javaValue);
 		// float
 		} else if (type == float.class || type == Float.class) {
 			// can only convert wrapped java.lang.Float

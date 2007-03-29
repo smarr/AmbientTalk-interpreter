@@ -41,11 +41,11 @@ import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.Symbiosis;
+import edu.vub.util.Matcher;
+import edu.vub.util.Pattern;
 
 import java.lang.reflect.Method;
 import java.util.Vector;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Reflection is an auxiliary class meant to serve as a repository for methods
@@ -222,10 +222,12 @@ public final class Reflection {
 	public static final String upSelector(ATSymbol atSelector) throws InterpreterException {
 		// : -> _
 		String nam = atSelector.base_getText().asNativeText().javaValue;
-		nam = nam.replaceAll(":", "_");
-		
+        // Backport from JDK 1.4 to 1.3
+		// nam = nam.replaceAll(":", "_");
+        nam = Pattern.compile(":").matcher(new StringBuffer(nam)).replaceAll("_");
+        
 		// operator symbol -> _op{code}_
-		Matcher m = symbol.matcher(nam);
+		Matcher m = symbol.matcher(new StringBuffer(nam));
 		StringBuffer sb = new StringBuffer();
 		while (m.find()) {
 			// find every occurence of a non-word character and convert it into a symbol
@@ -697,7 +699,9 @@ public final class Reflection {
 	
 	private static String stripPrefix(String input, String prefix) {
 		// \A matches start of input
-		return input.replaceFirst("\\A"+prefix, "");
+	    // Backport from JDK 1.4 to 1.3
+        // return input.replaceFirst("\\A"+prefix, "");
+		return Pattern.compile("\\A"+prefix).matcher(new StringBuffer(input)).replaceFirst("");
 	}
 	
 	private static final String oprCode2Symbol(String code) {
@@ -740,7 +744,7 @@ public final class Reflection {
 	
 	private static final String javaToAmbientTalkSelector(String jSelector) {
 		// _op{code}_ -> operator symbol
-		Matcher m = oprCode.matcher(jSelector);
+		Matcher m = oprCode.matcher(new StringBuffer(jSelector));
 		StringBuffer sb = new StringBuffer();
 		while (m.find()) {
              // find every occurence of _op\w\w\w_ and convert it into a symbol
@@ -749,7 +753,9 @@ public final class Reflection {
 		m.appendTail(sb);
 		
 		// _ -> :
-		return sb.toString().replaceAll("_", ":");
+        // Backport from JDK 1.4 to 1.3
+		// return sb.toString().replaceAll("_", ":");
+        return Pattern.compile("_").matcher(sb).replaceAll(":");
 	}
 	
 }

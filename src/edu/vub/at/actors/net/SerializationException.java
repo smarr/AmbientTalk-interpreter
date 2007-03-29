@@ -1,6 +1,5 @@
 /**
  * AmbientTalk/2 Project
- * Logging.java created on 20-feb-2007 at 10:05:26
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,45 +26,30 @@
  */
 package edu.vub.at.actors.net;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import java.io.ObjectStreamException;
+
+import edu.vub.at.exceptions.InterpreterException;
 
 /**
- * Auxiliary class used to group Log4J loggers.
+ * Used to wrap InterpreterExceptions during (de)serialization
+ * of AmbientTalk objects.
  * 
- * @author tvcutsem
+ * @author jessie
  */
-public final class Logging {
+public class SerializationException extends ObjectStreamException {
+  private final InterpreterException wrappedException_;
 
-	/**
-	 * Logs information regarding all event loops in the AT/2 runtime.
-	 */
-	public static final Logger EventLoop_LOG = Logger.getInstance("at.eventloops");
-	
-	/**
-	 * Logs information of all actor event loops in the AT/2 runtime.
-	 */
-	public static final Logger Actor_LOG = Logger.getInstance("at.eventloops.actors");
+  public SerializationException(InterpreterException e) {
+    super();
+    wrappedException_ = e;
+  }
 
-	/**
-	 * Logs information of all remote reference event loops in the AT/2 runtime.
-	 */
-	public static final Logger RemoteRef_LOG = Logger.getInstance("at.eventloops.remoterefs");
-	
-	/**
-	 * Logs information of the VM event loops of the AT/2 runtime.
-	 */
-	public static final Logger VirtualMachine_LOG = Logger.getInstance("at.eventloops.vm");
-
-	/**
-	 * Logs information related to the object path, init file, etc.
-	 */
-	public static final Logger Init_LOG = Logger.getInstance("at.init");
-	
-	
-	static {
-		// intialize the Log4J API
-		PropertyConfigurator.configure(Logging.class.getResource("logging.props"));
-	}
-	
+  public SerializationException(String s, InterpreterException e) {
+    super(s);
+    wrappedException_ = e;
+  }
+  
+  public InterpreterException getWrappedException() {
+    return wrappedException_;
+  }  
 }

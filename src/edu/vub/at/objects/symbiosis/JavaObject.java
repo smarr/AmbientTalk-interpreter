@@ -48,10 +48,10 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.IdentityHashMap;
 
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
-import java.util.IdentityHashMap;
 
 /**
  * JavaObject instances represent java objects under symbiosis.
