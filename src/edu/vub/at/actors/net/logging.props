@@ -2,11 +2,15 @@
 
 # print eventloop-related information to the console
 
-log4j.logger.at.eventloops=DEBUG,console
-log4j.logger.at.init=INFO,console
+at.eventloops=DEBUG
+at.init=INFO
+org.jgroups=ERROR
 
-log4j.appender.console=edu.vub.at.actors.net.IATLogger
-log4j.appender.console.layout=org.apache.log4j.PatternLayout
+#log4j.logger.at.eventloops=DEBUG,console
+#log4j.logger.at.init=INFO,console
+
+#log4j.appender.console=edu.vub.at.actors.net.IATLogger
+#log4j.appender.console.layout=org.apache.log4j.PatternLayout
 
 # 'console' used to be a ConsoleAppender, but log4j for CDC refuses to parse the 'target' option...
 #log4j.appender.console=org.apache.log4j.ConsoleAppender
@@ -18,10 +22,10 @@ log4j.appender.console.layout=org.apache.log4j.PatternLayout
 
 # apparently in the CDC version of Log4J, the conversion date pattern is ignored
 #log4j.appender.console.layout.ConversionPattern=%d{HH:mm:ss} %-5p %c - %m%n
-log4j.appender.console.layout.ConversionPattern=%d %-5p %c - %m%n
+#log4j.appender.console.layout.ConversionPattern=%d %-5p %c - %m%n
 
 # JGroups output can be configured here
-log4j.logger.org.jgroups=ERROR, console
+#log4j.logger.org.jgroups=ERROR, console
 
 # uncomment to receive log4j's own debugging logs
 #log4j.debug=true
