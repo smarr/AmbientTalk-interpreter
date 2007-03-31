@@ -107,9 +107,9 @@ public class NATNil implements ATNil, Serializable {
     }
     
     /**
-     * The default behaviour of 'delegate' for primitive non-object ambienttalk language values is
+     * The default behaviour of 'invoke' for primitive non-object ambienttalk language values is
      * to check whether the requested functionality is provided by a native Java method
-     * with the same selector, but prefixed with 'base_'.
+     * with the same selector, but prefixed with <tt>base_</tt>.
      *
      * Because an explicit AmbientTalk method invocation must be converted into an implicit
      * Java method invocation, the invocation must be deified ('upped'). The result of the

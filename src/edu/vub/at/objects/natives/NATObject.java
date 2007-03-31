@@ -71,33 +71,35 @@ import java.util.Vector;
 
 /**
  * Native implementation of a default ambienttalk object.
- * 
  * Although a native AmbientTalk object is implemented as a subtype of callframes,
  * the reality is that call frames are a special kind of object.
- * 
  * This is a pure form of implementation subclassing: we subclass NATCallframe only
  * for reusing the field definition/assignment protocol and for inheriting the
  * variable map, the state vector and the lexical parent.
- * 
+ * <p>
  * NATObjects are one of the five native classes that (almost) fully implement the ATObject interface
  * (next to NATCallFrame, NATNil, NATMirage and JavaObject). The implementation is such that
- * a NATObject instance represents *both* a base-level AmbientTalk object, as well as a meta-level
+ * a NATObject instance represents <b>both</b> a base-level AmbientTalk object, as well as a meta-level
  * AmbientTalk mirror on that object.
  * 
  * An AmbientTalk base-level object has the following structure:
- * - properties: a set of boolean flags denoting:
- *   - whether the dynamic parent is an IS_A or a SHARES_A parent
- *   - whether the object shares its variable map with clones
- *   - whether the object shares its method dictionary with clones
- *   - whether the object is an isolate (i.e. pass-by-copy)
- * - a variable map, mapping variable names to indices into the state vector
- * - a state vector, containing the field values of the object
- * - a linked list containing custom field objects
- * - a method dictionary, mapping selectors to methods
- * - a dynamic object parent, to delegate select and invoke operations
+ * <ul>
+ *  <li> properties: a set of boolean flags denoting:
+ *  <ul>
+ *   <li> whether the dynamic parent is an IS_A or a SHARES_A parent
+ *   <li> whether the object shares its variable map with clones
+ *   <li> whether the object shares its method dictionary with clones
+ *   <li> whether the object is an isolate (i.e. pass-by-copy)
+ *  </ul>
+ *  <li> a variable map, mapping variable names to indices into the state vector
+ *  <li> a state vector, containing the field values of the object
+ *  <li> a linked list containing custom field objects
+ *  <li> a method dictionary, mapping selectors to methods
+ *  <li> a dynamic object parent, to delegate select and invoke operations
  *   ( this parent slot is represented by a true AmbientTalk field, rather than by an instance variable )
- * - a lexical object parent, to support lexical scoping
- * - a table of stripes that were attached to this object (for classification purposes)
+ *  <li> a lexical object parent, to support lexical scoping
+ *  <li> a table of stripes that were attached to this object (for classification purposes)
+ * </ul>
  * 
  * @author tvcutsem
  * @author smostinc
@@ -419,7 +421,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * is applied to the provided arguments.
 	 * 
 	 * The code for meta_invoke is actually equivalent to
-	 * <code>return this.meta_select(receiver, selector).asClosure().meta_apply(arguments);</code>
+	 * <pre>return this.meta_select(receiver, selector).asClosure().meta_apply(arguments);</pre>
 	 * but has a specialized implementation for performance reasons (no unnecessary closure is created)
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {

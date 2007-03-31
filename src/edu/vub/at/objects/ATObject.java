@@ -30,30 +30,63 @@ package edu.vub.at.objects;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
+import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.exceptions.XUndefinedField;
 import edu.vub.at.objects.coercion.ATConversions;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NATMirage;
+import edu.vub.at.objects.mirrors.OBJMirrorRoot;
+import edu.vub.at.objects.natives.NATCallframe;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.symbiosis.JavaClass;
+import edu.vub.at.objects.symbiosis.JavaObject;
 
 /**
- * ATObject represents the public interface of an AmbientTalk/2 object.
+ * ATObject represents the public interface common to any AmbientTalk/2 object.
  * Any value representing an ambienttalk object should implement this interface.
  * 
- * Some meta methods defined in this interface will give rise to events in the receiver object's
- * beholders (i.e. the observers of the object's mirror).
+ * More specifically, this interface actually defines two interfaces all at once:
+ * <ul>
+ *  <li>A <b>base-level</b> interface to AmbientTalk objects, describing all
+ *      methods and fields that a regular AmbientTalk object understands.
+ *  <li>A <b>meta-level</b> interface to AmbientTalk objects, describing all
+ *      methods and fields that the <b>mirror</b> on any AmbientTalk object
+ *      understands.
+ * </ul>
  * 
- * The principal implementors of this interface are:
- *  - NATNil which provides a default implementation for all native, non-object values
- *    The default implementation tries to make a Java native object look like an AmbientTalk object.
- *  - NATCallframe provides the implementation for a special kind of objects, namely call frames or
- *    'activation records'. These are objects without true methods.
- *  - NATObject provides the most important implementation, namely that of base-level AmbientTalk objects.
- *  - NATSuperObject acts as a proxy to a NATObject. Therefore, it implements the ATObject interface
- *    by properly forwarding all methods to a wrapped object.
+ * In the AmbientTalk/2 Interpreter implementation, there are only a few classes
+ * that (almost) fully implement this interface. The principal implementors are:
  * 
- * @author tvc
+ * <ul>
+ *   <li>{@link NATNil}: provides a default implementation for all <i>native</i> data types.
+ *   For example, native methods, closures, abstract grammar nodes, booleans, numbers, etc.
+ *   are all represented as AmbientTalk objects with 'native' behaviour.
+ *   <li>{@link NATCallframe}: overrides most of the default behaviour of {@link NATNil} to
+ *   implement the behaviour of call frames, also known as <i>activation records</i>. In
+ *   AmbientTalk, call frames are the objects that together define the runtime stack.
+ *   They are objects with support for fields but without support for actual methods.
+ *   <li>{@link NATObject}: extends the behaviour of call frames to include support for
+ *   full-fledged, programmer-defined objects with support for methods and delegation.
+ *   <li>{@link JavaClass} and {@link JavaObject}: adapt the behaviour of native AmbientTalk
+ *   objects to engage in symbiosis with either a Java class or a Java object.
+ *   This implementation makes use of the Java Reflection API to regard Java objects
+ *   as though it were AmbientTalk objects.
+ *   <li>{@link NATMirage} and {@link OBJMirrorRoot}: these two classes work in tandem to
+ *   enable reflection on AmbientTalk objects. That is, because of these two classes, an
+ *   AmbientTalk programmer can himself invoke the methods provided in this interface.
+ *   {@link NATMirage} implements each operation in this interface by forwarding a
+ *   downed invocation to a custom so-called <i>mirror</i> object. This mirror object
+ *   can delegate to {@link OBJMirrorRoot}, which is a special object that implements
+ *   each meta-level operation of this interface as a base-level operation. Hence, in
+ *   a sense, {@link OBJMirrorRoot} also 'implements' this interface, but at the
+ *   AmbientTalk level, rather than at the Java level.
+ * </ul>
+ * 
+ * @author tvcutsem
  */
 public interface ATObject extends ATConversions {
 
@@ -62,59 +95,108 @@ public interface ATObject extends ATConversions {
       * ------------------------------ */
 
     /**
-     * Sends a newly created message asynchronously by this object.
-     * The message may be scheduled in the current actor's outbox if the current ATObject is a remote reference.
-     * @param message the asynchronous message (by default created using the actor's base_createMessage method)
-     *
-     * Triggers the following events on this object's beholders (mirror observers):
-     *  - <tt>sentMessage</tt> when the message was sent by the actor.
+     * When the base-level AmbientTalk code <code>rcv<-m()</code> is
+     * evaluated in the context of an object <tt>o</tt>, an asynchronous message
+     * <code><-m()</code> is first created by the current actor mirror.
+     * Subsequently, this message needs to be sent to the receiver. This
+     * meta-level operation is reified by this method, as if by invoking:
+     * <pre>(reflect: o).send(message)</pre>
+     * The default behaviour is to access the current actor's mirror and to
+     * ask the actor to send the message in this object's stead by invoking
+     * <pre>actor.send(message)</pre>
+     * 
+     * @param message the asynchronous message to be sent by this object
+     * @return the result of message sending, which will be the value of an
+     * asynchronous message send expression.
      */
     public ATObject meta_send(ATAsyncMessage message) throws InterpreterException;
     
     /**
-     * Handles a first-class message of which it is the receiver. 
-     * @param message the asynchronous message send by some object possibly from another actor
-     * @return the return value of invoking the method corresponding to the message
+     * When an AmbientTalk object receives a message that was sent to it
+     * asynchronously, the message is delivered to the object's mirror by
+     * means of this meta-level operation.
+     * <p>
+     * The default behaviour of a mirror in response to the reception of a
+     * message <tt>msg</tt> is to invoke:
+     * <pre>msg.process(self)</pre>
+     * In turn, the default message processing behaviour is to invoke
+     * the method corresponding to the message's selector on this object.
+     * Hence, usually a <tt>receive</tt> operation is simply translated into
+     * a <tt>invoke</tt> operation. The reason for having a separate <tt>receive</tt>
+     * operation is that this enables the AmbientTalk meta-level programmer to
+     * distinguish between synchronously and asynchronously received messages.
+     * @param message the message that was asynchronously sent to this object
+     * @return by default, the value of invoking the method corresponding to the message
      */
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException;
    
     /**
-     * Invoke a method corresponding to the selector with the given arguments.
-     * The selector is looked up along the dynamic delegation chain.
+     * This meta-level operation reifies the act of synchronous message sending
+     * (better known as "method invocation"). Hence, the meta-level equivalent
+     * of the base-level code <code>o.m()</code> is:
+     * <pre>(reflect: o).invoke(o,`m,[])</pre>.
+     * 
+     * Method invocation comprises selector lookup and the application of the value
+     * bound to the selector. Selector lookup first queries an object's local
+     * fields, then the method dictionary. If the selector is not found, the
+     * search continues in the objects <i>dynamic parent</i>.
+     * <p>
+     * Note also that the first argument to <tt>invoke</tt> denotes the
+     * so-called "receiver" of the invocation. It is this object to which
+     * the <tt>self</tt> pseudo-variable should be bound during method execution.
+     * 
+     * @see #meta_doesNotUnderstand(ATSymbol) for what happens if the selector
+     * is not found.
      *
-     * The first argument, 'receiver', denotes the receiver of the method invocation.
-     *
-     * @param receiver the object to which 'self' is bound during execution of the method
-     * @param selector the name of the method to be invoked
-     * @param arguments the table of arguments passed to the method
-     * @return return value of the method
-     *
-     * Triggers the following events on this object's beholders (mirror observers):
-     *  - <tt>methodFound</tt> when a method has been found but not yet applied
-     *  - <tt>methodInvoked</tt> when the received method has been applied
+     * @param receiver the object to which <tt>self</tt> is bound during execution
+     * of the method
+     * @param selector a symbol denoting the name of the method to be invoked
+     * @param arguments the table of actual arguments to be passed to the method
+     * @return by default, the object returned from the invoked method
      */
     public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException;
 
     /**
-     * Query an object for a given field or method which is visible to the outside world.
-     * Only methods in the dynamic parent chain are considered.
-     * @param selector the name of a field or method
+     * This meta-level method is used to determine whether an object has a
+     * field or method corresponding to the given selector, without actually invoking
+     * or selecting any value associated with that selector.
+     * <p>
+     * The lookup process is the same as that for the <tt>invoke</tt> operation (i.e.
+     * not only the object's own fields and methods are searched, but also those of
+     * its dynamic parents).
+     * 
+     * @param selector a symbol denoting the name of a field or method
      * @return a boolean denoting whether the object responds to <tt>o.selector</tt>
      */
     public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException;
 
     /**
-     * Called when a selection fails because the selector was not
-     * found along the dynamic delegation hierarchy.
+     * When method invocation or field selection fails to find the selector in
+     * the dynamic parent chain of an object, rather than immediately raising an
+     * {@link XSelectorNotFound} exception, the mirror of the original receiver
+     * of the method invocation or field selection is asked to handle failed lookup.
+     * <p>
+     * The default behaviour of <tt>doesNotUnderstand</tt> is to raise an
+     * {@link XSelectorNotFound} exception.
+     * <p>
+     * This method is very reminiscent of Smalltalk's well-known
+     * <tt>doesNotUnderstand:</tt> and of Ruby's <tt>method_missing</tt> methods.
+     * There are, however, two important differences:
+     * <ul>
+     *  <li> <tt>doesNotUnderstand</tt> is a <b>meta</b>-level operation in AmbientTalk.
+     *  It is an operation defined on mirrors, not on regular objects.
+     *  <li> <tt>doesNotUnderstand</tt> in AmbientTalk relates to <i>attribute
+     *  selection</i>, not to <i>method invocation</i>. Hence, this operation is
+     *  more general in AmbientTalk than in Smalltalk: it intercepts both failed
+     *  method invocations as well as failed field selections. Hence, it can be used
+     *  to model "virtual" fields. This shows in the interface: this operation
+     *  does not consume the actual arguments of a failed method invocation. These
+     *  should be consumed by means of currying, e.g. by making <tt>doesNotUnderstand</tt>
+     *  return a block which can then take the arguments table as its sole parameter.
+     * </ul>
      *
-     * Note the differences with Smalltalk's well-known 'doesNotUnderstand':
-     *  - dNU is a meta-level operation in AmbientTalk; it is applied to mirrors.
-     *  - dNU relates to attribute selection, not to method invocation. Hence, dNU
-     *    in AmbientTalk is more general: it can be used to model 'virtual' fields
-     *    by returning a value and it can be used to model 'virtual' methods by
-     *    returning a block closure.
-     *
-     * @param selector the selector that could not be found
+     * @param selector a symbol denoting the name of a method or field that could not be found
+     * @return by default, this operation does not return a value, but raises an exception instead.
      * @throws edu.vub.at.exceptions.XSelectorNotFound the default reaction to a failed selection
      */
     public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException;
@@ -124,22 +206,52 @@ public interface ATObject extends ATConversions {
      * ----------------------------- */
 
     /**
-     * Allows objects to specify how they should be passed when passed as an argument
-     * in a message sent to another actor.
+     * When an AmbientTalk object crosses actor boundaries, e.g. by means of
+     * parameter passing, as a return value or because it was explicitly
+     * exported, this meta-level operation is invoked on the object's mirror.
+     * <p>
+     * This operation allows objects to specify themselves how they should
+     * be parameter-passed during inter-actor communication. The interpreter
+     * will never pass an object to another actor directly, but instead always
+     * parameter-passes the <i>return value</i> of invoing <tt>pass()</tt> on
+     * the object's mirror.
+     * <p>
+     * Mirrors on by-copy objects implement <tt>pass</tt> as follows:
+     * <pre>def pass() { base }</pre>
+     * Mirrors on by-reference objects implement <tt>pass</tt> by returning
+     * a far reference to their base-level object.
      * 
-     * @return Objects may choose to return themselves, a clone or a proxy representation
-     * @throws InterpreterException - when overridden by the programmer
+     * @return the object to be parameter-passed instead of this object. For objects,
+     * the default is a far reference to themselves. For isolates, the default is
+     * to return themselves.
      */
     public ATObject meta_pass() throws InterpreterException;
 
     /**
-     * When an object is deserialized after it has been passed to another actor, it is
-     * given a chance to tell the interpreter which object it represents. Normally,
-     * by copy objects just return 'this' because they represent themselves. Far references,
-     * however, will try to 'resolve' themselves into a near reference when possible.
+     * When an AmbientTalk object has just crossed an actor boundary (e.g.
+     * because of inter-actor message sending) this meta-level operation
+     * is invoked on the object's mirror.
+     * <p>
+     * This meta-level operation gives objects a chance to tell the interpreter
+     * which object they actually represent, because the object retained
+     * after parameter passing is the return value of the <tt>resolve</tt>
+     * operation.
+     * <p>
+     * Mirrors on by-copy objects, like isolates, implement <tt>resolve</tt> as follows:
+     * <pre>def resolve() { base }</pre>
+     * In other words, by-copy objects represent themselves. By-reference objects
+     * are paremeter passed as far references. Mirrors on far references implement
+     * <tt>resolve</tt> by trying to resolve the far reference into a local, regular
+     * object reference (which is possible if the object they point to is located
+     * in the actor in which they just arrived). If it is not possible to resolve
+     * a far reference into a local object, the far reference remains a far reference.
+     * <p>
+     * Note that for isolates, this operation also ensures that the isolate's
+     * lexical scope is rebound to the lexical root of the recipient actor.
      *  
-     * @return the object represented by this deserialized object
-     * @throws XIllegalOperation when by-reference objects are resolved or when overridden by programmer
+     * @return the object represented by this object
+     * @throws XObjectOffline if a far reference to a local object can no longer be resolved
+     * because the object has been taken offline 
      */
     public ATObject meta_resolve() throws InterpreterException;
     
@@ -148,108 +260,189 @@ public interface ATObject extends ATConversions {
      * ------------------------------------------ */
     
     /**
-     * Select a slot (field | method) from an object whose name corresponds to the given
-     * selector. The slot lookup follows the dynamic delegation chain.
+     * This meta-level operation reifies field or method selection. Hence, the
+     * base-level evaluation of <code>o.x</code> is interpreted at the meta-level as:
+     * <pre>(reflect: o).select(o, `x)</pre>
+     * 
+     * The selector lookup follows the same search rules as those for <tt>invoke</tt>.
+     * That is: first an object's local fields are searched, then the local method dictionary,
+     * and then the object's <i>dynamic parent</i>.
+     * <p>
+     * The <tt>select</tt> operation can be used to both select fields or methods from
+     * an object. When the selector is bound to a method, the return value of
+     * <tt>select</tt> is a closure that wraps the found method in the object in which
+     * the method was found. This ensures that the method retains its context information,
+     * such as the lexical scope in which it was defined and the value of <tt>self</tt>, which
+     * will be bound to the original receiver, i.e. the first argument of <tt>select</tt>.
      *
-     * Like with method invocation, slot selection is parameterized by the 'original receiver'.
-     * This original receiver is equal to 'this' the first time it is called. Via delegation,
-     * 'this' may instead be a dynamic parent of 'receiver'.
+     * @see #meta_doesNotUnderstand(ATSymbol) for what happens if the selector is not found.
      *
-     * When a method is selected from an object, it is wrapped in a closure such that
-     * the 'self' is properly preserved.
-     *
-     * @param receiver the dynamic receiver to which method closures should bind self.
-     * @param selector the name of the field or method sought for.
-     * @return the contents of the slot
-     *
-     * Triggers the <tt>slotSelected</tt> event on this object's beholders (mirror observers).
+     * @param receiver the dynamic receiver of the selection. If the result of the selection is
+     * a method, the closure wrapping the method will bind <tt>self</tt> to this object.
+     * @param selector a symbol denoting the name of the field or method to select.
+     * @return if selector is bound to a field, the value of the field; otherwise if
+     * the selector is bound to a method, a closure wrapping the method.
      */
     public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException;
 
     /**
-     * Select a slot (field | method) from an object whose name corresponds to the given
-     * selector. The slot lookup follows the lexical nesting chain.
+     * This meta-level operation reifies variable lookup. Hence, the base-level code
+     * <code>x</code> evaluated in the lexical scope <tt>lex</tt> is interpreted at
+     * the meta-evel as:
+     * <pre>(reflect: lex).lookup(`x)</pre>
+     * 
+     * Variable lookup first queries the local fields of this object, then the local
+     * method dictionary. If the selector is not found, the search continues in
+     * this object's <i>lexical parent</i>. Hence, variable lookup follows
+     * <b>lexical scoping rules</b>.
+     * <p>
+     * Similar to the behaviour of <tt>select</tt>, if the selector is bound to a
+     * method rather than a field, <tt>lookup</tt> returns a closure wrapping the method
+     * to preserve proper lexical scoping and the value of <tt>self</tt> for the found
+     * method.
+     * <p>
+     * Note that, unlike <tt>invoke</tt> and <tt>select</tt>, <tt>lookup</tt> does
+     * not give rise to the invocation of <tt>doesNotUnderstand</tt> if the selector
+     * was not found. The reason for this is that lexical lookup is a static process
+     * for which it makes less sense to provide dynamic interception facilities.
      *
-     * When a method is found in an object, it is wrapped in a closure such that the 'self'
-     * is properly preserved.
-     *
-     * @param selector the name of the field or method to look up.
-     * @return the contents of the slot
-     * @throws XUndefinedField if the field cannot be found
-     *
-     * Triggers the <tt>slotSelected</tt> event on this object's beholders (mirror observers).
+     * @param selector a symbol denoting the name of the field or method to look up lexically.
+     * @return if selector is bound to a field, the value of the field; otherwise if selector
+     * is bound to a method, a closure wrapping the method.
+     * @throws XUndefinedField if the selector could not be found in the lexical scope of this object
      */
     public ATObject meta_lookup(ATSymbol selector) throws InterpreterException;
 
     /**
-     * Defines a new field in an object.
+     * This meta-level operation reifies field definition. Hence, the base-level
+     * code <code>def x := v</code> evaluated in a lexical scope <tt>lex</tt>
+     * is interpreted at the meta-level as:
+     * <pre>(reflect: lex).defineField(`x, v)</pre>
+     * 
+     * Invoking this meta-level operation on an object's mirror adds a new field
+     * to that object. An object cannot contain two or more fields with the
+     * same name.
      *
-     * @param name the name of the new field
+     * @param name a symbol denoting the name of the new field
      * @param value the value of the new field
      * @return nil
-     * @throws edu.vub.at.exceptions.XDuplicateSlot if the field name already exists
-     *
-     * Triggers the <tt>fieldAdded</tt> event on this object's beholders (mirror observers) if
-     * the field is added successfully.
+     * @throws edu.vub.at.exceptions.XDuplicateSlot if the object already has a
+     * local field with the given name
      */
     public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException;
 
     /**
-     * Sets the value of the variable to the given value.
-     * Triggers the <tt>fieldAssigned</tt> event on this object's beholders (mirror observers).
-     *
-     * Normally, a variable assignment can only be triggered from within the lexical scope of an object.
+     * This meta-level operation reifies variable assignment. Hence, the base-level
+     * code <code>x := v</code> evaluated in a lexical scope <tt>lex</tt>
+     * is interpreted at the meta-level as:
+     * <pre>(reflect: lex).assignVariable(`x, v)</pre>
+     * 
+     * When <tt>assignVariable</tt> is invoked on an object's mirror, the variable
+     * to assign is looked up according to rules similar to those defined by <tt>lookup</tt>.
+     * First, the object's local fields are checked. If the selector is not found there,
+     * the fields of the <i>lexical parent</i> of the object are searched recursively.
+     * Hence, variable assignment follows <b>lexical scoping rules</b>.
+     * Note that local methods are always disregarded: methods are not assignable.
+     * <p>
+     * When the lookup is successful, the value bound to the found field is assigned
+     * to the given value.
      *
      * @param name a symbol representing the name of the variable to assign.
-     * @param value the value to assign to the specified slot.
+     * @param value the value to assign to the variable.
      * @return nil
-     * @throws XUnassignableField if the field to set cannot be found.
+     * @throws XUnassignableField if the variable to assign to cannot be found.
      */
     public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException;
 
     /**
-     * Sets the value of a field to the given value.
-     * Triggers the <tt>fieldAssigned</tt> event on this object's beholders (mirror observers).
+     * This meta-level operation reifies field assignment. Hence, the base-level
+     * code <code>o.x := v</code> is interpreted at the meta-level as:
+     * <pre>(reflect: o).assignField(`x, v)</pre>
+     * 
+     * When <tt>assignField</tt> is invoked on an object's mirror, the field
+     * to assign is looked up according to rules similar to those defined by
+     * <tt>invoke</tt> and <tt>select</tt>. First, the object's local fields
+     * are checked. If the selector is not found there, the fields of its
+     * <i>dynamic parent</i> are searched recursively. Note that local methods
+     * are always disregarded: methods are not assignable.
+     * <p>
+     * When the lookup is successful, the value bound to the found field is assigned
+     * to the given value.
      *
-     * Field assignment may result in the assignment of a parent's field.
-     * @param receiver the object which received (and possibly delegated) the request
-     * @param name a symbol representing the field to assign.
-     * @param value the value to assign to the specified slot.
-     *
+     * @param name a symbol representing the name of the field to assign.
+     * @param value the value to assign to the field.
      * @return nil
-     * @throws XUnassignableField if the field to set cannot be found.
+     * @throws XUnassignableField if the field to assign to cannot be found.
      */
     public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException;
 
-    /* ------------------------------------
-      * -- Extension and cloning protocol --
-      * ------------------------------------ */
+    /* -----------------------------------------
+      * -- Cloning and instantiation protocol --
+      * ---------------------------------------- */
 
     /**
-     * Clone the receiver object. This cloning closely corresponds to the allocation phase
-     * in class-based OO languages. In class-based languages, instance creation is based on the
-     * equation <new Class> = <initialize> (<allocate Class>) (i.e. first allocate a new instance, then
-     * initialize it). In our object-based model, allocation is replaced by cloning.
-     *
-     * When an object is asked to clone itself, it will also clone its dynamic parent if it extends
-     * this parent in an 'is-a' relationship. This is similar to the observation that, in class-based
-     * languages, allocating a new object of a subclass entails allocating space for the state of the superclass.
-     *
-     * Triggers the <tt>objectCloned</tt> event on this object's beholders (mirror observers).
-     *
-     * Initializing the clone is the responsibility of the method named <init>.
+     * This meta-level operation reifies the act of cloning the base-level object.
+     * Hence, the code <code>clone: o</code> is interpreted at the meta-level as
+     * <pre>(reflect: o).clone()</pre>
+     * 
+     * AmbientTalk's default cloning semantics are based on shallow copying.
+     * A cloned object has copies of the original object's fields, but the values
+     * of the fields are shared between the clones. A clone has the same methods
+     * as the original object. Methods added at a later stage to the original
+     * will not affect the clone's methods and vice versa. This means that each
+     * objects has its own independent fields and methods.
+     * <p>
+     * If the cloned AmbientTalk object contains programmer-defined field objects,
+     * each of these fields is re-instantiated with the clone as a parameter. The
+     * clone is intialized with the re-instantiated fields rather than with the
+     * fields of the original object. This property helps to ensure that each
+     * object has its own independent fields.
+     * <p>
+     * If the object has a <i>shares-a</i> relationship with its parent, the object
+     * and its clone will <b>share</b> the same parent object. Shares-a relationships
+     * are the default in AmbientTalk, and they match with the semantics of
+     * shallow copying: the dynamic parent of an object is a regular field, hence
+     * its contents is shallow-copied.
+     * <p>
+     * If the object has an <i>is-a</i> relationship with its parent object, a
+     * clone of the object will receive a clone of the parent object as its parent.
+     * Hence, is-a relationships "override" the default shallow copying semantics
+     * and recursively clone the parent of an object up to a shares-a relationship.
+     * <p>
+     * If a mirage is cloned, its mirror is automatically re-instantiated with
+     * the new mirage, to ensure that each mirage has its independent mirror.
+     * @return a clone of the mirror's <tt>base</tt> object
      */
     public ATObject meta_clone() throws InterpreterException;
 
     /**
-     * Create a new instance of the receiver object. AmbientTalk mimics the initialization
-     * protocol of Class-based languages like Smalltalk. In a typical CBL, object initialization
-     * equals class allocation + new instance initialization. In AmbientTalk, class allocation
-     * is replaced by cloning via the meta_clone operation. Object initialization itself differs
-     * from cloning in that it additionally initializes the clone. For standard AmbientTalk objects,
-     * this happens by invoking a method named 'init' on the newly created instance.
+     * This meta-level operation reifies instance creation. The default
+     * implementation of an AmbientTalk object's <tt>new</tt> method is:
+     * <pre>def new(@initargs) { (reflect: self).newInstance(initargs) }</pre>
+     * 
+     * Creating a new instance of an object is a combination of:
+     * <ul>
+     *  <li>creating a clone of the object
+     *  <li>initializing the clone by invoking its <tt>init</tt> method
+     * </ul>
+     * 
+     * The default implementation is:
+     * <pre>def newInstance(initargs) {
+     *  def instance := self.clone();
+     *  instance.init(@initargs);
+     *  instance;
+     *}
+     * </pre>
+     * 
+     * Instance creation in AmbientTalk is designed to mimick class instantiation
+     * in a class-based language. Instantiating a class <tt>c</tt> requires <i>allocating</i>
+     * a new instance <tt>i</tt> and then invoking the <i>constructor</i> on that new instance.
+     * In AmbientTalk, class allocation is replaced by object <i>cloning</i>. The
+     * benefit is that an instantiated object its variables are already initialized
+     * to useful values, being those of the object from which it is instantiated.
+     * The <tt>init</tt> method plays the role of "constructor" in AmbientTalk.
      *
-     * @param initargs arguments to the 'init' constructor method
+     * @param initargs a table of the actual arguments to be passed to the <tt>init</tt> method
      * @return the new instance
      */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException;
