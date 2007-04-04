@@ -28,6 +28,7 @@
 package edu.vub.at.eval;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XAmbienttalk;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalParameter;
 import edu.vub.at.objects.ATContext;
@@ -36,13 +37,16 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
+import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.objects.symbiosis.JavaPackage;
+import edu.vub.at.objects.symbiosis.XJavaException;
 import edu.vub.util.Matcher;
 import edu.vub.util.Pattern;
 
@@ -507,4 +511,22 @@ public final class Evaluator {
 		return nam.substring(nam.lastIndexOf(".") + 1);
 	}
 	
+
+	public static final InterpreterException asNativeException(ATObject atObj) throws InterpreterException {
+		if (atObj instanceof NATException) {
+			return ((NATException)atObj).getWrappedException();
+		}
+		
+		if (atObj instanceof JavaObject) {
+			JavaObject jObject = (JavaObject) atObj;
+			
+			Object object = jObject.getWrappedObject();
+			if (object instanceof InterpreterException) {
+				return (InterpreterException) object;				
+			} else if (object instanceof Throwable) {
+				return new XJavaException((Throwable)object);
+			}
+		}
+		return new XAmbienttalk(atObj);
+	}
 }

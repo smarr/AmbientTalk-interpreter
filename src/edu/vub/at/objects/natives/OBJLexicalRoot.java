@@ -37,6 +37,7 @@ import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.actors.net.OBJNetwork;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XAmbienttalk;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -51,6 +52,8 @@ import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
+import edu.vub.at.objects.symbiosis.JavaObject;
+import edu.vub.at.objects.symbiosis.XJavaException;
 import edu.vub.at.parser.NATParser;
 
 /**
@@ -895,7 +898,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Raises an exception which can be caught by dynamically installed try-catch-using blocks.
 	 */
 	public ATNil base_raise_(ATObject anExceptionObject) throws InterpreterException {
-		throw anExceptionObject.asNativeException().getWrappedException();
+		throw Evaluator.asNativeException(anExceptionObject);
 	}
 	
 	/* --------------------

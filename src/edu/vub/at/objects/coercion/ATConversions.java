@@ -126,7 +126,6 @@ public interface ATConversions {
 	public NATTable    asNativeTable() throws XTypeMismatch;
 	public NATBoolean  asNativeBoolean() throws XTypeMismatch;
 	public NATNumeric  asNativeNumeric() throws XTypeMismatch;
-	public NATException asNativeException() throws XTypeMismatch;
 	public NATFarReference asNativeFarReference() throws XTypeMismatch;
 	
 	public JavaObject  asJavaObjectUnderSymbiosis() throws XTypeMismatch;

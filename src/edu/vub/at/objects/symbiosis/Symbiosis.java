@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.symbiosis;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
@@ -538,7 +539,7 @@ public final class Symbiosis {
 			return jArray;
 		// -- EXCEPTIONS --
 		} else if (targetType == Exception.class) {
-			return atObj.asNativeException().getWrappedException();
+			return Evaluator.asNativeException(atObj);
 		// -- CLASS OBJECTS --
 		} else if (targetType == Class.class) {
 			return atObj.asJavaClassUnderSymbiosis().getWrappedClass();

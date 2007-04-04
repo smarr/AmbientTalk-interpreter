@@ -35,6 +35,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ListIterator;
 import java.util.Stack;
@@ -112,6 +113,19 @@ public final class InvocationStack implements Cloneable, Serializable {
 	}
 	
 	public void printStackTrace(PrintStream s) {
+		if(!invocationStack_.isEmpty()) {
+			s.println("origin:");
+			// iterator loops from bottom to top by default
+			ListIterator i = invocationStack_.listIterator();
+			while (i.hasNext()) { i.next(); } // skip to last element
+			while(i.hasPrevious()) { // traverse stack top to bottom
+				InvocationFrame frame = (InvocationFrame) i.previous();
+				s.println("at "+Evaluator.toString(frame.invocation));
+			}
+		}
+	}
+	
+	public void printStackTrace(PrintWriter s) {
 		if(!invocationStack_.isEmpty()) {
 			s.println("origin:");
 			// iterator loops from bottom to top by default

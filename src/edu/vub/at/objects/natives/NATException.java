@@ -27,23 +27,20 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.Reflection;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 
 /**
  * Instances of the class NATException provide a AmbientTalk representation for the 
  * default instances of all InterpreterExceptions. They allow catching exceptions 
  * thrown by the interpreter in AmbientTalk, as well as raising them for within
  * custom code. 
- *
- * TODO: should provide an interface ATException
  *
  * @author smostinc
  */
@@ -55,10 +52,6 @@ public class NATException extends NATByCopy {
 		wrappedException_ = wrappedException;
 	}
 
-	public NATException asNativeException() throws XTypeMismatch {
-		return this;
-	}
-	
 	public InterpreterException getWrappedException() {
 		return wrappedException_;
 	}
@@ -73,7 +66,11 @@ public class NATException extends NATByCopy {
 		return NATText.atValue(out.toString());
 	}
 	
-    public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
+	public NATNil base_setStackTrace(NATText newTrace) throws InterpreterException {
+		return NATNil._INSTANCE_;
+	}
+	
+	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
         return Reflection.upExceptionCreation(wrappedException_, initargs);
     }
 
@@ -81,7 +78,7 @@ public class NATException extends NATByCopy {
 		if(object instanceof NATException) {
 			return NATBoolean.atValue(
 					wrappedException_.getClass().isAssignableFrom(
-					object.asNativeException().wrappedException_.getClass())); 
+					((NATException)object).wrappedException_.getClass())); 
 		} else {
 			return NATBoolean._FALSE_;
 		}

@@ -31,7 +31,7 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XUserDefined;
+import edu.vub.at.exceptions.XAmbienttalk;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeStripes;
@@ -296,7 +296,7 @@ public class MirrorTest extends AmbientTalkTest {
 			
 	public void testMirrorFieldAccess() {
 		evalAndReturn(
-				"def basicClosure := { raise: (object: { nil }) }; \n" +
+				"def basicClosure := { raise: (object: { def [ message, stackTrace ] := [ nil, nil ] }) }; \n" +
 				"def extendedMirroredClosure := \n" +
 				"  object: { super := basicClosure } \n" +
 				"    mirroredBy: (mirror: { nil }); \n" +
@@ -305,7 +305,7 @@ public class MirrorTest extends AmbientTalkTest {
 		
 		evalAndTestException(
 				"intercessiveMirror.base.super.apply([]); \n",
-				XUserDefined.class);
+				XAmbienttalk.class);
 
 //		Can no longer set the mirror of a mirage the final 1-1 mapping is now stricly enforced
 //		// Cannot assign a base-level entity to a meta-level variable
