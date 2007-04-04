@@ -89,7 +89,7 @@ public class NATException extends NATByCopy {
     }
     
     public NATText meta_print() throws InterpreterException {
-    	return NATText.atValue("<exception:"+wrappedException_+">");
+    	return NATText.atValue("<exception:" + wrappedException_.getStripeType() + ": " + wrappedException_.getMessage() + ">");
     }
     
 	public ATObject meta_clone() throws InterpreterException {
