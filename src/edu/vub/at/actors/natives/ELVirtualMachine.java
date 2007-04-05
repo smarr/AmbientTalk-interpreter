@@ -27,31 +27,22 @@
  */
 package edu.vub.at.actors.natives;
 
-import java.net.URL;
-import java.util.Hashtable;
-
-import org.jgroups.Address;
-import org.jgroups.Channel;
-import org.jgroups.ChannelException;
-import org.jgroups.ChannelListener;
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-import org.jgroups.blocks.MessageDispatcher;
-import org.jgroups.blocks.RequestHandler;
-
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.id.ActorID;
 import edu.vub.at.actors.id.VirtualMachineID;
-import edu.vub.at.actors.net.DiscoveryListener;
-import edu.vub.at.actors.net.Logging;
-import edu.vub.at.actors.net.MembershipNotifier;
+import edu.vub.at.actors.net.ConnectionListenerManager;
 import edu.vub.at.actors.net.VMAddressBook;
 import edu.vub.at.actors.net.cmd.CMDHandshake;
 import edu.vub.at.actors.net.cmd.CMDObjectTakenOffline;
-import edu.vub.at.actors.net.cmd.VMCommand;
+import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.actors.net.comm.CommunicationBus;
+import edu.vub.at.actors.net.comm.NetworkException;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.util.logging.Logging;
+
+import java.util.Hashtable;
 
 /**
  * A ELVirtualMachine represents a virtual machine which hosts several actors. The 
@@ -60,19 +51,12 @@ import edu.vub.at.objects.ATAbstractGrammar;
  * descriptions and messages. It also contains a set of runtime parameters (such as
  * the objectpath and initfile) which are needed to initialise a new actor.
  *
- * TODO: use pure JChannel to send pure async messages rather than using a MessageDispatcher?
- * Or use dispatcher only for message transmission.
- *
  * @author tvcutsem
  * @author smostinc
  */
-public final class ELVirtualMachine extends EventLoop implements RequestHandler, DiscoveryListener {
-	
+public final class ELVirtualMachine extends EventLoop {
 	
 	public static final String _DEFAULT_GROUP_NAME_ = "AmbientTalk";
-	
-	/** the name of the multicast group joined by all AmbientTalk VMs */
-	private final String groupName_;
 		
 	/** startup parameter to the VM: the code of the init.at file to use */
 	private final ATAbstractGrammar initialisationCode_;
@@ -82,9 +66,6 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	
 	/** the VirtualMachineID of this VM */
 	private final VirtualMachineID vmId_;
-
-	/** the JGroups Address of the VM */
-	private Address vmAddress_;
 	
 	/**
 	 * A table mapping VM GUIDs to Address objects.
@@ -98,11 +79,11 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	/** a table mapping actor IDs to local native actors (int -> ELActor) */
 	private final Hashtable localActors_;
 	
-	/** the JGroups communication bus for this Virtual Machine */
-	public MessageDispatcher messageDispatcher_;
+	/** the communication bus for this Virtual Machine */
+	public final CommunicationBus communicationBus_;
 	
-	/** the JGroups discovery bus for this Virtual Machine */
-	public MembershipNotifier membershipNotifier_;
+	/** manager for disconnection and reconnection observers */
+	public final ConnectionListenerManager connectionManager_;
 	
 	/** the actor responsible for hosting the publications and subscriptions of this VM's actors */
 	public final ELDiscoveryActor discoveryActor_;
@@ -111,13 +92,10 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	 * Construct a new AmbientTalk virtual machine where...
 	 * @param initCode is the code to be executed in each new created actor (the content of the init.at file)
 	 * @param fields are all of the fields that should be present in each new created actor (e.g. the 'system' object of IAT)
-	 * @param groupName is the name of the JGroups group communication channel to join
+	 * @param groupName is the name of the overlay network to join
 	 */
 	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields, String groupName) {
-		
 		super("virtual machine");
-		
-		groupName_ = groupName;
 		
 		// used to initialize actors
 		initialisationCode_ = initCode;
@@ -130,10 +108,11 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		localActors_ = new Hashtable();
 		discoveryActor_ = new ELDiscoveryActor(this);
 		
-		Logging.VirtualMachine_LOG.info(this + ": VM created on network " + groupName);
-		
 		// initialize the message dispatcher using a JChannel
-		initializeNetwork();
+		connectionManager_ = new ConnectionListenerManager();
+		communicationBus_ = new CommunicationBus(this, groupName);
+		
+		Logging.VirtualMachine_LOG.info(this + ": VM created on network " + groupName);
 	}
 	
 	public static final ELVirtualMachine currentVM() {
@@ -154,8 +133,6 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 
 	/**
 	 * An event loop handles events by dispatching to the event itself.
-	 * Not to be confused with this class' handle(Message) method, which
-	 * enables the VM event loop to handle incoming JGroups Messages!
 	 */
 	public void handle(Event event) {
 		// make the event process itself
@@ -179,10 +156,6 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		}
 	}
 	
-	public Address getLocalVMAddress() {
-		return vmAddress_;
-	}
-	
 	/**
 	 * Signals the creation of a new actor on this virtual machine.
 	 */
@@ -194,19 +167,6 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		}
 	}
 	
-	/* =================================
-	 * == DiscoveryListener interface ==
-	 * ================================= */
-	
-	public void memberJoined(Address virtualMachine) {
-		this.event_memberJoined(virtualMachine);
-	}
-	
-	public void memberLeft(Address virtualMachine) {
-		this.event_memberLeft(virtualMachine);
-	}
-	
-	
 	/**
 	 * Signals that this VM can connect to the underlying network channel
 	 * and can start distributed interaction.
@@ -215,11 +175,9 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 		this.receive(new Event("goOnline") {
 			public void process(Object myself) {
 				try {
-					Channel channel = messageDispatcher_.getChannel();
-					channel.connect(groupName_);
-					vmAddress_ = channel.getLocalAddress();
-					Logging.VirtualMachine_LOG.info(this + ": interpreter online, address = " + vmAddress_);
-				} catch (Exception e) {
+					Address myAddress = communicationBus_.connect();
+					Logging.VirtualMachine_LOG.info(this + ": interpreter online, address = " + myAddress);
+				} catch (NetworkException e) {
 					Logging.VirtualMachine_LOG.fatal(this + ": could not connect to network:", e);
 				}
 			}
@@ -227,16 +185,13 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	}
 	
 	/**
-	 * Signals that this VM must disconnect from the underlying network channel
+	 * Signals that this VM must disconnect from the underlying discovery channel and communication bus
 	 */
 	public void event_goOffline() {
 		this.receive(new Event("goOffline") {
 			public void process(Object myself) {
 				try {
-					Channel channel = messageDispatcher_.getChannel();
-					channel.disconnect();
-					vmAddress_ = null;
-					membershipNotifier_.channelDisconnected();
+					communicationBus_.disconnect();
 					Logging.VirtualMachine_LOG.info(this + ": interpreter offline");
 				} catch (Exception e) {
 					Logging.VirtualMachine_LOG.fatal(this + ": error while going offline:", e);
@@ -250,26 +205,15 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	 * This VM may be a first-time participant or it may be a previously
 	 * disconnected VM that has become reconnected.
 	 * 
-	 * The VM asks the newly joined VM whether it has any
-	 * services that match the type of an outstanding subscription on this VM.
+	 * This VM will handshake with the connected VM to exchange their actual
+	 * {@link VirtualMachineID}s rather than their network addresses.
 	 */
 	public void event_memberJoined(final Address remoteVMAddress) {
 		this.receive(new Event("memberJoined("+remoteVMAddress+")") {
 			public void process(Object myself) {
-				// if this VM is no longer connected, ignore the memberJoined event
-				// as there is nothing useful that can be done in response anyway
-				if(vmAddress_ == null)
-					return;
-				
-				// filter out discovery of myself
-				if (!vmAddress_.equals(remoteVMAddress)) {
-					Logging.VirtualMachine_LOG.info(this + ": VM connected: " + remoteVMAddress);
-					
-					// send a handshake message to exchange IDs
-					new CMDHandshake(vmId_).send(messageDispatcher_, remoteVMAddress);
-					
-			
-				}
+				Logging.VirtualMachine_LOG.info(this + ": VM connected: " + remoteVMAddress);
+				// send a handshake message to exchange IDs
+				new CMDHandshake(vmId_).send(communicationBus_, remoteVMAddress);
 			}
 		});
 	}
@@ -283,16 +227,15 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 				VirtualMachineID disconnected = vmAddressBook_.getGUIDOf(virtualMachine);
 				
 				// disconnected may be null if the memberJoined event was ignored because this VM 
-				// was already offline when the event was beiing processed.
+				// was already offline when the event was being processed.
 				if(disconnected != null) {
 					// delete entries mapping to Address from the vm Address Book table first, 
 					// so sending threads may have 'premonitions' that they are no longer connected
 					vmAddressBook_.removeEntry(virtualMachine);
 					
 					// properly (but synchronously) notify all remote references of a disconnection 
-					membershipNotifier_.notifyDisconnected(disconnected);
+					connectionManager_.notifyDisconnected(disconnected);
 				}
-
 			}
 		});
 	}
@@ -306,81 +249,22 @@ public final class ELVirtualMachine extends EventLoop implements RequestHandler,
 	// scheduled in the receiving event loop's event queue
 	
 	/**
-	 * Event that signals the deletion of an object from the export table of an actor on this virtual machine.
+	 * Event that signals the deletion of an object from the export table of an
+	 * actor on this virtual machine.
 	 */
 	public void event_objectTakenOffline(final ATObjectID objId, final Address receiver) {
 		 this.receive( new Event("objectTakenOffline(" + objId +")") {
 			 public void process(Object myself){
 				 if ( receiver == null){
 					 //broadcast to other virtual machines that an object has gone offline.
-					 new CMDObjectTakenOffline(objId).broadcast(messageDispatcher_);
+					 new CMDObjectTakenOffline(objId).broadcast(communicationBus_);
 				 } else{
 					 //sending to a known virtual machine in response to an XObjectOffline exception.
-					 new CMDObjectTakenOffline(objId).send(messageDispatcher_, receiver);
+					 new CMDObjectTakenOffline(objId).send(communicationBus_, receiver);
 				 }
 				 
 			 }
 		 });
-	}
-	
-	/* ============================
-	 * == JGroups -> VM Protocol ==
-	 * ============================ */
-	
-	public Object handle(Message message) {
-		try {
-            // receiving a VM command object
-		    VMCommand cmd = (VMCommand) message.getObject();
-		    
-		    Logging.VirtualMachine_LOG.info("handling incoming command: " + cmd);
-		    
-			// allow the command to execute itself
-		    return cmd.uponReceiptBy(this, message);
-		} catch (Exception exception) {
-			return exception;
-		}
-	}
-	
-	private void initializeNetwork() {
-		try {
-			// load the protocol stack to be used by JGroups
-			URL protocol = MembershipNotifier.class.getResource("jgroups-protocol.xml");
-
-			Channel channel = new JChannel(protocol);
-
-			membershipNotifier_ = new MembershipNotifier(this);
-			messageDispatcher_ = new MessageDispatcher(
-					channel,
-					null, // the MessageListener
-					membershipNotifier_,  // the MembershipListener
-					this,  // the RequestHandler
-					false, // deadlock detection is disabled
-					true); // concurrent processing is enabled
-
-			// don't receive my own messages 
-			channel.setOpt(JChannel.LOCAL, Boolean.FALSE);
-
-			channel.addChannelListener(new ChannelListener() {
-				public void channelClosed(Channel c) {
-					Logging.VirtualMachine_LOG.warn(this + ": channel closed: " + c);
-				}
-				public void channelConnected(Channel c) {
-					Logging.VirtualMachine_LOG.warn(this + ": channel connected: " + c);
-				}
-				public void channelDisconnected(Channel c) {
-					Logging.VirtualMachine_LOG.warn(this + ": channel disconnected: " + c);
-				}
-				public void channelReconnected(Address a) {
-					Logging.VirtualMachine_LOG.warn(this + ": channel reconnected. Address = " + a);
-					vmAddress_ = a;
-				}
-				public void channelShunned() {
-					Logging.VirtualMachine_LOG.warn(this + ": channel shunned");
-				}
-			});
-		} catch (ChannelException e) {
-			Logging.VirtualMachine_LOG.fatal(this + ": could not initialize network connection: ", e);
-		}
 	}
 	
 }

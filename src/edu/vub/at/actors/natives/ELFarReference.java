@@ -33,27 +33,27 @@ import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.net.ConnectionListener;
-import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.cmd.CMDTransmitATMessage;
+import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.actors.net.comm.CommunicationBus;
+import edu.vub.at.actors.net.comm.NetworkException;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.util.logging.Logging;
 
 import java.util.Vector;
-
-import org.jgroups.Address;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
-import org.jgroups.blocks.MessageDispatcher;
 
 /**
  * An instance of the class ELFarReference represents the event loop processor for
  * a remote far reference. That is, the event queue of this event loop serves as 
- * an 'outbox' which is dedicated to a certain receiver object hosted by a remote virtual machine.
+ * an 'outbox' which is dedicated to a certain receiver object hosted by a remote
+ * virtual machine.
  * 
- * This event loop handles event from its event queue by trying to transmit them to a remote virtual machine.
+ * This event loop handles event from its event queue by trying to transmit them
+ * to a remote virtual machine.
  * 
  * @author tvcutsem
  */
@@ -75,7 +75,6 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		// the reception of a new interrupt may awaken a sleeping ELFarReference 
 		// thread, so we interrupt them, forcing them to reevaluate their conditions
 		processor_.interrupt();
-		
 		return outboxFuture_;
 	}
 	
@@ -93,7 +92,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	private final ELActor owner_;
 	private final NATRemoteFarRef farRef_;
 	private final ATObjectID destination_;
-	private final MessageDispatcher dispatcher_;
+	private final CommunicationBus dispatcher_;
 	
 	private boolean connected_;
 		
@@ -107,9 +106,9 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		connected_ = true;
 		// register the remote reference with the MembershipNotifier to keep track
 		// of the state of the connection with the remote VM
-		owner_.getHost().membershipNotifier_.addConnectionListener(destination_.getVirtualMachineId(), this);
+		owner_.getHost().connectionManager_.addConnectionListener(destination_.getVirtualMachineId(), this);
 		
-		dispatcher_ = owner_.getHost().messageDispatcher_;
+		dispatcher_ = owner_.getHost().communicationBus_;
 	}
 	
 	/**
@@ -159,34 +158,25 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		
 		// Called by ELFarReference
 		public void process(Object owner) {
-			Address destination = getDestinationVMAddress();
+			Address destAddress = getDestinationVMAddress();
 
-			if (destination != null) {
+			if (destAddress != null) {
 				try {
-					Object ack = new CMDTransmitATMessage(destination_
-							.getActorId(), serializedMessage_).send(
-							dispatcher_, destination);
+					new CMDTransmitATMessage(destination_.getActorId(), serializedMessage_).send(
+							dispatcher_, destAddress);
 
-					// non-null return value indicates an exception
-					if (ack != null) {
-						Logging.RemoteRef_LOG.error(this
-								+ ": non-null acknowledgement: " + ack);
-					}
-				} catch (TimeoutException e) {
+					// getting here means the message was succesfully transmitted
+					
+				} catch (NetworkException e) {
 					Logging.RemoteRef_LOG.warn(this
 									+ ": timeout while trying to transmit message, retrying");
 					receivePrioritized(this);
-				} catch (SuspectedException e) {
-					Logging.RemoteRef_LOG.warn(this
-							+ ": remote object suspected: " + destination_);
-					receivePrioritized(this);
-				} catch (Exception e) {
-					Logging.RemoteRef_LOG.error(this
-							+ ": error upon message transmission:", e);
 				}
 			} else {
-				Logging.RemoteRef_LOG.info(this + ": suspected a disconnection from " + destination_);
+				Logging.RemoteRef_LOG.info(this + ": suspected a disconnection from " +
+						destination_ + " because destination VM ID was not found in address book");
 				connected_ = false;
+				receivePrioritized(this);
 			}
 		}
 	}
@@ -254,7 +244,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		return owner_.getHost().vmAddressBook_.getAddressOf(destination_.getVirtualMachineId());
 	}
 	
-	public ATObjectID getDestination(){
+	public ATObjectID getDestination() {
 		return destination_;
 	}
 	

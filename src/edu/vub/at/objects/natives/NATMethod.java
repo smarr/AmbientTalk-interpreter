@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.PartialBinder;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -39,6 +38,7 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
+import edu.vub.at.util.logging.Logging;
 
 /**
  * NATMethod implements methods as named functions which are in fact simply containers

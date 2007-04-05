@@ -31,7 +31,6 @@ import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.natives.NATFarReference;
-import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.SerializationException;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -67,6 +66,7 @@ import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
+import edu.vub.at.util.logging.Logging;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;

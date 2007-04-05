@@ -29,13 +29,9 @@ package edu.vub.at.actors.net.cmd;
 
 import edu.vub.at.actors.id.VirtualMachineID;
 import edu.vub.at.actors.natives.ELVirtualMachine;
-import edu.vub.at.actors.net.Logging;
+import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.actors.net.comm.CommunicationBus;
 
-import org.jgroups.Address;
-import org.jgroups.Message;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
-import org.jgroups.blocks.MessageDispatcher;
 
 /**
  * A handshake command is sent when a VM discovers another VM in its environment.
@@ -59,23 +55,16 @@ public class CMDHandshake extends VMCommand {
 		senderVMId_ = senderVMId;
 	}
 	
-	public void send(MessageDispatcher dispatcher, Address recipientVM) {
-		try {
-			super.sendAsyncUnicast(dispatcher, recipientVM);
-		} catch (TimeoutException e) {
-			Logging.VirtualMachine_LOG.warn(this + ": timeout while trying to handshake, dropping");
-		} catch (SuspectedException e) {
-			Logging.VirtualMachine_LOG.warn(this + ": remote VM suspected while handshaking");
-		}
+	public void send(CommunicationBus dispatcher, Address recipientVM) {
+		dispatcher.sendAsyncUnicast(this, recipientVM);
 	}
 	
-	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
-		remoteHost.vmAddressBook_.addEntry(senderVMId_, wrapper.getSrc());
+	public void uponReceiptBy(ELVirtualMachine remoteHost, Address senderAddress) {
+		remoteHost.vmAddressBook_.addEntry(senderVMId_, senderAddress);
 		// ask my discovery actor to send outstanding subscriptions to the newcomer
-		remoteHost.discoveryActor_.event_sendAllSubscriptionsTo(wrapper.getSrc());
+		remoteHost.discoveryActor_.event_sendAllSubscriptionsTo(senderAddress);
 		//notify all remote references registered for the new VM.
-		remoteHost.membershipNotifier_.notifyConnected(senderVMId_);
-    	return null;
+		remoteHost.connectionManager_.notifyConnected(senderVMId_);
 	}
 	
 }

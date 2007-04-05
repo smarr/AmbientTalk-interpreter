@@ -28,14 +28,10 @@
 package edu.vub.at.actors.net.cmd;
 
 import edu.vub.at.actors.natives.ELVirtualMachine;
-import edu.vub.at.actors.net.Logging;
+import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.actors.net.comm.CommunicationBus;
 import edu.vub.util.MultiMap;
 
-import org.jgroups.Address;
-import org.jgroups.Message;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
-import org.jgroups.blocks.MessageDispatcher;
 
 /**
  * A CMDJoinServices message is sent asynchronously as a reply to:
@@ -63,20 +59,13 @@ public class CMDJoinServices extends VMCommand {
 		providedServices_ = providedServices;
 	}
 	
-	public void send(MessageDispatcher dispatcher, Address recipientVM) {
-		try {
-			super.sendAsyncUnicast(dispatcher, recipientVM);
-		} catch (TimeoutException e) {
-			Logging.VirtualMachine_LOG.warn(this + ": timeout while trying to transmit joined services, dropping");
-		} catch (SuspectedException e) {
-			Logging.VirtualMachine_LOG.warn(this + ": remote VM suspected while sending joined services");
-		}
+	public void send(CommunicationBus dispatcher, Address recipientVM) {
+		dispatcher.sendAsyncUnicast(this, recipientVM);
 	}
 	
-	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
+	public void uponReceiptBy(ELVirtualMachine remoteHost, Address senderAddress) {
 		// notify the local subscribers of the provided services via the local discovery actor
 		remoteHost.discoveryActor_.event_batchRemotePublications(providedServices_);
-    	return null;
 	}
 	
 }

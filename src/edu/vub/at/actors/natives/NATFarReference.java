@@ -33,7 +33,6 @@ import java.util.Vector;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.id.ATObjectID;
-import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -57,6 +56,7 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.util.logging.Logging;
 
 /**
  * 

@@ -32,7 +32,7 @@ public abstract class AmbientTalkTest extends TestCase {
 		ATObject scope = new NATObject(self); // scope has no dyn parent and is nested within self
 		ctx_ = new NATContext(scope, self);
 	}
-
+	
 	/**
 	 * Loads and evaluates the content of a code snippet file and returns the resulting AmbientTalk ATObject.
 	 * Given a class Foo and the name "snippet", the code file consulted is the file named "Foo-snippet" which

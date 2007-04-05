@@ -25,16 +25,12 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors.net;
+package edu.vub.at.util.logging;
 
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.Priority;
 
 /**
  * Auxiliary class used to group Log4J loggers.
@@ -68,23 +64,15 @@ public final class Logging {
 	 */
 	public static final Logger Init_LOG = Logger.getInstance("at.init");
 	
+	/**
+	 * Logs information related to network communication
+	 */
+	public static final Logger Network_LOG = Logger.getInstance("at.network");
 	
+
 	static {
-		// intialize the Log4J API and the loggers
-		
-		// see http://logging.apache.org/log4j/docs/api/org/apache/log4j/PatternLayout.html
-		// for a listing of possible pattern variables
-		// d = date, t = thread, p = priority, c = category, m = message, n = newline
-		ConsoleAppender console = new ConsoleAppender(new PatternLayout("%d %-5p %c - %m%n"), "System.err");
-		EventLoop_LOG.addAppender(console);
-		Actor_LOG.addAppender(console);
-		RemoteRef_LOG.addAppender(console);
-		VirtualMachine_LOG.addAppender(console);
-		Init_LOG.addAppender(console);
-		
-		Logger jGroupsLogger = Logger.getInstance("org.jgroups");
-		jGroupsLogger.addAppender(console);
-		
+		// intialize the Logging API
+	
 		Properties props = new Properties();
 		try {
 			props.load(Logging.class.getResourceAsStream("logging.props"));
@@ -94,12 +82,15 @@ public final class Logging {
 			// where KEY = the name of a logger and VALUE = a priority level (e.g. WARN, DEBUG, ...)
 			while (allProperties.hasMoreElements()) {
 				String loggerName = (String) allProperties.nextElement();
-				Logger.getInstance(loggerName).setPriority(Priority.toPriority(props.getProperty(loggerName)));
+				try {
+					Logger.getInstance(loggerName).setPriority(props.getProperty(loggerName));
+				} catch (IllegalArgumentException e) {
+					System.err.println("Illegal priority level for logger " + loggerName + ": " + props.getProperty(loggerName));
+				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Could not read properties file: " + e.getMessage());
 		}
-		//PropertyConfigurator.configure(Logging.class.getResource("logging.props"));
 	}
 	
 }

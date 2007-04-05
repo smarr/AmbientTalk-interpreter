@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.symbiosis;
 
-import edu.vub.at.actors.net.Logging;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
@@ -54,6 +53,7 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.util.logging.Logging;
 import edu.vub.util.IdentityHashMap;
 
 import java.lang.ref.SoftReference;

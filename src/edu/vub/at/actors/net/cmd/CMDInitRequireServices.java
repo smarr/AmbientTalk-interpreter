@@ -28,19 +28,15 @@
 package edu.vub.at.actors.net.cmd;
 
 import edu.vub.at.actors.natives.ELVirtualMachine;
-import edu.vub.at.actors.net.Logging;
+import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.actors.net.comm.CommunicationBus;
 
 import java.util.Set;
 
-import org.jgroups.Address;
-import org.jgroups.Message;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
-import org.jgroups.blocks.MessageDispatcher;
 
 /**
  * A CMDInitRequireServices message is sent asynchronously to any VM just discovered in the environment
- * if thhe discovering VM has some open subscriptions. This command is sent to the discovered VM to ask
+ * if the discovering VM has some open subscriptions. This command is sent to the discovered VM to ask
  * it whether it has any publications matching the outstanding subscriptions at the sender VM.
  * 
  * SENDER: the discovering VM
@@ -64,20 +60,13 @@ public class CMDInitRequireServices extends VMCommand {
 		topics_ = topics;
 	}
 	
-	public void send(MessageDispatcher dispatcher, Address recipientVM) {
-		try {
-			super.sendAsyncUnicast(dispatcher, recipientVM);
-		} catch (TimeoutException e) {
-			Logging.VirtualMachine_LOG.warn(this + ": timeout while trying to transmit discovery query, dropping");
-		} catch (SuspectedException e) {
-			Logging.VirtualMachine_LOG.warn(this + ": remote VM suspected while sending discovery query");
-		}
+	public void send(CommunicationBus dispatcher, Address recipientVM) {
+		dispatcher.sendAsyncUnicast(this, recipientVM);
 	}
 	
-	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
+	public void uponReceiptBy(ELVirtualMachine remoteHost, Address senderAddress) {
 		// query local discoverymanager for matching topics
-		remoteHost.discoveryActor_.event_receiveNewSubscriptionsFrom(topics_, wrapper.getSrc());
-    	return null;
+		remoteHost.discoveryActor_.event_receiveNewSubscriptionsFrom(topics_, senderAddress);
 	}
 	
 }

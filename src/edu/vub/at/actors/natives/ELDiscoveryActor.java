@@ -30,23 +30,22 @@ package edu.vub.at.actors.natives;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.natives.DiscoveryManager.Publication;
 import edu.vub.at.actors.natives.DiscoveryManager.Subscription;
-import edu.vub.at.actors.net.Logging;
 import edu.vub.at.actors.net.cmd.CMDInitRequireServices;
 import edu.vub.at.actors.net.cmd.CMDJoinServices;
 import edu.vub.at.actors.net.cmd.CMDProvideService;
 import edu.vub.at.actors.net.cmd.CMDRequireService;
+import edu.vub.at.actors.net.comm.Address;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
+import edu.vub.at.util.logging.Logging;
 import edu.vub.util.MultiMap;
 
 import java.util.Iterator;
 import java.util.Set;
 
-import org.jgroups.Address;
-
 /**
- * Every VM has an associated Discovery Actor. This is a regular actor (with a native Actor Mirror)
+ * Every VM has an associated DiscoveryBus Actor. This is a regular actor (with a native Actor Mirror)
  * which is responsible for matching local publications with local and remote subscriptions.
  *
  * @author tvcutsem
@@ -78,7 +77,7 @@ public final class ELDiscoveryActor extends ELActor {
 					pub.deserializedTopic_ = pub.providedStripe_.unpack().asStripe();
 					discoveryManager_.addLocalPublication(pub);
 					// broadcast the new publication to all currently connected VMs
-					new CMDProvideService(pub.providedStripe_, pub.exportedService_).send(host_.messageDispatcher_);
+					new CMDProvideService(pub.providedStripe_, pub.exportedService_).send(host_.communicationBus_);
 				} catch (InterpreterException e) {
 					Logging.VirtualMachine_LOG.error("error while publishing service " + pub.providedStripe_,e);
 				}
@@ -104,7 +103,7 @@ public final class ELDiscoveryActor extends ELActor {
 					sub.deserializedHandler_ = sub.registeredHandler_.unpack();
 					discoveryManager_.addLocalSubscription(sub);
 					// broadcast the new subscription to all currently connected VMs
-					new CMDRequireService(sub.requiredStripe_).send(host_.messageDispatcher_);
+					new CMDRequireService(sub.requiredStripe_).send(host_.communicationBus_);
 				} catch (InterpreterException e) {
 					Logging.VirtualMachine_LOG.error("error while subscribing to service " + sub.requiredStripe_,e);
 				}
@@ -218,7 +217,7 @@ public final class ELDiscoveryActor extends ELActor {
 						MultiMap matchingTopics = new MultiMap();
 						matchingTopics.putValues(serializedRequiredTopic, matchingServices);
 			    		// send all matching topics back to the requestor
-			    		new CMDJoinServices(matchingTopics).send(host_.messageDispatcher_, replyTo);	
+			    		new CMDJoinServices(matchingTopics).send(host_.communicationBus_, replyTo);	
 			    	}
 				} catch (InterpreterException e) {
 					Logging.VirtualMachine_LOG.error("error while unserializing remote subscription topic",e);
@@ -242,7 +241,7 @@ public final class ELDiscoveryActor extends ELActor {
 				// only send a discovery query if this VM requires some services
 				if (!subscriptionTopics.isEmpty()) {
 					// send a discovery query message to the remote VM
-					new CMDInitRequireServices(subscriptionTopics).send(host_.messageDispatcher_, newMember);
+					new CMDInitRequireServices(subscriptionTopics).send(host_.communicationBus_, newMember);
 				}
 			}
 		});
@@ -280,7 +279,7 @@ public final class ELDiscoveryActor extends ELActor {
 				
 		    	if (!matchingTopics.isEmpty()) {
 		    		// send all matching topics back to the requestor
-		    		new CMDJoinServices(matchingTopics).send(host_.messageDispatcher_, fromMember);	
+		    		new CMDJoinServices(matchingTopics).send(host_.communicationBus_, fromMember);	
 		    	}
 			}
 		});

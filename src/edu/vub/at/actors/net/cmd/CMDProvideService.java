@@ -29,12 +29,8 @@ package edu.vub.at.actors.net.cmd;
 
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.natives.Packet;
-import edu.vub.at.actors.net.Logging;
-
-import org.jgroups.Message;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
-import org.jgroups.blocks.MessageDispatcher;
+import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.actors.net.comm.CommunicationBus;
 
 /**
  * A CMDProvideService message is sent asynchronously to all connected VMs when
@@ -60,24 +56,17 @@ public class CMDProvideService extends VMCommand {
 		serializedService_ = service;
 	}
 	
-	public void send(MessageDispatcher dispatcher) {
-		try {
-			super.sendAsyncMulticast(dispatcher);
-		} catch (TimeoutException e) {
-			Logging.VirtualMachine_LOG.warn(this + ": timeout while trying to broadcast new publication, dropping");
-		} catch (SuspectedException e) {
-			Logging.VirtualMachine_LOG.warn(this + ": remote VM suspected while broadcasting new publication");
-		}
+	public void send(CommunicationBus dispatcher) {
+		dispatcher.sendAsyncMulticast(this);
 	}
 	
 	/**
 	 * When a remote VM receives the notification, it checks whether any local subscriptions
 	 * can be matched with the new published service.
 	 */
-	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
+	public void uponReceiptBy(ELVirtualMachine remoteHost, Address senderAddress) {
 		// notify local discovery actor of the new provided service
 		remoteHost.discoveryActor_.event_remotePublication(serializedTopic_, serializedService_);
-    	return null;
 	}
 	
 }

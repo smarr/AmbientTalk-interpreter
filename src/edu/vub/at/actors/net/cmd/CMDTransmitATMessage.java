@@ -30,10 +30,10 @@ package edu.vub.at.actors.net.cmd;
 import edu.vub.at.actors.id.ActorID;
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.natives.Packet;
+import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.actors.net.comm.CommunicationBus;
+import edu.vub.at.actors.net.comm.NetworkException;
 
-import org.jgroups.Address;
-import org.jgroups.Message;
-import org.jgroups.blocks.MessageDispatcher;
 
 /**
  * A CMDTransmitATMessage message encapsulates an AmbientTalk message being sent
@@ -60,16 +60,13 @@ public class CMDTransmitATMessage extends VMCommand {
 		destinationActorId_ = destinationActorId;
 	}
 	
-	public Object send(MessageDispatcher dispatcher, Address recipientVM) throws Exception {
-		Object returnValue = super.sendSynchronousUnicast(dispatcher, recipientVM);
-		if (returnValue instanceof Exception) {
-			throw (Exception) returnValue;
-		} else 
-			return returnValue;
+	public void send(CommunicationBus dispatcher, Address recipientVM) throws NetworkException {
+		dispatcher.sendSynchronousUnicast(this, recipientVM);
 	}
 	
-	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
-		remoteHost.getActor(destinationActorId_).event_remoteAccept(wrapper.getSrc(), serializedATMessage_);
-		return null; // null return value means OK
+	public void uponReceiptBy(ELVirtualMachine remoteHost, Address senderAddress) {
+		remoteHost.getActor(destinationActorId_).event_remoteAccept(senderAddress, serializedATMessage_);
+		// we do not need to send an explicit acknowledgement to the sender: if the transmission over
+		// its socket was successful, it knows that the message has at least arrived without failure.
 	}
 }

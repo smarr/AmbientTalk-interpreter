@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * DiscoveryListener.java created on 22-feb-2007 at 21:23:01
+ * NetworkException.java created on 2-apr-2007 at 19:35:35
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,21 +25,40 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors.net;
+package edu.vub.at.actors.net.comm;
 
-import org.jgroups.Address;
+import java.io.IOException;
 
 /**
- * An object that implements this interface can act as a MembershipNotifier's discovery
- * listener, which means it is kept up to date of the connection and disconnection of
- * nearby virtual machines. Note that both methods are invoked by JGroups threads and
- * that control should be transferred as quickly as possible to an event loop thread.
+ * Raised when a VM command object could not properly be sent to its destination
+ * or when the communication bus could not connect to the network.
  * 
  * @author tvcutsem
  */
-public interface DiscoveryListener {
+public class NetworkException extends Exception {
+
+	private final IOException cause_;
 	
-	public void memberJoined(Address virtualMachine);
+	public NetworkException(String msg) {
+		super(msg);
+		cause_ = null;
+	}
+
+	public NetworkException(String msg, IOException cause) {
+		super(msg);
+		cause_ = cause;
+	}
 	
-	public void memberLeft(Address virtualMachine);
+	public IOException getCause() {
+		return cause_;
+	}
+	
+	public String getMessage() {
+		if (cause_ == null) {
+			return super.getMessage();
+		} else {
+			return getMessage() + " caused by: " + cause_.getMessage();
+		}
+	}
+
 }

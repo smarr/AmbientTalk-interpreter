@@ -29,12 +29,8 @@ package edu.vub.at.actors.net.cmd;
 
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.actors.natives.Packet;
-import edu.vub.at.actors.net.Logging;
-
-import org.jgroups.Message;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
-import org.jgroups.blocks.MessageDispatcher;
+import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.actors.net.comm.CommunicationBus;
 
 /**
  * A CMDRequireService message is sent asynchronously to all connected VMs when an actor
@@ -59,24 +55,17 @@ public class CMDRequireService extends VMCommand {
 		serializedTopic_ = topic;
 	}
 	
-	public void send(MessageDispatcher dispatcher) {
-		try {
-			super.sendAsyncMulticast(dispatcher);
-		} catch (TimeoutException e) {
-			Logging.VirtualMachine_LOG.warn(this + ": timeout while trying to broadcast require query, dropping");
-		} catch (SuspectedException e) {
-			Logging.VirtualMachine_LOG.warn(this + ": remote VM suspected while broadcasting require query");
-		}
+	public void send(CommunicationBus dispatcher) {
+		dispatcher.sendAsyncMulticast(this);
 	}
 	
 	/**
 	 * When a connected VM receives a CMDRequireService request, it queries its local publications
 	 * to see if there is a match. If so, all matching local publications are replied.
 	 */
-	public Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception {
+	public void uponReceiptBy(ELVirtualMachine remoteHost, Address senderAddress) {
 		// query local discovery actor for matching topic
-    	remoteHost.discoveryActor_.event_remoteSubscription(serializedTopic_, wrapper.getSrc());
-    	return null;
+    	remoteHost.discoveryActor_.event_remoteSubscription(serializedTopic_, senderAddress);
 	}
 	
 }

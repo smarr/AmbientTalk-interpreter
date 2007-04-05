@@ -28,17 +28,9 @@
 package edu.vub.at.actors.net.cmd;
 
 import edu.vub.at.actors.natives.ELVirtualMachine;
-import edu.vub.at.actors.net.Logging;
+import edu.vub.at.actors.net.comm.Address;
 
 import java.io.Serializable;
-import java.util.Vector;
-
-import org.jgroups.Address;
-import org.jgroups.Message;
-import org.jgroups.SuspectedException;
-import org.jgroups.TimeoutException;
-import org.jgroups.blocks.GroupRequest;
-import org.jgroups.blocks.MessageDispatcher;
 
 /**
  * VM Command objects are the message objects that AT/2 virtual machines send to one another.
@@ -53,8 +45,6 @@ import org.jgroups.blocks.MessageDispatcher;
 public abstract class VMCommand implements Serializable {
 	
 	private final String description_;
-	/** the default transmission timeout for JGroups synchronous message communication */
-	public static final int _TRANSMISSION_TIMEOUT_ = 10000; // in milliseconds
 	
 	/**
 	 * @param descr for debugging purposes
@@ -64,63 +54,18 @@ public abstract class VMCommand implements Serializable {
 	}
 	
 	public String toString() {
-		return "VMCommand:"+description_;
+		return "VMCMD["+description_+"]";
 	}
 	
 	/**
 	 * To be overridden by subclasses to specify the behaviour to execute upon reception
 	 * and execution of the command object at the recipient VM.
 	 * 
-	 * This code is still executed in a JGroups thread!
+	 * This code is still executed in a communication thread!
 	 * 
 	 * @param remoteHost the host at which the command arrived and is executed
-	 * @param wrapper the JGroups message wrapper that was used to transport this command object
+	 * @param senderAddress the address of the VM that sent this VM command object
 	 */
-	public abstract Object uponReceiptBy(ELVirtualMachine remoteHost, Message wrapper) throws Exception;
-	
-	/**
-	 * Sends this VM Command object asynchronously to the recipient VM.
-	 */
-	protected void sendAsyncUnicast(MessageDispatcher dispatcher, Address recipientVM) throws TimeoutException, SuspectedException {
-		Logging.VirtualMachine_LOG.info("sending async unicast cmd: " + description_);
-		// JGROUPS:castMessage(java.util.Vector dests, Message msg, int mode, long timeout)
-		Vector recipients = new Vector(1);
-		recipients.add(recipientVM);
-		dispatcher.castMessage(
-			recipients, // send to particular member
-			// JGROUPS:Message.new(destination, source, Serializable)
-			new Message(recipientVM, null, this),
-			GroupRequest.GET_NONE, // asynchronous call, non-blocking
-			0); // timeout is irrelevant
-	}
-	
-	/**
-	 * Sends this VM Command object asynchronously to all connected VMs.
-	 */
-	protected void sendAsyncMulticast(MessageDispatcher dispatcher) throws TimeoutException, SuspectedException {
-		Logging.VirtualMachine_LOG.info("sending async multicast cmd: " + description_);
-		// JGROUPS:castMessage(java.util.Vector dests, Message msg, int mode, long timeout)
-		dispatcher.castMessage(
-			null, // send to all members
-			// JGROUPS:Message.new(destination, source, Serializable)
-			new Message(null, null, this),
-			GroupRequest.GET_NONE, // asynchronous call, non-blocking
-			0); // timeout is irrelevant
-	}
-	
-	/**
-	 * Sends this VM Command object synchronously to the recipient VM. The recipient's
-	 * address must be given, null is not allowed (i.e. broadcasting synchronously is not allowed)
-	 */
-	protected Object sendSynchronousUnicast(MessageDispatcher dispatcher, Address recipientVM) throws TimeoutException, SuspectedException {
-		Logging.VirtualMachine_LOG.info("sending sync unicast cmd: " + description_);
-		// send a discovery query message to the remote VM
-		// JGROUPS:MessageDispatcher.sendMessage(destination, message, mode, timeout)
-		return dispatcher.sendMessage(
-			// JGROUPS:Message.new(destination, source, Serializable)
-			new Message(recipientVM, null, this),
-			GroupRequest.GET_FIRST,
-			_TRANSMISSION_TIMEOUT_);
-	}
+	public abstract void uponReceiptBy(ELVirtualMachine remoteHost, Address senderAddress);
 	
 }

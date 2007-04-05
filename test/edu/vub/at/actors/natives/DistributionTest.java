@@ -116,7 +116,7 @@ public class DistributionTest extends TestCase {
 
 	
 	/**
-	 * When a virtual machine joins the AmbientTalk JGroups channel, all virtual machines are 
+	 * When a virtual machine joins the AmbientTalk overlay network, all virtual machines are 
 	 * notified of this fact by the underlying distribution layer. Messages are sent to the 
 	 * DiscoveryManager to notify it of a new vm which may host required services and to all
 	 * (far reference) listeners waiting for the appearance of that VM.
@@ -131,7 +131,7 @@ public class DistributionTest extends TestCase {
 		// determines it was successful
 		setTestResult(false);
 		
-		virtual1_.membershipNotifier_.addConnectionListener(
+		virtual1_.connectionManager_.addConnectionListener(
 				virtual2_.getGUID(),
 				new ConnectionListener() {
 					public void connected() {
@@ -148,11 +148,11 @@ public class DistributionTest extends TestCase {
 		} catch (InterruptedException e) {};
 		
 		if(! getTestResult())
-			fail("Discovery notification of the VM has failed to arrive within " + _TIMEOUT_ /1000 + " sec.");
+			fail("DiscoveryBus notification of the VM has failed to arrive within " + _TIMEOUT_ /1000 + " sec.");
 	}
 	
 	/**
-	 * When a virtual machine leaves the AmbientTalk JGroups channel, all virtual machines are 
+	 * When a virtual machine leaves the AmbientTalk overlay network, all virtual machines are 
 	 * notified of this fact by the underlying distribution layer. Messages are sent to the 
 	 * DiscoveryManager and to all (far reference) listeners connected to that VM.
 	 * 
@@ -163,7 +163,7 @@ public class DistributionTest extends TestCase {
 		
 		setTestResult(false);
 		
-		virtual2_.membershipNotifier_.addConnectionListener(
+		virtual2_.connectionManager_.addConnectionListener(
 				virtual1_.getGUID(),
 				new ConnectionListener() {
 					public void connected() { }
@@ -202,7 +202,7 @@ public class DistributionTest extends TestCase {
 		// are triggered, the test should succeed, unless exceptions were raised.
 		setTestResult(true);
 		
-		virtual2_.membershipNotifier_.addConnectionListener(
+		virtual2_.connectionManager_.addConnectionListener(
 				virtual1_.getGUID(),
 				new ConnectionListener() {
 					public void connected() { 
@@ -245,14 +245,14 @@ public class DistributionTest extends TestCase {
 		} catch (InterruptedException e) {};
 		
 		if(! getTestResult())
-			fail("Service Discovery notification has failed to arrive within " + _TIMEOUT_ /1000 + " sec.");
+			fail("Service DiscoveryBus notification has failed to arrive within " + _TIMEOUT_ /1000 + " sec.");
 	}
 		
 	/**
 	 * This test uses the when: disconnected: to detect when a far reference has become
 	 * disconnected. We distinguish between two tests, depending on the role of the device
 	 * that falls away. If the provider disconnects, the subscriber hosting the far reference
-	 * is notified of this event through a JGroups View event which is propagated up.
+	 * is notified of this event through by the distribution layer.
 	 * 
 	 * @throws Exception
 	 */
@@ -296,9 +296,7 @@ public class DistributionTest extends TestCase {
 	/**
 	 * This test uses the when: disconnected: to detect when a far reference has become
 	 * disconnected. We distinguish between two tests, depending on the role of the device
-	 * that falls away. If the subscriber disconnects, no JGroups View event is propagated up,
-	 * to allow disconnecting the far reference, instead the membershipNotifier must be
-	 * disconnected explicitly.
+	 * that goes offline.
 	 * 
 	 * @throws Exception
 	 */

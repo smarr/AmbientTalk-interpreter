@@ -27,20 +27,20 @@
  */
 package edu.vub.at.actors.net;
 
-import java.util.Hashtable;
-
-import org.jgroups.Address;
-
 import edu.vub.at.actors.id.VirtualMachineID;
+import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.util.logging.Logging;
+
+import java.util.Hashtable;
 
 /**
  * 
  * The VMAddressBook encapsulates the bi-directional mapping:
- *  AmbientTalk VM VirtualMachineID  -->  JGroups Address
- *  JGroups Address      -->  AmbientTalk VM VirtualMachineID
+ *  AmbientTalk VM VirtualMachineID  -->  network Address
+ *  network Address      -->  AmbientTalk VM VirtualMachineID
  *
  * It is necessary to maintain such a mapping to correctly identify and restore
- * the connection between AmbientTalk VMs. A JGroups address cannot be used as
+ * the connection between AmbientTalk VMs. A network address cannot be used as
  * a good identification key because an AmbientTalk VM may be known under different
  * addresses as it goes offline and online.
  * 
@@ -69,7 +69,6 @@ public class VMAddressBook {
 	 * Remove all entries that map to this VM address from the VM Address book.
 	 */
 	public synchronized void removeEntry(Address vmAddress ){
-		
 		VirtualMachineID vmId = (VirtualMachineID) addressToGuid_.get(vmAddress);
 		Logging.VirtualMachine_LOG.debug("Removed VM binding " + vmAddress + " -> " + vmId);
 
@@ -77,31 +76,20 @@ public class VMAddressBook {
 		addressToGuid_.remove(vmAddress);
 	}
 	
-	
 	/**
 	 * Resolve a remote VM's unique identifier to a concrete network address.
+	 * @return the VM's address, or <tt>null</tt> if the VM is no longer connected.
 	 */
 	public synchronized Address getAddressOf(VirtualMachineID vmId) {
-			Address a = (Address) guidToAddress_.get(vmId);
-			if (a == null) {
-				Logging.VirtualMachine_LOG.error("Asked for the address of an unknown vmId: " + vmId);
-				throw new RuntimeException("Asked for the address of an unknown vmId: " + vmId);
-			}
-			return a;
+		return (Address) guidToAddress_.get(vmId);
 	}
 
 	/**
 	 * Resolve a concrete network address to a remote VM's unique identifier.
+	 * @return the VM Id of the given address, or <tt>null</tt> if the address is no longer connected.
 	 */
 	public synchronized VirtualMachineID getGUIDOf(Address vmAddress) {
-			return (VirtualMachineID) addressToGuid_.get(vmAddress);
-//			if (g == null) {
-//				Logging.VirtualMachine_LOG.error("Asked for the VirtualMachineID of an unknown vmAddress: " + vmAddress);
-//				throw new RuntimeException("Asked for the VirtualMachineID of an unknown vmAddress: " + vmAddress);
-//			}
-//			return g;
+		return (VirtualMachineID) addressToGuid_.get(vmAddress);
 	}
-	
-	
 
 }

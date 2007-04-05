@@ -28,8 +28,6 @@
 package edu.vub.at.actors.natives;
 
 
-import org.jgroups.Address;
-
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
@@ -39,7 +37,7 @@ import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.id.ActorID;
-import edu.vub.at.actors.net.Logging;
+import edu.vub.at.actors.net.comm.Address;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XClassNotFound;
@@ -56,6 +54,7 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
+import edu.vub.at.util.logging.Logging;
 
 /**
  * An instance of the class ELActor represents a programmer-defined
@@ -83,9 +82,10 @@ public class ELActor extends EventLoop {
 	    protected synchronized Object initialValue() {
 	    	Logging.Actor_LOG.warn("Creating a default actor for thread " + Thread.currentThread());
 	    	try {
-				ELVirtualMachine host = new ELVirtualMachine(NATNil._INSTANCE_,
-						                                     new SharedActorField[] { },
-						                                     ELVirtualMachine._DEFAULT_GROUP_NAME_);
+				ELVirtualMachine host = new ELVirtualMachine(
+				  NATNil._INSTANCE_,
+				  new SharedActorField[] { },
+				  ELVirtualMachine._DEFAULT_GROUP_NAME_);
 				return NATActorMirror.createEmptyActor(host, new NATActorMirror(host)).getFarHost();
 			} catch (InterpreterException e) {
 			  // Backport from JDK 1.4 to 1.3
@@ -153,6 +153,10 @@ public class ELActor extends EventLoop {
 	
 	public ELVirtualMachine getHost() {
 		return host_;
+	}
+
+	public ATObject getBehaviour() {
+		return behaviour_;
 	}
 	
 	public ActorID getActorID() {

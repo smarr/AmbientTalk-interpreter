@@ -29,7 +29,6 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
-import edu.vub.at.actors.net.Logging;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
@@ -62,6 +61,7 @@ import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.util.logging.Logging;
 
 import java.util.Collection;
 import java.util.HashSet;

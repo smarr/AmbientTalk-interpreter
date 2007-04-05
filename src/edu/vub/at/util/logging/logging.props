@@ -1,0 +1,12 @@
+# Logging Properties for AmbientTalk/2
+# properties are in the format 'logger name' = 'priority level'
+# where priority is one of DEBUG, WARN, INFO, ERROR, FATAL
+
+# default priority = DEBUG
+
+at.eventloops=DEBUG
+at.eventloops.actors=DEBUG
+at.eventloops.remoterefs=DEBUG
+at.eventloops.vm=DEBUG
+at.init=INFO
+at.network=DEBUG

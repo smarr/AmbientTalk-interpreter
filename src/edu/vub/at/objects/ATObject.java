@@ -442,7 +442,7 @@ public interface ATObject extends ATConversions {
      * to useful values, being those of the object from which it is instantiated.
      * The <tt>init</tt> method plays the role of "constructor" in AmbientTalk.
      *
-     * @param initargs a table of the actual arguments to be passed to the <tt>init</tt> method
+     * @param initargs a table denoting the actual arguments to be passed to the <tt>init</tt> method
      * @return the new instance
      */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException;

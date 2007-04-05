@@ -27,7 +27,7 @@
  */
 package edu.vub.at.actors.eventloops;
 
-import edu.vub.at.actors.net.Logging;
+import edu.vub.at.util.logging.Logging;
 
 
 
