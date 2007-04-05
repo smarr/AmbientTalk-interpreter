@@ -51,6 +51,14 @@ public class Logger {
 	
 	private String textPriority_;
 	
+	/**
+	 * Access to the map should actually be synchronized, but this
+	 * adds overhead to accessing the loggers.
+	 * 
+	 * Without synchronization, the possibility exists that same logger
+	 * is added twice. On the other hand, as loggers are stateless, this is not
+	 * really a problem (the new one will replace the old one without any harm)
+	 */
 	public static Logger getInstance(String name) {
 		Logger logger = (Logger) _LOGS.get(name);
 		if (logger == null) {
@@ -69,6 +77,7 @@ public class Logger {
 	private Logger(String nam) {
 		name_ = nam;
 		leastPriority_ = _DEBUG_LEVEL_;
+		textPriority_ = "DEBUG";
 	}
 	
 	/**
@@ -125,8 +134,9 @@ public class Logger {
 		if (priority >= leastPriority_) {
 			// format: date priority logname - message
 			System.err.println(new Date().toString() + " " + textPriority_ + " "+ name_ + " - " + msg);
-		} else {
-			System.err.println("IGNORING MESSAGE " + msg);
+			if (exc != null) {
+				exc.printStackTrace(System.err);
+			}
 		}
 	}
 	
