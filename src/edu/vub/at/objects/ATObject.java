@@ -30,6 +30,8 @@ package edu.vub.at.objects;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
+import edu.vub.at.exceptions.XIllegalQuote;
+import edu.vub.at.exceptions.XIllegalUnquote;
 import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUnassignableField;
@@ -95,6 +97,9 @@ public interface ATObject extends ATConversions {
       * ------------------------------ */
 
     /**
+     * This behavioural meta-level operation reifies the act of sending
+     * an asynchronous message.
+     * 
      * When the base-level AmbientTalk code <code>rcv<-m()</code> is
      * evaluated in the context of an object <tt>o</tt>, an asynchronous message
      * <code><-m()</code> is first created by the current actor mirror.
@@ -112,6 +117,9 @@ public interface ATObject extends ATConversions {
     public ATObject meta_send(ATAsyncMessage message) throws InterpreterException;
     
     /**
+     * This behavioural meta-level operation reifies the act of receiving
+     * an asynchronous message.
+     * 
      * When an AmbientTalk object receives a message that was sent to it
      * asynchronously, the message is delivered to the object's mirror by
      * means of this meta-level operation.
@@ -132,7 +140,8 @@ public interface ATObject extends ATConversions {
    
     /**
      * This meta-level operation reifies the act of synchronous message sending
-     * (better known as "method invocation"). Hence, the meta-level equivalent
+     * (better known as "method invocation").
+     * Hence, the meta-level equivalent
      * of the base-level code <code>o.m()</code> is:
      * <pre>(reflect: o).invoke(o,`m,[])</pre>.
      * 
@@ -171,6 +180,8 @@ public interface ATObject extends ATConversions {
     public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException;
 
     /**
+     * This behavioural meta-level operation reifies a failed dynamic method or field lookup.
+     * 
      * When method invocation or field selection fails to find the selector in
      * the dynamic parent chain of an object, rather than immediately raising an
      * {@link XSelectorNotFound} exception, the mirror of the original receiver
@@ -206,6 +217,8 @@ public interface ATObject extends ATConversions {
      * ----------------------------- */
 
     /**
+     * This behavioural meta-level operation reifies object serialization.
+     * 
      * When an AmbientTalk object crosses actor boundaries, e.g. by means of
      * parameter passing, as a return value or because it was explicitly
      * exported, this meta-level operation is invoked on the object's mirror.
@@ -228,6 +241,8 @@ public interface ATObject extends ATConversions {
     public ATObject meta_pass() throws InterpreterException;
 
     /**
+     * This behavioural meta-level operation reifies object deserialization.
+     * 
      * When an AmbientTalk object has just crossed an actor boundary (e.g.
      * because of inter-actor message sending) this meta-level operation
      * is invoked on the object's mirror.
@@ -436,13 +451,15 @@ public interface ATObject extends ATConversions {
      * 
      * Instance creation in AmbientTalk is designed to mimick class instantiation
      * in a class-based language. Instantiating a class <tt>c</tt> requires <i>allocating</i>
-     * a new instance <tt>i</tt> and then invoking the <i>constructor</i> on that new instance.
-     * In AmbientTalk, class allocation is replaced by object <i>cloning</i>. The
-     * benefit is that an instantiated object its variables are already initialized
-     * to useful values, being those of the object from which it is instantiated.
-     * The <tt>init</tt> method plays the role of "constructor" in AmbientTalk.
+     * a new instance <tt>i</tt> and then invoking the <i>constructor</i> on that
+     * new instance. In AmbientTalk, class allocation is replaced by object
+     * <i>cloning</i>. The benefit is that an instantiated object its variables are
+     * already initialized to useful values, being those of the object from which
+     * it is instantiated. The <tt>init</tt> method plays the role of "constructor"
+     * in AmbientTalk.
      *
-     * @param initargs a table denoting the actual arguments to be passed to the <tt>init</tt> method
+     * @param initargs a table denoting the actual arguments to be passed to
+     * the <tt>init</tt> method
      * @return the new instance
      */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException;
@@ -452,92 +469,161 @@ public interface ATObject extends ATConversions {
       * --------------------------------- */
 
     /**
-     * Adds a field slot to an object at runtime.
-     * Triggers the <tt>fieldAdded</tt> event on this object's beholders (mirror observers) if
-     * the field is added successfully.
-     *
-     * @param field a mirror on the field to add, consisting of a selector (a symbol) and a value (an object)
+     * This structural meta-level operation adds a field object to the receiver mirror's
+     * base object. An object cannot contain two or more fields with the same name.
+     * 
+     * Note that the field object passed as an argument serves as a <i>prototype</i>
+     * object: the actual field object added is an <i>instance</i> of the passed field object.
+     * A field object should always have an <tt>init</tt> method that takes as an argument
+     * the new host object to which it is added. This is often useful, as the behaviour
+     * of a field may depend on the object in which it resides. Because <tt>addField</tt>
+     * creates a new instance of the field, this gives the field object a chance to
+     * properly refer to its new host. 
+     * <p>
+     * As an example, here is how to add a read-only field <tt>foo</tt> initialized
+     * to <tt>5</tt> to an object <tt>obj</tt>:
+     * <pre>def makeConstantField(nam, val) {
+     *   object: {
+     *     def new(newHost) { self }; // singleton pattern
+     *     def name := nam;
+     *     def readField() { val };
+     *     def writeField(newVal) { nil };
+     *   }
+     * };
+     * (reflect: obj).addField(makeConstantField(`foo, 5));
+     * </pre>
+     * 
+     * @param field the prototype field object whose instance should be added
+     * to the receiver's base object
      * @return nil
-     * @throws XDuplicateSlot if the field name already exists
-     *
-     * TODO: return value = nil?
+     * @throws XDuplicateSlot if the base object already has a field with the
+     * same name as the new field
      */
     public ATNil meta_addField(ATField field) throws InterpreterException;
 
     /**
-     * Adds a method slot to an object at runtime.
-     * Triggers the <tt>methodAdded</tt> event on this object's beholders (mirror observers) if
-     * the method is added successfully.
-     *
-     * @param method a mirror on the method to add. A method consists of a selector, arguments and a body.
+     * This structural meta-level operation adds a method to the receiver
+     * mirror's base object. An object cannot contain two or more methods
+     * with the same name.
+     * 
+     * @param method a method object to add to the receiver's base object's
+     * method dictionary.
      * @return nil
-     * @throws XDuplicateSlot if the method's selector already exists
-     *
-     * TODO: return value = nil? argument = a method mirror or a closure mirror?
+     * @throws XDuplicateSlot if a method with the new method's selector already
+     * exists in the base object.
      */
     public ATNil meta_addMethod(ATMethod method) throws InterpreterException;
 
     /**
-     * Queries an object for one of its field slots.
-     * Triggers the <tt>fieldAccessed</tt> event on this object's beholders (mirror observers).
+     * This structural meta-level operation allows the metaprogrammer to reify a
+     * field of the receiver mirror's base object. Hence, unlike <tt>select</tt>
+     * and <tt>lookup</tt>, <tt>grabField</tt> returns a <i>field object</i> rather
+     * than the <i>value</i> bound to the field. For example: one could express
+     * <code>obj.super := val</code> at the meta-level as:
+     * 
+     * <pre>
+     * def superField := (reflect: obj).grabField(`super);
+     * superField.writeField(val);
+     * </pre>
      *
-     * @param selector a symbol representing the name of the slot.
+     * Another important difference between <tt>select</tt>, <tt>lookup</tt> and
+     * <tt>grabField</tt> is that <tt>grabField</tt> only considers the fields
+     * <i>local</i> to the receiver's base object. Fields of lexical or dynamic
+     * parent objects are <i>not</i> considered.
+     *
+     * @param selector a symbol representing the name of the field to select.
      * @return a mirror on this object's field slot.
-     * @throws XUndefinedField if the field cannot be found.
+     * @throws XUndefinedField if the field cannot be found within the receiver's
+     * base object.
      */
     public ATField meta_grabField(ATSymbol selector) throws InterpreterException;
 
     /**
-     * Queries an object for one of its method slots.
-     * Triggers the <tt>methodAccessed</tt> event on this object's beholders (mirror observers).
+     * This structural meta-level operation allows the metaprogrammer to
+     * reify a method defined on the receiver mirror's base object. Note that,
+     * unlike the <tt>select</tt> or <tt>lookup</tt> operations, <tt>grabMethod</tt>
+     * returns the bare method object, i.e. <i>not</i> a closure wrapping the method.
+     * <p>
+     * Also, unlike <tt>select</tt> and <tt>lookup</tt>, <tt>grabField</tt> only
+     * considers the locally defined methods of an object, methods of lexical or
+     * dynamic parent objects are <i>not</i> considered.
      *
-     * @param selector a symbol representing the name of the slot.
-     * @return a mirror on this object's method slot.
-     * @throws XSelectorNotFound if the method cannot be found.
+     * @param selector a symbol representing the name of the method to grab from
+     * the receiver's base object.
+     * @return the bare method object bound to the given selector.
+     * @throws XSelectorNotFound if the method object cannot be found within the
+     * receiver's base object.
      */
     public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException;
 
     /**
-     * Queries an object for a list of all of its field slots.
-     * TODO(beholders) should this method trigger beholders?
-     *   if so, using a single 'fieldsQueried' event or by
-     *   invoking 'fieldAccessed' for each field in the list returned?
-     *
-     * @return a table of ATField mirrors.
+     * This structural meta-level operation allows access to all of the
+     * fields defined on the receiver mirror's base object. Note that
+     * this method only returns the base object's <i>locally</i> defined
+     * fields. Fields from parent objects are not returned.
+     * 
+     * @see ATObject#meta_grabField(ATSymbol) for details about the returned
+     * field objects. 
+     * @return a table of field objects (of type {@link ATField}).
      */
     public ATTable meta_listFields() throws InterpreterException;
 
     /**
-     * Queries an object for a list of all of its method slots.
-     * TODO(beholders) should this method trigger beholders?
-     *   if so, using a single 'methodsQueried' event or by
-     *   invoking 'methodAccessed' for each field in the list returned?
-     *
-     * @return a table of ATMethod mirrors.
+     * This structural meta-level operation allows access to all of the
+     * methods defined on the receiver mirror's base object. Note that
+     * this method only returns the base object's <i>locally</i> defined
+     * methods. Methods from parent objects are not returned.
+     * 
+     * @see ATObject#meta_grabMethod(ATSymbol) for details about the returned
+     * method objects.
+     * @return a table of method objects (of type {@link ATMethod}).
      */
     public ATTable meta_listMethods() throws InterpreterException;
 
-    /* ---------------------
-      * -- Mirror Fields   --
-      * --------------------- */
-
     /**
-     * Objects have a dynamic parent delegation chain, but there are two kinds
-     * of delegation links: IS-A and SHARES-A links. This method returns whether
-     * this object extends its parent object via an IS-A link.
+     * This structural meta-level operation returns whether or not
+     * the receiver mirror's base object is an <i>extension</i> of its
+     * parent object.
+     * <p>
+     * In AmbientTalk, all objects are part of a dynamic parent delegation chain:
+     * each object has a <tt>super</tt> field that denotes the object to which to
+     * delegate messages the object cannot understand itself. There are, however,
+     * two kinds of delegation links:
+     * <ul>
+     *  <li><b>IS-A</b> links: this kind of link denotes that the child object is
+     *  a true extension of its parent, and cannot meaningfully exist without the
+     *  parent's state. When the child is cloned, its parent will be cloned as well.
+     *  <li><b>SHARES-A</b> links: this kind of link denotes that the child object
+     *  simply delegates to its parent for purposes of sharing or code reuse. The
+     *  child can meaningfully exist without the parent's state. When the child is
+     *  cloned, the clone will delegate to the same parent.
+     * </ul>
+     *
+     * Examples:
+     * <pre>(reflect: (extend: parent with: code)).isExtensionOfParent() => true
+     *(reflect: (share: parent with: code)).isExtensionOfParent() => false
+     * </pre>
      * 
      * Note that accessing the dynamic parent itself is not a meta-level operation,
      * the dynamic parent can simply be accessed from the base level by performing
-     * 'obj.super'.
+     * <code>obj.super</code>.
+     * 
+     * @return whether the base object extends its parent object via an
+     * <b>IS-A</b> link or not.
      */
     public ATBoolean meta_isExtensionOfParent() throws InterpreterException;
 
+    /* ---------------------
+     * -- Mirror Fields   --
+     * --------------------- */
+    
     /**
-     * Objects also have a lexical parent which is the scope in which their
-     * definitions are nested. This scope is visible using receiverless messages.
-     * This getter method allows accessing the parent alongside the lexical nesting
-     * chain to be accessed as a field of the object's mirror.
-     * @throws InterpreterException 
+     * The <tt>lexicalParent</tt> field of a mirror denotes the lexical parent
+     * pointer of the mirror's base object. The lexical parent is the enclosing
+     * <i>lexical scope</i> in which the object was defined.
+     * 
+     * @return the object denoting this mirror's base object's lexically
+     * enclosing scope.
      */
     public ATObject meta_getLexicalParent() throws InterpreterException;
 
@@ -546,26 +632,47 @@ public interface ATObject extends ATConversions {
       * ------------------------------------------ */
 
     /**
-     * Evaluates a particular parsetree with respect to a particular context.
-     * @param ctx - context (object) to lookup bindings in.
-     * @throws InterpreterException
+     * This behavioural meta-level operation reifies the evaluation of
+     * abstract grammar objects into values. For objects, this operation
+     * returns the base object itself, signifying that the evaluation
+     * function defined on objects is the identity function. In other words,
+     * objects are <i>self-evaluating</i>. Parse tree objects (first-class
+     * abstract grammar elements), however, have dedicated evaluation
+     * functions. For example, evaluating <code>x</code> is equivalent to
+     * evaluating <code>(reflect: `x).eval(ctx)</code> where <tt>ctx</tt>
+     * is a reification of the current evaluation context.
+     * 
+     * @param ctx a context object that stores the current lexical scope and
+     * the current value of <tt>self</tt>
+     * @return the value of the abstract grammar element denoted by this mirror's
+     * base object.
+     * @throws XIllegalUnquote if an unquote abstract grammar element is evaluated. Such
+     * abstract grammar elements should only be encountered in a quoted parse tree.
      */
     public ATObject meta_eval(ATContext ctx) throws InterpreterException;
 
     /**
-     * Quotes a parsetree, in other words allows the parsetree to return itself
-     * instead of evaluating. This mode is triggered when a quotation parsetree
-     * element was encountered and is switched off again when an unquotation
-     * parsetree element is found. The context is passed on behalf of these possible
-     * future evaluations.
-     * @param ctx - context passed on to be used in subsequent evaluations.
-     * @throws InterpreterException upon conversion errors or upon illegal unquoted expressions
+     * This behavioural meta-level operation reifies the quotation of
+     * abstract grammar elements. Regular objects simply return themselves
+     * upon quotation. When an abstract grammar element is quoted, rather
+     * than tree-recursively invoking <tt>eval</tt> on the parse trees,
+     * <tt>quote</tt> is tree-recursively invoked. When encountering
+     * an unquote, <tt>eval</tt> is again invoked on the unquoted subtree,
+     * with the context passed as an argument to <tt>quote</tt>.
+     * 
+     * @param ctx a context object passed on to be used in subsequent evaluations.
+     * @throws XIllegalQuote exception whenever an unquote-splice unquotation is discovered
+     * in an Abstract Grammar node where the resulting table cannot be spliced.
      */
     public ATObject meta_quote(ATContext ctx) throws InterpreterException;
 
     /**
-     * Prints out the object in a human-readable way.
-     * @return a native textual representation of the object.
+     * This behavioural meta-level operation reifies the act of printing
+     * the base object in the read-eval-print loop. This operation may be
+     * overridden by mirrors to customise the printed representation of
+     * their base object.
+     * 
+     * @return a text value denoting a human-readable representation of the object.
      */
     public NATText meta_print() throws InterpreterException;
 
@@ -574,65 +681,151 @@ public interface ATObject extends ATConversions {
      * ---------------------------------- */
     
     /**
-     * Detects whether both objects have a common origin, in other words whether 
-     * they are related through a combination of the cloning and extension operators.
-     * @throws InterpreterException 
+     * This meta-level operation determines whether this mirror's base object
+     * is related to the parameter object by a combination of cloning and
+     * extension operators. The default implementation is:
+     * 
+     * <pre>def isRelatedTo(object) {
+     *  self.isCloneOf(object).or: { (reflect: base.super).isRelatedTo(object) }
+     *}</pre>
+     * 
+     * @param object the object to compare this mirror's base object to
+     * @return true if the given object is a clone of the base object or a clone
+     * of the base object's parents.
      */
     public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException;
     
     /**
-     * Detects whether this object an the passed parameter are the result of cloning 
-     * from a common ancestor (possibly either one of the objects itself).  
-     * @param original - the object of which this object is supposedly a sibling
-     * @return NATBoolean._TRUE_ if both objects are related.
+     * This meta-level operation determines whether this mirror's base object
+     * is a clone of the parameter object. The <i>is-clone-of</i> relation is transitive,
+     * so if <tt>martin</tt> is a clone of <tt>sally</tt> and <tt>sally</tt> is a clone of
+     * <tt>dolly</tt>, then <tt>martin</tt> is a clone of <tt>dolly</tt> as well.
+     * The relation is reflexive: <tt>dolly</tt> is a clone of itself.
+     * The relation is symmetric: <tt>dolly</tt> is also a clone of <tt>sally</tt>.
+     * 
+     * @param other the object to check the is-clone-of relationship with.
+     * @return true if the base object and the parameter object are clones (i.e. one
+     * was created by cloning the other), false otherwise.
      */
-    public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException;
+    public ATBoolean meta_isCloneOf(ATObject other) throws InterpreterException;
 
     /* ---------------------------------
      * -- Stripe Testing and Querying --
      * --------------------------------- */
     
     /**
-     * Tests whether the receiver object is striped with a particular stripe.
-     * If the test fails, i.e. the object is not directly striped with (a substripe of)
-     * the given stripe, the test is applied recursively to the dynamic parent of the
-     * object, until nil is reached.
+     * Tests whether the receiver mirror's base object is striped with a particular stripe.
+     * 
+     * The default implementation first compares the object's local stripes to the given stripe
+     * by means of the <tt>isSubstripeOf</tt> method defined on stripes. If no local stripe
+     * is found, the test is applied recursively on this object's dynamic parent. In code:
+     * <pre>def isStripedWith(stripe) {
+     *  (nil != (self.stripesOf: object).find: { |localStripe|
+	 *    localStripe.isSubstripeOf(stripe)
+	 *  }).or: { (reflect: base.super).isStripedWith(stripe) }
+	 * };
+     * </pre>
+     * 
+     * The primitive method <tt>is: obj stripedWith: stripe</tt> is defined in terms of this
+     * method:
+     * <pre>
+     * def is: obj stripedWith: stripe {
+     *  (reflect: obj).isStripedWith(stripe)
+     *};
+     * </pre>
+     * 
+     * @param stripe the stripe object to check for
+     * @return true if this mirror's base object or one of its parent objects is striped
+     * with a substripe of the given stripe, false otherwise.
      */
     public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException;
     
     /**
-     * Returns the stripes of this object. Note that only the stripes that were
-     * attached directly to this object are returned, not all of the parent's stripes as well.
+     * Returns all of the local stripes of this object. The primitive method
+     * <tt>stripesOf: obj</tt> is defined in terms of this method:
+     * 
+     * <pre>
+     * def stripesOf: obj {
+     *  (reflect: obj).stripes
+     *};
+     * </pre>
+     * 
+     * @return a table of the stripes that were attached directly to this mirror's base
+     * object. The stripes of its parent objects are not returned.
      */
     public ATTable meta_getStripes() throws InterpreterException;
     
-    /* -------------------------------
+     /* -------------------------------
       * - Base Level Object interface -
-      * -------------------------------
-      */
+      * ------------------------------- */
 
     /**
-     * Access the dynamic parent of this object, that is, the object to which
-     * locally failed operations such as 'invoke' and 'select' are delegated to.
+     * Bound to the dynamic parent of this object.
+     * 
+     * The dynamic parent of an object is the object to which failed
+     * selection or invocation requests or stripe tests are delegated to.
+     * 
+     * @return the current dynamic parent of this object.
      */
     public ATObject base_getSuper() throws InterpreterException;
     
     /**
-     * The pointer equality == operator.
-     * OBJ(o1) == OBJ(o2) => BLN(o1.equals(o2))
+     * The identity operator. In AmbientTalk, equality of objects
+     * is by default pointer-equality (i.e. objects are equal only
+     * if they are identical).
+     * 
+     * This is a primitive method, present by default in every AmbientTalk
+     * object but redefinable by the programmer.
+     * 
+     * @return by default, true if the parameter object and this object are identical,
+     * false otherwise.
      */
     public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException;
 
     /**
-     * The object instantiation method.
-     * obj.new(@args) => (reflect: obj).newInstance(@args)
+     * The object instantiation method. Note that in class-based OO languages,
+     * this method is usually at the level of the <i>class</i>. In AmbientTalk,
+     * this method is situated at the object-level directly. It can be overridden
+     * to e.g. enforce the singleton pattern or to return instances of other
+     * objects.
+     * 
+     * The default implementation of this method is:
+     * <pre>def new(@args) {
+     *  (reflect: self).newInstance(@args)
+     *};
+     * </pre>
+     * 
+     * This is a primitive method, present by default in every AmbientTalk
+     * object but redefinable by the programmer.
+     * 
+     * @see ATObject#meta_newInstance(ATTable) for a description of object instantiation.
+     * @param initargs the variable argument list to pass to the <tt>init</tt> method.
+     * @return by default, the new instance of this mirror's base object.
      */
     public ATObject base_new(ATObject[] initargs) throws InterpreterException;
 
     /**
-     * The object initialisation method.
-     * By default, it does nothing.
-     * obj.init(@args) => nil
+     * The object initialisation method. In class-based languages, this method
+     * is often called the constructor. AmbientTalk only supports one constructor
+     * per object, but thanks to variable argument lists and optional parameters,
+     * the same flexibility as defining multiple constructors can often be achieved.
+     * Also, by overriding <tt>new</tt>, the developer may invoke additional methods
+     * on newly created objects if this is desirable.
+     * 
+     * The default implementation of this method is:
+     * <pre>def init(@args) {
+     *  super^init(@args)
+     *};
+     * </pre>
+     * 
+     * This is a primitive method, present by default in every AmbientTalk
+     * object but redefinable by the programmer.
+     * 
+     * @see ATObject#meta_newInstance(ATTable) for a description of object initialisation.
+     * @param initargs the arguments to the <tt>init</tt> constructor method.
+     * @return the return value of invoking the <tt>init</tt> method. Note that
+     * this value is <i>discarded</i> when <tt>init</tt> is invoked from the
+     * <tt>newInstance</tt> meta-level operation.
      */
     public ATObject base_init(ATObject[] initargs) throws InterpreterException;
 }
