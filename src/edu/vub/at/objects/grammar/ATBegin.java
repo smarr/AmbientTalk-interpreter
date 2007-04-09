@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.grammar;
 
-import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATTable;
 
 /**
@@ -35,7 +34,7 @@ import edu.vub.at.objects.ATTable;
  * 
  * @author tvcutsem
  */
-public interface ATBegin extends ATAbstractGrammar {
+public interface ATBegin extends ATStatement {
 
 	public ATTable base_getStatements();
 	
