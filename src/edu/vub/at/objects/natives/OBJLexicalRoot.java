@@ -37,7 +37,6 @@ import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.actors.net.OBJNetwork;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XAmbienttalk;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -45,6 +44,7 @@ import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
+import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
@@ -52,8 +52,6 @@ import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
-import edu.vub.at.objects.symbiosis.JavaObject;
-import edu.vub.at.objects.symbiosis.XJavaException;
 import edu.vub.at.parser.NATParser;
 
 /**
@@ -915,10 +913,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	
 	/**
 	 * The unary - primitive:
-	 * -NBR(n) == NBR(-n)
+	 * -NUM(n) == 0 - n
 	 */
-	public ATNumber base__opmns_(ATNumber n) throws InterpreterException {
-		return NATNumber.atValue(- n.asNativeNumber().javaValue);
+	public ATNumeric base__opmns_(ATNumeric n) throws InterpreterException {
+		return NATNumber.ZERO.base__opmns_(n);
 	}
 	
 	/**
