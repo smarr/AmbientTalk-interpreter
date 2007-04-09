@@ -590,7 +590,7 @@ public final class Symbiosis {
 	
 	private static ATObject invokeUniqueSymbioticConstructor(Constructor ctor, Object[] jArgs) throws InterpreterException {
 		try {
-			return JavaObject.wrapperFor(ctor.newInstance(jArgs));
+			return Symbiosis.javaToAmbientTalk(ctor.newInstance(jArgs));
 		} catch (IllegalAccessException e) {
 			// the invoked method is not publicly accessible
 			throw new XReflectionFailure("Java constructor "+Reflection.downSelector(ctor.getName()) + " is not accessible.", e);
