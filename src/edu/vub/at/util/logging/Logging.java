@@ -33,7 +33,7 @@ import java.util.Properties;
 
 
 /**
- * Auxiliary class used to group Log4J loggers.
+ * Auxiliary class used to more easily access AmbientTalk/2 loggers.
  * 
  * @author tvcutsem
  */

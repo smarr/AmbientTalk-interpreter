@@ -185,7 +185,16 @@ public abstract class EventLoop {
 	
 	protected final EventLoop owner() { return this; }
 	
-	public void execute() {
+	/**
+	 * Invoked by the event processor thread continually while
+	 * the event loop is alive.
+	 * 
+	 * The default behaviour is to continually dequeue events
+	 * and make a subclass handle the event.
+	 * 
+	 * Overridable by subclasses to customize event processing.
+	 */
+	protected void execute() {
 		try {
 			Event event = eventQueue_.dequeue();
 

@@ -163,7 +163,7 @@ public class CommunicationBus {
 			// switching the below two statements causes the master and the slave to deadlock!
 			outgoing_ = new ObjectOutputStream(new BufferedOutputStream(s.getOutputStream()));
 			// The buffered output stream must be EXPLICITLY flushed, otherwise the buffered input stream
-			// that is created below will block indefinitely
+			// that is created below (but by the other VM) will block indefinitely
 			outgoing_.flush();
 			incoming_ = new ObjectInputStream(new BufferedInputStream(s.getInputStream()));
 		}
