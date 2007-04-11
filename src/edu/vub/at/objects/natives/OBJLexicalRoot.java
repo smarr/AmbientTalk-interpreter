@@ -180,64 +180,109 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * ---------------------- */
 	
 	/**
-	 * nil
+	 * <tt>nil</tt> evaluates to the nil object, which is
+	 * the empty, dynamic parent of all AmbientTalk objects. 
 	 */
 	public ATNil base_getNil() {
 		return NATNil._INSTANCE_;
 	}
 	
 	/**
-	 * true
+	 * <tt>true</tt> evaluates to the unique boolean true object.
 	 */
 	public ATBoolean base_getTrue() {
 		return NATBoolean._TRUE_;
 	}
 	
 	/**
-	 * false
+	 * <tt>false</tt> evaluates to the unique boolean false object.
 	 */
 	public ATBoolean base_getFalse() {
 		return NATBoolean._FALSE_;
 	}
 	
 	/**
-	 * '/' (the global namespace)
-	 * '/' is an alias for 'lobby'
+	 * <tt>/</tt> evaluates to the global namespace. It is
+	 * simply an alias for <tt>lobby</tt>.
+	 * @see #base_getLobby()
 	 */
 	public ATObject base_get_opdiv_() {
 		return base_getLobby();
 	}
 	
 	/**
-	 * lobby (the global namespace initialized using the objectpath)
+	 * <tt>lobby</tt> evaluates to the global namespace object.
+	 * For each <tt>name=path</tt> entry on AmbientTalk's
+	 * <i>object path</i>, the lobby object contains a slot
+	 * <tt>name</tt> bound to a namespace object bound to
+	 * the directory referred to by <tt>path</tt>.
+	 * <p>
+	 * Accessing the lobby allows loading in AmbientTalk source code
+	 * from external files.
 	 */
 	public ATObject base_getLobby() {
 		return Evaluator.getLobbyNamespace();
 	}
 	
 	/**
-	 * root (the global scope)
+	 * <tt>root</tt> evaluates to the global lexical scope object.
+	 * This is the top-level object in which the definitions of
+	 * the file <tt>at/init/init.at</tt> are evaluated. All code
+	 * is assumed to be "nested" in the lexical root, so all definitions
+	 * of this object are lexically accessible.
 	 */
 	public ATObject base_getRoot() {
 		return Evaluator.getGlobalLexicalScope();
 	}
 	
 	/**
-	 * jlobby (the Java class package root, initialized using the Java classpath)
+	 * <tt>jlobby</tt> evaluates to the Java namespace root. It is a
+	 * special object which is part of the symbiosis infrastructure of
+	 * AmbientTalk. <tt>jlobby</tt> acts like an object that has field
+	 * names that correspond to Java package names. By selecting fields
+	 * from this object, an appropriate Java package can be created
+	 * from which a Java class can be accessed. Only the Java classes
+	 * accessible in the Java classpath are accessible.
+	 * 
+	 * Example:
+	 * <code>jlobby.java.util.Vector</code> evaluates to a reference to
+	 * the Java <tt>Vector</tt> class.
 	 */
 	public ATObject base_getJlobby() {
 		return Evaluator.getJLobbyRoot();
 	}
 
 	/**
-	 * network (the network control object, to go online and offline)
+	 * <tt>network</tt> evaluates to the unique network control object.
+	 * It is a simple native object with two methods:
+	 * <ul>
+	 *  <li><tt>network.online()</tt> makes the interpreter go online. This allows
+	 *  publications of local actors to be discovered by remote objects and vice versa.
+	 *  <li><tt>network.offline()</tt> makes the interpreter go offline. All
+	 *  remote references to remote objects will become disconnected.
+	 * </ul>
 	 */
 	public ATObject base_getNetwork() {
 		return OBJNetwork._INSTANCE_;
 	}
 	
 	/**
-	 * defaultMirror (the default mirror on objects)
+	 * <tt>defaultMirror</tt> evaluates to the default mirror on objects. This
+	 * is the mirror encapsulating the standard AmbientTalk object semantics.
+	 * That is, it is a mirror with similar behaviour as the mirror created by
+	 * executing: <code>reflect: (object: { ... })</code>.
+	 * 
+	 * The default mirror is an object with a read-only <tt>base</tt> field
+	 * that signifies the base-level object of this mirror. The main purpose
+	 * of this object is to serve as a prototype whose methods can be overridden
+	 * by custom mirrors. The syntax:
+	 * <pre>
+	 * mirror: { ... }
+	 * </pre>
+	 * is syntactic sugar for:
+	 * <pre>
+	 * extend: defaultMirror with: { ... }
+	 * </pre>
 	 */
 	public ATObject base_getDefaultMirror() {
 		return Evaluator.getMirrorRoot();
@@ -248,130 +293,142 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * ------------------------ */
 	
 	/**
-	 * The if:then: primitive, which calls back on the boolean using ifTrue:
+	 * The <tt>if:then:</tt> control structure. Usage:
+	 *  <pre>if: cond then: consequent</pre>
 	 * 
-	 * usage:
-	 *  if: booleanCondition then: { consequent }
+	 * pseudo-implementation:
+	 * <pre>cond.ifTrue: consequent</pre>
+	 * 
+	 * Note that the consequent parameter should be a <i>closure</i>, i.e.
+	 * the caller is responsible for delaying the evaluation of the consequent!
 	 * 
 	 * @param cond a boolean object
 	 * @param consequent a closure containing the code to execute if the boolean is true
-	 * @return the result of invoking booleanCondition.ifTrue: { consequent }
-	 * @throws InterpreterException if raised inside the consequent closure.
+	 * @return if <tt>cond</tt> is true, the value of applying the consequent, <tt>nil</tt> otherwise
 	 */
 	public ATObject base_if_then_(ATBoolean cond, ATClosure consequent) throws InterpreterException {
 		return cond.base_ifTrue_(consequent);
 	}
 	
 	/**
-	 * The if:then:else primitive, which calls back on the boolean using ifTrue:ifFalse:
-	 * 
-	 * usage:
-	 *  if: booleanCondition then: { consequent } else: { alternative }
+	 * The <tt>if:then:else:</tt> control structure. Usage:
+	 *  <pre>if: cond then: consequent else: alternative</pre>
 	 * 
 	 * pseudo-implementation:
-	 *  booleanCondition.ifTrue: { consequent } ifFalse: { alternative }
+	 * <pre>cond.ifTrue: consequent ifFalse: alternative</pre>
+	 * 
+	 * Note that the consequent and alternative parameters should be <i>closures</i>, i.e.
+	 * the caller is responsible for delaying the evaluation of these arguments!
 	 * 
 	 * @param cond a boolean object
 	 * @param consequent a closure containing the code to execute if the boolean is true
 	 * @param alternative a closure containing the code to execute if the boolean is false
-	 * @return the result of invoking booleanCondition.ifTrue: { consequent }
-	 * @throws InterpreterException if raised inside the consequent or alternative closure.
+	 * @return the value of consequent if the boolean is true, the value of the alternative otherwise.
 	 */
 	public ATObject base_if_then_else_(ATBoolean cond, ATClosure consequent, ATClosure alternative) throws InterpreterException {
 		return cond.base_ifTrue_ifFalse_(consequent, alternative);
 	}
 	
 	/**
-	 * The while:do: primitive, which calls back on the closure using whileTrue:
-	 * 
-	 * usage:
-	 *  while: { condition } do: { body }
+	 * The <tt>while:do:</tt> control structure. Usage:
+	 * <pre>while: condition do: body</pre>
 	 * 
 	 * pseudo-implementation:
-	 *  { condition }.whileTrue: { body }
+	 * <pre>condition.whileTrue: body</pre>
+	 * 
+	 * Note that <i>both</i> the condition and the body should be <i>closures</i>, because
+	 * they represent pieces of code that have to be executed repeatedly. Because of traditional
+	 * syntax, novice programmers are inclined to make the mistake of writing, e.g.:
+	 * <pre>while: (i < 10) do: { i := i + 1 }</pre>
+	 * Which is wrong because the first parameter should evaluate to a closure that itself
+	 * returns a boolean value, not to a boolean value directly.
 	 * 
 	 * @param condition a closure expected to return a boolean object
 	 * @param body a closure containing the code to execute as long as the condition closure returns true
-	 * @return the result of invoking { body }.whileTrue: { condition }
-	 * @throws InterpreterException if raised inside the condition or body closures.
+	 * @return if conditions is true at least once, the last value of body, <tt>nil</tt> otherwise.
 	 */
 	public ATObject base_while_do_(ATClosure condition, ATClosure body) throws InterpreterException {
 		return condition.base_whileTrue_(body);
 	}
 	
 	/**
-	 * The foreach:in: primitive, which calls back on the table using each:
+	 * The <tt>foreach:in:</tt> control structure. Usage:
 	 * 
-	 * usage:
-	 *  foreach: { |v| body } in: [ table ]
+	 * <pre>foreach: body in: table</pre>
 	 * 
 	 * pseudo-implementation:
-	 *  [ table ].each: { |v| body }
+	 * <pre>table.each: body</pre>
 	 * 
-	 * @param body a closure expected to take one argument to be applied to each element of the table
-	 * @param tab a table to apply the iterator block to
-	 * @return the result of invoking [ table ].each: { |v| body }
-	 * @throws InterpreterException if raised inside the iterator block.
+	 * Example: <code>[1,2,3].each: { |i| system.println(i) }</code>
+	 * 
+	 * @param body a one-arity closure that is to be applied to each element of the table
+	 * @param tab a table to apply the body closure to
+	 * @return <tt>nil</tt>, by default
 	 */
 	public ATObject base_foreach_in_(ATClosure body, ATTable tab) throws InterpreterException {
 		return tab.base_each_(body);
 	}
 
 	/**
-	 * The do:if: primitive, which in Ruby terminology is a 'statement modifier'
-	 * 
-	 * usage:
-	 *  do: { body } if: condition
+	 * The <tt>do:if:</tt> control structure. Usage:
+	 * <pre>do: body if: condition</pre>
 	 * 
 	 * pseudo-implementation:
-	 *  condition.ifTrue: { body }
+	 * <pre>condition.ifTrue: body</pre>
+	 *
+	 * In Ruby, this kind of control structure is called a <i>statement modifier</i>.
 	 * 
 	 * @param body a zero-argument closure to execute if the condition is true
-	 * @param condition a boolean expression
-	 * @return the result of invoking body if the condition is true or nil if the condition is false
-	 * @throws InterpreterException if raised inside the body block.
+	 * @param condition a boolean value
+	 * @return the result of invoking body if the condition is true or nil if the
+	 * condition is false
 	 */
 	public ATObject base_do_if_(ATClosure body, ATBoolean condition) throws InterpreterException {
 		return condition.base_ifTrue_(body);
 	}
 	
 	/**
-	 * The do:unless: primitive, which in Ruby terminology is a 'statement modifier'
-	 * 
-	 * usage:
-	 *  do: { body } unless: condition
+	 * The <tt>do:unless:</tt> control structure. Usage:
+	 * <pre>do: body unless: condition</pre>
 	 * 
 	 * pseudo-implementation:
-	 *  condition.ifFalse: { body }
+	 * <pre>condition.ifFalse: body</pre>
+	 *
+	 * In Ruby, this kind of control structure is called a <i>statement modifier</i>.
+	 * Example: <code>do: { file.close() } unless: (nil == file)</code>
 	 * 
-	 * @param body a zero-argument closure to execute if the condition is false
-	 * @param condition a boolean expression
-	 * @return the result of invoking body if the condition is false or nil if the condition is true
-	 * @throws InterpreterException if raised inside the body block.
+	 * @param body a zero-argument closure to execute only if the condition is false
+	 * @param condition a boolean value
+	 * @return the result of invoking body if the condition is false, nil otherwise
 	 */
 	public ATObject base_do_unless_(ATClosure body, ATBoolean condition) throws InterpreterException {
 		return condition.base_ifFalse_(body);
 	}
 	
 	/**
-	 * The let: primitive, which allows for the easy creation of temporary local variables.
-	 * This primitive should be used in conjunction with a closure that declares optional
+	 * The <tt>let:</tt> construct. Usage:
+	 * <pre>let: { |var := value| body }</pre>
+	 * 
+	 * pseudo-implementation:
+	 * <pre>closure()</pre>
+	 * 
+	 * <tt>let:</tt> allows for the easy creation of temporary local variables.
+	 * This construct should be used in conjunction with a closure that declares optional
 	 * parameters. Because the closure will be invoked with zero arguments, all of the
 	 * parameters will be given their corresponding default initial value. The parameters
 	 * are defined local to the closure's body.
 	 * 
-	 * Note: this let behaves like Scheme's let* and letrec, i.e. the following is legal:
-	 * let: { |var1 := value1, var2 := var1, var3 := { ... var3() ... } | ... }
-	 * 
-	 * usage:
-	 *  let: { |var := value| body }
-	 * 
-	 * pseudo-implementation:
-	 *  def let: closure { closure() }
+	 * AmbientTalk's <tt>let:</tt> behaves like Scheme's <tt>let*</tt> and <tt>letrec</tt>,
+	 * i.e. the following is legal:
+	 * <pre>let: {
+	 *  |var1 := value1,
+	 *   var2 := var1,
+	 *   var3 := { ... var3() ... }|
+	 *  ...
+	 *}</pre>
 	 * 
 	 * @param body a closure which is supposed to declare some optional parameters
 	 * @return the result of invoking the body closure
-	 * @throws InterpreterException if raised inside the body block.
 	 */
 	public ATObject base_let_(ATClosure body) throws InterpreterException {
 		return body.base_apply(NATTable.EMPTY);
