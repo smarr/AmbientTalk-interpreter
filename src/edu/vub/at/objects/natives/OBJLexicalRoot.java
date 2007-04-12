@@ -439,26 +439,30 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * ------------------------------------------ */
 	
 	/**
-	 * actor: { code }
-	 *  == actor: { code } mirroredBy: <default actor mirror>
+	 * The <tt>actor: closure</tt> construct.
 	 *  
 	 * The semantics of actor creation is as follows:
-	 * - Mandatory parameters to the block of initialization code are treated as lexically visible
+	 * <ul>
+	 *  <li> Mandatory parameters to the block of initialization code are treated as lexically visible
 	 *   variables that have to remain available in the new actor behaviour. Hence, these variables
 	 *   are evaluated to values immediately at creation-time and parameter-passed to the new actor.
-	 * - The closure containing the initialization code is unpacked, its lexical scope is disregarded
+	 *  <li> The closure containing the initialization code is unpacked, its lexical scope is disregarded
 	 *   and the unwrapped method is serialized and sent to the new actor, which can use it to
 	 *   initialize his behaviour object.
-	 * - The creating actor waits for the created actor to spawn a new behaviour and to return a far
+	 *  <li>The creating actor waits for the created actor to spawn a new behaviour and to return a far
 	 *   reference to this behaviour. From that point on, the creating actor can run in parallel with
 	 *   the created actor, which only then evaluates the initialization code to initialize its behaviour.
-	 *  
+	 * </ul>
+	 * 
+	 * @param closure the closure whose parameters define lexical fields to be copied and whose
+	 * method specifies the code of the new actor's behaviour object
+	 * @return a far reference to the behaviour of the new actor
 	 */
-	public ATObject base_actor_(ATClosure code) throws InterpreterException {
-		ATMethod method = code.base_getMethod();
+	public ATObject base_actor_(ATClosure closure) throws InterpreterException {
+		ATMethod method = closure.base_getMethod();
 		NATTable copiedBindings = Evaluator.evalMandatoryPars(
 				method.base_getParameters(),
-				code.base_getContext());
+				closure.base_getContext());
 		
 		Packet serializedBindings = new Packet("actor-bindings", copiedBindings);
 		Packet serializedInitCode = new Packet("actor-initcode", method);
@@ -467,50 +471,82 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
-	 * actor => a reference to a mirror on the current actor
+	 * <tt>actor</tt> evaluates to the mirror on the actor executing this code.
+	 * The actor mirror is an object whose behaviour is consulted for operations
+	 * such as creating and sending asynchronous messages or creating mirrors on
+	 * other objects. It can be replaced by a custom mirror by means of the actor
+	 * mirror's <tt>install:</tt> primitive.
 	 */
 	public ATActorMirror base_getActor() throws InterpreterException {
 		return ELActor.currentActor().getActorMirror();
 	}
 	
 	/**
-	 * export: object as: topic
-	 *  => object becomes discoverable by objects in other actors via topic
-	 * returns a publication object that can be used to cancel the export
+	 * The <tt>export: object as: topic</tt> construct. Pseudo-implementation:
+	 * <pre>actor.provide(topic, object)</pre>
+	 * 
+	 * This construct enables the given object to become discoverable by objects
+	 * in other actors by means of the topic stripe.
+	 * 
+	 * @param object the object to export to remote actors' objects
+	 * @param topic a stripe denoting the abstract 'publication topic' for this object's publication
+	 * @return a publication object whose <tt>cancel</tt> method can be used to cancel the publication.
 	 */
 	public ATObject base_export_as_(ATObject object, ATStripe topic) throws InterpreterException {
 		return ELActor.currentActor().getActorMirror().base_provide(topic, object);
 	}
 	
 	/**
-	 * when: topic discovered: { code }
-	 *  => when an object is exported by another actor under topic, trigger the code
-	 * returns a subscription object that can be used to cancel the handler
+	 * The <tt>when: topic discovered: handler</tt> construct. Pseudo-implementation:
+	 * <pre>actor.require(topic, handler, false)</pre>
+	 * 
+	 * When an object is exported by <i>another</i> actor under topic, this construct triggers
+	 * the given code, passing a reference to the exported object as argument to the closure.
 	 * 
 	 * Once the code block has run once, it will not be triggered again.
+	 * 
+	 * @param topic the abstract 'subscription topic' used to find an exported object
+	 * @param handler a one-argument closure to apply to a discovered exported object
+	 * @return a subscription object whose <tt>cancel</tt> method can be used to cancel the subscription,
+	 * such that the handler will no longer be invoked. Beware, however, that at the time the
+	 * subscription is cancelled, a request to apply the closure may already have been scheduled
+	 * for execution by the current actor. This request is not cancelled by invoking the <tt>cancel</tt> method.
 	 */
 	public ATObject base_when_discovered_(ATStripe topic, ATClosure handler) throws InterpreterException {
 		return ELActor.currentActor().getActorMirror().base_require(topic, handler, NATBoolean._FALSE_);
 	}
 	
 	/**
-	 * whenever: topic discovered: { code }
-	 *  => when an object is exported by another actor under topic, trigger the code
-	 * returns a subscription object that can be used to cancel the handler
+	 * The <tt>whenever: topic discovered: handler</tt> construct. Pseudo-implementation:
+	 * <pre>actor.require(topic, handler, true)</pre>
 	 * 
-	 * The code block can be fired multiple times. To stop the block from triggering upon
-	 * new publications, it must be explicitly cancelled
+	 * When an object is exported by <i>another</i> actor under topic, this construct triggers
+	 * the given code, passing a reference to the exported object as argument to the closure.
+	 * 
+	 * The code block can be fired multiple times upon discovering multiple exported objects.
+	 * To stop the block from triggering upon new publications, it must be explicitly cancelled
+	 * 
+	 * @param topic the abstract 'subscription topic' used to find an exported object
+	 * @param handler a one-argument closure to apply to any discovered exported object
+	 * @return a subscription object whose <tt>cancel</tt> method can be used to cancel the subscription,
+	 * such that the handler will no longer be invoked. Beware, however, that at the time the
+	 * subscription is cancelled, a request to apply the closure may already have been scheduled
+	 * for execution by the current actor. This request is not cancelled by invoking the <tt>cancel</tt> method.
 	 */
 	public ATObject base_whenever_discovered_(ATStripe topic, ATClosure handler) throws InterpreterException {
 		return ELActor.currentActor().getActorMirror().base_require(topic, handler, NATBoolean._TRUE_);
 	}
 	
 	/**
-	 * when: farReference disconnected: { code }
-	 *  => when the remote reference is broken due to network disconnections, trigger the code
-	 * returns a subscription object that can be used to cancel the listener
+	 * The <tt>when: farReference disconnected: listener</tt> construct.
+	 * When the far reference is broken due to network disconnections, triggers the zero-arity listener
+	 * closure. It is possible to register listeners on local far references. These may trigger if the
+	 * local actor takes its object offline. In this case, these listeners will trigger as well.
 	 * 
-	 * The code of block will be also fired when the object referenced is taken offline.
+	 * @param farReference a native far reference
+	 * @param listener a zero-arity closure to invoke if the far reference becomes disconnected
+	 * @return a subscription object whose <tt>cancel</tt> method can be used to cancel future
+	 * notifications of the listener.
 	 */
 	public ATObject base_when_disconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
 		farReference.asNativeFarReference().addDisconnectionListener(listener);
@@ -518,9 +554,16 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
-	 * when: farReference reconnected: { code }
-	 *  => when the remote reference is reinstated after a network disconnection, trigger the code
-	 * returns a subscription object that can be used to cancel the listener
+	 * The <tt>when: farReference reconnected: listener</tt> construct.
+	 * When the remote reference is reinstated after a network disconnection, trigger the zero-arity
+	 * listener. Although it is allowed to register these listeners on local far references,
+	 * these are normally not invoked because the only possibility for a local far ref to become
+	 * disconnected is because the object was taken offline, and this is a permanent disconnect.
+	 * 
+	 * @param farReference a native far reference
+	 * @param listener a zero-arity closure to invoke if the far reference becomes reconnected
+	 * @return a subscription object whose <tt>cancel</tt> method can be used to cancel future
+	 * notifications of the listener.
 	 */
 	public ATObject base_when_reconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
 		farReference.asNativeFarReference().addReconnectionListener(listener);
@@ -528,9 +571,14 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
-	 * when: farReference expired: { code }
-	 *  => when the (remote/local) reference is broken because the object referenced expired ( i.e. it was 
-	 *  taken offline), trigger the code returns a subscription object that can be used to cancel the listener
+	 * The <tt>when: farReference takenOffline:</tt> construct.
+	 *  When the (remote/local) far reference is broken because the object referenced was 
+	 *  taken offline, trigger the code.
+	 *  
+	 * @param farReference a native far reference
+	 * @param listener a zero-arity closure to invoke if the referenced object has been taken offline.
+	 * @return a subscription object whose <tt>cancel</tt> method can be used to cancel future
+	 * notifications of the listener.
 	 */
 	public ATObject base_when_expired_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
 		farReference.asNativeFarReference().addExpiredListener(listener);
@@ -539,13 +587,16 @@ public final class OBJLexicalRoot extends NATByCopy {
 	
 
 	/**
-	 * retract: farReference 
-	 *  => retract all currently unsent messages from the far reference's outbox
-	 *  This has the side effect that the returned messages will *not* be sent automatically anymore,
-	 *  the programmer is responsible to resend all messages that still need to be sent by hand.
+	 * The <tt>retract: farReference</tt> construct. 
+	 * Retracts all currently unsent messages from the far reference's outbox.
+	 * This has the side effect that the returned messages will <b>not</b> be sent
+	 * automatically anymore, the programmer is responsible to explicitly resend
+	 * all messages that were retracted but still need to be sent.
 	 *  
-	 *  Note that the returned messages are copies of the original.
-	 * @return a table with a copy of all the messages being sent.
+	 * Note that the returned messages are copies of the original.
+	 * @param farReference the far reference of which to retract outgoing message sends
+	 * @return a table containing copies of all messages that were sent to this far reference, but
+	 * not yet transmitted by the far reference to its referent.
 	 */
 	public ATTable base_retract_(ATFarReference farReference) throws InterpreterException {
 		return farReference.meta_retractUnsentMessages();
