@@ -53,7 +53,6 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATFraction;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATNumeric;
