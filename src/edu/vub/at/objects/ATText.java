@@ -52,4 +52,12 @@ public interface ATText extends ATExpression {
 	public ATText base__oppls_(ATObject other) throws InterpreterException;
 	public ATNumber base__opltx__opeql__opgtx_(ATText other) throws InterpreterException;
 	public ATBoolean base__optil__opeql_(ATText other) throws InterpreterException;
+	
+	/**
+	 * Tries to convert the text into a numeric object (a number or a fraction).
+	 * Example: <code>"1.0".parseNumeric() => 1.0</code>
+	 * @return the numeric object denoted by this text
+	 * @throws XIllegalArgument if the text cannot be converted into a number or a fraction
+	 */
+	public ATNumeric base_parseNumeric() throws InterpreterException;
 }

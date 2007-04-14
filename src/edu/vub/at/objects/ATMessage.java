@@ -74,7 +74,7 @@ public interface ATMessage extends ATObject {
 	public ATObject base_sendTo(ATObject receiver, ATObject sender) throws InterpreterException;
 	
 	/**
-	 * Primitive implementation of base_sendTo.
+	 * Primitive implementation of {@link #base_sendTo(ATObject, ATObject)}.
 	 * @param self the AmbientTalk object to which 'sendTo' was originally sent
 	 */
 	public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException;

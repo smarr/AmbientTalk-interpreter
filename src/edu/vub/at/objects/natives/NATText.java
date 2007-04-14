@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
+import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
@@ -203,6 +204,18 @@ public final class NATText extends AGExpression implements ATText {
 				return NATBoolean.atValue(Pattern.matches(regexp.asNativeText().javaValue, new StringBuffer(javaValue)));
 			} catch (PatternSyntaxException e) {
 				throw new XIllegalArgument("Illegal regular expression for ~=: " + e.getMessage());
+			}
+		}
+		
+		public ATNumeric base_parseNumeric() throws InterpreterException {
+			try {
+				return NATNumber.atValue(Integer.parseInt(javaValue));
+			} catch(NumberFormatException e) {
+				try {
+					return NATFraction.atValue(Double.parseDouble(javaValue));
+				} catch(NumberFormatException e2) {
+					throw new XIllegalArgument("Cannot convert "+javaValue+" into a numeric object");
+				}
 			}
 		}
 		
