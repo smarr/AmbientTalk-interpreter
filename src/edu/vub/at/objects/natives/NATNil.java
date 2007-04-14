@@ -38,7 +38,7 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
-import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -191,7 +191,7 @@ public class NATNil implements ATNil, Serializable {
         	  return this.meta_select(this, selector);
         } catch(XSelectorNotFound e) {
         	  // transform selector not found in undefined variable access
-        	  throw new XUndefinedField("variable access", selector.base_getText().asNativeText().javaValue);
+        	  throw new XUndefinedSlot("variable access", selector.base_getText().asNativeText().javaValue);
         }
     }
 

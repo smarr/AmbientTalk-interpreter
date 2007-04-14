@@ -35,7 +35,7 @@ import edu.vub.at.exceptions.XIllegalUnquote;
 import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUnassignableField;
-import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.coercion.ATConversions;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirage;
@@ -324,7 +324,7 @@ public interface ATObject extends ATConversions {
      * @param selector a symbol denoting the name of the field or method to look up lexically.
      * @return if selector is bound to a field, the value of the field; otherwise if selector
      * is bound to a method, a closure wrapping the method.
-     * @throws XUndefinedField if the selector could not be found in the lexical scope of this object
+     * @throws XUndefinedSlot if the selector could not be found in the lexical scope of this object
      */
     public ATObject meta_lookup(ATSymbol selector) throws InterpreterException;
 
@@ -533,7 +533,7 @@ public interface ATObject extends ATConversions {
      *
      * @param selector a symbol representing the name of the field to select.
      * @return a mirror on this object's field slot.
-     * @throws XUndefinedField if the field cannot be found within the receiver's
+     * @throws XUndefinedSlot if the field cannot be found within the receiver's
      * base object.
      */
     public ATField meta_grabField(ATSymbol selector) throws InterpreterException;

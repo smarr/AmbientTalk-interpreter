@@ -40,6 +40,10 @@ public final class XUnassignableField extends InterpreterException {
 
 	private static final long serialVersionUID = 2259235392369197805L;
 
+	/**
+	 * Creates an unassignable field exception given a particular name.
+	 * @param fieldName the name of the field that was being assigned
+	 */
 	public XUnassignableField(String fieldName) {
 		super("Unassignable field: " + fieldName);
 	}

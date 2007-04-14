@@ -46,11 +46,19 @@ public class XImportConflict extends InterpreterException {
 
 	private final ATSymbol[] conflictingNames_;
 	
+	/**
+	 * Constructor documenting which duplicate slots were being imported. 
+	 * @param conflictingNames the names of the slots which were being imported but which already existed in the importing scope
+	 * @throws InterpreterException if the slot names cannot be printed (e.g. when using custom symbols which do not provide an adequate print meta-method).
+	 */
 	public XImportConflict(ATSymbol[] conflictingNames) throws InterpreterException {
 		super("Conflicting names during import: " + Evaluator.printElements(conflictingNames, "", ",", "").javaValue);
 		conflictingNames_ = conflictingNames;
 	}
 	
+	/**
+	 * @return the names of the slots which were being imported but which already existed in the importing scope
+	 */
 	public ATTable getConflictingNames() {
 		return NATTable.atValue(conflictingNames_);
 	}

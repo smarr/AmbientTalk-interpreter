@@ -32,8 +32,9 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * An XIllegalUnquote exception is raised when an unquotation is
- * discovered in a non-quoted piece of source code.
+ * An XIllegalUnquote exception is raised when an unquotation is discovered in a non-quoted 
+ * piece of source code. In other words, this exception is raised when trying to evaluate an
+ * {@link edu.vub.at.objects.natives.grammar.AGUnquote} element rather than quoting it.
  * 
  * @author tvc
  */
@@ -45,11 +46,21 @@ public final class XIllegalUnquote extends InterpreterException {
 	
 	private final ATExpression unquotation_;
 	
+	/**
+	 * Constructor reporting that an attempt was made to evaluate an unquoted piece of source code
+	 * @param unquotation the unquoted source code being evaluated
+	 * 
+	 * @see edu.vub.at.objects.natives.grammar.AGUnquote#meta_eval(ATContext)
+	 * @see edu.vub.at.objects.natives.grammar.AGUnquoteSplice#meta_eval(ATContext)
+ 	 */
 	public XIllegalUnquote(ATExpression unquotation) {
 		super(_MESSAGE_);
 		unquotation_ = unquotation;
 	}
 	
+	/**
+	 * @return the unquoted grammar element that was being evaluated.
+	 */
 	public ATExpression getUnquotation() { return unquotation_; }
 
 	public ATStripe getStripeType() {

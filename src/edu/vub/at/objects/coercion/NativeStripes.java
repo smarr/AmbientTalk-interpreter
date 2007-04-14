@@ -195,7 +195,7 @@ public final class NativeStripes {
 	public final static NATStripe _UNASSIGNABLEFIELD_ = NATStripe.atValue("UnassignableField", _EXCEPTION_);
 	
 //defstripe UndefinedField <: Exception;
-	public final static NATStripe _UNDEFINEDFIELD_ = NATStripe.atValue("UndefinedField", _EXCEPTION_);
+	public final static NATStripe _UNDEFINEDSLOT_ = NATStripe.atValue("UndefinedSlot", _EXCEPTION_);
 	
 //defstripe CustomException <: Exception;
 	public final static NATStripe _CUSTOMEXCEPTION_ = NATStripe.atValue("CustomException", _EXCEPTION_);

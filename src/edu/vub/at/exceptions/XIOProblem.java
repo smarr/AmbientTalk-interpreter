@@ -33,7 +33,14 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import java.io.IOException;
 
 /**
- * The class XIOProblem is mainly a wrapper class for Java IOExceptions.
+ * The class XIOProblem is a wrapper class for Java IOExceptions. It is thrown when errors 
+ * occur during the serialisation of ATObjects to Packets (and the inverse), to schedule 
+ * messages for transmission to another actor. Another class that raises these exceptions 
+ * is NATNamespace to report that it failed to read in a particular file to lazily load a
+ * library.
+ * 
+ * @see edu.vub.at.actors.natives.Packet
+ * @see edu.vub.at.objects.natives.NATNamespace
  * 
  * @author tvc
  */
@@ -41,6 +48,10 @@ public class XIOProblem extends InterpreterException {
 
 	private static final long serialVersionUID = -2356169455943359670L;
 
+	/**
+	 * Constructor wrapping an IOExceptions to be reported to the AmbientTalk interpreter.
+	 * @param cause the underlying exception to be reported.
+	 */
 	public XIOProblem(IOException cause) {
 		super(cause);
 	}

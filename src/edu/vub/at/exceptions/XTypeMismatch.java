@@ -33,7 +33,24 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.coercion.NativeStripes;
 
 /**
- * XTypeMismatch instances are thrown when a value conversion failed.
+ * XTypeMismatch instances are thrown when a value conversion failed. Value conversions occur 
+ * when the interpreter expects arguments of a particular interface type (e.g. an ATClosure to
+ * apply) and the passed argument has another type. The following cases can be distinguished: 
+ * <ul>
+ *   <li> The argument is of a different native ambienttalk type and therefore cannot be used. 
+ *   In this case, an XTypeMismatch exception will be thrown.</li>
+ *   <li> The argument is an ambienttalk object. At this point, the coercer will attempt to 
+ *   coerce the object into the correct type, which is possible only if the object has the 
+ *   correct native stripe. Otherwise, an XTypeMismatch exception will be thrown.</li>
+ *   <li>The target type is a Java interface. The conversion automatically succeeds if the passed
+ *   argument is a JavaObject wrapper for an object which implements the interface. If the passed
+ *   argument is an ambienttalk object, the coercer will be able to dynamically synthetise a 
+ *   proxy implementing the interface. If the argument is of a native ambienttalk type however, 
+ *   an XTypeMismatch exception will be thrown.</li>
+ *   <li>The target type is a Java class. If the passed argument is not a JavaObject wrapper for
+ *   an instance of this class (or one of its subclasses), an XTypeMismatch exception will be 
+ *   thrown.</li>
+ * </ul>
  * 
  * @author smostinc
  * @author tvcutsem
@@ -45,19 +62,33 @@ public class XTypeMismatch extends InterpreterException {
 	private final ATObject failedObject_;
     private final Class expectedType_;
 
+    /**
+     * Creates a new type mismatch exception given the expected type and the object that could not be coerced to this type.
+     * @param expectedType a Java Class denoting the type the object was being coerced into.
+     * @param failedObject the ambienttalk value that could not be coerced into the correct type
+     */
 	public XTypeMismatch(Class expectedType, ATObject failedObject) {
 		expectedType_ = expectedType;
 		failedObject_ = failedObject;
 	}
 
+	/**
+	 * @return the ambienttalk value that could not be coerced into the correct type.
+	 */
 	public ATObject getFailedObject() {
 		return failedObject_;
 	}
 	
+	/**
+	 * @return a Java Class denoting the type the object was being coerced into.
+	 */
 	public Class getExpectedType() {
 		return expectedType_;
 	}
 	
+	/**
+	 * @return a textual description of the type mismatch exception.
+	 */
 	public String getMessage() {
 		String obj = Evaluator.toString(failedObject_);
 		return "Type mismatch: expected " + Evaluator.valueNameOf(expectedType_)

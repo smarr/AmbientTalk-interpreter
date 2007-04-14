@@ -31,7 +31,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -338,7 +338,7 @@ public final class Reflection {
 			return new NativeField(natObject, atSelector, accessorMethod, mutatorMethod);
 		} catch (XSelectorNotFound e) {
 			// selector not found exceptions have to be translated to field not found exceptions
-			throw new XUndefinedField("field access", atSelector.toString());
+			throw new XUndefinedSlot("field access", atSelector.toString());
 		}
 	}
 	

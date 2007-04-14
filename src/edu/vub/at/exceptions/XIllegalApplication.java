@@ -52,6 +52,9 @@ public final class XIllegalApplication extends InterpreterException {
 		nativeImplementor_ = nativeImplementor;
 	}
 	
+	/**
+	 * @return the class of the anonymous native lambda that was erroneously invoked
+	 */
 	public Class getImplementorClass() {
 		return nativeImplementor_;
 	}

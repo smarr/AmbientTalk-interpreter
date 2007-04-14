@@ -37,7 +37,7 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XSymbiosisFailure;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
-import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.exceptions.signals.Signal;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.coercion.Coercer;
@@ -328,19 +328,19 @@ public final class Symbiosis {
 	
 	/**
 	 * Retrieve a field from a Java object.
-	 * @throws XUndefinedField if the field does not exist or its static property does not match
+	 * @throws XUndefinedSlot if the field does not exist or its static property does not match
 	 */
-	public static Field getField(Class fromClass, String fieldName, boolean isStatic) throws XUndefinedField {
+	public static Field getField(Class fromClass, String fieldName, boolean isStatic) throws XUndefinedSlot {
 		try {
 			Field f = fromClass.getField(fieldName);
 			if ((Modifier.isStatic(f.getModifiers())) == isStatic) {
 				return f;
 			} else {
-				throw new XUndefinedField("field access ", fieldName + " not accessible.");
+				throw new XUndefinedSlot("field access ", fieldName + " not accessible.");
 			}
 		} catch (NoSuchFieldException e) {
 			// the field does not exist
-			throw new XUndefinedField("field access ", fieldName + " not accessible.");
+			throw new XUndefinedSlot("field access ", fieldName + " not accessible.");
 		}
 	}
 	

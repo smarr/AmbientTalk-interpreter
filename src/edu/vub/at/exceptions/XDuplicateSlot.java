@@ -42,15 +42,14 @@ public final class XDuplicateSlot extends InterpreterException {
 
 	private static final long serialVersionUID = -1256829498207088803L;
 
-	public static final byte _FIELD_ = 0;
-	public static final byte _METHOD_ = 1;
-	
-	private final byte slotType_;
 	private final ATSymbol slotName_;
 	
-	public XDuplicateSlot(byte slotType,  ATSymbol slotName) {
-		super("Duplicate " + ((slotType == _FIELD_) ? "field" : "method") + " definition for " + slotName);
-		slotType_ = slotType;
+	/**
+	 * Constructor taking the name of the duplicate slot
+	 * @param slotName the already existing slot name
+	 */
+	public XDuplicateSlot(ATSymbol slotName) {
+		super("Duplicate slot definition for " + slotName);
 		slotName_ = slotName;
 	}
 	
@@ -58,15 +57,11 @@ public final class XDuplicateSlot extends InterpreterException {
 		return NativeStripes._DUPLICATESLOT_;
 	}
 
+	
+	/**
+	 * @return the already existing slot name which was being defined anew.
+	 */
 	public ATSymbol getSlotName() {
 		return slotName_;
-	}
-
-	public byte getSlotType() {
-		return slotType_;
-	}
-	
-	public boolean isDuplicateMethod() {
-		return slotType_ == _METHOD_;
 	}
 }

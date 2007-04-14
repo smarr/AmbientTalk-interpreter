@@ -32,8 +32,10 @@ import edu.vub.at.objects.coercion.NativeStripes;
 
 
 /**
- * An XIllegalQuote exception is raised whenever an unquote-splice unquotation is discovered in an AG node where
- * the resulting table cannot be spliced.
+ * An XIllegalQuote exception is raised whenever an unquote-splice unquotation is discovered in an 
+ * AG node where the resulting table cannot be spliced. This is detected when attempting to quote
+ * an AGUnquoteSplice. An explicit check for unquote splaces is made by grammar elements who 
+ * expect a table, such that this operation should never be used.
  * 
  * @author tvc
  */
@@ -43,6 +45,11 @@ public final class XIllegalQuote extends InterpreterException {
 
 	private static final String _MESSAGE_ = "Illegal position for unquote-splice: ";
 
+	/**
+	 * Constructor taking a String representation of the incorrectly placed unquote splice grammar element.
+	 * 
+	 * @see edu.vub.at.objects.natives.grammar.AGUnquoteSplice#meta_quote(ATContext)
+	 */
 	public XIllegalQuote(String uqsExp) {
 		super(_MESSAGE_ + uqsExp);
 	}

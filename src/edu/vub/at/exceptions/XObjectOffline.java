@@ -44,6 +44,11 @@ public final class XObjectOffline extends InterpreterException {
 
 	ATObjectID objectId_;
 	
+	/**
+	 * Constructor signalling that a particular object id could not be resolved by the 
+	 * destination actor since the object was previously taken offline.
+	 * @param id the object id which failed to resolve to local object
+	 */
 	public XObjectOffline(ATObjectID id) {
 		super("Asked for an object id that was taken offline: " + id);
 		objectId_ = id;
@@ -53,7 +58,10 @@ public final class XObjectOffline extends InterpreterException {
 		return NativeStripes._OBJECTOFFLINE_;
 	}
 	
-	 public ATObjectID getObjectId(){
+	/**
+	 * @return the object id which failed to resolve to local object
+	 */
+	public ATObjectID getObjectId(){
 		return objectId_;
 	}
 

@@ -31,7 +31,8 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.coercion.NativeStripes;
 
 /**
- * An XIndexOutOfBounds exception is raised when an attempt is made to access or modify an AGTable beyond its capacity.
+ * An XIndexOutOfBounds exception is raised when an attempt is made to access or modify an 
+ * AGTable with an index <= 0 or beyond its capacity.
  * 
  * @author tvc
  */
@@ -39,6 +40,12 @@ public final class XIndexOutOfBounds extends InterpreterException {
 
 	private static final long serialVersionUID = 6549583509969990663L;
 
+	/**
+	 * Constructor signalling that an attempt is made to access or modify a table with an
+	 * incorrect index (Correct indices are [1 .. size]).
+	 * @param atIndex the requested index
+	 * @param atLength the size of the table
+	 */
 	public XIndexOutOfBounds(int atIndex, int atLength) {
 		super("Index out of bounds: "+ atIndex + " (size = " + atLength + ")");
 	}

@@ -52,8 +52,16 @@ public class XAmbienttalk extends InterpreterException {
 	
 	private static final long serialVersionUID = -2859841280138142649L;
 
-	public final ATObject customException_;
+	private final ATObject customException_;
 	
+	/**
+	 * Creates a native exception wrapper given an ambienttalk exception object. This constructor
+	 * is called whenever an AmbientTalk object is being raised as this mechanism relies on the
+	 * Java level to throw an actual Java exception.
+	 * 
+	 * @param customException the object to be raised
+	 * @throws InterpreterException if the stackTrace field of the object cannot be assigned
+	 */
 	public XAmbienttalk(ATObject customException) throws InterpreterException {
 		customException_ = customException;
 		

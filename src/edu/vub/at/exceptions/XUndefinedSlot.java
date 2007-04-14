@@ -31,21 +31,26 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.coercion.NativeStripes;
 
 /**
- * An XUndefinedField exception is raised whenever a variable reference lookup fails,
+ * An XUndefinedSlot exception is raised whenever a variable reference lookup fails,
  * or a field assignment lookup fails. It generally means a variable was accessed which
  * is not visible in the lexical scope.
  * 
  * @author tvc
  */
-public final class XUndefinedField extends InterpreterException {
+public final class XUndefinedSlot extends InterpreterException {
 
 	private static final long serialVersionUID = -219804926254934101L;
 
-	public XUndefinedField(String message, String fieldName) {
+	/**
+	 * Creates an XUndefinedSlot exception with a given message and slot name.
+	 * @param message "method" or "field" depending on whether the lexical lookup algorithm was currently considering the method dictionary or the state vector of an object 
+	 * @param fieldName the name of slot one was searching for
+	 */
+	public XUndefinedSlot(String message, String fieldName) {
 		super("Undefined " + message + ": " + fieldName);
 	}
 
 	public ATStripe getStripeType() {
-		return NativeStripes._UNDEFINEDFIELD_;
+		return NativeStripes._UNDEFINEDSLOT_;
 	}
 }

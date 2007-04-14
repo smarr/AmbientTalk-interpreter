@@ -42,22 +42,22 @@ public class XIllegalOperation extends InterpreterException {
 
 	private static final long serialVersionUID = -6486826773203553716L;
 
-	public XIllegalOperation() {
-		super();
-	}
-
+	/**
+	 * Constructor which takes a descriptive message alongside an exception which caused this
+	 * exception to be thrown.
+	 */
 	public XIllegalOperation(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	/**
+	 * Constructor which takes a message documenting how the expected semantics of the 
+	 * interpreter were being violated.
+	 */
 	public XIllegalOperation(String message) {
 		super(message);
 	}
 
-	public XIllegalOperation(Throwable cause) {
-		super(cause);
-	}
-	
 	public ATStripe getStripeType() {
 		return NativeStripes._ILLOP_;
 	}

@@ -40,10 +40,16 @@ public final class XIllegalArgument extends InterpreterException {
 
 	private static final long serialVersionUID = -192095892552458214L;
 
+	/**
+	 * Constructor taking a message detailing the actual problem.
+	 */
 	public XIllegalArgument(String message) {
 		super(message);
 	}
 	
+	/**
+	 * Constructor taking a descriptive message and an exception which indicates the underlying problem.
+	 */
 	public XIllegalArgument(String message, Throwable cause) {
 		super(message, cause);
 	}

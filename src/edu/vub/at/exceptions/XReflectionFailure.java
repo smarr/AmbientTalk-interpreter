@@ -31,9 +31,22 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.coercion.NativeStripes;
 
 /**
- * An instance of the class XReflectionFailure is thrown when something goes wrong
- * when dealing with mirror or mirage operations. By extension this also covers 
- * failures when symbiotically accessing Java objects.
+ * An instance of the class XReflectionFailure is thrown when something goes wrong when reflectively
+ * invoking natively implemented methods from AmbientTalk. This mechanism is used to call base-level
+ * methods on native types such as tables and numbers. The default mirror architecture relies on 
+ * this feature as well to call the meta_operations on these values. Finally, the invocation of Java
+ * methods also uses this mechanism in part. The circumstances in which an XReflectionFailure 
+ * exception can be raised are the following:  
+ * 
+ * <ul>
+ *   <li>when attempting to access a Java method (both natively implemented AmbientTalk methods 
+ *   and symbiotic Java methods) which is not accessible due to visibility constraints</li>
+ *   <li>when calling a natively implemented AmbientTalk method which throws an exception which
+ *   is not either an InterpreterException or a Signal.</li>
+ *   <li>when a natively implemented AmbientTalk method returns an object which is not a subtype
+ *   of ATObject, and it is not a Java native type (detected in primitiveJavaToATObject)</li>
+ *   <li>when reading a field from a Java object which is not present or visible</li>
+ * </ul>
  * 
  * @author smostinc
  */
@@ -41,28 +54,23 @@ public class XReflectionFailure extends InterpreterException {
 
 	private static final long serialVersionUID = 4082945147643295718L;
 
-	public XReflectionFailure() {
-		super();
-	}
-
+	/**
+	 * Constructor used to report failed reflective invocations which are due to underlying 
+	 * Java exceptions reporting e.g. the lack of sufficient access rights to invoke a method.
+	 * @param message details the error and the selector being invoked or selected
+	 * @param cause underlying exception (IllegalAccessException or InvocationTargetException)
+	 */
 	public XReflectionFailure(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	/**
+	 * Constructor used to report failed reflective invocations which are not directly cause by
+	 * Java exceptions.
+	 * @param message details the precise error. 
+	 */
 	public XReflectionFailure(String message) {
 		super(message);
-	}
-
-	public XReflectionFailure(Throwable cause) {
-		super(cause);
-	}
-	
-	public String getMessage() {
-		if (getCause() != null) {
-			return super.getMessage() + ": " + getCause().getMessage();
-		} else {
-		    return super.getMessage();
-		}
 	}
 	
 	public ATStripe getStripeType() {

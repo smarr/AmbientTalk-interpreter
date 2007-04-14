@@ -33,9 +33,8 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * XSelectorNotFound is thrown during lookup when a particular field cannot be
- * found. It is equipped with a dedicated constructor to allow diagnosing the
- * underlying problem.
+ * XSelectorNotFound is thrown during lookup when a particular slot cannot be found. It is 
+ * equipped with a dedicated constructor to allow diagnosing the underlying problem.
  * 
  * @author smostinc
  */
@@ -43,9 +42,14 @@ public class XSelectorNotFound extends InterpreterException {
 
 	private static final long serialVersionUID = -9186247764999498158L;
 	
-	public final ATSymbol selector_;
-	public final ATObject inObject_;
+	private final ATSymbol selector_;
+	private final ATObject inObject_;
 	
+	/**
+	 * Constructor reporting that a particular slot could not be found.
+	 * @param selector the name of the slot being sought for.
+	 * @param inObject the object from which the slot was being selected.
+	 */
 	public XSelectorNotFound(ATSymbol selector, ATObject inObject) {
 		selector_ = selector;
 		inObject_ = inObject;
@@ -66,6 +70,7 @@ public class XSelectorNotFound extends InterpreterException {
 	}
 	
 	/**
+	 * Rethrows the exception unless the missing selector equals the one given in this method. Rationale:
 	 * Several meta_* methods actually catch this exception to recover from a failed lookup by continuing
 	 * the search in an other object (e.g. parent objects, native objects, ...). When the lookup would
 	 * succeed and an XSelectorNotFound exception is raised because of another failed lookup, this alternate
@@ -76,6 +81,20 @@ public class XSelectorNotFound extends InterpreterException {
 		if (!selector_.base__opeql__opeql_(sym).asNativeBoolean().javaValue) {
 			throw this;
 		}
+	}
+
+	/**
+	 * @return the selector that could not be located.
+	 */
+	public ATSymbol getSelector() {
+		return selector_;
+	}
+
+	/**
+	 * @return the object in which the selector could not be located.
+	 */
+	public ATObject getInObject() {
+		return inObject_;
 	}
 	
 }

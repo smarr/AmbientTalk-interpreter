@@ -39,7 +39,18 @@ import java.util.LinkedList;
 
 /**
  * An instance of this class is raised whenever a symbiotic method invocation fails due to overloading
- * which could not be resolved given the actual arguments.
+ * which could not be resolved given the actual arguments. Dedicated constructors are provided to
+ * deal with:
+ * 
+ * <ul>
+ * 	<li>the case when no specific match could be identified,</li>
+ * 	<li>the case where multiple matches are possible based on the actual arguments,</li>
+ *  <li>the case where the overloaded method is a constructor call.</li>
+ * </ul>
+ * 
+ * Note that the symbiosis support only evaluates whether the actual arguments can match with
+ * the types specified in the method signature. If multiple possibilities remain, the closest
+ * possible match is not sought for, instead this exception is raised.
  * 
  * @author tvcutsem
  */

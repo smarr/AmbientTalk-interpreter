@@ -48,6 +48,11 @@ public final class XParseError extends InterpreterException {
 	private final int line_;
 	private final int column_;
 
+	/**
+	 * Convenience constructor which takes only a message and an underlying exception.
+	 * @param message a message detailing the suspected reason for the parser to fail
+	 * @param cause an underlying exception detailing the actual cause of this exception
+	 */
 	public XParseError(String message, Throwable cause) {
 		super(message, cause);
 		fileName_ = null;
@@ -55,6 +60,16 @@ public final class XParseError extends InterpreterException {
 		column_ = 0;
 	}
 	
+	/**
+	 * Complete constructor taking information on both the error and the precise position in which
+	 * the erroneous code was detected by the parser.
+	 * @param erroneousCode the code snippet which could not be parsed
+	 * @param message a message detailing the suspected reason for the parser to fail
+	 * @param filename the file from which the parser was reading
+	 * @param line the line at which the erroneous code is situated
+	 * @param column the column at which the token that could not be parsed starts.
+	 * @param cause an underlying exception detailing the actual cause of this exception
+	 */
 	public XParseError(InputStream erroneousCode,
 			          String message,
 			          String filename,
@@ -96,6 +111,10 @@ public final class XParseError extends InterpreterException {
 		return erroneousCode_;
 	}
 	
+	/**
+	 * Method overridden to provide a more elaborate message when information on the source file,
+	 * the line number and column position were provided.
+	 */
 	public String getMessage() {
 		if (fileName_ != null) {
 			return fileName_ + ":" + line_ + ":" + column_ + ":" + super.getMessage();

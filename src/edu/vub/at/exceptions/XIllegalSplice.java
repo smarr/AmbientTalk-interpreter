@@ -32,8 +32,10 @@ import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * XIllegalSplice is thrown when an @ token was not encountered in one of its legal
+ * XIllegalSplice is thrown when an <code>@</code> token was not encountered in one of its legal
  * positions namely when unquoting a table or in the argument-list of an application. 
+ * The incorrect position is detected due to the fact that the splice is evaluated directly,
+ * rather than being expanded.
  * 
  * @author tvc
  */
@@ -45,11 +47,20 @@ public final class XIllegalSplice extends InterpreterException {
 	
 	private final ATExpression spliceExpression_;
 	
+	/**
+	 * Constructor reporting that a splice expression was encountered in an invalid position
+	 * @param spliceExp the splice expression
+	 * 
+	 * @see edu.vub.at.objects.natives.grammar.AGSplice#meta_eval(ATContext)
+	 */
 	public XIllegalSplice(ATExpression spliceExp) {
 		super(_MESSAGE_);
 		spliceExpression_ = spliceExp;
 	}
 	
+	/**
+	 * @return the invalid splice expression.
+	 */
 	public ATExpression getSpliceExpression() { return spliceExpression_; }
 
 	public ATStripe getStripeType() {

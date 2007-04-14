@@ -33,7 +33,7 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
-import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
@@ -190,7 +190,7 @@ public final class JavaObject extends NATObject implements ATObject {
     	String jSelector = Reflection.upSelector(selector);
     	try {
    			return Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
-    	} catch(XUndefinedField e) {
+    	} catch(XUndefinedSlot e) {
        	    JavaMethod choices = Symbiosis.getMethods(wrappedObject_.getClass(), jSelector, false);
        	    if (choices != null) {
        	     	return new JavaClosure(this, choices);
@@ -208,7 +208,7 @@ public final class JavaObject extends NATObject implements ATObject {
         try {
         	String jSelector = Reflection.upSelector(selector);
       	    return Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
-        } catch(XUndefinedField e) {
+        } catch(XUndefinedSlot e) {
         	return super.meta_lookup(selector);  
         }
     }
@@ -220,7 +220,7 @@ public final class JavaObject extends NATObject implements ATObject {
      */
     public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
         if (Symbiosis.hasField(wrappedObject_.getClass(), Reflection.upSelector(name), false)) {
-        	throw new XDuplicateSlot(XDuplicateSlot._FIELD_, name);
+        	throw new XDuplicateSlot(name);
         } else {
         	return super.meta_defineField(name, value);
         }
@@ -279,7 +279,7 @@ public final class JavaObject extends NATObject implements ATObject {
     public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
         ATSymbol name = method.base_getName();
         if (Symbiosis.hasMethod(wrappedObject_.getClass(), Reflection.upSelector(name), false)) {
-    	    throw new XDuplicateSlot(XDuplicateSlot._METHOD_, name);
+    	    throw new XDuplicateSlot(name);
         } else {
     	    return super.meta_addMethod(method);
         }
@@ -293,7 +293,7 @@ public final class JavaObject extends NATObject implements ATObject {
         try {
         	return new JavaField(wrappedObject_,
 		             Symbiosis.getField(wrappedObject_.getClass(), Reflection.upSelector(fieldName), false));
-        } catch(XUndefinedField e) {
+        } catch(XUndefinedSlot e) {
         	return super.meta_grabField(fieldName);
         }
     }

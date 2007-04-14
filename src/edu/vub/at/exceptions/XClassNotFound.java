@@ -31,7 +31,10 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.coercion.NativeStripes;
 
 /**
- * Raised when a request to load a class via a JavaPackage failed.
+ * Instances of XClassNotFound are raised when the AmbientTalk interpreter's attempt to load a
+ * class failed. This occurs either when using the <tt>jlobby</tt> construct to explicitly load
+ * a class, but it may also occur during the deserialisation of a {@link Packet}, when the 
+ * contents of that Packet contained an unknown class. 
  * 
  * @author tvcutsem
  */
@@ -39,6 +42,11 @@ public final class XClassNotFound extends InterpreterException {
 
 	private static final long serialVersionUID = 131014866438710913L;
 
+	/**
+	 * Constructor reporting that no class could be loaded with a given name.
+	 * @param qualifiedClassname The fully qualified name of the class (i.e. including the package) being loaded
+	 * @param cause The underlying exception documenting why the class could not be loaded (e.g. visibility constraints)
+	 */
 	public XClassNotFound(String qualifiedClassname, Throwable cause) {
 		super("Could not find class " + qualifiedClassname, cause);
 	}

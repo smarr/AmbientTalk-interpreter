@@ -31,7 +31,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
@@ -177,7 +177,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		if (this.hasLocalField(name)) {
 			// field already exists...
-			throw new XDuplicateSlot(XDuplicateSlot._FIELD_, name);			
+			throw new XDuplicateSlot(name);			
 		} else {
 			boolean fieldAdded = variableMap_.put(name);
 			if (!fieldAdded) {
@@ -240,7 +240,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 		ATSymbol name = field.base_getName();
 		if (this.hasLocalField(name)) {
 			// field already exists...
-			throw new XDuplicateSlot(XDuplicateSlot._FIELD_, name);			
+			throw new XDuplicateSlot(name);			
 		} else {
 			// add a clone of the field initialized with its new host
 			field = field.base_new(new ATObject[] { this }).asField();
@@ -269,7 +269,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 			if (fld != null) {
 				return fld;
 			} else {
-				throw new XUndefinedField("field grabbed", selector.toString());
+				throw new XUndefinedSlot("field grabbed", selector.toString());
 			}
 		}
 	}

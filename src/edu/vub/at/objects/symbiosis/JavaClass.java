@@ -33,7 +33,7 @@ import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
-import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
@@ -217,7 +217,7 @@ public final class JavaClass extends NATObject implements ATStripe {
     	String jSelector = Reflection.upSelector(selector);
     	try {
    			return Symbiosis.readField(null, wrappedClass_, jSelector);
-    	} catch(XUndefinedField e) {
+    	} catch(XUndefinedSlot e) {
        	    JavaMethod choices = Symbiosis.getMethods(wrappedClass_, jSelector, true);
        	    if (choices != null) {
        	     	return new JavaClosure(this, choices);
@@ -236,7 +236,7 @@ public final class JavaClass extends NATObject implements ATStripe {
         try {
         	String jSelector = Reflection.upSelector(selector);
       	    return Symbiosis.readField(null, wrappedClass_, jSelector);
-        } catch(XUndefinedField e) {
+        } catch(XUndefinedSlot e) {
         	return super.meta_lookup(selector);  
         }
     }
@@ -248,7 +248,7 @@ public final class JavaClass extends NATObject implements ATStripe {
      */
     public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
         if (Symbiosis.hasField(wrappedClass_, Reflection.upSelector(name), true)) {
-    	    throw new XDuplicateSlot(XDuplicateSlot._FIELD_, name);
+    	    throw new XDuplicateSlot(name);
         } else {
     	    return super.meta_defineField(name, value);
         }
@@ -317,7 +317,7 @@ public final class JavaClass extends NATObject implements ATStripe {
     public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
         ATSymbol name = method.base_getName();
         if (Symbiosis.hasMethod(wrappedClass_, Reflection.upSelector(name), true)) {
-    	    throw new XDuplicateSlot(XDuplicateSlot._METHOD_, name);
+    	    throw new XDuplicateSlot(name);
         } else {
     	    return super.meta_addMethod(method);
         }
@@ -331,7 +331,7 @@ public final class JavaClass extends NATObject implements ATStripe {
         try {
         	return new JavaField(null,
         			             Symbiosis.getField(wrappedClass_, Reflection.upSelector(fieldName), true));
-        } catch(XUndefinedField e) {
+        } catch(XUndefinedSlot e) {
         	return super.meta_grabField(fieldName);
         }
     }

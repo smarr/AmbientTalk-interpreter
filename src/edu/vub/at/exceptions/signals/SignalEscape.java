@@ -31,19 +31,27 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 
 /**
- * @author tvc
- *
  * A SignalEscape signal exception is raised whenever the 'quit' function of an escape block
  * is invoked. It causes control of the interpreter to return to the invocation of the escape block.
  * In other words, SignalEscape 'abuses' the Java exception handling mechanism to perform a non-local return.
+ * 
+ * @author tvcutsem
  */
 public class SignalEscape extends Signal {
 	
 	private static final long serialVersionUID = -4808396148074816408L;
 	
+	/** The block which the escape command jumps out of */
 	public ATClosure originatingBlock;
+	
+	/** the value being return via the escape function */
 	public ATObject returnedValue;
 	
+	/**
+	 * Constructor creating an Escape signal to prematurely exit a block and return a specific value.
+	 * @param originatingBlock the current block one is jumping from.
+	 * @param returnedValue the value being returned.
+	 */
 	public SignalEscape(ATClosure originatingBlock, ATObject returnedValue) {
 		this.originatingBlock = originatingBlock;
 		this.returnedValue = returnedValue;

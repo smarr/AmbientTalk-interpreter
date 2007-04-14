@@ -52,12 +52,20 @@ public abstract class InterpreterException extends Exception {
 
 	private final Throwable cause_;
 
+	/**
+	 * Default constructor which only captures the AmbientTalk invocation stack.
+	 */
 	public InterpreterException() {
 		super();
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 		cause_ = null;
 	}
 
+	/**
+	 * Contructor which reports an exception with a given message and an underlying exception. 
+	 * This constructor also captures the AmbientTalk invocation stack relating the exception
+	 * to the AmbientTalk code that triggered it.
+	 */
 	public InterpreterException(String message, Throwable cause) {
 		super(message);
 		// Backport from JDK 1.4 to 1.3
@@ -66,12 +74,22 @@ public abstract class InterpreterException extends Exception {
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 
+	/**
+	 * Constructor which reports an exception with a given message which cannot be related to a
+	 * previously raised exception. This constructor captures the AmbientTalk invocation 
+	 * stack to identify which code produced the error.
+	 */
 	public InterpreterException(String message) {
 		super(message);
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 		cause_ = null;
 	}
 
+	/**
+	 * Constructor which creates a wrapper for an underlying exception. This constructor 
+	 * captures the AmbientTalk invocation stack to relate the exception to the AmbientTalk
+	 * that it corresponds to.
+	 */
 	public InterpreterException(Throwable cause) {
 		// Backport from JDK 1.4 to 1.3
 		// super(cause);
@@ -79,14 +97,28 @@ public abstract class InterpreterException extends Exception {
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 
+	
+	/**
+	 * @param out
+	 */
 	public void printAmbientTalkStackTrace(PrintStream out) {
 		runtimeStack_.printStackTrace(out);
 	}
 
+	/**
+	 * Returns an ambienttalk representation of the exception. The returned object is a wrapper
+	 * object which provides access to the exception's message and the AmbientTalk stack trace.
+	 */
 	public ATObject getAmbientTalkRepresentation() {
 		return new NATException(this);
 	}
 
+	/**
+	 * Returns the native Stripe corresponding to the exception class. The NativeStripes class 
+	 * defines stripes for all native data types, including exceptions. For exceptions, these 
+	 * stripes can be used to catch native exceptions and handle them. Therefore every exception
+	 * class should override this abstract method to supply the stripe equivalent of its class.
+	 */
 	public abstract ATStripe getStripeType();
 
 	public String getMessage() {
@@ -98,7 +130,12 @@ public abstract class InterpreterException extends Exception {
 	}
 
 	/* backport from 1.4 interface to 1.3 */
-
+	/**
+	 * As AmbientTalk targets Java 1.3, Interpreter exceptions need to provide explicit support
+	 * to report the exception that caused them. The default support for such a method was only 
+	 * introduced in Java 1.4. This method returns the exception that caused a particular error
+	 * which can possibly be null.
+	 */
 	public Throwable getCause() {
 		return cause_;
 	}
@@ -130,5 +167,4 @@ public abstract class InterpreterException extends Exception {
 			return super.toString() + " caused by " + cause_.toString();
 		}
 	}
-
 }

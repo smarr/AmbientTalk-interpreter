@@ -33,6 +33,7 @@ import edu.vub.at.objects.coercion.NativeStripes;
 /**
  * An XIllegalIndex exception is thrown by the evaluator whenever an invalid
  * value is used as the index into a table (e.g. when defining, assigning or referencing it).
+ * This problem is detected when coercing the index to a number. 
  * 
  * @author tvc
  */
@@ -42,6 +43,9 @@ public final class XIllegalIndex extends InterpreterException {
 	
 	private static final String _MESSAGE_ = "Illegal index: ";
 
+	/**
+	 * Constructor taking a message describing why the coercion of the index failed.
+	 */
 	public XIllegalIndex(String msg) {
 		super(_MESSAGE_ + msg);
 	}
