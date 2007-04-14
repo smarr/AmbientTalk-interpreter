@@ -132,7 +132,7 @@ final class RETokenNamedProperty extends REToken {
   }
 
   private abstract static class Handler {
-      public abstract boolean includes(char c);
+      abstract boolean includes(char c);
   }
 
   private Handler getHandler(String name) throws REException {
@@ -245,51 +245,60 @@ final class RETokenNamedProperty extends REToken {
   }
 
   private static class POSIXHandler extends Handler {
-      private RETokenPOSIX retoken;
-      private REMatch mymatch = new REMatch(0,0,0);
-      private char[] chars = new char[1];
-      private CharIndexedCharArray ca = new CharIndexedCharArray(chars, 0);
-      public POSIXHandler(String name) {
-            int posixId = RETokenPOSIX.intValue(name.toLowerCase());
-            if (posixId != -1)
-              retoken = new RETokenPOSIX(0,posixId,false,false);
-	    else
-              throw new RuntimeException("Unknown posix ID: " + name);
-      }
-      public boolean includes(char c) {
-          chars[0] = c;
-          mymatch.index = 0;
-          return retoken.match(ca, mymatch);
-      }
-  }
+		private RETokenPOSIX retoken;
+
+		private REMatch mymatch = new REMatch(0, 0, 0);
+
+		private char[] chars = new char[1];
+
+		private CharIndexedCharArray ca = new CharIndexedCharArray(chars, 0);
+
+		POSIXHandler(String name) {
+			int posixId = RETokenPOSIX.intValue(name.toLowerCase());
+			if (posixId != -1)
+				retoken = new RETokenPOSIX(0, posixId, false, false);
+			else
+				throw new RuntimeException("Unknown posix ID: " + name);
+		}
+
+		boolean includes(char c) {
+			chars[0] = c;
+			mymatch.index = 0;
+			return retoken.match(ca, mymatch);
+		}
+	}
 
   private static class UnicodeCategoryHandler extends Handler {
-      public UnicodeCategoryHandler(byte category) {
-          this.category = (int)category;
-      }
-      private int category;
-      public boolean includes(char c) {
-          return Character.getType(c) == category;
-      }
-  }
+		UnicodeCategoryHandler(byte category) {
+			this.category = (int) category;
+		}
 
-  private static class UnicodeCategoriesHandler extends Handler {
-      public UnicodeCategoriesHandler(byte[] categories) {
-          this.categories = categories;
-      }
-      private byte[] categories;
-      public boolean includes(char c) {
-	  int category = Character.getType(c);
-          for (int i = 0; i < categories.length; i++)
-              if (category == categories[i])
-	          return true;
-	  return false;
-      }
-  }
+		private int category;
 
-//  Backport from JDK 1.4 to 1.3
-//  private static class UnicodeBlockHandler extends Handler {
-//      public UnicodeBlockHandler(Character.UnicodeBlock block) {
+		boolean includes(char c) {
+			return Character.getType(c) == category;
+		}
+	}
+
+	private static class UnicodeCategoriesHandler extends Handler {
+		UnicodeCategoriesHandler(byte[] categories) {
+			this.categories = categories;
+		}
+
+		private byte[] categories;
+
+		boolean includes(char c) {
+			int category = Character.getType(c);
+			for (int i = 0; i < categories.length; i++)
+				if (category == categories[i])
+					return true;
+			return false;
+		}
+	}
+
+// Backport from JDK 1.4 to 1.3
+// private static class UnicodeBlockHandler extends Handler {
+// public UnicodeBlockHandler(Character.UnicodeBlock block) {
 //	  this.block = block;
 //      }
 //      private Character.UnicodeBlock block;

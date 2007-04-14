@@ -47,7 +47,7 @@ public class IdentityHashMap implements Map
     {
         private final Object obj;
 
-        public KeyWrapper(Object obj)
+        KeyWrapper(Object obj)
         {
             this.obj = obj;
         }
@@ -68,6 +68,7 @@ public class IdentityHashMap implements Map
         }
     }
 
+    /** Default Constructor */
     public IdentityHashMap()
     {
         map = new HashMap();
@@ -138,6 +139,9 @@ public class IdentityHashMap implements Map
         return map.entrySet();
     }
 
+    /**
+     * @return an iterator over the set of keys.
+     */
     public Iterator iterator()
     {
         return map.keySet().iterator();

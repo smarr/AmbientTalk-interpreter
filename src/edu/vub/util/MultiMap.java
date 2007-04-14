@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author smostinc
- *
  * A simple Map allowing one key to be associated with a Set of values.
+ * 
+ * @author smostinc
  */
 public class MultiMap implements Map, Serializable, Cloneable {
 
@@ -172,7 +172,7 @@ public class MultiMap implements Map, Serializable, Cloneable {
 		private final Object key_;
 		private Object value_;		
 
-		public Entry(Object key, Object value) {
+		Entry(Object key, Object value) {
 			key_ = key;
 			value_ = value;
 		}

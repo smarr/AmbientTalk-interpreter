@@ -170,8 +170,6 @@ final class RETokenOneOf extends REToken {
       if (input.charAt(mymatch.index) == CharIndexed.OUT_OF_BOUNDS) 
         return false;
 
-      REMatch newMatch = null;
-      REMatch last = null;
       REToken tk;
       for (int i=0; i < options.size(); i++) {
 	tk = (REToken) options.elementAt(i);
