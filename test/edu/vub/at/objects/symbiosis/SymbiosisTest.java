@@ -160,7 +160,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// -- ARRAYS --
 			assertEquals(0.5, ((double[]) Symbiosis.ambientTalkToJava(NATTable.atValue(new ATObject[] { NATFraction.atValue(0.5) }), double[].class))[0], 0.0);
 			// -- EXCEPTIONS --
-			assertEquals(XIllegalOperation.class, Symbiosis.ambientTalkToJava(new XIllegalOperation().getAmbientTalkRepresentation(), Exception.class).getClass());
+			assertEquals(XIllegalOperation.class, Symbiosis.ambientTalkToJava(new XIllegalOperation("AT2JavaTest").getAmbientTalkRepresentation(), Exception.class).getClass());
 			// -- CLASS OBJECTS --
 			assertEquals(jTestClass, Symbiosis.ambientTalkToJava(atTestClass, Class.class));
 			// -- nil => NULL if converting to Java --
@@ -197,7 +197,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// -- ARRAYS --
 			assertEquals(NATFraction.atValue(0.5), Symbiosis.javaToAmbientTalk(new double[] { 0.5 }).asNativeTable().elements_[0]);
 			// -- EXCEPTIONS --
-			assertEquals(XIllegalOperation.class, ((NATException)Symbiosis.javaToAmbientTalk(new XIllegalOperation())).getWrappedException().getClass());
+			assertEquals(XIllegalOperation.class, ((NATException)Symbiosis.javaToAmbientTalk(new XIllegalOperation("Java2ATTest"))).getWrappedException().getClass());
 			// -- CLASS OBJECTS --
 			assertEquals(atTestClass, Symbiosis.javaToAmbientTalk(jTestClass));
 			// -- nil => NULL --

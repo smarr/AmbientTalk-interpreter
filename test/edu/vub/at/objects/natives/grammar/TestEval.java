@@ -4,7 +4,7 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -94,7 +94,7 @@ public class TestEval extends AmbientTalkTest {
         evalAndCompareTo("def o2.x := 3", atThree_);
         try {
         	  assertEquals(atThree_, rcvr.meta_select(rcvr, atX_));
-        } catch(XUndefinedField e) {
+        } catch(XUndefinedSlot e) {
         	  fail("broken external field definition:"+e.getMessage());
         }
 	}

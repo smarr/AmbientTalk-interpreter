@@ -380,7 +380,7 @@ public class MirrorTest extends AmbientTalkTest {
 					"emptyObject.x;",
 					XSelectorNotFound.class);
 		} catch (XSelectorNotFound e) {
-			assertEquals(e.selector_, AGSymbol.jAlloc("x"));
+			assertEquals(e.getSelector(), AGSymbol.jAlloc("x"));
 		}
 		// Intentionally misspelled the name of a meta operation to test whether failures to
 		// find meta operations are still properly reported.
@@ -390,7 +390,7 @@ public class MirrorTest extends AmbientTalkTest {
 					"emptyMirror.selct(emptyObject, `x);",
 					XSelectorNotFound.class);
 		} catch (XSelectorNotFound e) {
-			assertEquals(e.selector_, AGSymbol.jAlloc("selct"));
+			assertEquals(e.getSelector(), AGSymbol.jAlloc("selct"));
 		}
 	}
 }

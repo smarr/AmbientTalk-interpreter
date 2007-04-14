@@ -31,7 +31,7 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
-import edu.vub.at.exceptions.XUndefinedField;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -270,7 +270,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 				"  }; \n" +
 				"}; \n" +
 				"outerChild.inner.test(); \n",
-				XUndefinedField.class);		
+				XUndefinedSlot.class);		
 	}
 	
 	/**
@@ -370,7 +370,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 		// attempting to use a variable that was not copied will fail
 		evalAndTestException(
 				"test.attemptLexicalVisiblity()",
-				XUndefinedField.class);
+				XUndefinedSlot.class);
 	}
 	
 	/**

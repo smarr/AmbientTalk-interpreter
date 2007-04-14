@@ -146,7 +146,7 @@ public class NATNamespaceTest extends TestCase {
 			try {
 				test.meta_select(test, AGSymbol.jAlloc("file2"));
 			} catch(XSelectorNotFound e) {
-				if (e.selector_.equals(AGSymbol.jAlloc("x")) && e.inObject_.equals(NATNil._INSTANCE_)) {
+				if (e.getSelector().equals(AGSymbol.jAlloc("x")) && e.getInObject().equals(NATNil._INSTANCE_)) {
 					// ok
 					System.out.println("[expected]: "+e.getMessage());
 				} else
