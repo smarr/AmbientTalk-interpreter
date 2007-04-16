@@ -46,25 +46,20 @@ import edu.vub.at.objects.ATTable;
 public interface ATImport extends ATStatement {
 	
 	/**
-	 * Return the expression that should evaluate to the object to import.
-	 * Example:
-	 * `(import o).importedObjectExpression = `o
+	 * Example: <code>`{ import o }.statements[1].importedObjectExpression == `o</code>
+	 * @return the expression that should evaluate to the object to import.
 	 */
 	public ATExpression base_getImportedObjectExpression() throws InterpreterException;
 	
 	/**
-	 * Return a table of pairs (tables of size two) of symbols that defines the
-	 * mapping of symbols to alias.
-	 * Example:
-	 * `(import o alias foo := bar).aliasedSymbols = [[foo,bar]]
+	 * Example: <code>`{ import o alias foo := bar }.statements[1].aliasedSymbols == `[[foo, bar]]</code>
+	 * @return a table of pairs (tables of size two) of symbols that defines the mapping of symbols to alias.
 	 */
 	public ATTable base_getAliasedSymbols() throws InterpreterException;
 	
 	/**
-	 * Return a table of symbols that represent the symbols to be excluded from the
-	 * imported object.
-	 * Example:
-	 * `(import o exclude a, b).excludedSymbols = [a,b]
+	 * Example: <code>`{ import o exclude a, b }.statements[1].excludedSymbols == `[a,b]</code>
+	 * @return a table of symbols that represent the symbols to be excluded from the imported object.
 	 */
 	public ATTable base_getExcludedSymbols() throws InterpreterException;
 

@@ -28,12 +28,19 @@
 package edu.vub.at.objects.grammar;
 
 /**
+ * The ATSplice interface represents the 'splice' <code>@exp</code> AG element.
+ * 
+ * A splice may only be used in tables and argument lists.
+ * 
  * @author tvc
- *
- * The ATSplice interface represents the 'splice' <tt>@exp</tt> abstract grammar element.
  */
 public interface ATSplice extends ATExpression {
 
+	/**
+	 * The expression of a slice may be any expression that evaluates to a native table.
+	 * Example: <code>`([@m()])[1].expression == `(m())</code>
+	 * @return the expression for the table that needs to be spliced
+	 */
 	public ATExpression base_getExpression();
 	
 }

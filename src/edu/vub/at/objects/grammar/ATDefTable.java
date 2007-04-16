@@ -28,14 +28,35 @@
 package edu.vub.at.objects.grammar;
 
 /**
+ * The public interface to a table definition AG element.
+ * 
+ * Example: <code>def tab[size] { init }</code> where <code>tab</code>
+ * is a literal symbol and <code>size</code> has to evaluate to a number.
+ * The <code>init</code> expression is evaluated <code>size</code> times.
+ * 
  * @author tvc
- *
- * The public interface to a table definition abstract grammar element.
  */
 public interface ATDefTable extends ATDefinition {
 
+	/**
+	 * The name of the table must be a literal symbol
+	 * Example: <code>`{ def tab[5] { m() } }.statements[1].name == `tab</code>
+	 * @return the name of the table
+	 */
 	public ATSymbol base_getName();
+	
+	/**
+	 * The size may be any valid AmbientTalk expression that evaluates to a number
+	 * Example: <code>`{ def tab[5] { m() } }.statements[1].sizeExpression == `5</code>
+	 * @return the size expression
+	 */
 	public ATExpression base_getSizeExpression();
+	
+	/**
+	 * The initializer is at least one expression and may be a sequence of expressions
+	 * Example: <code>`{ def tab[5] { m() } }.statements[1].initializer == `{ m() }</code>
+	 * @return the initializer
+	 */
 	public ATBegin base_getInitializer();
 	
 }

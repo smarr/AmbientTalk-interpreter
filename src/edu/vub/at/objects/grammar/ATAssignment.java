@@ -27,11 +27,10 @@
  */
 package edu.vub.at.objects.grammar;
 
-
 /**
- * @author tvc
- *
  * The common interface to all assignment AG nodes.
+ * 
+ * @author tvc
  */
 public interface ATAssignment extends ATStatement {
 

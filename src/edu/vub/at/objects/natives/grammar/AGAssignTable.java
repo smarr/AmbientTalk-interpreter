@@ -39,9 +39,9 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author tvc
- *
  * The native implementation of a table assignment AG element.
+ * 
+ * @author tvc
  */
 public final class AGAssignTable extends NATAbstractGrammar implements ATAssignTable {
 
@@ -60,7 +60,7 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 	public ATExpression base_getIndexExpression() { return idxExp_; }
 
 	public ATExpression base_getValueExpression() { return valExp_; }
-
+	
 	/**
 	 * To evaluate a table assignment, evaluate its table expression to a valid ATTable.
 	 * Next, evaluate its index expression into a valid number.

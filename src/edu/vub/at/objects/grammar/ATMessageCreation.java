@@ -34,13 +34,30 @@ import edu.vub.at.objects.ATTable;
  * An ATMessageCreation may represent synchronous, asynchronous or delegation messages.
  * An abstract message at least contains a selector, arguments and annotations (stripes)
  * 
- * 
  * @author tvcutsem
  */
 public interface ATMessageCreation extends ATExpression {
 	
+    /**
+     * Messages always have a selector, a symbol denoting the field or method that
+     * needs to be sought for.
+     * Example: <code>`(<-m()).selector == `m</code>
+     * @return a symbol denoting the selector
+     */
 	public ATSymbol base_getSelector();
+	
+	/**
+     * Messages may optionally have arguments if they represent invocations.
+     * Splicing is allowed in the argument list
+     * Example: <code>`(<-m(a, @b)).arguments == `[a, @b]</code>
+     * @return the arguments passed to the invocation
+     */
 	public ATTable base_getArguments();
+	
+	/**
+	 * Messages may optionally have annotations (stripes)
+	 * @return the annotations of the message
+	 */
 	public ATExpression base_getAnnotations();
 
 }

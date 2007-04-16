@@ -28,12 +28,22 @@
 package edu.vub.at.objects.grammar;
 
 /**
- * @author tvc
- *
  * The public interface to a quotation AG element.
+ * 
+ * Quoting an expression prevents its evaluation. Instead,
+ * the AG element is returned as a first-class entity.
+ * 
+ * Example: <code>`(f(1, 2, 3))</code>
+ * 
+ * @author tvc
  */
 public interface ATQuote extends ATExpression {
 	
+	/**
+	 * The quoted statement
+	 * Example: <code>`(`(1+2)).statement == `(1.+(2))</code>
+	 * @return the quoted statement
+	 */
 	public ATStatement base_getStatement();
 
 }

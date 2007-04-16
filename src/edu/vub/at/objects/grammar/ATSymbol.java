@@ -39,6 +39,8 @@ public interface ATSymbol extends ATExpression {
 
 	/**
 	 * Transform a symbol into a string.
+	 * Example: <code>`foo.text == "foo"</code>
+	 * @return the text of the symbol
 	 */
 	public ATText base_getText() throws InterpreterException;
 	

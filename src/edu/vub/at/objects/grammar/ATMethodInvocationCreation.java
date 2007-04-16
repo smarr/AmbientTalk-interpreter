@@ -27,13 +27,11 @@
  */
 package edu.vub.at.objects.grammar;
 
-
 /**
- * @author tvc
- *
  * The public interface to a first-class synchronous message creation AG element.
- * Example:
- *   <tt>.m()</tt>
+ * Example: <code>.m()</code>
+ *   
+ * @author tvc
  */
 public interface ATMethodInvocationCreation extends ATMessageCreation {
 	

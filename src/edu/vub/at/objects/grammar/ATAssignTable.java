@@ -27,15 +27,40 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
+
 /**
+ * The public interface to a table assignment AG element.
+ * 
+ * Example: <code>tab[idx] := 5</code> where <code>tab</code>
+ * has to evaluate to a table and <code>idx</code> has to 
+ * evaluate to a number.
+ * 
  * @author tvc
- *
- * The public interface to a table assignment abstract grammar element.
  */
 public interface ATAssignTable extends ATAssignment {
 
+	/**
+	 * The table may be any AmbientTalk expression that evaluates to a native table.
+	 * Example: <code>`{ tab[idx] := 5}.statements[1].tableExpression == `tab</code>
+	 * @return The table expression
+	 */
 	public ATExpression base_getTableExpression();
+	
+	/**
+	 * The index may be any AmbientTalk expression that evaluates to a native number.
+	 * Example: <code>`{ tab[idx] := 5}.statements[1].indexExpression == `idx</code>
+	 * @return The index expression
+	 */
 	public ATExpression base_getIndexExpression();
+	
+	/**
+	 * The value expression may be any valid AmbientTalk expression
+	 * Example: <code>`{ tab[idx] := 5}.statements[1].valueExpression == `5</code>
+	 * @return The value expression
+	 */
 	public ATExpression base_getValueExpression();
 	
 }

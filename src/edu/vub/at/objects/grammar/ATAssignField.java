@@ -27,15 +27,40 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
+
 /**
+ * The public interface to a field assignment AG element.
+ * 
+ * <p>
+ * Example: <code>o.x := 5</code> where <code>x</code> is a literal symbol
+ * </p>
+ * 
  * @author tvc
- *
- * The public interface to a field assignment abstract grammar element.
  */
 public interface ATAssignField extends ATAssignment {
 	
+	/**
+	 * The receiver expression may be any valid AmbientTalk expression.
+	 * Example: <code>`{ o.x := 5}.statements[1].receiverExpression == `o</code>
+	 * @return The expression for the object whose field is about to be assigned
+	 */
 	public ATExpression base_getReceiverExpression();
+	
+	/**
+	 * The field name must be a literal symbol
+	 * Example: <code>`{ o.x := 5}.statements[1].fieldName == `x</code>
+	 * @return The name of the field
+	 */
 	public ATSymbol base_getFieldName();
+	
+	/**
+	 * The value expression may be any valid AmbientTalk expression.
+	 * Example: <code>`{ o.x := 5}.statements[1].valueExpression == `5</code>
+	 * @return The expression for the value that will be assigned to the field
+	 */
 	public ATExpression base_getValueExpression();
 	
 }

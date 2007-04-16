@@ -27,18 +27,39 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
+
 /**
+ * The public interface to an external field definition AG element.
+ * 
+ * Example: <code>def rcv.nam := val</code>
+ * 
  * @author tvcutsem
- *
- * The public interface to an external field definition abstract grammar element.
- * <tt>def rcv.nam := val</tt>
  */
 public interface ATDefExternalField extends ATDefinition {
 
+	/**
+	 * The receiver must be a literal symbol.
+	 * Example: <code>`{ def o.x := 5 }.statements[1].receiver == `o</code>
+	 * @return The expression for the object
+	 */
 	public ATSymbol base_getReceiver();
 	
+	/**
+	 * The name of the field must be a literal symbol
+	 * Example: <code>`{ def o.x := 5 }.statements[1].name == `x</code>
+	 * @return the name of the field
+	 */
 	public ATSymbol base_getName();
 	
+	/**
+	 * The value may be any AmbientTalk expression.
+	 * Example: <code>`{ def o.x := 5 }.statements[1].valueExpression == `5</code>
+	 * @return the value expression
+	 */
 	public ATExpression base_getValueExpression();
 	
 }

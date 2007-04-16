@@ -30,15 +30,33 @@ package edu.vub.at.objects.grammar;
 import edu.vub.at.objects.ATTable;
 
 /**
- * @author tvc
- *
  * The interface to a multi-assignment AG element.
- * Example:
- *  <tt>[ x, y ] := [ y, x ]</tt>
+ * <p>
+ * Example: <code>[ x, y ] := [ y, x ]</code>
+ * </p><p>
+ * <p>
+ * By using splicing in the left-hand expression, this can be
+ * used to split up tables: <code>[x, @y] := [1, 2, 3, 4]</code>
+ * </p>
+ *  
+ *  @author tvc
  */
 public interface ATMultiAssignment extends ATAssignment {
 	
+	/**
+	 * The left-hand side of the assignment must be a literal table.
+	 * Slicing is allowed at the end.
+	 * Example: <code>`{ [ x, y ] := [ y, x ] }.statements[1].parameters == `[x, y]</code>
+	 * @return a table with valid left-expressions
+	 */
 	public ATTable base_getParameters();
+	
+	/**
+	 * The right-hand side of the assignment may be any valid AmbientTalk expression
+	 * that evaluates to a native table
+	 * Example: <code>`{ [ x, y ] := [ y, x ] }.statements[1].valueExpression == `[y, x]</code>
+	 * @return the value expression
+	 */
 	public ATExpression base_getValueExpression();
 
 }

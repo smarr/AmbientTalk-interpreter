@@ -36,12 +36,9 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author tvc
- *
  * The native implementation of a field assignment AG element.
- * Examples:
- *  <tt>o.x := 5</tt>
- *  <tt>1.+ := m()</tt>
+ *  
+ *  @author tvc
  */
 public final class AGAssignField extends NATAbstractGrammar implements ATAssignField {
 
@@ -60,7 +57,7 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 	public ATSymbol base_getFieldName() { return fieldName_; }
 
 	public ATExpression base_getValueExpression() { return valueExp_; }
-
+	
 	/**
 	 * To evaluate a field assignment, evaluate the receiver expression, evaluate the right hand side and ask
 	 * the receiver object to assign the RHS value to the field corresponding to the given field name.

@@ -28,14 +28,28 @@
 package edu.vub.at.objects.grammar;
 
 /**
+ * The public interface to a field definition AG element.
+ * 
+ * <p>
+ * Example: <code>def x := 5</code> where <code>x</code> is a literal symbol
+ * </p>
+ * 
  * @author tvcutsem
- *
- * The public interface to a field definition abstract grammar element.
  */
 public interface ATDefField extends ATDefinition {
 
+	/**
+	 * The name of the field must be a literal symbol
+	 * Example: <code>`{ def x := 5 }.statements[1].name == `x</code>
+	 * @return the name of the field
+	 */
 	public ATSymbol base_getName();
 	
+	/**
+	 * The value expression may be any valid AmbientTalk expression.
+	 * Example: <code>`{ def x := 5 }.statements[1].valueExpression == `5</code>
+	 * @return The expression for the value that will be assigned to the field
+	 */
 	public ATExpression base_getValueExpression();
 	
 }

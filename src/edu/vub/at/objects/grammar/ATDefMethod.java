@@ -27,17 +27,40 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 
 /**
+ * The public interface to a method definition AG element.
+ * 
+ * Example: <code>def m(a, b) { a + b }
+ * 
  * @author tvc
- *
- * The public interface to a method definition abstract grammar element.
  */
 public interface ATDefMethod extends ATDefinition {
 
+	/**
+	 * The selector must be a literal symbol.
+	 * Example: <code>`{ def m() { 5 } }.statements[1].selector == `m</code>
+	 * @return the selector of the method
+	 */
 	public ATSymbol base_getSelector();
+	
+	/**
+	 * A method may have zero, one or more fromal arguments.
+	 * Slicing is allowed in the argument list.
+	 * Example: <code>`{ def m(a, @b) { b } }.statements[1].arguments == `[a, @b]</code>
+	 * @return the formal argument list
+	 */
 	public ATTable base_getArguments();
+	
+	/**
+	 * The body of a method may not be empty.
+	 * Example: <code>`{ def m(a, b) { a.n(); b+1 } }.statements[1].bodyExpression == `{ a.n(); b.+(1) }</code>
+	 * @return The body of the method
+	 */
 	public ATBegin base_getBodyExpression();
 	
 }

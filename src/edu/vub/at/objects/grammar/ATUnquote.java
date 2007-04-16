@@ -28,12 +28,19 @@
 package edu.vub.at.objects.grammar;
 
 /**
- * @author tvc
- *
  * The public interface to an unquotation AG element.
+ * 
+ * An unquotation may only appear in a quoted expression
+ * Example: <code>#exp</code>
+ * 
+ * @author tvc
  */
 public interface ATUnquote extends ATExpression {
 	
+	/**
+	 * Example: <code>`(`(#(m()))).statement.expression == `(m())</code>
+	 * @return the expressions that needs to be unquoted
+	 */
 	public ATExpression base_getExpression();
 
 }

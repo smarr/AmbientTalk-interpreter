@@ -68,7 +68,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	public ATBegin base_getBodyExpression() {
 		return bodyStmts_;
 	}
-
+	
 	/**
 	 * Defines a new function (method or closure) in the current scope.
 	 * If a function definition is executed in the context of an object,

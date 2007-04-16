@@ -30,15 +30,34 @@ package edu.vub.at.objects.grammar;
 import edu.vub.at.objects.ATTable;
 
 /**
- * @author tvc
- *
  * The public interface to a multiple definition AG element.
- * Example:
- *  <tt>def [x, y] := [1, 2]</tt>
+ * 
+ * <p>
+ * Example:<code>def [x, y] := [1, 2]</code>
+ * </p><p>
+ * <p>
+ * By using splicing in the left-hand expression, this can be
+ * used to split up tables: <code>def [x, @y] := [1, 2, 3, 4]</code>
+ * </p>
+ *  
+ *  @author tvc
  */
 public interface ATMultiDefinition extends ATDefinition {
 	
+	/**
+	 * The left-hand side of the definition must be a literal table.
+	 * Slicing is allowed at the end.
+	 * Example: <code>`{ def [ x, y ] := [ y, x ] }.statements[1].parameters == `[x, y]</code>
+	 * @return a table with valid left-expressions
+	 */
 	public ATTable base_getParameters();
+	
+	/**
+	 * The right-hand side of the definition may be any valid AmbientTalk expression
+	 * that evaluates to a native table
+	 * Example: <code>`{ def [ x, y ] := [ y, x ] }.statements[1].valueExpression == `[y, x]</code>
+	 * @return the value expression
+	 */
 	public ATExpression base_getValueExpression();
 	
 }

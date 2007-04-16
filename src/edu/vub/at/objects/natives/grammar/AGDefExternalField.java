@@ -38,9 +38,6 @@ import edu.vub.at.objects.natives.NATText;
 
 /**
  * Represents the abstract grammar for defining external fields.
- * Examples:
- *   <tt>o.x := 5</tt>
- *   <tt>num.+ := "foo"</tt>
  *   
  *  @author tvcutsem
  */

@@ -32,19 +32,34 @@ import edu.vub.at.objects.ATNil;
 /**
  * The public interface to a synchronous or asynchronous message send AG element.
  * 
- * Message sends of the form <o.m()> are transformed into <MESSAGE-SEND o <METHOD-INVOCATION m []>>
- * Message sends of the form <o<-m()> are transformed into <MESSAGE-SEND o <ASYNC-MESSAGE m []>>
- * Message sends of the form <o^m()> are transformed into <MESSAGE-SEND o <DELEGATION m []>>
- * Message sends of the form <o<+exp> are transformed into <MESSAGE-SEND o <EXPRESSION exp>>
+ * Message sends of the form <code>o.m()</code> are transformed into <MESSAGE-SEND o <METHOD-INVOCATION m []>>
+ * Message sends of the form <code>o<-m()</code> are transformed into <MESSAGE-SEND o <ASYNC-MESSAGE m []>>
+ * Message sends of the form <code>o^m()</code> are transformed into <MESSAGE-SEND o <DELEGATION m []>>
+ * Message sends of the form <code>o<+exp</code> are transformed into <MESSAGE-SEND o <EXPRESSION exp>>
  * 
  * @author tvcutsem
  */
 public interface ATMessageSend extends ATExpression {
 
+	/**
+	 * The receiver may be any valid AmbientTalk expression
+	 * Example: <code>`(f().m()).getReceiverExpression() == `(f())</code>
+	 * @return the receiver of the message
+	 */
 	public ATExpression base_getReceiverExpression();
 	
+	/**
+	 * @param rcv the new receiver
+	 * @return nil
+	 */
 	public ATNil base_setReceiverExpression(ATExpression rcv);
 	
+	/**
+	 * The message to be sent must be an AmbientTalk expression that evaluates
+	 * to a message.
+	 * Example: <code>`(f().m()).getMessageExpression() == `(.m())</code>
+	 * @return the message expression
+	 */
 	public ATExpression base_getMessageExpression();
 	
 }

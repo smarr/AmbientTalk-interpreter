@@ -37,12 +37,9 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author tvc
- *
  * The native implementation of a variable assignment AG element.
- * Examples:
- *  <tt>x := 5</tt>
- *  <tt>+ := m()</tt>
+ *  
+ *  @author tvc
  */
 public final class AGAssignVariable extends NATAbstractGrammar implements ATAssignVariable {
 
@@ -57,7 +54,7 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 	public ATSymbol base_getName() { return variableName_; }
 
 	public ATExpression base_getValueExpression() { return valueExp_; }
-
+	
 	/**
 	 * To evaluate a variable assignment, evaluate the right hand side and ask
 	 * the current object to assign that value to the field corresponding to the left hand side.

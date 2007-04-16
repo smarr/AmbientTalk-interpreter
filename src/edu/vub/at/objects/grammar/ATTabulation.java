@@ -28,13 +28,26 @@
 package edu.vub.at.objects.grammar;
 
 /**
- * @author tvc
- *
  * The public interface to a tabulation AG element.
+ * 
+ * Example: <code>tab[idx]</code>
+ * 
+ * @author tvc
  */
 public interface ATTabulation extends ATExpression {
 
+	/**
+	 * The table expression must evaluate to a native table
+	 * Example: <code>`(m()[idx+1]).tableExpression == `(m())</code>
+	 * @return the table expression
+	 */
 	public ATExpression base_getTableExpression();
+	
+	/**
+	 * The index expression must evaluate to a native number
+	 * Example: <code>`(m()[idx+1]).indexExpression == `(idx.+(1))</code>
+	 * @return the index expression
+	 */
 	public ATExpression base_getIndexExpression();
 	
 }

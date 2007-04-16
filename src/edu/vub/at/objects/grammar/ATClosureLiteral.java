@@ -27,16 +27,35 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 
 /**
- * @author tvc
- *
  * The public interface to a closure literal AG element.
+ * 
+ * Example: <code>{ |a, b| a + b }</code> where <code>|a, b|</code>
+ * represents the formal arguments list. If there are no formal arguments,
+ * the vertical bars may be omitted. The body may not be empty. 
+ * 
+ * @author tvc
  */
 public interface ATClosureLiteral extends ATExpression {
 	
+	/**
+	 * A literal closure may contain zero, one or more formal arguments.
+	 * Splicing is allowed in the argument list.
+	 * Example: <code>`({ |a, b| a + b }).arguments == `[a, b]</code>
+	 * @return The formal argument list
+	 */
 	public ATTable base_getArguments();
+	
+	/**
+	 * The body of a literal closure may not be empty.
+	 * Example: <code>`({ |a, b| a + b }).bodyExpression == `(a.+(b))</code>
+	 * @return The body of the literal closure
+	 */
 	public ATBegin base_getBodyExpression();
 
 }

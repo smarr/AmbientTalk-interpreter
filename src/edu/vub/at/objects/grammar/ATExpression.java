@@ -28,9 +28,9 @@
 package edu.vub.at.objects.grammar;
 
 /**
- * @author tvc
- *
  * ATExpression is the common interface of all expression abstract grammar elements.
+ * 
+ * @author tvc
  */
 public interface ATExpression extends ATStatement {
 

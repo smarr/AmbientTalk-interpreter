@@ -27,15 +27,30 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.natives.NATNumber;
 
 /**
  * The public interface to a sequence of statements. The table encapsulated by ATBegin may not be empty.
+ * 
+ * <p>
+ * Example: <code>a; b; c</code>
+ * </p><p>
+ * This AG element is used to represent the body of a method or a literal closure.
+ * <p>
  * 
  * @author tvcutsem
  */
 public interface ATBegin extends ATStatement {
 
+	/**
+	 * The statements table contains (al least) one or more expressions.
+	 * Example: <code>`{ x := 5; 1 + 2}.statements == `[x := 5, 1.+(2)]</code>
+	 * @return A non-empty table of expressions
+	 */
 	public ATTable base_getStatements();
 	
 }

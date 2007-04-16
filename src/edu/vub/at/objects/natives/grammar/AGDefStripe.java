@@ -43,9 +43,6 @@ import edu.vub.at.objects.natives.NATText;
 /**
  * The native AST node for the code:
  *
- * def stripename;
- * def stripename < superstripename;
- *
  * @author tvcutsem
  */
 public final class AGDefStripe extends NATAbstractGrammar implements ATDefStripe {

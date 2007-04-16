@@ -27,16 +27,43 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 
 /**
- * @author tvc
- *
  * The public interface to an application AG element.
+ * 
+ * <p>
+ * Example: <code>f(a, b, c)</code> where <code>f</code> is an expression that
+ * has to evaluate to a closure.
+ * </p><p>
+ * It is allowed to use splicing in the argument list, for example <code>f(a, @[b, c])</code>
+ * or <code>f(a, @t)</code>.
+ * </p><p>
+ * Note that <code>o.f(a, b, c)</code> is not represented with this interface,
+ * but rather with the combination of an {@link ATMessageSend} and an {@link ATMethodInvocationCreation}.
+ * </p>
+ * 
+ * @author tvc
  */
 public interface ATApplication extends ATExpression {
 
+	/**
+	 * The function may be any AmbientTalk expression that evaluates to a closure.
+	 * Example: <code>`(f(1)(2)).function == `f(1)</code>
+	 * 
+	 * @return the function expression of the application
+	 */
 	public ATExpression base_getFunction();
+	
+	/**
+	 * Zero, one or more arguments may be passed. It is allowed to use splicing
+	 * in the argument list, for example <code>f(a, @[b, c])</code> or <code>f(a, @t)</code>.
+	 * Example: <code>`(f(1, 2, @[3, 4])).arguments == `[1, 2, @[3, 4]]</code>
+	 * @return the argument list of the application
+	 */
 	public ATTable base_getArguments();
 	
 }

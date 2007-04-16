@@ -40,9 +40,9 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author tvc
- *
  * The native implementation of an application AG element.
+ * 
+ * @author tvc
  */
 public final class AGApplication extends AGExpression implements ATApplication {
 

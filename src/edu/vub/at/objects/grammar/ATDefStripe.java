@@ -27,16 +27,36 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 
 /**
- * The public interface to a stripe definition abstract grammar element.
+ * The public interface to a stripe definition AG element.
+ * 
+ * Example: <code>defstrip stripename</code>
+ * where <code>stripename</code> is a literal symbol.<br>
+ * A stripe can have multiple super stripes:
+ * <code>defstripe c <: a, b</code> where <code>a</code>
+ * and <code>b</code> must evaluate to stripes
  * 
  * @author tvcutsem
  */
 public interface ATDefStripe extends ATDefinition {
 	
+	/**
+	 * The name of the stripe to be defined must be a literal symbol
+	 * Example: <code>`{ defstripe foo }.statements[1].stripeName == `foo</code>
+	 * @return the name of the stripe
+	 */
 	public ATSymbol base_getStripeName();
+	
+	/**
+	 * A stripe can have zero, one or more parent stripes. 
+	 * Example: <code>`{ defstripe foo <: bar, o.baz() }.statements[1].parentStripeExpressions == `[ bar, o.baz() ]</code>
+	 * @return a table with expressions that each must evaluate to a stripe
+	 */
 	public ATTable base_getParentStripeExpressions();
 	
 }

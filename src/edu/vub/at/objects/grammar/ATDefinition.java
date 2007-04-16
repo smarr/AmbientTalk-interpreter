@@ -27,12 +27,11 @@
  */
 package edu.vub.at.objects.grammar;
 
-
 /**
- * @author tvc
- *
  * ATDefinition is the common interface of all definition AG nodes.
  * It is used for documentation/classification purposes.
+ * 
+ * @author tvc
  */
 public interface ATDefinition extends ATStatement {
 

@@ -30,9 +30,9 @@ package edu.vub.at.objects.grammar;
 import edu.vub.at.objects.ATAbstractGrammar;
 
 /**
+ * ATStatement is the common interface of all statement AG elements.
+ * 
  * @author tvc
- *
- * ATStatement is the common interface of all statement abstract grammar elements.
  */
 public interface ATStatement extends ATAbstractGrammar {
 

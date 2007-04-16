@@ -28,12 +28,21 @@
 package edu.vub.at.objects.grammar;
 
 /**
- * @author tvc
- *
  * The public interface to an unquote-splice AG element.
+ * 
+ * An unquote-splice may only appear in a quoted table or
+ * argument list. The expression must evaluate to a native table.
+ * Example: #@exp
+ * 
+ * @author tvc
  */
 public interface ATUnquoteSplice extends ATExpression {
 
+	/**
+	 * The expression must evaluate to a native table
+	 * Example: <code>`(`(#@(m()))).statement.expression == `(m())</code>
+	 * @return the expression that must be evaluated and spliced
+	 */
 	public ATExpression base_getExpression();
 	
 }

@@ -75,18 +75,17 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 	public ATBegin base_getBodyExpression() {
 		return bodyStmts_;
 	}
-
+	
 	/**
 	 * Evaluates the receiver symbol to an object to which a new 'closure method' will be added.
 	 * Such a closure captures the current lexical scope, but not the values for 'self' and 'super'.
-	 * For an explanation of this rationale, see my interface description in ATDefExternalMethod.
 	 * 
 	 * The return value of an external method definition is always the external method itself.
 	 * 
 	 * AGDEFEXTMTH(rcv,nam,par,bdy).eval(ctx) =
 	 *   rcv.eval(ctx).defineField(nam, NATCLOMTH(ctx.cur,nam,par,bdy))
 	 *   
-	 * This method may fail with an XIllegalOperation if the receiver is an instance of a native 
+	 * @throws XIllegalOperation if the receiver is an instance of a native 
 	 * type (whose method dictionaries are sealed) or if the receiver is an isolate. 
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {

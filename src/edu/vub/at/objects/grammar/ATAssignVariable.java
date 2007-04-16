@@ -27,14 +27,36 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATObject;
+
 /**
- * @author tvc
- *
- * The public interface to a variable assignment abstract grammar element.
+ * The public interface to a variable assignment AG element.
+ * 
+ * <p>
+ * Example: <code>x := 5</code>
+ * </p><p>
+ * The left-hand side must be a literal symbol available in the
+ * lexical scope.
+ * </p>
+ *  
+ *  @author tvc
  */
 public interface ATAssignVariable extends ATAssignment {
 
+	/**
+	 * The name of the variable must be a literal symbol
+	 * Example: <code>`{ x := 5}.statements[1].name == `x</code>
+	 * @return The name of the variable
+	 */
 	public ATSymbol base_getName();
+	
+	/**
+	 * The value expression may be any valid AmbientTalk expression.
+	 * Example: <code>`{ x := 5}.statements[1].valueExpression == `5</code>
+	 * @return The expression for the value that will be assigned to the variable
+	 */
 	public ATExpression base_getValueExpression();
 	
 }
