@@ -129,9 +129,15 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	 * of all messages being sent through this far reference. Note that this method performs no
 	 * deserialisation of the events into (copied) messages. Such deserialisation needs to be
 	 * done by an {@link ELActor}, not the ELFarReference which will execute this method.
+	 * 
+	 * After handling the retract request, the {@link #outboxFuture_} is reset to <tt>null</tt>.
+	 * This is extremely important because it signifies that there is no more pending retract request.
 	 */
 	public void handleRetractRequest() {
 		outboxFuture_.resolve(eventQueue_.flush());
+		// if the future is not reset to null, the event loop would continually
+		// resolve the future from this point on!
+		outboxFuture_ = null;
 	}
 	
 	/**
