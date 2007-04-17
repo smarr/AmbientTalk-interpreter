@@ -35,33 +35,9 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 
-/**
- *  
- */
 public interface ATActorMirror extends ATObject {
-	
-	public static final ATSymbol _IN_ = AGSymbol.jAlloc("inbox");
-
-	public static final ATSymbol _OUT_ = AGSymbol.jAlloc("outbox");
-
-	public static final ATSymbol _REQUIRED_ = AGSymbol.jAlloc("required");
-
-	public static final ATSymbol _PROVIDED_ = AGSymbol.jAlloc("provided");
-
-	/**
-	 * Accept an incoming asynchronous message. By default, such messages are scheduled
-	 * in an inbox.
-	 * @param message - the async base-level message to accept
-	 */
-	//public ATObject base_accept(ATAsyncMessage message) throws InterpreterException;
-
-	/**
-	 * Processes a message from the base-level inbox if it is non-empty.
-	 */
-	//public ATObject base_process() throws InterpreterException;
-	
+		
     /* ---------------------------------------------------
      * -- Language Construct to NATActorMirror Protocol --
      * --------------------------------------------------- */
