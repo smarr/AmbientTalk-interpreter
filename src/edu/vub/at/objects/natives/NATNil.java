@@ -73,13 +73,16 @@ import java.io.Serializable;
 
 /**
  * NATNil implements default semantics for all test and conversion methods.
+ * To allow for AmbientTalk language values to be unquoted into parsetrees,
+ * nil is considered to be a valid ambienttalk expression. 
  *
  * @author smostinc
  */
-public class NATNil implements ATNil, Serializable {
+public class NATNil implements ATExpression, ATNil, Serializable {
 	
     protected NATNil() {};
 
+    /** nil is a unique singleton object */
     public final static NATNil _INSTANCE_ = new NATNil();
 
     /* ------------------------------
@@ -444,7 +447,7 @@ public class NATNil implements ATNil, Serializable {
     }
 
     public ATExpression asExpression() throws InterpreterException {
-        throw new XTypeMismatch(ATExpression.class, this);
+        return this;
     }
 
     public ATBegin asBegin() throws InterpreterException {

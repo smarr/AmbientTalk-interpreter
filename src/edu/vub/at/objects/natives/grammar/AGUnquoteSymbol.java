@@ -31,45 +31,44 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalUnquote;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquote;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * The native implementation of an unquotation AG element.
+ * AGUnquoteSymbol is a class encapsulating an unquoted expression in a position where the 
+ * grammar of the language prescribes the presence of an { @link edu.vub.at.objects.grammar.ATSymbol}.
+ * The implementation of this class is entirely identical to the one of its superclass 
+ * { @link edu.vub.at.objects.natives.grammar.AGUnquote } with the difference that is ensures
+ * that the value it returns when used in a quoted expression is indeed a symbol.
  *
- * @author tvc
+ * @author smostinc
  */
-public class AGUnquote extends AGExpression implements ATUnquote {
+public final class AGUnquoteSymbol extends AGUnquote implements ATSymbol {
 
-	protected final ATExpression unqExp_;
-	
-	public AGUnquote(ATExpression exp) {
-		unqExp_ = exp;
+	public AGUnquoteSymbol(ATExpression exp) {
+		super(exp);
 	}
 	
-	public ATExpression base_getExpression() { return unqExp_; }
-
-	/**
-	 * An unquotation cannot be evaluated, but rather gives rise to an XIllegalUnquote exception.
-	 * This is because an unquotation should always be nested within a quotation.
-	 * 
-	 * AGUNQ(exp).eval(ctx) = ERROR
-	 */
-	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		throw new XIllegalUnquote(unqExp_);
-	}
-
 	/**
 	 * Quoting an unquotation means evaluating its contained expression, and returning
-	 * its value as the result of the quote.
+	 * its value as the result of the quote. This method ensures that the result is 
+	 * returned only if it is a proper symbol.
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return unqExp_.meta_eval(ctx);
-	}
-
-	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("#("+ unqExp_.meta_print().javaValue + ")");
+		return super.meta_quote(ctx).asSymbol();
 	}
 	
+	/**
+	 * The use of an unquoted symbol as if it were the symbol itself indicates that the 
+	 * unquotation was most probably not used in a quotation. Therefore the sematics are
+	 * identical to the ones enforced in meta_eval, namely an error is reported.
+	 * 
+	 * @throws XIllegalUnquote
+	 */
+	public ATText base_getText() throws InterpreterException {
+		throw new XIllegalUnquote(unqExp_);
+	}
 }
