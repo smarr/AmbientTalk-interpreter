@@ -84,6 +84,14 @@ public abstract class EventLoop {
 		return name_;
 	}
 	
+	/**
+	 * Attempts to cast a {@link Thread} to an {@link EventLoop}. This code performs error checking and should
+	 * therefore be used whenever a Thread (typically the current thread) needs to be cast into
+	 * an EventLoop
+	 * @param t a Java Thread to be cast into an event loop
+	 * @return t as an EventLoop
+	 * @throws IllegalStateException when the cast failed.
+	 */
 	public static EventLoop toEventLoop(Thread t) throws IllegalStateException {
 		try {
 		  EventProcessor processor = (EventProcessor) t;
@@ -109,6 +117,11 @@ public abstract class EventLoop {
 		}
 	}
 	
+	/**
+	 * Method to interrupt the EventLoop before it starts processing its next event. Note that
+	 * this method consequently does not help when en event loop is stuck in an endless loop
+	 * while evaluating a single event.
+	 */
 	public final void stopProcessing() {
 		askedToStop_ = true;
 	}
@@ -214,7 +227,7 @@ public abstract class EventLoop {
 	 */
 	public final class EventProcessor extends Thread {
 		
-		public EventProcessor() {
+		protected EventProcessor() {
 			setName(toString());
 		}
 		

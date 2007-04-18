@@ -27,10 +27,8 @@
  */
 package edu.vub.at.objects.grammar;
 
-import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.natives.NATClosureMethod;
 
 /**
  * The public interface to an external method definition AG element.

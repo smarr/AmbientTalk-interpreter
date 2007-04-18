@@ -36,6 +36,22 @@ import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
+/**
+ * The class ATActorMirror prescribes the minimal set of methods to be provided by the default 
+ * implementation of an actor mirror. Since new actor mirrors can be installed dynamically, 
+ * ATActorMirror defines the dependencies of the lexically scoped objects on the dynamic 'actor 
+ * context' to perform their duties. The hooks defined in this class relate to:
+ * 
+ * <ul>
+ *   <li>Asynchronous message creation and sending to influence the communication protocol</li>
+ *   <li>Service advertising and requesting to influence the service discovery protocol</li>
+ *   <li>Mirror creation to provide support for true stratification</li>
+ *   <li>Actor protocol installation to deal with actor mirror interaction and to allow freezing
+ *   an actor with a given protocol</li>
+ * </ul>
+ *
+ * @author smostinc
+ */
 public interface ATActorMirror extends ATObject {
 		
     /* ---------------------------------------------------

@@ -42,10 +42,12 @@ public abstract class Event implements Serializable {
 	 */
 	private final String description_;
 	
+	/** Default Constructor */
 	public Event() {
 		description_ = "anonymous event: " + this;
 	}
 	
+	/** Constructor taking a descriptive String for debugging purposes */
 	public Event(String description) {
 		description_ = "event: " + description;
 	}

@@ -27,9 +27,6 @@
  */
 package edu.vub.at.objects.grammar;
 
-import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATObject;
 
 /**
  * The public interface to a variable assignment AG element.

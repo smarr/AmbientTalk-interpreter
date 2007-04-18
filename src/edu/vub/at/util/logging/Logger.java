@@ -68,10 +68,15 @@ public class Logger {
 		return logger;
 	}
 	
+	/** When loggers are initialised with this setting, all messages (including debug info) are being logged. */ 
 	public static final int _DEBUG_LEVEL_ = 1;
+	/** When loggers are initialised with this setting, all messages except for debug info are being logged. */ 
 	public static final int _WARN_LEVEL_  = 2;
+	/** When loggers are initialised with this setting, errors as well as info (e.g. regarding connection status) is being logged. */ 
 	public static final int _INFO_LEVEL_  = 3;
+	/** When loggers are initialised with this setting, all errors (including tolerable ones) are reported. */ 
 	public static final int _ERROR_LEVEL_ = 4;
+	/** When loggers are initialised with this setting, only fatal errors are reported. */ 
 	public static final int _FATAL_LEVEL_ = 5;
 	
 	private Logger(String nam) {
@@ -90,42 +95,99 @@ public class Logger {
 		textPriority_ = priority;
 	}
 	
+	/**
+	 * Reports debugging information to be logged. Such messages are ignored when the logger has
+	 * its priority set to be higher than or equal to WARNING. 
+	 * @param msg the message to be logged.
+	 */
 	public void debug(String msg) {
 		log(_DEBUG_LEVEL_, msg, null);
 	}
 	
+	/**
+	 * Reports debugging information to be logged. Such messages are ignored when the logger has
+	 * its priority set to be higher than or equal to WARNING. 
+	 * @param msg the message to be logged.
+	 * @param exc the underlying exception that triggered the log request.
+	 */
 	public void debug(String msg, Throwable exc) {
 		log(_DEBUG_LEVEL_, msg, exc);
 	}
 	
+	/**
+	 * Reports a warning (i.e a suspected inconsistency in the interpreter) to be logged. Such 
+	 * messages are ignored when the logger has its priority set to be higher than or equal to 
+	 * INFO. 
+	 * @param msg the message to be logged.
+	 */
 	public void warn(String msg) {
 		log(_WARN_LEVEL_, msg, null);
 	}
 	
+	/**
+	 * Reports a warning (i.e a suspected inconsistency in the interpreter) to be logged. Such 
+	 * messages are ignored when the logger has its priority set to be higher than or equal to 
+	 * INFO. 
+	 * @param msg the message to be logged.
+	 * @param exc the underlying exception that triggered the log request.
+	 */
 	public void warn(String msg, Throwable exc) {
 		log(_WARN_LEVEL_, msg, exc);
 	}
 	
+	/**
+	 * Reports useful information on the interpreter's functioning (e.g. changes in connection 
+	 * state) to be logged. Such messages are ignored when the logger has its priority set to be 
+	 * higher than or equal to ERROR. 
+	 * @param msg the message to be logged.
+	 */
 	public void info(String msg) {
 		log(_INFO_LEVEL_, msg, null);
 	}
 	
+	/**
+	 * Reports useful information on the interpreter's functioning (e.g. changes in connection 
+	 * state) to be logged. Such messages are ignored when the logger has its priority set to be 
+	 * higher than or equal to ERROR. 
+	 * @param msg the message to be logged.
+	 * @param exc the underlying exception that triggered the log request.
+	 */
 	public void info(String msg, Throwable exc) {
 		log(_INFO_LEVEL_, msg, exc);
 	}
 	
+	/**
+	 * Reports a tolerable error which occurred in the interpreter. Such messages are logged unless
+	 * the logger set to FATAL. 
+	 * @param msg the message to be logged.
+	 */
 	public void error(String msg) {
 		log(_ERROR_LEVEL_, msg, null);
 	}
 	
+	/**
+	 * Reports a tolerable error which occurred in the interpreter. Such messages are logged unless
+	 * the logger set to FATAL. 
+	 * @param msg the message to be logged.
+	 * @param exc the underlying exception that triggered the log request.
+	 */
 	public void error(String msg, Throwable exc) {
 		log(_ERROR_LEVEL_, msg, exc);
 	}
 	
+	/**
+	 * Reports a fatal error in the interpreter. Such messages are always logged.
+	 * @param msg the message to be logged.
+	 */
 	public void fatal(String msg) {
 		log(_FATAL_LEVEL_, msg, null);
 	}
 	
+	/**
+	 * Reports a fatal error in the interpreter. Such messages are always logged.
+	 * @param msg the message to be logged.
+	 * @param exc the underlying exception that triggered the log request.
+	 */
 	public void fatal(String msg, Throwable exc) {
 		log(_FATAL_LEVEL_, msg, exc);
 	}

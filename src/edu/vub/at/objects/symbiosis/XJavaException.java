@@ -48,12 +48,25 @@ public final class XJavaException extends InterpreterException {
 	private final transient Object originatingObject_;
 	private final transient Member originatingMethod_; // method or constructor in which exception originated
 	
+	/**
+	 * Constructor taking a Java exception to be wrapped as well as information on where the 
+	 * exception originated from. This constructor allows documenting which message was being 
+	 * on the AmbientTalk side of the symbiosis border when an exception was raised. 
+	 * @param jObj the object which was responsible for throwin the method
+	 * @param jMeth the method which was invoked (from AmbientTalk) when the exception was being raised.
+	 * @param exc the exception to be wrapped.
+	 */
 	public XJavaException(Object jObj, Member jMeth, Throwable exc) {
 		wrappedJavaException_ = exc;
 		originatingObject_ = jObj;
 		originatingMethod_ = jMeth;
 	}
 	
+	/**
+	 * Constructor wrapping a Java Exception to be propagated through the ambienttalk
+	 * interpreter.
+	 * @param exc the exception to be wrapped.
+	 */
 	public XJavaException(Throwable exc) {
 		wrappedJavaException_ = exc;
 		originatingObject_ = null;
@@ -66,6 +79,9 @@ public final class XJavaException extends InterpreterException {
 		return wrappedJavaException_.getLocalizedMessage();
 	}
 	
+	/**
+	 * @return the Java exception wrapped by this AmbientTalk wrapper. 
+	 */
 	public Throwable getWrappedJavaException() {
 		return wrappedJavaException_;
 	}
@@ -81,15 +97,6 @@ public final class XJavaException extends InterpreterException {
 			return wrappedJavaException_.getMessage();
 		}
 	}
-//  Backport from JDK 1.4 to 1.3
-//	public StackTraceElement[] getStackTrace() {
-//		return wrappedJavaException_.getStackTrace();
-//	}
-
-//  Backport from JDK 1.4 to 1.3
-//	public synchronized Throwable initCause(Throwable arg) {
-//		return wrappedJavaException_.initCause(arg);
-//	}
 
 	public void printStackTrace() {
 		wrappedJavaException_.printStackTrace();
@@ -102,10 +109,6 @@ public final class XJavaException extends InterpreterException {
 	public void printStackTrace(PrintWriter arg) {
 		wrappedJavaException_.printStackTrace(arg);
 	}
-
-//	public void setStackTrace(StackTraceElement[] arg) {
-//		wrappedJavaException_.setStackTrace(arg);
-//	}
 
 	public String toString() {
 		return wrappedJavaException_.toString();

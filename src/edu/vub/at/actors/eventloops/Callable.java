@@ -34,6 +34,12 @@ package edu.vub.at.actors.eventloops;
  */
 public interface Callable {
 	
+	/**
+	 * Invokes the delayed closure.
+	 * @param argument the single argument to the closure (multiple arguments thus need to be wrapped in a collection)
+	 * @return the result of applying the delayed closure to the given arguments
+	 * @throws Exception
+	 */
 	public Object call(Object argument) throws Exception;
 
 }

@@ -41,6 +41,7 @@ public final class EventQueue {
 	
 	private final Vector elements_;
 	
+	/** Constructor which creates an empty EventQueue */
 	public EventQueue() {
 		elements_ = new Vector(_DEFAULT_QUEUE_SIZE_);
 	}

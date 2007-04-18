@@ -34,8 +34,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.grammar.ATUnquote;
-import edu.vub.at.objects.natives.NATText;
 
 /**
  * AGUnquoteSymbol is a class encapsulating an unquoted expression in a position where the 
@@ -48,6 +46,10 @@ import edu.vub.at.objects.natives.NATText;
  */
 public final class AGUnquoteSymbol extends AGUnquote implements ATSymbol {
 
+	/**
+	 * Constructor creating an unquoted expression which should evaluate to a symbol. 
+	 * @param exp the expression that is to be evaluated to produce the required symbol
+	 */
 	public AGUnquoteSymbol(ATExpression exp) {
 		super(exp);
 	}

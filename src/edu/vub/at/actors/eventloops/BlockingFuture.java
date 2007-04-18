@@ -55,6 +55,7 @@ public final class BlockingFuture implements Future {
     
     private boolean fulfilled = false;
     
+    /** Returns whether the future has been either resolved with a value or ruined by an exception */
     public synchronized boolean isDetermined() {
         return fulfilled;
     }

@@ -7,6 +7,12 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 
+/**
+ * ATObservable is the common interface used to create callbacks.
+ *
+ * @author smostinc
+ * @deprecated
+ */
 public interface ATObservable extends ATObject {
 
 	/**
