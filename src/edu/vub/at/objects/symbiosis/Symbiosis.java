@@ -452,22 +452,32 @@ public final class Symbiosis {
 	}
 
 	/**
-	 * Convert a Java object into an AmbientTalk object.
+	 * Convert a Java object into an AmbientTalk object, according to
+	 * the following rules:
+	 * <pre>
+	 * null = nil
+	 * ATObject obj = obj
+	 * int n = Number(n)
+	 * double d = Fraction(d)
+	 * boolean b = Boolean(b)
+	 * String s = Text(s)
+	 * T[] array = Table(array.length)
+	 * InterpreterException e = NATException(e)
+	 * Exception e = NATException(XJavaException(e))
+	 * SymbioticATObj o = o.wrappedATObject
+	 * Class c = JavaClass(c)
+	 * Object o = JavaObject(o)
+	 * </pre>
 	 * 
 	 * @param jObj the Java object representing a mirror or a native type
 	 * @return the same object if it implements the ATObject interface
 	 */
 	public static final ATObject javaToAmbientTalk(Object jObj) throws InterpreterException {
-		// -- IMPLEMENTATION-level OBJECTS --
-		if (jObj instanceof ATObject) {
-			// the object is already an AmbientTalk object
-			return (ATObject) jObj;
-		}
 		// -- NULL => NIL --
 	    if (jObj == null) {
 		  return NATNil._INSTANCE_;
 		// -- AmbientTalk implementation-level objects --
-	    } else if(jObj instanceof ATObject) {
+	    } else if (jObj instanceof ATObject) {
 			return (ATObject) jObj;
 	    // -- PRIMITIVE TYPE => NUMERIC, TXT --
 		} else if (JavaInterfaceAdaptor.isPrimitiveType(jObj.getClass())) {
@@ -501,7 +511,21 @@ public final class Symbiosis {
 	}
 
 	/**
-	 * Convert an AmbientTalk object into an equivalent Java object.
+	 * Convert an AmbientTalk object into an equivalent Java object, according
+	 * to the following rules:
+	 * <pre>
+	 * Number n -> int = n.javaValue
+	 * Fraction f -> double = f.javaValue
+	 * Boolean b -> boolean = b.javaValue
+	 * Text t -> String = t.javaValue
+	 * ATObject obj -> ATObject = obj
+	 * JavaObject jobj -> T = (T) jobj.wrappedObject
+	 * Table obj -> T[] = new T[obj.length]
+	 * NATException exc -> Exception = exc.wrappedException
+	 * JavaClass jcls -> Class = jcls.wrappedClass
+	 * nil -> Object = null
+	 * ATObject obj -> Interface = Coercer<obj,Interface>
+	 * </pre>
 	 * @param atObj the AmbientTalk object to convert to a Java value
 	 * @param targetType the known static type of the Java object that should be attained
 	 * @return a Java object o where (o instanceof targetType) should yield true
@@ -512,6 +536,10 @@ public final class Symbiosis {
 		// -- PRIMITIVE TYPES --
         if (JavaInterfaceAdaptor.isPrimitiveType(targetType)) {
 		    return JavaInterfaceAdaptor.atObjectToPrimitiveJava(atObj, targetType);
+		// -- IMPLEMENTATION-LEVEL OBJECTS --
+	    } else if (targetType.isInstance(atObj)) {
+			// target type is a subtype of ATObject, return the implementation-level object itself
+			return atObj;
 		// -- WRAPPED JAVA OBJECTS --
         } else if (atObj.isJavaObjectUnderSymbiosis()) {
 	    	Object jObj = atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
@@ -522,10 +550,6 @@ public final class Symbiosis {
 		    } else {
 		    		throw new XTypeMismatch(targetType, atObj);
 		    }
-		// -- IMPLEMENTATION-LEVEL OBJECTS --
-	    } else if (targetType.isInstance(atObj)) {
-			// target type is a subtype of ATObject, return the implementation-level object itself
-			return atObj;
 		// -- STRINGS --
 		} else if (targetType == String.class) {
 			return atObj.asNativeText().javaValue;

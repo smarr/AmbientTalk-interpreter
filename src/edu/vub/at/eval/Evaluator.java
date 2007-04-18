@@ -517,8 +517,8 @@ public final class Evaluator {
 			return ((NATException)atObj).getWrappedException();
 		}
 		
-		if (atObj instanceof JavaObject) {
-			JavaObject jObject = (JavaObject) atObj;
+		if (atObj.isJavaObjectUnderSymbiosis()) {
+			JavaObject jObject = atObj.asJavaObjectUnderSymbiosis();
 			
 			Object object = jObject.getWrappedObject();
 			if (object instanceof InterpreterException) {
