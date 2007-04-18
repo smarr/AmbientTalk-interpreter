@@ -518,8 +518,8 @@ public final class Symbiosis {
 	 * Fraction f -> double = f.javaValue
 	 * Boolean b -> boolean = b.javaValue
 	 * Text t -> String = t.javaValue
-	 * ATObject obj -> ATObject = obj
 	 * JavaObject jobj -> T = (T) jobj.wrappedObject
+	 * ATObject obj -> ATObject = obj
 	 * Table obj -> T[] = new T[obj.length]
 	 * NATException exc -> Exception = exc.wrappedException
 	 * JavaClass jcls -> Class = jcls.wrappedClass
@@ -536,10 +536,6 @@ public final class Symbiosis {
 		// -- PRIMITIVE TYPES --
         if (JavaInterfaceAdaptor.isPrimitiveType(targetType)) {
 		    return JavaInterfaceAdaptor.atObjectToPrimitiveJava(atObj, targetType);
-		// -- IMPLEMENTATION-LEVEL OBJECTS --
-	    } else if (targetType.isInstance(atObj)) {
-			// target type is a subtype of ATObject, return the implementation-level object itself
-			return atObj;
 		// -- WRAPPED JAVA OBJECTS --
         } else if (atObj.isJavaObjectUnderSymbiosis()) {
 	    	Object jObj = atObj.asJavaObjectUnderSymbiosis().getWrappedObject();
@@ -550,6 +546,10 @@ public final class Symbiosis {
 		    } else {
 		    		throw new XTypeMismatch(targetType, atObj);
 		    }
+		// -- IMPLEMENTATION-LEVEL OBJECTS --
+	    } else if (targetType.isInstance(atObj)) {
+			// target type is a subtype of ATObject, return the implementation-level object itself
+			return atObj;
 		// -- STRINGS --
 		} else if (targetType == String.class) {
 			return atObj.asNativeText().javaValue;
