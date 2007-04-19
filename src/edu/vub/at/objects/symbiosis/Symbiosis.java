@@ -68,13 +68,21 @@ import java.util.Vector;
  */
 public final class Symbiosis {
 
+	/**
+	 * Invoke a java method symbiotically, given only its name (not its implementation).
+	 * First retrieves all of the methods matching the given selector in the given class, then tries
+	 * to invoke the method symbiotically using the default symbiotic invocation algorithm.
+	 * 
+	 * @see #symbioticInvocation(ATObject, Object, String, JavaMethod, ATObject[]) the symbiotic invocation algorithm.
+	 */
 	public static ATObject symbioticInvocation(ATObject wrapper, Object symbiont, Class ofClass, String selector, ATObject[] atArgs) throws InterpreterException {
 		return symbioticInvocation(wrapper, symbiont, selector, getMethods(ofClass, selector, (symbiont==null)), atArgs);
 	}
 	
 	/**
+	 * Invoke a java method symbiotically.
 	 * The Java method invocation algorithm is as follows:
-	 * 
+	 * <pre>
 	 * case of # of methods matching selector:
 	 *   0 => XSelectorNotFound
 	 *   1 => invoke the method OR XIllegalArgument, XArityMismatch, XReflectionFailure
@@ -85,7 +93,7 @@ public final class Symbiosis {
 	 *                   0 => XSymbiosisFailure
 	 *                   1 => invoke OR XReflectionFailure
 	 *                   * => XSymbiosisFailure))
-	 * 
+	 * </pre>
 	 * A Java method takes a variable number of AT arguments <=> it has one formal parameter of type ATObject[]
 	 * 
 	 * @param wrapper the ATObject wrapper for the symbiont
@@ -542,12 +550,12 @@ public final class Symbiosis {
 		    Class jCls = jObj.getClass();
 		    // dynamic subtype test: is jCls a subclass of targetType?
 		    if (targetType.isAssignableFrom(jCls)) {
-		    		return jObj;
-		    } else {
-		    		throw new XTypeMismatch(targetType, atObj);
+		    	return jObj;
 		    }
-		// -- IMPLEMENTATION-LEVEL OBJECTS --
-	    } else if (targetType.isInstance(atObj)) {
+	    }
+        
+        // -- IMPLEMENTATION-LEVEL OBJECTS --
+        if (targetType.isInstance(atObj)) {
 			// target type is a subtype of ATObject, return the implementation-level object itself
 			return atObj;
 		// -- STRINGS --
@@ -562,7 +570,7 @@ public final class Symbiosis {
 			}
 			return jArray;
 		// -- EXCEPTIONS --
-		} else if (targetType == Exception.class) {
+		} else if (targetType.isAssignableFrom(Exception.class)) {
 			return Evaluator.asNativeException(atObj);
 		// -- CLASS OBJECTS --
 		} else if (targetType == Class.class) {
