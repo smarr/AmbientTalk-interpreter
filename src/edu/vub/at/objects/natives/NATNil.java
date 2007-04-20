@@ -73,16 +73,14 @@ import java.io.Serializable;
 
 /**
  * NATNil implements default semantics for all test and conversion methods.
-<<<<<<< .mine
  * It also implements the default metaobject protocol semantics for native
  * AmbientTalk objects.
-=======
+ * <p>
  * To allow for AmbientTalk language values to be unquoted into parsetrees,
  * nil is considered to be a valid ambienttalk expression. 
->>>>>>> .r530
  *
  * @author smostinc
- * @authro tvcutsem
+ * @author tvcutsem
  */
 public class NATNil implements ATExpression, ATNil, Serializable {
 	
