@@ -201,6 +201,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 	// helper class to get around the fact that Java has no true closures and hence
 	// does not allow access to mutable lexically scoped free variables
 	static private class QuitClosureFrame {
+		/** if true, the escape block has already been exited */
 		public boolean alreadyReturned = false;
 	}
 
@@ -210,10 +211,6 @@ public class NATClosure extends NATByRef implements ATClosure {
 
 	public ATMethod base_getMethod() {
 		return method_;
-	}
-
-	public boolean isClosure() {
-		return true;
 	}
 
 	public ATClosure asClosure() {

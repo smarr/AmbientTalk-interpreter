@@ -843,9 +843,6 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	// objects can only be 'cast' to a native category if they are marked with
 	// the appropriate native stripe
-	public boolean isBoolean() throws InterpreterException { return meta_isStripedWith(NativeStripes._BOOLEAN_).asNativeBoolean().javaValue; }
-	public boolean isClosure() throws InterpreterException { return meta_isStripedWith(NativeStripes._CLOSURE_).asNativeBoolean().javaValue; }
-	public boolean isMethod() throws InterpreterException { return meta_isStripedWith(NativeStripes._METHOD_).asNativeBoolean().javaValue; }
 	public boolean isSplice() throws InterpreterException { return meta_isStripedWith(NativeStripes._SPLICE_).asNativeBoolean().javaValue; }
 	public boolean isSymbol() throws InterpreterException { return meta_isStripedWith(NativeStripes._SYMBOL_).asNativeBoolean().javaValue; }
 	public boolean isTable() throws InterpreterException { return meta_isStripedWith(NativeStripes._TABLE_).asNativeBoolean().javaValue; }

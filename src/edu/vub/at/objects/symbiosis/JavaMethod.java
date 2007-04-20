@@ -114,10 +114,6 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 	public ATMethod asMethod() throws XTypeMismatch {
 		return this;
 	}
-
-	public boolean isMethod() {
-		return true;
-	}
 	
     public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
         return NATBoolean.atValue(this.equals(comparand));

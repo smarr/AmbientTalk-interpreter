@@ -73,16 +73,25 @@ import java.io.Serializable;
 
 /**
  * NATNil implements default semantics for all test and conversion methods.
+<<<<<<< .mine
+ * It also implements the default metaobject protocol semantics for native
+ * AmbientTalk objects.
+=======
  * To allow for AmbientTalk language values to be unquoted into parsetrees,
  * nil is considered to be a valid ambienttalk expression. 
+>>>>>>> .r530
  *
  * @author smostinc
+ * @authro tvcutsem
  */
 public class NATNil implements ATExpression, ATNil, Serializable {
 	
     protected NATNil() {};
 
-    /** nil is a unique singleton object */
+    /**
+     * This field holds the sole instance of this class. In AmbientTalk,
+     * this is the object that represents <tt>nil</tt>.
+     */
     public final static NATNil _INSTANCE_ = new NATNil();
 
     /* ------------------------------
@@ -315,15 +324,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
       * -- Value Conversion Protocol   --
       * --------------------------------- */
 
-    public boolean isClosure() throws InterpreterException {
-        return false;
-    }
-
     public boolean isSymbol() throws InterpreterException {
-        return false;
-    }
-
-    public boolean isBoolean() throws InterpreterException {
         return false;
     }
 
@@ -344,10 +345,6 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     }
     
     public boolean isSplice() throws InterpreterException {
-        return false;
-    }
-
-    public boolean isMethod() throws InterpreterException {
         return false;
     }
     

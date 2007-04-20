@@ -62,10 +62,6 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		javaValue = b;
 	}
 	
-	public boolean isBoolean() {
-		return true;
-	}
-	
 	public boolean isNativeBoolean() {
 		return true;
 	}

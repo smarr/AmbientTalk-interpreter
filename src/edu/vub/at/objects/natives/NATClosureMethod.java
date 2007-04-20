@@ -118,10 +118,6 @@ public final class NATClosureMethod extends NATByRef implements ATMethod {
 	public ATMethod asMethod() throws XTypeMismatch {
 		return this;
 	}
-
-	public boolean isMethod() {
-		return true;
-	}
 	
     public ATTable meta_getStripes() throws InterpreterException {
     	return NATTable.of(NativeStripes._METHOD_);

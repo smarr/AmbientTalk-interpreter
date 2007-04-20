@@ -105,10 +105,6 @@ public final class NativeMethod extends NATByRef implements ATMethod {
 	public ATMethod asMethod() throws XTypeMismatch {
 		return this;
 	}
-
-	public boolean isMethod() {
-		return true;
-	}
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<native method:"+name_+">");

@@ -71,17 +71,41 @@ import edu.vub.at.objects.symbiosis.JavaObject;
  */
 public interface ATConversions {
 
-	public boolean isClosure() throws InterpreterException;
+	/**
+	 * Used to distinguish between symbol, assignment, splice in formal param list.
+	 */
 	public boolean isSymbol() throws InterpreterException;
+	/**
+	 * Used to check in <tt>o.m()@exp</tt> if exp is a table or not.
+	 */
 	public boolean isTable() throws InterpreterException;
-	public boolean isBoolean() throws InterpreterException;
-	public boolean isCallFrame() throws InterpreterException;
+	/**
+	 * Used to recognize unquote-splice elements when quoting a table.
+	 */
 	public boolean isUnquoteSplice() throws InterpreterException;
+	/**
+	 * Used to distinguish between symbol, assignment, splice in formal param list
+	 */
 	public boolean isVariableAssignment() throws InterpreterException;
+	/**
+	 * Used to distinguish between symbol, assignment, splice in formal param list and
+	 * to recognize spliced elements during table evaluation.
+	 */
 	public boolean isSplice() throws InterpreterException;
-	public boolean isMethod() throws InterpreterException;
+	/**
+	 * Used in message send expressions to print, to check between <tt><+</tt> and
+	 * <tt>./^/<-</tt> operators.
+	 */
 	public boolean isMessageCreation() throws InterpreterException;
+	/**
+	 * Used to identify stripes for stripe comparison using <tt>==</tt>.
+	 */
 	public boolean isStripe() throws InterpreterException;
+	/**
+	 * Used when sending an asynchronous message, to determine whether to
+	 * invoke <tt>receive</tt> on the receiver object directly, or to pass
+	 * via the actor's queue first.
+	 */
 	public boolean isFarReference() throws InterpreterException;
 	
 	public ATClosure   asClosure() throws InterpreterException;
@@ -113,7 +137,8 @@ public interface ATConversions {
 	
 	public boolean isNativeBoolean();
 	public boolean isNativeText();
-	public boolean isAmbientTalkObject();
+	public boolean isAmbientTalkObject(); // distinguish native from non-native objects
+	public boolean isCallFrame() throws InterpreterException; // distinguish call frames from objects
 	public boolean isJavaObjectUnderSymbiosis();
 	public boolean isNativeField();
 	
