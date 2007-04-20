@@ -40,7 +40,6 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 	public void testSelection() {
 		try {
 			ATObject clo = evalAndReturn("mirrorOn1.select(mirrorOn1.base, `+)");
-			assertTrue(clo.isClosure());
 			ATClosure c = clo.asClosure();
 			ATMethod m = c.base_getMethod();
 			assertEquals(NativeMethod.class, m.getClass());
