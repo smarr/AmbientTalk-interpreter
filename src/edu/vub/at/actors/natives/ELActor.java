@@ -49,12 +49,17 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
+import edu.vub.at.objects.symbiosis.Symbiosis;
 import edu.vub.at.util.logging.Logging;
+
+import java.lang.reflect.Method;
+import java.util.EventListener;
 
 /**
  * An instance of the class ELActor represents a programmer-defined
@@ -346,15 +351,51 @@ public class ELActor extends EventLoop {
 	}
 	
 	/**
+	 * This method is invoked by a coercer in order to schedule a purely asynchronous symbiotic invocation
+	 * from the Java world.
+	 * 
+	 * This method schedules the call for asynchronous execution. Its return value and or raised exceptions
+	 * are ignored. This method should only be used for {@link Method} objects whose return type is <tt>void</tt>
+	 * and whose declaring class is a subtype of {@link EventListener}. It represents asynchronous method
+	 * invocations from the Java world to the AmbientTalk world.
+	 * 
+	 * @param principal the AmbientTalk object owned by this actor on which to invoke the method
+	 * @param meth the Java method that was symbiotically invoked on the principal
+	 * @param args the arguments to the Java method call, already converted into AmbientTalk values
+	 */
+	public void event_symbioticInvocation(final ATObject principal, final Method method, final ATObject[] args) {
+		receive(new Event("asyncSymbioticInv of "+method.getName()) {
+			public void process(Object actorMirror) {
+				try {
+					Reflection.downInvocation(principal, method, args);
+				} catch (InterpreterException e) {
+					Logging.Actor_LOG.error("asynchronous symbiotic invocation of "+method.getName()+" failed", e);
+				}
+			}
+		});
+	}
+	
+	/**
 	 * This method is invoked by a coercer in order to schedule a symbiotic invocation
 	 * from the Java world, which should be synchronous to the Java thread, but which
 	 * must be scheduled asynchronously to comply with the AT/2 actor model.
-	 * @param invocation a functor object that will perform the symbiotic invocation
+	 * 
+	 * This method makes the calling (Java) thread <b>block</b>, waiting until the actor
+	 * has processed the symbiotic invocation.
+	 * 
+	 * @param principal the AmbientTalk object owned by this actor on which to invoke the method
+	 * @param meth the Java method that was symbiotically invoked on the principal
+	 * @param args the arguments to the Java method call, already converted into AmbientTalk values
 	 * @return the result of the symbiotic invocation
 	 * @throws Exception if the symbiotic invocation fails
 	 */
-	public Object sync_event_symbioticInvocation(Callable invocation) throws Exception {
-		return receiveAndWait("symbioticInvocation", invocation);
+	public Object sync_event_symbioticInvocation(final ATObject principal, final Method meth, final ATObject[] args) throws Exception {
+		return receiveAndWait("syncSymbioticInv of " + meth.getName(), new Callable() {
+			public Object call(Object actorMirror) throws Exception {
+				ATObject result = Reflection.downInvocation(principal, meth, args);
+				return Symbiosis.ambientTalkToJava(result, meth.getReturnType());
+			}
+		});
 	}
 	
 	/**

@@ -43,6 +43,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.EventListener;
 
 /**
  * A coercer is a dynamic proxy which is used to 'cast' Ambienttalk base-level NATObjects to a certain ATxxx interface.
@@ -78,6 +79,13 @@ public final class Coercer implements InvocationHandler {
 		return "<coercer on: "+principal_+">";
 	}
 	
+	/**
+	 * Try to coerce the given AmbientTalk object into the given Java type.
+	 * @param object the AmbientTalk object to coerce
+	 * @param type the class object representing the target type
+	 * @return a Java object <tt>o</tt> for which it holds that <tt>type.isInstance(o)</tt>
+	 * @throws XTypeMismatch if the coercion fails
+	 */
 	public static final Object coerce(ATObject object, Class type) throws XTypeMismatch {
 		if (type.isInstance(object)) { // object instanceof type
 			return object; // no need to coerce
@@ -131,15 +139,18 @@ public final class Coercer implements InvocationHandler {
 					throw new XIllegalOperation("Detected illegal invocation: sharing via Java level of object " + principal_);
 				}
 				
-				// because a message send is asynchronous and Java threads work synchronously,
-				// we'll have to make the Java thread wait for the result
 				ELActor owningActor = (ELActor) EventLoop.toEventLoop(wrappingThread_);
-				return owningActor.sync_event_symbioticInvocation(new Callable() {
-					public Object call(Object actorMirror) throws Exception {
-						ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);
-						return Symbiosis.ambientTalkToJava(result, method.getReturnType());
-					}
-				});
+				
+				// if the invoked method is part of an EventListener interface, treat the
+				// invocation as a pure asynchronous message send, if the returntype is void
+				if (method.getReturnType() == Void.TYPE && EventListener.class.isAssignableFrom(methodImplementor)) {
+					owningActor.event_symbioticInvocation(principal_, method, symbioticArgs);
+					return null; // void return type
+				} else {
+					// because a message send is asynchronous and Java threads work synchronously,
+					// we'll have to make the Java thread wait for the result
+					return owningActor.sync_event_symbioticInvocation(principal_, method, symbioticArgs);
+				}
 			} else {
 				// perform a synchronous invocation
 				ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);

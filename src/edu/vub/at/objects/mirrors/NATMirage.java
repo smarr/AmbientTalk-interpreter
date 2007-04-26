@@ -58,10 +58,6 @@ import java.util.Vector;
  * the java-level) to its designated mirror object. To cut off infinite meta-regress
  * it also has magic_ variants of them which delegate to the default implementation.
  *
- * Mirages can currently only be created for 'objects', not for 'isolates'.
- * Allowing isolates to be mirrored would require the introduction of 'isolate mirrors', since an isolate
- * can only be copied if its mirror can be copied.
- *
  * @author smostinc
  */
 public class NATMirage extends NATObject {
