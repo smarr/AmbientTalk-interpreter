@@ -591,8 +591,7 @@ public final class Reflection {
 	
 	public static final ATObject upExceptionCreation(InterpreterException jRcvr, ATTable atInitargs) throws InterpreterException {
 		ATObject[] args = atInitargs.asNativeTable().elements_;
-		return new NATException((InterpreterException)
-				Symbiosis.symbioticInstanceCreation(jRcvr.getClass(), args));
+		return Symbiosis.symbioticInstanceCreation(jRcvr.getClass(), args);
 	}
 
 	/**
