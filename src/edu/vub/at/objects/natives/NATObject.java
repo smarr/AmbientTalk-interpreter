@@ -818,7 +818,6 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	public ATBoolean asBoolean() throws InterpreterException { return (ATBoolean) coerce(NativeStripes._BOOLEAN_, ATBoolean.class); }
 	public ATClosure asClosure() throws InterpreterException { return (ATClosure) coerce(NativeStripes._CLOSURE_, ATClosure.class); }
-	public ATExpression asExpression() throws InterpreterException { return (ATExpression) coerce(NativeStripes._EXPRESSION_, ATExpression.class); }
 	public ATField asField() throws InterpreterException { return (ATField) coerce(NativeStripes._FIELD_, ATField.class); }
 	public ATMessage asMessage() throws InterpreterException { return (ATMessage) coerce(NativeStripes._MESSAGE_, ATMessage.class); }
 	public ATMethod asMethod() throws InterpreterException { return (ATMethod) coerce(NativeStripes._METHOD_, ATMethod.class); }

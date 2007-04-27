@@ -570,7 +570,7 @@ public final class Symbiosis {
 			}
 			return jArray;
 		// -- EXCEPTIONS --
-		} else if (targetType.isAssignableFrom(Exception.class)) {
+		} else if (Exception.class.isAssignableFrom(targetType)) {
 			return Evaluator.asNativeException(atObj);
 		// -- CLASS OBJECTS --
 		} else if (targetType == Class.class) {
