@@ -31,20 +31,64 @@ import edu.vub.at.exceptions.InterpreterException;
 
 
 /**
- * The public interface to a native AmbientTalk fraction (a floating point value).
+ * ATFraction is the public interface to a native AmbientTalk fraction (a floating point value).
  * 
  * @author tvc
  */
 public interface ATFraction extends ATNumeric {
 
+
+	//arithmetic operations
+	/**
+	 * Returns the fraction plus 1.
+	 *
+	 * @return an ATFraction resulting of adding 1 to the receiver.
+	 */	
+	public ATFraction base_inc() throws InterpreterException;
+	
+	/**
+	 * Returns the fraction minus 1.
+	 *
+	 * @return an ATFraction resulting of subtracting 1 to the receiver.
+	 */	
+	public ATFraction base_dec() throws InterpreterException;
+	
+	/**
+	 * Returns the absolute value of a fraction.
+	 * <p>
+	 * More specifically: 
+	 * <ul>
+	 * <li>If the receiver >= 0, the receiver is returned. 
+	 * <li>If the receiver < 0, the negation of the receiver is returned. 
+	 * </ul>
+	 * 
+	 * @return the absolute value of the receiver.
+	 */	
+	public ATFraction base_abs() throws InterpreterException;
+	
 	// base-level interface
 	
-	public ATNumeric base_inc() throws InterpreterException;
-	public ATNumeric base_dec() throws InterpreterException;
-	public ATNumeric base_abs() throws InterpreterException;
-	
+	/**
+	 * Returns the closest number to the fraction.
+	 * <p>
+	 * More specifically, rounding a number is equivalent to <code> (fraction + 0.5).floor() </code>
+	 *
+	 * @return an ATNumber resulting of rounding the receiver to the closest number value.
+	 */	
 	public ATNumber base_round() throws InterpreterException;
+	
+	/**
+	 * Returns the closest number to positive infinity that is smaller than the fraction.
+	 *
+	 * @return the closest number to positive infinity that is smaller than the fraction.
+	 */	
 	public ATNumber base_floor() throws InterpreterException;
+	
+	/**
+	 * Returns the closest number to negative infinity that is greater than the fraction.
+	 *
+	 * @return the closest number to negative infinity that is greater than the fraction.
+	 */	
 	public ATNumber base_ceiling() throws InterpreterException;
 	
 }

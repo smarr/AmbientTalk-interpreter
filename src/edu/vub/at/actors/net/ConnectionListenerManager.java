@@ -30,8 +30,10 @@ package edu.vub.at.actors.net;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.id.VirtualMachineID;
 import edu.vub.at.actors.natives.ELFarReference;
+import edu.vub.at.util.logging.Logging;
 import edu.vub.util.MultiMap;
 
+import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -63,13 +65,12 @@ public class ConnectionListenerManager {
 	/**
 	 * Registers <code>listener</code> to be notified whenever a virtual machine becomes (un)reachable.
 	 * 
-	 * TODO: store only WEAK references to the remote references
-	 * 
 	 * @param virtualMachine - an address of the virtual machine hosting the object the listener is interested in
 	 * @param listener - a listener which will be notified whenever the said address connects or disconnects
 	 */
 	public synchronized void addConnectionListener(VirtualMachineID virtualMachine, ConnectionListener listener) {
-		connectionListeners_.put(virtualMachine, listener);
+		//connectionListeners_.put(virtualMachine, listener);
+		connectionListeners_.put(virtualMachine, new WeakReference(listener));
 	}
 	
 	/**
@@ -77,7 +78,25 @@ public class ConnectionListenerManager {
 	 * particular virtual machine becomes (un)reachable.
 	 */
 	public synchronized void removeConnectionListener(VirtualMachineID virtualMachine, ConnectionListener listener) {
-		connectionListeners_.removeValue(virtualMachine, listener);
+
+		Set listeners = (Set)connectionListeners_.get(virtualMachine);
+		if(listeners != null) {
+			for (Iterator i = listeners.iterator(); i.hasNext();) {
+				WeakReference pooled = (WeakReference) i.next();
+				if (pooled != null) {
+					ConnectionListener list = (ConnectionListener) pooled.get();
+					if( list != null){
+						if (list.equals(listener)) {
+							Logging.VirtualMachine_LOG.info("Removing ELFarReference from CLM " + this);
+							i.remove();
+						}
+					}else{
+						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.
+						i.remove();
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -88,8 +107,16 @@ public class ConnectionListenerManager {
 		Set listeners = (Set)connectionListeners_.get(vmId);
 		if (listeners != null) {
 			for (Iterator i = listeners.iterator(); i.hasNext();) {
-				ConnectionListener listener = (ConnectionListener) i.next();
-				listener.connected();
+				WeakReference pooled = (WeakReference) i.next();
+				if (pooled != null) {
+					ConnectionListener listener = (ConnectionListener) pooled.get();
+					if (listener != null){
+						listener.connected();
+					}else{
+						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.
+						i.remove();
+					}
+				}
 			}
 		}
 	}
@@ -102,28 +129,46 @@ public class ConnectionListenerManager {
 		Set listeners = (Set)connectionListeners_.get(vmId);
 		if (listeners != null) {
 			for (Iterator i = listeners.iterator(); i.hasNext();) {
-				ConnectionListener listener = (ConnectionListener) i.next();
-				listener.disconnected();
+				WeakReference pooled = (WeakReference) i.next();
+				if (pooled != null) {
+					ConnectionListener listener = (ConnectionListener) pooled.get();
+					if (listener != null){
+						listener.disconnected();
+					}else{
+						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.
+						i.remove();
+					}
+				}
 			}
 		}
 	}
 	
 	/**
 	 * Notify all connection listeners registered on the given remote object
-	 * TODO: should refactor this: add expired(ATObjectID) method to ConnectionListener interface?
 	 */
-	public synchronized void notifyObjectExpired(ATObjectID objId){
+	public synchronized void notifyObjectTakenOffline(ATObjectID objId){
 		//notify only the connectionlisteners for this objId
 		Set listeners = (Set)connectionListeners_.get(objId.getVirtualMachineId());
 		if (listeners != null) {
 			for (Iterator i = listeners.iterator(); i.hasNext();) {
-				ConnectionListener listener = (ConnectionListener) i.next();
-				if (listener instanceof ELFarReference) {
-					ATObjectID destination = ((ELFarReference)listener).getDestination();
-					if (destination.equals(objId)){
-						((ELFarReference)listener).expired();
+				WeakReference pooled = (WeakReference) i.next();
+				if (pooled != null) {
+					ConnectionListener listener = (ConnectionListener) pooled.get();
+					if (listener instanceof ELFarReference) {
+						ATObjectID destination = ((ELFarReference)listener).getDestination();
+						if (destination.equals(objId)){
+							listener.takenOffline();
+							//The entry on the table is removed so that the remote far reference is never 
+							//notified when the vmid hosting the offline object becomes (un)reachable.
+							//In fact, the reference doesn't care about the such notifications because 
+							//an offline object will never become online.
+							i.remove();
+						}
+					}else{
+						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.
+						i.remove();
 					}
-				}
+				}	
 			}
 		}
 	}

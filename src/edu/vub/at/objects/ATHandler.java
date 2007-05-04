@@ -30,34 +30,46 @@ package edu.vub.at.objects;
 import edu.vub.at.exceptions.InterpreterException;
 
 /**
- * Instances of the class ATHandler represent first-class exception handlers which 
- * have a filter object, describing the kind of exceptions caught by the handler and
- * a code block which acts as replacement code for the code that raised the exception.
+ * ATHandler represents a first-class exception handler which have a filter object, 
+ * describing the kind of exceptions caught by the handler and a code block which 
+ * acts as replacement code for the code that raised the exception.
  *
  * @author smostinc
  */
 public interface ATHandler extends ATObject {
 	
 	/**
-	 * Used to determine whether a handler will be triggered when an exception is raised.
-	 * Its primary use is to provide a hook to deviate from the default semantics, which is:
-	 * 
+	 * Returns whether a handler will be triggered when an exception is raised.
+	 * <p>
+	 * The primary use of this method is to provide a hook to deviate from the default semantics, which is:
+	 * <p>
+	 * <code>
 	 * def canHandle(anException) {
 	 *   (reflect: anException).isCloneOf(filter);
 	 * };
+	 * </code>
 	 * 
+	 * @param exception an exception.
+	 * @return true if the receiver handle will be triggered when the exception is raised.
 	 */
-	public ATBoolean base_canHandle(ATObject anException) throws InterpreterException;
+	public ATBoolean base_canHandle(ATObject exception) throws InterpreterException;
 	
 	/**
+	 * Evaluates the associated handler closure if the handler can handle the given exception.
+	 * <p>
 	 * When a handler has answered that it can handle an exception, the following
 	 * method is invoked, asking the handler to handle the exception.
 	 * The default semantics is simply to invoke the associated handler closure.
-	 * 
+	 * <p>
+	 * <code>
 	 * def handle(anException) {
 	 *   handler(anException)
 	 * };
+	 * </code>
+	 * 
+	 * @param exception an exception to be handled.
+	 * @return an {@link ATObject} representing the result of evaluating the associated handler closure.
 	 * 
 	 */
-	public ATObject base_handle(ATObject anException) throws InterpreterException;
+	public ATObject base_handle(ATObject exception) throws InterpreterException;
 }

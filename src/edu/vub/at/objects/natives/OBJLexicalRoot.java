@@ -588,8 +588,8 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a subscription object whose <tt>cancel</tt> method can be used to cancel future
 	 * notifications of the listener.
 	 */
-	public ATObject base_when_expired_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
-		farReference.asNativeFarReference().addExpiredListener(listener);
+	public ATObject base_when_takenOffline_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
+		farReference.asNativeFarReference().addTakenOfflineListener(listener);
 		return new NATFarReference.NATExpiredSubscription(farReference.asNativeFarReference(), listener);
 	}
 	

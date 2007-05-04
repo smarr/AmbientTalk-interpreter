@@ -31,9 +31,9 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * ATFields provide a mapping from an immutable name to a potentially mutable value.
- * 
- * Note that when field objects are added to an object, and that object is cloned,
+ * ATField provides a mapping from an immutable name to a potentially mutable value.
+ * <p>
+ * Note that when field objects are added to an {@link ATObject} and then that object is cloned,
  * the field object will be re-instantiated (i.e. its 'new' method is invoked).
  * This implies that any object implementing ATField should provide a meta_newInstance
  * method whose sole initarg is the new host for the field.
@@ -43,21 +43,26 @@ import edu.vub.at.objects.grammar.ATSymbol;
 public interface ATField extends ATObject {
 	
 	/**
-	 * @return a string by which the slot can be identified.
+	 * Returns a string by which the slot can be identified.
+	 * 
+	 * @return a {@link ATSymbol} representing the string by which the slot can be identified.
 	 */
 	public ATSymbol base_getName() throws InterpreterException;
 	
 	/**
-	 * @return the current value of the field.
-	 * @throws InterpreterException 
+	 * Returns the current value of the field.
+	 * 
+	 * @return an {@link ATObject} representing the current value of the field.
+	 * @throws XIllegalOperation if the field accessed is not found.
 	 */
 	public ATObject base_readField() throws InterpreterException;
 	
 	/**
-	 * Sets the value of the field if possible
-	 * @param newValue - the value the field should hold.
-	 * @return - the return value is ignored.
-	 * @throws InterpreterException - if the field cannot be modified.
+	 * Sets the value of the field if possible.
+	 * 
+	 * @param newValue the value the field should hold.
+	 * @return nil.
+	 * @throws InterpreterException if the field cannot be modified.
 	 */
 	public ATNil base_writeField(ATObject newValue) throws InterpreterException;
 

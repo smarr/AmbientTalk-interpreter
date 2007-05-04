@@ -31,11 +31,12 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * Instances of the class ATMessage represent first-class AmbientTalk asynchronous messages.
- * They may be created explicitly using the <tt><-m(args)</tt> syntax, or implicitly during an
+ * ATMessage represents a first-class AmbientTalk asynchronous message.
+ * <p>
+ * Asynchronous messages may be created explicitly using the <tt><-m(args)</tt> syntax, or implicitly during an
  * asynchronous message send of the form <tt>o<-m(args)</tt>.
  * 
- * This interface is not to be confused with the ATMessageCreation interface in the grammar subpackage.
+ * This interface has not to be confused with the {@link ATMessageCreation} interface in the grammar subpackage.
  * That interface represents an abstract grammar object representing the syntax tree of message creation.
  * This interface is the interface to the actual runtime message object.
  * 
@@ -44,20 +45,28 @@ import edu.vub.at.objects.grammar.ATSymbol;
 public interface ATMessage extends ATObject {
 	
 	/**
-	 * Messages always have a selector, a symbol denoting the field or method that 
-	 * needs to be sought for.
-	 * @return a symbol denoting the selector
+	 * Returns the selector of message.
+	 * <p>
+	 * Messages always have a selector, a symbol denoting the field or method that needs to be sought for.
+	 * 
+	 * @return an {@link ATSymbol} denoting the selector
 	 */
 	public ATSymbol base_getSelector() throws InterpreterException;
 	
 	/**
+	 * Returns the arguments passed to the invocation, if any.
+	 * <p>
 	 * Messages may optionally have a table of arguments.
-	 * @return the arguments passed to the invocation
+	 * 
+	 * @return an {@link ATTable} containing the arguments passed to the invocation.
+	 * 
 	 */
 	public ATTable base_getArguments() throws InterpreterException;
 	
 	/**
-	 * Assigns the arguments of a first class method. 
+	 * Assigns the arguments passed of a first class method. 
+	 * 
+	 * @param arguments a table containing the arguments to be assigned.
 	 * @return nil
 	 */
 	public ATNil base_setArguments(ATTable arguments) throws InterpreterException;
@@ -67,8 +76,8 @@ public interface ATMessage extends ATObject {
 	 * send will be performed (synchronous or asynchronous) depends on the kind of message.
 	 * 
 	 * @param receiver the object receiving the message denoted by this ATMessage.
-	 * @param sender the object sending the message.denoted by this ATMessage
-	 * @return the value of the method invocation or message send.
+	 * @param sender the object sending the message denoted by this ATMessage.
+	 * @return the {@link ATObject} representing the value of the method invocation or message send.
 	 * @throws InterpreterException if the method is not found or an error occurs while processing the method.
 	 */
 	public ATObject base_sendTo(ATObject receiver, ATObject sender) throws InterpreterException;

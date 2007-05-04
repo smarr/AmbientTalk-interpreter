@@ -47,6 +47,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeStripes;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATBoolean;
@@ -86,20 +87,25 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	// encodes the identity of the far object pointed at
 	private final ATObjectID objectId_;
 	
-	// the stripes with which the remote object is tagged
+	// the stripes with which the remote object is tagged + the FarReference stripe
 	private final ATStripe[] stripes_;
 
 	private transient Vector disconnectedListeners_; // lazy initialization
 	private transient Vector reconnectedListeners_; // lazy initialization
-	private transient Vector expiredListeners_; // lazy initialization
+	private transient Vector takenOfflineListeners_; // lazy initialization
     private transient boolean connected_;
     private final transient ELActor owner_;
 	
 	protected NATFarReference(ATObjectID objectId, ATStripe[] stripes, ELActor owner) {
+
+		int size = stripes.length;
+	    stripes_ = new ATStripe[size + 1];
+	    if (size>0) System.arraycopy(stripes, 0, stripes_, 0, size);
+	    stripes_[size] = NativeStripes._FARREF_;
+	    	
 		objectId_ = objectId;
-		stripes_ = stripes;
 		connected_ = true;
-		owner_ = owner;
+		owner_ = owner;	
 	}
 	
 	public ATObjectID getObjectId() {
@@ -147,16 +153,16 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		}
 	}
 	
-	public synchronized void addExpiredListener(ATObject listener) {
-		if (expiredListeners_ == null) {
-			expiredListeners_ = new Vector(1);
+	public synchronized void addTakenOfflineListener(ATObject listener) {
+		if (takenOfflineListeners_ == null) {
+			takenOfflineListeners_ = new Vector(1);
 		}
-		expiredListeners_.add(listener);
+		takenOfflineListeners_.add(listener);
 	}
 
-	public synchronized void removeExpiredListener(ATObject listener) {
-		if (expiredListeners_ != null) {
-			expiredListeners_.remove(listener);
+	public synchronized void removeTakenOfflineListener(ATObject listener) {
+		if (takenOfflineListeners_!= null) {
+			takenOfflineListeners_.remove(listener);
 		}
 	}
 	
@@ -181,13 +187,13 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	/**
 	 * Taking offline an object results in a "logical" disconnection of the far remote reference.
 	 * This means that the ref becomes expired but also disconnected.
-	 * Thus, all disconnectedlisteners and expiredlisteners are notified.
+	 * Thus, all disconnectedlisteners and takenOfflineListeners are notified.
 	 */
-	public synchronized void notifyExpired(){
+	public synchronized void notifyTakenOffline(){
 		connected_ = false;
-		if (expiredListeners_ != null) {
-			for (Iterator expiredIter = expiredListeners_.iterator(); expiredIter.hasNext();) {
-				triggerListener((ATObject) expiredIter.next(), "when:expired:");
+		if (takenOfflineListeners_ != null) {
+			for (Iterator expiredIter = takenOfflineListeners_.iterator(); expiredIter.hasNext();) {
+				triggerListener((ATObject) expiredIter.next(), "when:takenOffline:");
 			}
 		}
 		notifyDisconnected();
@@ -495,7 +501,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 					if(reference instanceof NATRemoteFarRef) {
 						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
 						ATObject handler = scope_.meta_select(scope_, _HANDLER_);
-						remote.removeExpiredListener(handler);
+						remote.removeTakenOfflineListener(handler);
 					}
 					return NATNil._INSTANCE_;
 				}

@@ -81,9 +81,11 @@ public final class NativeStripes {
 //defstripe ActorMirror;
 	public final static NATStripe _ACTORMIRROR_ = NATStripe.atValue("ActorMirror");
 	
-//defstripe Stripe;
-	public final static NATStripe _STRIPE_ = NATStripe.atValue("Stripe");
+//defstripe Stripe <: Isolate;;
+	public final static NATStripe _STRIPE_ = NATStripe.atValue("Stripe", _ISOLATE_);
 	
+//defstripe FarReference;
+	public final static NATStripe _FARREF_ = NATStripe.atValue("FarReference");	
 
 // abstract grammar
 //defstripe AbstractGrammar;

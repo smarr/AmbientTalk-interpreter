@@ -63,7 +63,7 @@ public abstract class EventLoop {
 	 */
 	protected Thread processor_;
 	
-	private boolean askedToStop_;
+	protected volatile boolean askedToStop_;
 	
 	private final String name_;
 	
@@ -124,6 +124,9 @@ public abstract class EventLoop {
 	 */
 	public final void stopProcessing() {
 		askedToStop_ = true;
+		// explicitly interrupt my event processor because it
+		// may be blocked waiting on other events
+		processor_.interrupt();
 	}
 	
 	/**
@@ -218,7 +221,6 @@ public abstract class EventLoop {
 			// If interrupted, we may be asked to stop
 		}
 	}
-	
 	
 	/**
 	 * EventProcessor is a thread subclass whose primary goal is to keep a reference to the 

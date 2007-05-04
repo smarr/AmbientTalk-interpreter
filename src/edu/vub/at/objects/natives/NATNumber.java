@@ -184,21 +184,21 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	/**
 	 * NBR(n).inc() => NBR(n+1)
 	 */
-	public ATNumeric base_inc() {
+	public ATNumber base_inc() {
 		return NATNumber.atValue(javaValue+1);
 	}
 	
 	/**
 	 * NBR(n).dec() => NBR(n-1)
 	 */
-	public ATNumeric base_dec() {
+	public ATNumber base_dec() {
 		return NATNumber.atValue(javaValue-1);
 	}
 	
 	/**
 	 * NBR(n).abs() => NBR(abs(n))
 	 */
-	public ATNumeric base_abs() {
+	public ATNumber base_abs() {
 		return NATNumber.atValue(Math.abs(javaValue));
 	}
 	

@@ -131,14 +131,18 @@ public class DistributionTest extends TestCase {
 		// determines it was successful
 		setTestResult(false);
 		
-		virtual1_.connectionManager_.addConnectionListener(
-				virtual2_.getGUID(),
-				new ConnectionListener() {
-					public void connected() {
-						setTestResult(true);
-					}
-					public void disconnected() { }
-				});
+		ConnectionListener aConnectionListener = new ConnectionListener() {
+			public void connected() {
+				setTestResult(true);
+			}
+			public void disconnected() { }
+			public void takenOffline() { }
+		};
+		
+		//Since ConnectionListenerManager keeps a map of WeakReferences, aDummyRef is created to prevent aConnectionListener from gc.
+		ConnectionListener aDummyRef = aConnectionListener;
+		
+		virtual1_.connectionManager_.addConnectionListener( virtual2_.getGUID(), aConnectionListener);
 		
 		virtual1_.event_goOnline();
 		virtual2_.event_goOnline();
@@ -162,15 +166,18 @@ public class DistributionTest extends TestCase {
 	public synchronized void testVirtualMachineDisconnection() {
 		
 		setTestResult(false);
+		ConnectionListener aConnectionListener = new ConnectionListener() {
+			public void connected() { }
+			public void disconnected() { 
+				setTestResult(true);
+			}
+			public void takenOffline() { }
+		};
 		
-		virtual2_.connectionManager_.addConnectionListener(
-				virtual1_.getGUID(),
-				new ConnectionListener() {
-					public void connected() { }
-					public void disconnected() { 
-						setTestResult(true);
-					}
-				});
+		//Since ConnectionListenerManager keeps a map of WeakReferences, aDummyRef is created to prevent aConnectionListener from gc.
+		ConnectionListener aDummyRef = aConnectionListener;
+		
+		virtual2_.connectionManager_.addConnectionListener( virtual1_.getGUID(), aConnectionListener);
 		
 		virtual1_.event_goOnline();
 		virtual2_.event_goOnline();
@@ -202,8 +209,21 @@ public class DistributionTest extends TestCase {
 		// are triggered, the test should succeed, unless exceptions were raised.
 		setTestResult(true);
 		
-		virtual2_.connectionManager_.addConnectionListener(
-				virtual1_.getGUID(),
+		ConnectionListener aConnectionListener = new ConnectionListener() {
+			public void connected() { 
+				setTestResult(false);
+			}
+			public void disconnected() { 
+				setTestResult(true);
+			}
+			public void takenOffline() { }
+		};
+		
+		//Since membershipNotifier is a map of WeakReferences, aDummyRef is created to prevent aConnectionListener from gc.
+		ConnectionListener aDummyRef = aConnectionListener;
+		
+		virtual2_.connectionManager_.addConnectionListener( virtual1_.getGUID(), aConnectionListener);
+				/*virtual1_.getGUID(),
 				new ConnectionListener() {
 					public void connected() { 
 						setTestResult(false);
@@ -211,7 +231,8 @@ public class DistributionTest extends TestCase {
 					public void disconnected() { 
 						setTestResult(true);
 					}
-				});
+					public void takenOffline() { }
+				});*/
 		
 		virtual1_.event_goOnline();
 		virtual2_.event_goOnline();

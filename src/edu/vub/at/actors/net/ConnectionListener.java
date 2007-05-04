@@ -31,8 +31,8 @@ package edu.vub.at.actors.net;
  * 
  * A ConnectionListener is registered with a MembershipNotifier instance and listens for
  * changes in the connection state with a particular remote virtual machine. Whenever the
- * observed remote machine connects or disconnects, the listener is notified using the
- * corresponding method.
+ * observed remote machine connects or disconnects, or one of its remote objects is taken offline, 
+ * the listener is notified using the corresponding method.
  *
  * @author smostinc
  * @author tvcutsem
@@ -42,4 +42,6 @@ public interface ConnectionListener {
 	public void connected();
 	
 	public void disconnected();
+	
+	public void takenOffline();
 }

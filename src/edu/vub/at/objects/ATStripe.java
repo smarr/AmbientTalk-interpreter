@@ -32,15 +32,17 @@ import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
  * The public interface to a native stripe object.
- *
+ * <p>
  * Stripes consist of two properties:
- *  - they have a unique name by which they can be identified across the network
- *    In other words: the identity of a stripe is its name
- *  - they have a list of parent stripes: a stripe is then a 'substripe' of these parents
- *
+ * <ul>
+ * <li>they have a unique name by which they can be identified across the network.
+ *    In other words, the identity of a stripe is its name.
+ * <li>they have a list of parent stripes: a stripe is then a 'substripe' of these parents.
+ * </ul>
+ * <p>
  * Stripes have one important operation: one stripe can be tested to be a substripe of
  * another stripe.
- * 
+ *  <p>
  * Stripes are very similar to empty Java-like interface types, and their main purpose
  * lies in the *classification* of objects. AmbientTalk Objects can be striped with zero
  * or more stripes.
@@ -49,10 +51,35 @@ import edu.vub.at.objects.grammar.ATSymbol;
  */
 public interface ATStripe extends ATObject {
 
+	/**
+	 * Returns the name of this stripe.
+	 * 
+	 * @return an {@link ATSymbol} representing the unique name by which the stripe can be identified.
+	 */
 	public ATSymbol base_getStripeName() throws InterpreterException;
 	
+	/**
+	 * Returns a table with the stripes of the parent of this stripe.
+	 * 
+	 * @return an {@link ATTable} with the stripes of the parent of the receiver stripe.
+	 */
 	public ATTable base_getParentStripes() throws InterpreterException;
 	
+	/**
+	 * Returns true if this stripe is a substripe of a given stripe.
+	 * <p>
+	 * More specifically, what the native implementation (expressed in AmbientTalk syntax) does is:
+	 * <p>	 
+	 *	<code>
+	 *  def isSubstripeOf(superstripe) {
+	 *		  (superstripe.name() == name).or:
+	 *			  { (superstripes.find: { |sstripe| sstripe.isSubstripeOf(superstripe) }) != nil }
+	 *	};
+	 *  </code>
+	 *  
+	 * @param other a stripe.
+	 * @return true if the receiver stripe is a substripe of the other stripe.
+	 */
 	public ATBoolean base_isSubstripeOf(ATStripe other) throws InterpreterException;
 	
 }

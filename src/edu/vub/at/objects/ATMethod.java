@@ -32,11 +32,11 @@ import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * ATMethods are ambienttalk's representation of methods as named functions. These
+ * ATMethods are the AmbientTalk's representation of methods as named functions. These
  * functions do not close over an environment allowing for them to be shared between 
- * different clones. The environment is to be supplied during lookup (which wraps 
- * ATMethods into ATClosures). As a consequence it is not possible to
- * get hold of an ATMethod at the base-level (since lookup implies wrapping)
+ * different clones. The environment is to be supplied during lookup (which wraps an 
+ * ATMethod into {@link ATClosure}). As a consequence, it is not possible to
+ * get hold of an ATMethod at the base-level (since lookup implies wrapping).
  * 
  * TODO: turn base_getxxx into meta_getxxx?
  * 
@@ -48,46 +48,52 @@ public interface ATMethod extends ATObject {
 	/**
 	 * Applies the method to the given arguments in the given context.
 	 * The context is usually supplied by a closure and is necessary in order to
-	 * pair a method with its current receiver (its 'self')
-	 * 
+	 * pair a method with its current receiver (its 'self').
+	 * <p>
 	 * The method itself is responsible for creating the appropriate 'call frame'
 	 * or activation record in which to define temporary variables and parameter bindings.
 	 * 
-	 * @param arguments the actual arguments, already eagerly evaluated
-	 * @param ctx the context in which to evaluate the method body, call frame not yet inserted
-	 * @return the value of evaluating the method body in a context derived from the given context
+	 * @param arguments the actual arguments, already eagerly evaluated.
+	 * @param ctx the context in which to evaluate the method body, call frame not yet inserted.
+	 * @return the value of evaluating the method body in a context derived from the given context.
 	 */
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException;
 	
 	/**
 	 * Applies the method to the given arguments in the given context.
 	 * The context is usually supplied by a closure and is necessary in order to
-	 * pair a method with its current receiver (its 'self')
-	 * 
+	 * pair a method with its current receiver (its 'self').
+	 * <p>
 	 * The method will use the given context 'as-is', and will *not* insert an additional call frame.
 	 * 
-	 * @param arguments the actual arguments, already eagerly evaluated
-	 * @param ctx the context in which to evaluate the method body, to be used without inserting a call frame
-	 * @return the value of evaluating the method body in the given context
+	 * @param arguments the actual arguments, already eagerly evaluated.
+	 * @param ctx the context in which to evaluate the method body, to be used without inserting a call frame.
+	 * @return the value of evaluating the method body in the given context.
 	 */
 	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException;
 	
 	/**
-	 * Structural access to the name of the method. Note that all methods (defined
-	 * using def name( ...args... ) { ... } of def foo: arg bar: arg { ... }) retain
-	 * the name with which they were first bound. Literal blocks which may be created
+	 * Returns the name of the method. 
+	 * <p>
+	 * Note that all methods (defined using <code>def name( ...args... ) { ... }</code> or <code>def foo: arg bar: arg { ... }</code>) 
+	 * retain the name with which they were first bound. Literal blocks which may be created
 	 * outside of a definition are implicitly named 'lambda'.
+	 * 
+	 * @return an {@link ATSymbol} representing the name by which the method can be identified.
 	 */
 	public ATSymbol base_getName() throws InterpreterException;
 	
 	/**
-	 * Structural access to the parameter list of the method,
-	 * which is normally a table of symbols.
+	 * Returns the parameter list of the method which is normally a table of symbols.
+	 * 
+	 * @return an {@link ATTable} representing the parameter list of the method.
 	 */
 	public ATTable base_getParameters() throws InterpreterException;
 	
 	/**
-	 * Structural access to the body of the method.
+	 * Returns the body of the method.
+	 * 
+	 * @return an {@link ATBegin} representing the body of the method.
 	 */
 	public ATBegin base_getBodyExpression() throws InterpreterException;
 }

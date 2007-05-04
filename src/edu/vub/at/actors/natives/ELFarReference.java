@@ -45,6 +45,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.util.logging.Logging;
 
+import java.lang.ref.WeakReference;
 import java.util.Vector;
 
 /**
@@ -88,9 +89,11 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	 * transmission events into this event loop's event queue
 	 */
 	private final ELActor owner_;
-	
+
 	/** the first-class AT language value wrapping this event loop */
 	private final NATRemoteFarRef farRef_;
+    //TODO MAKE HIS farRef weak. But then, we have a garbage cycle TO THINK ABOUT!!
+	//private final WeakReference farRef_;
 	
 	/** the <i>wire representation</i> of the remote receiver of my messages */
 	private final ATObjectID destination_;
@@ -111,6 +114,7 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		super("far reference " + destination);
 		
 		farRef_ = ref;
+	//	farRef_ = new WeakReference(ref);
 		destination_ = destination;
 		owner_ = owner;
 		
@@ -163,7 +167,11 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 			while (!connected_ && outboxFuture_ == null) {
 				try {
 					this.wait();
-				} catch (InterruptedException e) { }
+				} catch (InterruptedException e) {
+					if (askedToStop_) {
+						return; // fall through and make the thread die
+					}
+				}
 			}
 			
 			if(outboxFuture_ != null) {
@@ -305,10 +313,10 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		}
 	}
 	
-	public synchronized void expired(){
-		Logging.RemoteRef_LOG.info(this + ": " + destination_ + " expired");
+	public synchronized void takenOffline(){
+		Logging.RemoteRef_LOG.info( this + ": remote object taken offline");
 		connected_ = false;
-		farRef_.notifyExpired();
+		farRef_.notifyTakenOffline();
 	}
 	
 	/**
@@ -339,15 +347,22 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 			while (eventQueue_.isEmpty() && outboxFuture_ == null) {
 				try {
 					this.wait();
-				} catch (InterruptedException e) { }
+				} catch (InterruptedException e) {
+					if (askedToStop_) {
+						return; // fall through and make the thread die
+					}
+				}
 			}
 
 			if (outboxFuture_ != null) {
 				handleRetractRequest();
-			} else { // if(! eventQueue_.isEmpty()) {
+			} else { // if(!eventQueue_.isEmpty()) {
 				try {
 					handle(eventQueue_.dequeue());
-				} catch (InterruptedException e) { }
+				} catch (InterruptedException e) {
+					// fall through, perhaps the thread was notified
+					// that it had to stop
+				}
 			}
 		}
 	}
@@ -371,4 +386,8 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		return outboxFuture_;
 	}
 
+	protected void finalize() throws Throwable{
+		Logging.RemoteRef_LOG.info(this + ": ELFARREF STOPPED!!");
+		
+	}
 }

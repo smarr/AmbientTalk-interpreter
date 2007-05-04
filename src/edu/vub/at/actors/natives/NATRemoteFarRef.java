@@ -34,13 +34,12 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.util.logging.Logging;
 
 /**
  * Instances of NATRemoteFarRef represent far references to physically remote actors.
  * By 'physically remote', we mean in a separate address space.
  * 
- * TODO: implement finalizer and stop ELFarRef upon finalization
- *
  * @author tvcutsem
  */
 public class NATRemoteFarRef extends NATFarReference {
@@ -64,5 +63,8 @@ public class NATRemoteFarRef extends NATFarReference {
 	
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {
 		return sendLoop_.retractUnsentMessages();
+	}
+	protected void finalize() throws Throwable{
+		sendLoop_.stopProcessing();
 	}
 }

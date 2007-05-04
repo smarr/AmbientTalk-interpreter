@@ -36,6 +36,6 @@ public class CMDObjectTakenOffline extends VMCommand{
 	}
 	
 	public void uponReceiptBy(ELVirtualMachine remoteHost, Address senderAddress) {
-		remoteHost.connectionManager_.notifyObjectExpired(senderObjectId_);
+		remoteHost.connectionManager_.notifyObjectTakenOffline(senderObjectId_);
 	}
 }

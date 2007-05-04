@@ -40,12 +40,16 @@ import edu.vub.at.exceptions.InterpreterException;
 public interface ATContext extends ATObject {
 	
 	/**
-	 * Structural access to the lexical environment of the current context.
+	 * Returns the lexical environment of the current context.
+	 * 
+	 * @return an {@link ATObject} representing the lexical environment of the current context.
 	 */
 	public ATObject base_getLexicalScope() throws InterpreterException;
 	
 	/**
-	 * Structural access to the receiver (self pseudovariable) in the current context.
+	 * Returns the receiver (self pseudovariable) in the current context.
+	 * 
+	 * @return an {@link ATObject} representing the receiver in the current context.
 	 */
 	public ATObject base_getSelf() throws InterpreterException;
 	
@@ -53,8 +57,20 @@ public interface ATContext extends ATObject {
 	 * Factory methods for creating new context objects as a delta w.r.t. the receiver context object.
 	 */
 	
+	/**
+	 * Returns a new context object for a given scope.
+	 * 
+	 * @param scope a scope.
+	 * @return a new context for the given scope.
+	 */
 	public ATContext base_withLexicalEnvironment(ATObject scope) throws InterpreterException;
 	
+	/**
+	 * Returns a new context object for the given dynamic receiver.
+	 * 
+	 * @param self representing the receiver (self pseudovariable).
+	 * @return a new context for the given dynamic receiver.
+	 */
 	public ATContext base_withDynamicReceiver(ATObject self) throws InterpreterException;
 
 }

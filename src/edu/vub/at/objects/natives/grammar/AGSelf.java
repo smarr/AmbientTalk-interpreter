@@ -60,4 +60,11 @@ public final class AGSelf extends AGSymbol {
 		return this;
 	}
 	
+	/**
+	 * After deserialization, ensure that the self pseudovariable remains unique.
+	 */
+	public ATObject meta_resolve() throws InterpreterException {
+		return _INSTANCE_;
+	}
+	
 }

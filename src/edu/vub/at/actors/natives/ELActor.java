@@ -330,7 +330,7 @@ public class ELActor extends EventLoop {
 				ATAsyncMessage msg = serializedMessage.unpack().asAsyncMessage();
 				performAccept(msg);
 			  } catch (XObjectOffline e) {
-				  ref.notifyExpired();
+				  ref.notifyTakenOffline();
 				  Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
 			  } catch (InterpreterException e) {
 				  Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
