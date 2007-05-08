@@ -131,6 +131,10 @@ public final class NativeStripes {
 //defstripe Definition <: Statement;
 	public final static NATStripe _DEFINITION_ = NATStripe.atValue("Definition", _STATEMENT_);
 	
+//	defstripe MethodDefinition <: Definition;
+	public final static NATStripe _METHOD_DEFINITION_ = NATStripe.atValue("MethodDefinition", _DEFINITION_);
+
+	
 //
 //// exception types
 //defstripe Exception;
