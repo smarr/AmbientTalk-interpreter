@@ -28,7 +28,6 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.natives.NATObject;
 
 /**
  * The ATBoolean represents the public interface of a boolean object.

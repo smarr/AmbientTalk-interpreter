@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.coercion;
 
-import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.eventloops.EventLoop.EventProcessor;
 import edu.vub.at.actors.natives.ELActor;

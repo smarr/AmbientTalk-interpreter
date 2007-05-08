@@ -255,6 +255,7 @@ public class TestEval extends AmbientTalkTest {
 	public void testQuotation() throws InterpreterException {
 		evalAndCompareTo("`3", atThree_);
 		evalAndCompareTo("`x", atX_);
+		evalAndCompareTo("`(o.x)", "o.x");
 		evalAndCompareTo("`{def x := 3}", "def x := 3");
 		evalAndCompareTo("`{def x := `3}", "def x := `(3)");
 		evalAndCompareTo("`{def x := #3}", "def x := 3");
