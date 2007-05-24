@@ -54,6 +54,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.EventListener;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -582,6 +583,18 @@ public final class Symbiosis {
 		} else {
 			return Coercer.coerce(atObj, targetType);	
 		}
+	}
+	
+	/**
+	 * Returns whether the symbiosis layer should process the given method purely
+	 * asynchronously or not.
+	 * 
+	 * @return whether the specified Java method denotes an event notification
+	 */
+	public static boolean isEvent(Method method) {
+		return EventListener.class.isAssignableFrom(method.getDeclaringClass()) // is an EventListener
+		    && (method.getReturnType() == Void.TYPE) // does not return a value
+		    && (method.getExceptionTypes().length == 0); // throws no exceptions
 	}
 	
 	private static ATObject invokeUniqueSymbioticMethod(Object symbiont, Method javaMethod, Object[] jArgs) throws InterpreterException {

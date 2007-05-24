@@ -42,7 +42,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.EventListener;
 
 /**
  * A coercer is a dynamic proxy which is used to 'cast' Ambienttalk base-level NATObjects to a certain ATxxx interface.
@@ -142,7 +141,7 @@ public final class Coercer implements InvocationHandler {
 				
 				// if the invoked method is part of an EventListener interface, treat the
 				// invocation as a pure asynchronous message send, if the returntype is void
-				if (method.getReturnType() == Void.TYPE && EventListener.class.isAssignableFrom(methodImplementor)) {
+				if (Symbiosis.isEvent(method)) {
 					owningActor.event_symbioticInvocation(principal_, method, symbioticArgs);
 					return null; // void return type
 				} else {
