@@ -53,7 +53,9 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	private final ATTable argumentExps_;
 	private final ATBegin bodyStmts_;
 	
-	public AGDefFunction(ATSymbol sel, ATTable args, ATBegin bdy) {
+	private NATMethod preprocessedMethod_;
+	
+	public AGDefFunction(ATSymbol sel, ATTable args, ATBegin bdy) throws InterpreterException {
 		selectorExp_ = sel;
 		argumentExps_ = args;
 		bodyStmts_ = bdy;
@@ -88,13 +90,21 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 * 
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
+		// the method is not yet created in the constructor because this gives problems
+		// with quoted parameters: a quoted parameter would result in an illegal parameter
+		// exception while actually the function was defined in the context of a quotation,
+		// so at runtime the function definition would have never been evaluated (but quoted instead)
+		if (preprocessedMethod_ == null) {
+			preprocessedMethod_ = new NATMethod(selectorExp_, argumentExps_, bodyStmts_);
+		}
+		
 		ATObject current = ctx.base_getLexicalScope();
 		if (current.isCallFrame()) {
-			NATClosure clo = new NATClosure(new NATMethod(selectorExp_, argumentExps_, bodyStmts_), ctx);
+			NATClosure clo = new NATClosure(preprocessedMethod_, ctx);
 			current.meta_defineField(selectorExp_, clo);
 			return clo;
 		} else {
-			current.meta_addMethod(new NATMethod(selectorExp_, argumentExps_, bodyStmts_));
+			current.meta_addMethod(preprocessedMethod_);
 			return current.meta_select(current, selectorExp_);
 		}
 	}
@@ -106,8 +116,8 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGDefFunction(selectorExp_.meta_quote(ctx).asSymbol(),
-				              argumentExps_.meta_quote(ctx).asTable(),
-				              bodyStmts_.meta_quote(ctx).asBegin());
+				                 argumentExps_.meta_quote(ctx).asTable(),
+				                 bodyStmts_.meta_quote(ctx).asBegin());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

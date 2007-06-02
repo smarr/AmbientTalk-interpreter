@@ -53,7 +53,10 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 	private final ATTable argumentExps_;
 	private final ATBegin bodyStmts_;
 	
-	public AGDefExternalMethod(ATSymbol rcv, ATSymbol sel, ATTable args, ATBegin bdy) {
+	private NATMethod preprocessedMethod_;
+	
+	public AGDefExternalMethod(ATSymbol rcv, ATSymbol sel, ATTable args, ATBegin bdy)
+	       throws InterpreterException {
 		rcvNam_ = rcv;
 		selectorExp_ = sel;
 		argumentExps_ = args;
@@ -89,13 +92,21 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 	 * type (whose method dictionaries are sealed) or if the receiver is an isolate. 
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
+		// the method is not yet created in the constructor because this gives problems
+		// with quoted parameters: a quoted parameter would result in an illegal parameter
+		// exception while actually the external method was defined in the context of a quotation,
+		// so at runtime the external definition would have never been evaluated (but quoted instead)
+		if (preprocessedMethod_ == null) {
+			preprocessedMethod_ = new NATMethod(selectorExp_, argumentExps_, bodyStmts_);
+		}
+		
 		ATObject receiver = rcvNam_.meta_eval(ctx);
 		if (receiver.meta_isStripedWith(NativeStripes._ISOLATE_).asNativeBoolean().javaValue) {
 			throw new XIllegalOperation("Cannot define external methods on isolates");
 			
 		} else {
 			NATClosureMethod extMethod = new NATClosureMethod(ctx.base_getLexicalScope(),
-                    new NATMethod(selectorExp_, argumentExps_, bodyStmts_));
+                    preprocessedMethod_);
 
 			receiver.meta_addMethod(extMethod);
 			return extMethod;

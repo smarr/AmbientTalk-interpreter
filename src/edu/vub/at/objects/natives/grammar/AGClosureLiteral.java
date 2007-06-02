@@ -49,7 +49,9 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 	protected final ATTable arguments_;
 	protected final ATBegin body_;
 	
-	public AGClosureLiteral(ATTable args, ATBegin body) {
+	private NATMethod preprocessedMethod_;
+	
+	public AGClosureLiteral(ATTable args, ATBegin body) throws InterpreterException {
 		arguments_ = args;
 		body_ = body;
 	}
@@ -67,7 +69,14 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 	 * @return a native closure closing over the current evaluation context.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return new NATClosure(new NATMethod(Evaluator._LAMBDA_, arguments_, body_), ctx);
+		// the method is not yet created in the constructor because this gives problems
+		// with quoted parameters: a quoted parameter would result in an illegal parameter
+		// exception while actually the block was defined in the context of a quotation,
+		// so at runtime the block would have never been evaluated (but quoted instead)
+		if (preprocessedMethod_ == null) {
+			preprocessedMethod_ = new NATMethod(Evaluator._LAMBDA_, arguments_, body_);
+		}
+		return new NATClosure(preprocessedMethod_, ctx);
 	}
 
 	/**
