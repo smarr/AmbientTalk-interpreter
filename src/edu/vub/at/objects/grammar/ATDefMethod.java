@@ -32,9 +32,9 @@ import edu.vub.at.objects.ATTable;
 /**
  * The public interface to a method definition AG element.
  * 
- * Example: <code>def m(a, b) { a + b }
+ * Example: <code>def m(a, b) { a + b }</code>
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public interface ATDefMethod extends ATDefinition {
 
@@ -46,7 +46,7 @@ public interface ATDefMethod extends ATDefinition {
 	public ATSymbol base_getSelector();
 	
 	/**
-	 * A method may have zero, one or more fromal arguments.
+	 * A method may have zero, one or more formal arguments.
 	 * Slicing is allowed in the argument list.
 	 * Example: <code>`{ def m(a, @b) { b } }.statements[1].arguments == `[a, @b]</code>
 	 * @return the formal argument list

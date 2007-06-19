@@ -630,7 +630,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>object: { def x := 1; }</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: nil extends: false typedWith: [] mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: nil extends: false taggedAs: [] mirroredBy: defaultMirror</pre>
 	 * 
 	 * The closure used to initialize the object may contain formal parameters. The closure
 	 * will always be invoked with <i>its own mandatory formal parameters</i>. E.g., a closure
@@ -673,7 +673,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>extend: parent with: { def x := 1; }</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: true typedWith: [] mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: parent extends: true taggedAs: [] mirroredBy: defaultMirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent
@@ -691,7 +691,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
     /**
-     * The <tt>extend:with:typedWith:</tt> object creation primitive.
+     * The <tt>extend:with:taggedAs:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
@@ -703,10 +703,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  with a 'native' metaobject protocol).
 	 * </ul>
 	 * 
-	 * Example: <code>extend: parent with: { def x := 1; } typedWith: [foo,bar]</code>
+	 * Example: <code>extend: parent with: { def x := 1; } taggedAs: [foo,bar]</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: true typedWith: types mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: parent extends: true taggedAs: types mirroredBy: defaultMirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
@@ -740,7 +740,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>extend: parent with: { def x := 1; } mirroredBy: (mirror: {...})</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: true typedWith: [] mirroredBy: mirror</pre>
+	 * <pre>object: code childOf: parent extends: true taggedAs: [] mirroredBy: mirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
@@ -759,7 +759,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
     /**
-     * The <tt>extend:with:typedWith:mirroredBy:</tt> object creation primitive.
+     * The <tt>extend:with:taggedAs:mirroredBy:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
@@ -771,10 +771,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  created object is a <i>mirage</i> whose metaobject protocol is dictated by the given mirror.
 	 * </ul>
 	 * 
-	 * Example: <code>extend: parent with: { def x := 1; } typedWith: [foo,bar] mirroredBy: mirror</code>
+	 * Example: <code>extend: parent with: { def x := 1; } taggedAs: [foo,bar] mirroredBy: mirror</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: true typedWith: types mirroredBy: mirror</pre>
+	 * <pre>object: code childOf: parent extends: true taggedAs: types mirroredBy: mirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
@@ -809,7 +809,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>share: parent with: { def x := 1; }</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: false typedWith: [] mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: parent extends: false taggedAs: [] mirroredBy: defaultMirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent
@@ -827,7 +827,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 
     /**
-     * The <tt>share:with:typedWith:</tt> object creation primitive.
+     * The <tt>share:with:taggedAs:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
@@ -839,10 +839,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  with a 'native' metaobject protocol).
 	 * </ul>
 	 * 
-	 * Example: <code>share: parent with: { def x := 1; } typedWith: [foo,bar]</code>
+	 * Example: <code>share: parent with: { def x := 1; } taggedAs: [foo,bar]</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: false typedWith: types mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: parent extends: false taggedAs: types mirroredBy: defaultMirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
@@ -876,7 +876,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>share: parent with: { def x := 1; } mirroredBy: (mirror: {...})</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: false typedWith: [] mirroredBy: mirror</pre>
+	 * <pre>object: code childOf: parent extends: false taggedAs: [] mirroredBy: mirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
@@ -895,7 +895,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
     /**
-     * The <tt>share:with:typedWith:mirroredBy:</tt> object creation primitive.
+     * The <tt>share:with:taggedAs:mirroredBy:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
@@ -907,10 +907,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  created object is a <i>mirage</i> whose metaobject protocol is dictated by the given mirror.
 	 * </ul>
 	 * 
-	 * Example: <code>share: parent with: { def x := 1; } typedWith: [foo,bar] mirroredBy: mirror</code>
+	 * Example: <code>share: parent with: { def x := 1; } taggedAs: [foo,bar] mirroredBy: mirror</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: false typedWith: types mirroredBy: mirror</pre>
+	 * <pre>object: code childOf: parent extends: false taggedAs: types mirroredBy: mirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
@@ -930,7 +930,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
     /**
-     * The <tt>object:typedWith:</tt> object creation primitive.
+     * The <tt>object:taggedAs:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
@@ -942,13 +942,13 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  default metaobject protocol).
 	 * </ul>
 	 * 
-	 * Example: <code>object: { def x := 1; } typedWith: [foo,bar]</code>
+	 * Example: <code>object: { def x := 1; } taggedAs: [foo,bar]</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: nil extends: false typedWith: types mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: nil extends: false taggedAs: types mirroredBy: defaultMirror</pre>
 	 * 
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
-	 * @param types a table of types with which to type the newly created object.
+	 * @param types a table of type tags with which to type the newly created object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
 	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
