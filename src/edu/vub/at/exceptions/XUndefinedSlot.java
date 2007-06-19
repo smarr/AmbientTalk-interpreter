@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * An XUndefinedSlot exception is raised whenever a variable reference lookup fails,
@@ -50,7 +50,7 @@ public final class XUndefinedSlot extends InterpreterException {
 		super("Undefined " + message + ": " + fieldName);
 	}
 
-	public ATStripe getStripeType() {
-		return NativeStripes._UNDEFINEDSLOT_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._UNDEFINEDSLOT_;
 	}
 }

@@ -45,9 +45,9 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATBoolean;
@@ -75,8 +75,8 @@ import edu.vub.at.util.logging.Logging;
  * Note that far references are pass by copy and resolve to either a near or a new
  * actor-local far reference.
  * 
- * Far references encapsulate the same stripes as the remote object they represent.
- * As such it becomes possible to perform a stripe test on a far reference as if it
+ * Far references encapsulate the same types as the remote object they represent.
+ * As such it becomes possible to perform a type test on a far reference as if it
  * was performed on the local object itself!
  * 
  * @author tvcutsem
@@ -87,8 +87,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	// encodes the identity of the far object pointed at
 	private final ATObjectID objectId_;
 	
-	// the stripes with which the remote object is tagged + the FarReference stripe
-	private final ATStripe[] stripes_;
+	// the types with which the remote object is tagged + the FarReference type
+	private final ATTypeTag[] types_;
 
 	private transient Vector disconnectedListeners_; // lazy initialization
 	private transient Vector reconnectedListeners_; // lazy initialization
@@ -96,12 +96,12 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
     private transient boolean connected_;
     private final transient ELActor owner_;
 	
-	protected NATFarReference(ATObjectID objectId, ATStripe[] stripes, ELActor owner) {
+	protected NATFarReference(ATObjectID objectId, ATTypeTag[] types, ELActor owner) {
 
-		int size = stripes.length;
-	    stripes_ = new ATStripe[size + 1];
-	    if (size>0) System.arraycopy(stripes, 0, stripes_, 0, size);
-	    stripes_[size] = NativeStripes._FARREF_;
+		int size = types.length;
+	    types_ = new ATTypeTag[size + 1];
+	    if (size>0) System.arraycopy(types, 0, types_, 0, size);
+	    types_[size] = NativeTypeTags._FARREF_;
 	    	
 		objectId_ = objectId;
 		connected_ = true;
@@ -205,7 +205,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 */
 	public ATObject meta_resolve() throws InterpreterException, XObjectOffline {
 		// it may be that the once local target object is now remote!
-		return ELActor.currentActor().resolve(objectId_, stripes_);
+		return ELActor.currentActor().resolve(objectId_, types_);
 	}
 
 	/* ------------------------------
@@ -385,11 +385,11 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
      * -------------------- */
 	
 	/**
-	 * The stripes of a far reference are the stripes of the remote object
-	 * it points to, plus the FarReference stripe.
+	 * The types of a far reference are the types of the remote object
+	 * it points to, plus the FarReference type.
 	 */
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.atValue(stripes_);
+    public ATTable meta_getTypeTags() throws InterpreterException {
+    	return NATTable.atValue(types_);
     }
 	
 	public boolean isFarReference() {

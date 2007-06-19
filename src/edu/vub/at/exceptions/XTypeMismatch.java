@@ -29,8 +29,8 @@ package edu.vub.at.exceptions;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * XTypeMismatch instances are thrown when a value conversion failed. Value conversions occur 
@@ -41,7 +41,7 @@ import edu.vub.at.objects.coercion.NativeStripes;
  *   In this case, an XTypeMismatch exception will be thrown.</li>
  *   <li> The argument is an ambienttalk object. At this point, the coercer will attempt to 
  *   coerce the object into the correct type, which is possible only if the object has the 
- *   correct native stripe. Otherwise, an XTypeMismatch exception will be thrown.</li>
+ *   correct native type. Otherwise, an XTypeMismatch exception will be thrown.</li>
  *   <li>The target type is a Java interface. The conversion automatically succeeds if the passed
  *   argument is a JavaObject wrapper for an object which implements the interface. If the passed
  *   argument is an ambienttalk object, the coercer will be able to dynamically synthetise a 
@@ -95,8 +95,8 @@ public class XTypeMismatch extends InterpreterException {
 		           + ", given " + obj + " (type: " + Evaluator.valueNameOf(failedObject_.getClass())+ ")";
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._TYPEMISMATCH_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._TYPEMISMATCH_;
 	}
 
 }

@@ -32,9 +32,9 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * 
@@ -44,16 +44,16 @@ import edu.vub.at.objects.coercion.NativeStripes;
  */
 public class NATHandler extends NATByRef implements ATHandler {
 
-	private final ATStripe filter_;
+	private final ATTypeTag filter_;
 	private final ATClosure handler_;
 	
-	public NATHandler(ATStripe filter, ATClosure handler) {
+	public NATHandler(ATTypeTag filter, ATClosure handler) {
 		this.filter_ = filter;
 		this.handler_ = handler;
 	}
 
 	public ATBoolean base_canHandle(ATObject anException) throws InterpreterException {
-		return anException.meta_isStripedWith(filter_);
+		return anException.meta_isTaggedAs(filter_);
 	}
 	
 	public ATObject base_handle(ATObject anException) throws InterpreterException {
@@ -64,8 +64,8 @@ public class NATHandler extends NATByRef implements ATHandler {
 		return this;
 	}
 	
-    public ATTable meta_getStripes() throws InterpreterException {
-		return NATTable.of(NativeStripes._HANDLER_);
+    public ATTable meta_getTypeTags() throws InterpreterException {
+		return NATTable.of(NativeTypeTags._HANDLER_);
 	}
     
 	public ATObject meta_clone() throws InterpreterException {

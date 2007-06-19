@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * An XIllegalIndex exception is thrown by the evaluator whenever an invalid
@@ -50,8 +50,8 @@ public final class XIllegalIndex extends InterpreterException {
 		super(_MESSAGE_ + msg);
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._ILLIDX_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._ILLIDX_;
 	}
 
 }

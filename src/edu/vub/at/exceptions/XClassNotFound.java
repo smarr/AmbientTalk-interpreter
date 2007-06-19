@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * Instances of XClassNotFound are raised when the AmbientTalk interpreter's attempt to load a
@@ -51,8 +51,8 @@ public final class XClassNotFound extends InterpreterException {
 		super("Could not find class " + qualifiedClassname, cause);
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._CLASSNOTFOUND_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._CLASSNOTFOUND_;
 	}
 	
 }

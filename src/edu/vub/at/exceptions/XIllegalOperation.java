@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * XIllegalOperation is thrown whenever an operation is requested that is a violation
@@ -58,8 +58,8 @@ public class XIllegalOperation extends InterpreterException {
 		super(message);
 	}
 
-	public ATStripe getStripeType() {
-		return NativeStripes._ILLOP_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._ILLOP_;
 	}
 
 }

@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGDefStripe.java created on 18-feb-2007 at 14:09:27
+ * AGDefType.java created on 18-feb-2007 at 14:09:27
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -31,73 +31,75 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATDefStripe;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.grammar.ATDefType;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
-import edu.vub.at.objects.natives.NATStripe;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.NATTypeTag;
 
 /**
  * The native AST node for the code:
  *
+ * deftype a <: b, c;
+ *
  * @author tvcutsem
  */
-public final class AGDefStripe extends NATAbstractGrammar implements ATDefStripe {
+public final class AGDefType extends NATAbstractGrammar implements ATDefType {
 
-	private final ATSymbol stripeName_;
-	private final ATTable parentStripeExpressions_;
+	private final ATSymbol typeName_;
+	private final ATTable parentTypeExpressions_;
 	
-	public AGDefStripe(ATSymbol stripeName, ATTable parentStripeExpressions) {
-		stripeName_ = stripeName;
-		parentStripeExpressions_ = parentStripeExpressions;
+	public AGDefType(ATSymbol typeName, ATTable parentTypeExpressions) {
+		typeName_ = typeName;
+		parentTypeExpressions_ = parentTypeExpressions;
 	}
 
-	public ATTable base_getParentStripeExpressions() {
-		return parentStripeExpressions_;
+	public ATTable base_getParentTypeExpressions() {
+		return parentTypeExpressions_;
 	}
 
-	public ATSymbol base_getStripeName() {
-		return stripeName_;
+	public ATSymbol base_getTypeName() {
+		return typeName_;
 	}
 	
 	/**
-	 * Defines a new stripe in the current scope. The return value is
-	 * the new stripe.
+	 * Defines a new type in the current scope. The return value is
+	 * the new type.
 	 * 
-	 * AGDEFSTRIPE(nam,parentExps).eval(ctx) =
-	 *   ctx.scope.addField(nam, STRIPE(nam, map eval(ctx) over parentExps))
+	 * AGDEFTYPE(nam,parentExps).eval(ctx) =
+	 *   ctx.scope.addField(nam, TYPETAG(nam, map eval(ctx) over parentExps))
 	 */
 	public ATObject meta_eval(final ATContext ctx) throws InterpreterException {
-		// parentStripeExpressions_.map: { |parent| (reflect: parent).eval(ctx).base.asStripe() }
-		ATTable parentStripes = parentStripeExpressions_.base_map_(new NativeClosure(this) {
+		// parentTypeExpressions_.map: { |parent| (reflect: parent).eval(ctx).base.asType() }
+		ATTable parentTypes = parentTypeExpressions_.base_map_(new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
-				return get(args,1).meta_eval(ctx).asStripe();
+				return get(args,1).meta_eval(ctx).asTypeTag();
 			}
 		});
 		
-		ATStripe stripe = NATStripe.atValue(stripeName_, parentStripes);
-		ctx.base_getLexicalScope().meta_defineField(stripeName_, stripe);
-		return stripe;
+		ATTypeTag type = NATTypeTag.atValue(typeName_, parentTypes);
+		ctx.base_getLexicalScope().meta_defineField(typeName_, type);
+		return type;
 	}
 
 	/**
-	 * Quoting a stripe definition results in a new quoted stripe definition.
+	 * Quoting a type definition results in a new quoted type definition.
 	 * 
-	 * AGDEFSTRIPE(nam,parentExps).quote(ctx) = AGDEFSTRIPE(nam.quote(ctx), parentExps.quote(ctx))
+	 * AGDEFTYPE(nam,parentExps).quote(ctx) = AGDEFTYPE(nam.quote(ctx), parentExps.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGDefStripe(stripeName_.meta_quote(ctx).asSymbol(), parentStripeExpressions_.meta_quote(ctx).asTable());
+		return new AGDefType(typeName_.meta_quote(ctx).asSymbol(), parentTypeExpressions_.meta_quote(ctx).asTable());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		if (parentStripeExpressions_ == NATTable.EMPTY) {
-			return NATText.atValue("defstripe " + stripeName_.meta_print().javaValue);
+		if (parentTypeExpressions_ == NATTable.EMPTY) {
+			return NATText.atValue("deftype " + typeName_.meta_print().javaValue);
 		} else {
-			return NATText.atValue("defstripe " + stripeName_.meta_print().javaValue + " <: " +
-					Evaluator.printElements(parentStripeExpressions_.asNativeTable(), "", ",", "").javaValue);
+			return NATText.atValue("deftype " + typeName_.meta_print().javaValue + " <: " +
+					Evaluator.printElements(parentTypeExpressions_.asNativeTable(), "", ",", "").javaValue);
 		}
 	}
 	

@@ -34,7 +34,7 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XAmbienttalk;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
@@ -49,7 +49,7 @@ public class MirrorTest extends AmbientTalkTest {
 	protected void setUp() throws Exception {
 		super.setUp();
 		
-		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("Mirror"), NativeStripes._MIRROR_);
+		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("Mirror"), NativeTypeTags._MIRROR_);
 		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("context"), ctx_);
 		
 		
@@ -135,10 +135,10 @@ public class MirrorTest extends AmbientTalkTest {
 				"mirror.isCloneOf(object: { nil });",
 				NATBoolean._FALSE_);
 		evalAndCompareTo(
-				"mirror.getStripes();",
+				"mirror.getTypeTags();",
 				NATTable.EMPTY);
 		evalAndCompareTo(
-				"mirror.isStripedWith(Mirror);",
+				"mirror.isTaggedAs(Mirror);",
 				NATBoolean._FALSE_);
 
 	}
@@ -177,7 +177,7 @@ public class MirrorTest extends AmbientTalkTest {
 		ATObject meta = evalAndReturn(
 		//		"def meta := mirror: { nil }; \n");
 		 		"def meta := reflect: (object: { nil } mirroredBy: (mirror: { nil })); \n");
-		assertTrue(meta.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue);
+		assertTrue(meta.meta_isTaggedAs(NativeTypeTags._MIRROR_).asNativeBoolean().javaValue);
 		evalAndCompareTo(
 				"def metaMeta := reflect: meta;",
 				"<mirror on:"+ meta +">");

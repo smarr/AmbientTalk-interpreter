@@ -33,15 +33,15 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.JavaClass;
 
 /**
  * This test documents and tests the behaviour of the exception handling primitives 
  * provided in Ambienttalk. In AmbientTalk any object can be used and thrown as an 
- * exception. Moreover, by relying on in stripes, all subtyping issues regarding to
- * handler selection are handled by the isStripedWith meta operation.
+ * exception. Moreover, by relying on in types, all subtyping issues regarding to
+ * handler selection are handled by the isTaggedAs meta operation.
  *
  * @author smostinc
  */
@@ -50,12 +50,12 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	/**
 	 * Any AmbientTalk Language value can be used as an exception, proving there is nothing 
 	 * special about exceptions. This test demonstrates this for a number of language values,
-	 * such as numbers, tables, closures and stripes themselves. 
+	 * such as numbers, tables, closures and type tags themselves. 
 	 * 
-	 * This test also shows that objects can be caught using the stripe they are branded with.
+	 * This test also shows that objects can be caught using the type they are tagged with.
 	 * Note that most often, exceptions will be isolates, as these are objects (which can be
 	 * made arbitrarily complex) which are passed by copy between actors. However, as the 
-	 * stripes of a far reference are identical to the one of the original object, this 
+	 * type tags of a far reference are identical to the one of the original object, this 
 	 * semantics is a default upon which can be varied.
 	 */
 	public void notestAllObjectsCanBeUsedAsExceptions() {
@@ -65,7 +65,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 					"raise: 42 catch: Number do: { | exc | testCount := testCount + 1 }; \n" +
 					"raise: [ 4, 8, 15, 16, 23, 42 ] catch: Table do: { | exc | testCount := testCount + 1 }; \n" +
 					"raise: { testCount := testCount + 1 } catch: Closure do: { | exc | exc.apply([]) }; \n" +
-					"raise: Number catch: Stripe do: { | exc | testCount := testCount + 1 }; \n" +
+					"raise: Number catch: TypeTag do: { | exc | testCount := testCount + 1 }; \n" +
 					"if: testCount != 4 then: { fail() }", ctx_);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
@@ -74,21 +74,21 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	};
 	
 	/**
-	 * Handler selection in AmbientTalk is purely based on the stripes an object is branded with.
-	 * As such the correct handler selection can be delegated to the stripe system which ensures
+	 * Handler selection in AmbientTalk is purely based on the types an object is tagged with.
+	 * As such the correct handler selection can be delegated to the type system which ensures
 	 * correct handler selection.
 	 */
-	public void testStripeBasedHandlerSelection() {
+	public void testTypeBasedHandlerSelection() {
 		try {
 			evaluateInput(
-					"defstripe MyExceptions; \n" +
-					"defstripe IncorrectArguments <: MyExceptions; \n" +
+					"deftype MyExceptions; \n" +
+					"deftype IncorrectArguments <: MyExceptions; \n" +
 					"def testCount := 0; \n" +
 					"try: { \n" +
-					"  raise: (object: { def [ message, stackTrace ] := [ nil, nil ] } stripedWith: [ IncorrectArguments ]) catch: IncorrectArguments do: { | exc | testCount := testCount + 1 }; \n" +
-					"  raise: (object: { def [ message, stackTrace ] := [ nil, nil ] } stripedWith: [ IncorrectArguments ]) catch: MyExceptions do: { | exc | testCount := testCount + 1 }; \n" +
-					"  raise: (object: { def [ message, stackTrace ] := [ nil, nil ] } stripedWith: [ MyExceptions ]) catch: MyExceptions do: { | exc | testCount := testCount + 1 }; \n" +
-					"  raise: (object: { def [ message, stackTrace ] := [ nil, nil ] } stripedWith: [ MyExceptions ]) catch: IncorrectArguments do: { | exc | testCount := testCount + 1 }; \n" +
+					"  raise: (object: { def [ message, stackTrace ] := [ nil, nil ] } taggedAs: [ IncorrectArguments ]) catch: IncorrectArguments do: { | exc | testCount := testCount + 1 }; \n" +
+					"  raise: (object: { def [ message, stackTrace ] := [ nil, nil ] } taggedAs: [ IncorrectArguments ]) catch: MyExceptions do: { | exc | testCount := testCount + 1 }; \n" +
+					"  raise: (object: { def [ message, stackTrace ] := [ nil, nil ] } taggedAs: [ MyExceptions ]) catch: MyExceptions do: { | exc | testCount := testCount + 1 }; \n" +
+					"  raise: (object: { def [ message, stackTrace ] := [ nil, nil ] } taggedAs: [ MyExceptions ]) catch: IncorrectArguments do: { | exc | testCount := testCount + 1 }; \n" +
 					"} catch: MyExceptions using: { | exc | \n" +
 					// the last test will result in an uncaught exception, but all previous ones should have been handled.
 					"  if: testCount != 3 then: { fail() } \n" +
@@ -102,7 +102,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	
 	/**
 	 * The exceptions thrown by the interpreter can be intercepted by a program as they are also
-	 * striped objects, striped to identify their function. This test illustrates how to use this 
+	 * typed objects, typed to identify their function. This test illustrates how to use this 
 	 * mechanism to build a python-like object model where non-existant field are silently added
 	 * to the object upon use.
 	 * 
@@ -145,7 +145,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	 * prototype, of which new clones can be instatiated whenever he feels like it.
 	 * 
 	 * This test consist of an object model where access to a field can be forbidden by throwing
-	 * an interpreter exception (striped with SelectorNotFound)
+	 * an interpreter exception (tagged with SelectorNotFound)
 	 */
 	public void testInterpreterExceptionThrowing() {
 		try {
@@ -169,14 +169,14 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	public void testRethrownExceptions() {
 		try {
 			evaluateInput(
-					"defstripe MyExceptions; \n" +
-					"defstripe IncorrectArguments <: MyExceptions; \n" +
+					"deftype MyExceptions; \n" +
+					"deftype IncorrectArguments <: MyExceptions; \n" +
 					"\n" +
 					"def result := false;" +
 					"def test := object: { \n" +
 					"    def [ message, stackTrace ] := [ nil, nil ]; \n" +
 					"    def test := 0; \n" +
-					"} stripedWith: [ IncorrectArguments ]; \n" +
+					"} taggedAs: [ IncorrectArguments ]; \n" +
 					"\n" +
 					"try: { \n" +
 					"  try: { \n" +
@@ -205,37 +205,37 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 		junit.swingui.TestRunner.run(ExceptionHandlingTest.class);
 	}
 		
-	// For testing purposes we need access to a set of native stripes
+	// For testing purposes we need access to a set of native type tags
 	// These are introduced into the global lexical scope of the test 
-	private void setUpTestStripes(ATObject testScope) throws Exception {
+	private void setUpTestTypes(ATObject testScope) throws Exception {
 		
-		// Primitive type stripes used to test all objects can be thrown
+		// Primitive type tags used to test all objects can be thrown
 		testScope.meta_defineField(
 				AGSymbol.jAlloc("Number"),
-				NativeStripes._NUMBER_);
+				NativeTypeTags._NUMBER_);
 
 		testScope.meta_defineField(
 				AGSymbol.jAlloc("Table"),
-				NativeStripes._TABLE_);
+				NativeTypeTags._TABLE_);
 
 		testScope.meta_defineField(
 				AGSymbol.jAlloc("Closure"),
-				NativeStripes._CLOSURE_);
+				NativeTypeTags._CLOSURE_);
 
 		testScope.meta_defineField(
-				AGSymbol.jAlloc("Stripe"),
-				NativeStripes._STRIPE_);
+				AGSymbol.jAlloc("TypeTag"),
+				NativeTypeTags._TYPETAG_);
 		
 		testScope.meta_defineField(
 				AGSymbol.jAlloc("SelectorNotFound"),
-				NativeStripes._SELECTORNOTFOUND_);
+				NativeTypeTags._SELECTORNOTFOUND_);
 	}
 	
 	public void setUp() throws Exception {
 		ATObject globalLexScope = Evaluator.getGlobalLexicalScope();
 		ATObject testScope = new NATCallframe(globalLexScope);
 				
-		setUpTestStripes(testScope);
+		setUpTestTypes(testScope);
 
 		// For throwing InterpreterExceptions, we provide a useful prototype to start from
 		testScope.meta_defineField(
@@ -246,10 +246,10 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 
 		// Aux method to aid in shortening the test code
 		evaluateInput(
-				"def raise: exception catch: stripe do: closure { \n" +
+				"def raise: exception catch: typetag do: closure { \n" +
 				"  try: {" +
 				"    raise: exception;" +
-				"  } catch: stripe using: closure; \n" +
+				"  } catch: typetag using: closure; \n" +
 				"}",
 				ctx_);
 	}

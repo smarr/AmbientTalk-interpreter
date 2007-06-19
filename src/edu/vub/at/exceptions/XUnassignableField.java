@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * An XUnassignableField exception is raised whenever a variable assignment fails because the variable/field is immutable.
@@ -48,8 +48,8 @@ public final class XUnassignableField extends InterpreterException {
 		super("Unassignable field: " + fieldName);
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._UNASSIGNABLEFIELD_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._UNASSIGNABLEFIELD_;
 	}
 
 }

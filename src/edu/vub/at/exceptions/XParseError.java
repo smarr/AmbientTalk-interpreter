@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 import java.io.InputStream;
 
@@ -123,8 +123,8 @@ public final class XParseError extends InterpreterException {
 		}
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._PARSEERROR_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._PARSEERROR_;
 	}
 
 }

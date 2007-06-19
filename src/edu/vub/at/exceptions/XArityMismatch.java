@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * XArityMismatch is thrown during function application when actual arguments are bound to formal parameters
@@ -53,8 +53,8 @@ public final class XArityMismatch extends InterpreterException {
 				 + funnam + "; expected " + numParameters + ", given " + numArguments);
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._ARITYMISMATCH_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._ARITYMISMATCH_;
 	}
 
 }

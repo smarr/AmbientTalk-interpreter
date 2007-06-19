@@ -29,7 +29,7 @@ package edu.vub.at.exceptions;
 
 import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATException;
 
 import java.io.PrintStream;
@@ -114,12 +114,12 @@ public abstract class InterpreterException extends Exception {
 	}
 
 	/**
-	 * Returns the native Stripe corresponding to the exception class. The NativeStripes class 
-	 * defines stripes for all native data types, including exceptions. For exceptions, these 
-	 * stripes can be used to catch native exceptions and handle them. Therefore every exception
-	 * class should override this abstract method to supply the stripe equivalent of its class.
+	 * Returns the native type tag corresponding to the exception class. The NativeTypeTags class 
+	 * defines types for all native data types, including exceptions. For exceptions, these 
+	 * types can be used to catch native exceptions and handle them. Therefore every exception
+	 * class should override this abstract method to supply the type equivalent of its class.
 	 */
-	public abstract ATStripe getStripeType();
+	public abstract ATTypeTag getType();
 
 	public String getMessage() {
 		if (cause_ == null) {

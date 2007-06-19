@@ -32,7 +32,7 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * NATBoolean is simply a container class for ambienttalk booleans. The native 
@@ -78,8 +78,8 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		return this;
 	}
 	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._BOOLEAN_);
+    public ATTable meta_getTypeTags() throws InterpreterException {
+    	return NATTable.of(NativeTypeTags._BOOLEAN_);
     }
 	
 	public static class NATTrue extends NATBoolean {

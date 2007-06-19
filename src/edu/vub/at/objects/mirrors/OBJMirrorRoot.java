@@ -37,9 +37,9 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
@@ -63,7 +63,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  *   def invoke(@args) { <default native invocation behaviour on base> }
  *   def select(@args) { <default native selection behaviour on base> }
  *   ...
- * } stripedWith: [ Mirror ]
+ * } taggedAs: [ Mirror ]
  * 
  * This object can then simply be extended / composed by other objects to deviate from the default semantics.
  * Note that the default semantics is applied to 'base' and *not* 'self.base', in other words:
@@ -148,8 +148,8 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 		return new OBJMirrorRoot(base_);
 	}
 	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._MIRROR_);
+    public ATTable meta_getTypeTags() throws InterpreterException {
+    	return NATTable.of(NativeTypeTags._MIRROR_);
     }
     
     public NATText meta_print() throws InterpreterException {
@@ -203,8 +203,8 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 		return base_getBase().magic_clone();
 	}
 	
-    public ATTable base_getStripes() throws InterpreterException {
-		return base_getBase().magic_getStripes();
+    public ATTable base_getTypeTags() throws InterpreterException {
+		return base_getBase().magic_getTypeTags();
     }
     
     public NATText base_print() throws InterpreterException {
@@ -275,8 +275,8 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 		return base_getBase().magic_isRelatedTo(object);
 	}
 
-	public ATBoolean base_isStripedWith(ATStripe stripe) throws InterpreterException {
-		return base_getBase().magic_isStripedWith(stripe);
+	public ATBoolean base_isTaggedAs(ATTypeTag type) throws InterpreterException {
+		return base_getBase().magic_isTaggedAs(type);
 	}
 
 	public ATTable base_listFields() throws InterpreterException {

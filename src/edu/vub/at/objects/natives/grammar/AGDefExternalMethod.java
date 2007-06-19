@@ -33,7 +33,7 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefExternalMethod;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -101,7 +101,7 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 		}
 		
 		ATObject receiver = rcvNam_.meta_eval(ctx);
-		if (receiver.meta_isStripedWith(NativeStripes._ISOLATE_).asNativeBoolean().javaValue) {
+		if (receiver.meta_isTaggedAs(NativeTypeTags._ISOLATE_).asNativeBoolean().javaValue) {
 			throw new XIllegalOperation("Cannot define external methods on isolates");
 			
 		} else {

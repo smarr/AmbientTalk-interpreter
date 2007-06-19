@@ -28,8 +28,8 @@
 package edu.vub.at.exceptions;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * Raised whenever a wrapped Java class cannot be instantiated because:
@@ -56,8 +56,8 @@ public final class XNotInstantiatable extends InterpreterException {
 		super("Java class " + Evaluator.getSimpleName(c) + " is abstract", cause);
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._NOTINSTANTIATABLE_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._NOTINSTANTIATABLE_;
 	}
 	
 }

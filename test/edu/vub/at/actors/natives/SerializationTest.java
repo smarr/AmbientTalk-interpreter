@@ -31,9 +31,9 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGAssignField;
@@ -105,7 +105,7 @@ public class SerializationTest extends AmbientTalkTest {
 	 * by a coercer.
 	 */
 	public void testCoercerSerialization() throws InterpreterException {
-		NATObject isolate = new NATObject(new ATStripe[] { NativeStripes._ISOLATE_, NativeStripes._TABLE_ });
+		NATObject isolate = new NATObject(new ATTypeTag[] { NativeTypeTags._ISOLATE_, NativeTypeTags._TABLE_ });
 		ATTable coercer = isolate.asTable();
 		assertTrue(coercer instanceof SymbioticATObjectMarker);
 		Packet p = new Packet("test", coercer);

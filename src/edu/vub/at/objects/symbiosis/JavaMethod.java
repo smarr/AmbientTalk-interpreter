@@ -35,7 +35,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
@@ -107,8 +107,8 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 		return NATText.atValue("<java method:"+choices_[0].getName()+">");
 	}
 	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._METHOD_);
+    public ATTable meta_getTypeTags() throws InterpreterException {
+    	return NATTable.of(NativeTypeTags._METHOD_);
     }
 	
 	public ATMethod asMethod() throws XTypeMismatch {

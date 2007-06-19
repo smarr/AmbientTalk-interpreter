@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATDefStripe.java created on 18-feb-2007 at 14:06:09
+ * ATDefType.java created on 18-feb-2007 at 14:06:09
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -30,30 +30,30 @@ package edu.vub.at.objects.grammar;
 import edu.vub.at.objects.ATTable;
 
 /**
- * The public interface to a stripe definition AG element.
+ * The public interface to a type tag definition AG element.
  * 
- * Example: <code>defstrip stripename</code>
- * where <code>stripename</code> is a literal symbol.<br>
- * A stripe can have multiple super stripes:
- * <code>defstripe c <: a, b</code> where <code>a</code>
- * and <code>b</code> must evaluate to stripes
+ * Example: <code>deftype name</code>
+ * where <code>name</code> is a valid symbol.<br>
+ * A type tag can have multiple supertypes:
+ * <code>deftype c <: a, b</code> where <code>a</code>
+ * and <code>b</code> must evaluate to type tags
  * 
  * @author tvcutsem
  */
-public interface ATDefStripe extends ATDefinition {
+public interface ATDefType extends ATDefinition {
 	
 	/**
-	 * The name of the stripe to be defined must be a literal symbol
-	 * Example: <code>`{ defstripe foo }.statements[1].stripeName == `foo</code>
-	 * @return the name of the stripe
+	 * The name of the type to be defined must be a literal symbol
+	 * Example: <code>`{ deftype foo }.statements[1].typeName == `foo</code>
+	 * @return the name of the type
 	 */
-	public ATSymbol base_getStripeName();
+	public ATSymbol base_getTypeName();
 	
 	/**
-	 * A stripe can have zero, one or more parent stripes. 
-	 * Example: <code>`{ defstripe foo <: bar, o.baz() }.statements[1].parentStripeExpressions == `[ bar, o.baz() ]</code>
-	 * @return a table with expressions that each must evaluate to a stripe
+	 * A type can have zero, one or more parent types. 
+	 * Example: <code>`{ deftype foo <: bar, o.baz() }.statements[1].parentTypeExpressions == `[ bar, o.baz() ]</code>
+	 * @return a table with expressions that each must evaluate to a type
 	 */
-	public ATTable base_getParentStripeExpressions();
+	public ATTable base_getParentTypeExpressions();
 	
 }

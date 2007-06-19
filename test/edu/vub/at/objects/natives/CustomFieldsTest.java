@@ -4,7 +4,7 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -31,13 +31,13 @@ public class CustomFieldsTest extends AmbientTalkTest {
 
 		foo_ = AGSymbol.jAlloc("foo");
 		
-		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("Field"), NativeStripes._FIELD_);
+		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("Field"), NativeTypeTags._FIELD_);
 		testField_ = evalAndReturn(
 				"object: { def name := `foo;" +
 				          "def host := nil; def init(newhost) { host := newhost; };" +
 				          "def v := nil;" +
 				          "def readField() { v };" +
-				          "def writeField(n) { v := n+1 } } stripedWith: [ Field ]");
+				          "def writeField(n) { v := n+1 } } taggedAs: [ Field ]");
 	}
 	
 	/**

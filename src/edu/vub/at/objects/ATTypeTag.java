@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATStripe.java created on 18-feb-2007 at 15:55:09
+ * ATTypeTag.java created on 18-feb-2007 at 15:55:09
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -31,55 +31,55 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
- * The public interface to a native stripe object.
+ * The public interface to a native type tag object.
  * <p>
- * Stripes consist of two properties:
+ * Type tags consist of two properties:
  * <ul>
  * <li>they have a unique name by which they can be identified across the network.
- *    In other words, the identity of a stripe is its name.
- * <li>they have a list of parent stripes: a stripe is then a 'substripe' of these parents.
+ *    In other words, the identity of a type is its name (= nominal typing).
+ * <li>they have a list of supertypes: a type is then a subtype of these supertypes.
  * </ul>
  * <p>
- * Stripes have one important operation: one stripe can be tested to be a substripe of
- * another stripe.
+ * Types have one important operation: one type can be tested to be a subtype of
+ * another type.
  *  <p>
- * Stripes are very similar to empty Java-like interface types, and their main purpose
- * lies in the *classification* of objects. AmbientTalk Objects can be striped with zero
- * or more stripes.
+ * Type tags are very similar to empty Java-like interface types, and their main purpose
+ * lies in the *classification* of objects. AmbientTalk Objects can be tagged with zero
+ * or more type tags.
  *
  * @author tvcutsem
  */
-public interface ATStripe extends ATObject {
+public interface ATTypeTag extends ATObject {
 
 	/**
-	 * Returns the name of this stripe.
+	 * Returns the name of this type tag.
 	 * 
-	 * @return an {@link ATSymbol} representing the unique name by which the stripe can be identified.
+	 * @return an {@link ATSymbol} representing the unique name by which the type can be identified.
 	 */
-	public ATSymbol base_getStripeName() throws InterpreterException;
+	public ATSymbol base_getTypeName() throws InterpreterException;
 	
 	/**
-	 * Returns a table with the stripes of the parent of this stripe.
+	 * Returns a table with the supertypes of this type tag.
 	 * 
-	 * @return an {@link ATTable} with the stripes of the parent of the receiver stripe.
+	 * @return an {@link ATTable} with the super types of the receiver type tags.
 	 */
-	public ATTable base_getParentStripes() throws InterpreterException;
+	public ATTable base_getSuperTypes() throws InterpreterException;
 	
 	/**
-	 * Returns true if this stripe is a substripe of a given stripe.
+	 * Returns true if this type tag is a subtype of a given type tag.
 	 * <p>
 	 * More specifically, what the native implementation (expressed in AmbientTalk syntax) does is:
 	 * <p>	 
 	 *	<code>
-	 *  def isSubstripeOf(superstripe) {
-	 *		  (superstripe.name() == name).or:
-	 *			  { (superstripes.find: { |sstripe| sstripe.isSubstripeOf(superstripe) }) != nil }
+	 *  def isSubtypeOf(supertype) {
+	 *		  (supertype.name() == name).or:
+	 *			  { (supertypes.find: { |stype| stype.isSubtypeOf(supertype) }) != nil }
 	 *	};
 	 *  </code>
 	 *  
-	 * @param other a stripe.
-	 * @return true if the receiver stripe is a substripe of the other stripe.
+	 * @param other a type.
+	 * @return true if the receiver type is a subtype of the other type.
 	 */
-	public ATBoolean base_isSubstripeOf(ATStripe other) throws InterpreterException;
+	public ATBoolean base_isSubtypeOf(ATTypeTag other) throws InterpreterException;
 	
 }

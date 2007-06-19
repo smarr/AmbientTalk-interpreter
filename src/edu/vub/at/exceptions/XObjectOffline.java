@@ -28,8 +28,8 @@
 package edu.vub.at.exceptions;
 
 import edu.vub.at.actors.id.ATObjectID;
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * An XObjectOffline exception is raised when an object ID cannot be resolved to a local
@@ -54,8 +54,8 @@ public final class XObjectOffline extends InterpreterException {
 		objectId_ = id;
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._OBJECTOFFLINE_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._OBJECTOFFLINE_;
 	}
 	
 	/**

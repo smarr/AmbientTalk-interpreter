@@ -49,7 +49,7 @@ import edu.vub.util.MultiMap;
 public class CMDJoinServices extends VMCommand {
 
 	/** 
-	 * A map from serialized ATStripe topics to Sets of serialized ATObjects that
+	 * A map from serialized ATTypeTag topics to Sets of serialized ATObjects that
 	 * provide the serialized topic
 	 */
 	private final MultiMap providedServices_;

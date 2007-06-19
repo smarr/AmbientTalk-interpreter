@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * An XIllegalArgument exception is thrown when primitive operations on native types
@@ -54,8 +54,8 @@ public final class XIllegalArgument extends InterpreterException {
 		super(message, cause);
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._ILLARG_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._ILLARG_;
 	}
 
 }

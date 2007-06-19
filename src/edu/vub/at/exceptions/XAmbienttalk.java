@@ -31,15 +31,15 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * The XAmbienttalk exception class is used to wrap non-primitive exceptions in the interpreter.
- * These exceptions are objects striped with the Exception stripe which should contain a message
+ * These exceptions are objects tagged with the Exception type which should contain a message
  * field, which this class will read out, as well as an assignable field stackTrace which this
  * class will initialise with the correct ambienttalk stack trace.
  *
@@ -75,8 +75,8 @@ public class XAmbienttalk extends InterpreterException {
 		return customException_;
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._CUSTOMEXCEPTION_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._CUSTOMEXCEPTION_;
 	}
 	
 	public String getMessage() {

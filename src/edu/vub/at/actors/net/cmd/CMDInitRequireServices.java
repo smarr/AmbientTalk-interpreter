@@ -51,7 +51,7 @@ import java.util.Set;
 public class CMDInitRequireServices extends VMCommand {
 
 	/**
-	 * A Set of Packet objects representing serialized ATStripe topics.
+	 * A Set of Packet objects representing serialized ATTypeTag topics.
 	 */
 	private final Set topics_;
 	

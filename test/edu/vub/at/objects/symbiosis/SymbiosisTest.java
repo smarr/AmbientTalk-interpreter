@@ -43,7 +43,7 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATFraction;
@@ -771,49 +771,49 @@ public class SymbiosisTest extends AmbientTalkTest {
 	}
 	
 	/**
-	 * Tests whether Java interface types are correctly treated as AT/2 stripes.
+	 * Tests whether Java interface types are correctly treated as AT/2 types.
 	 * Test cases: interface java.util.Set extends java.util.Collection
 	 */
-	public void testInterfacesAndStripes() throws InterpreterException {
+	public void testInterfacesAndTypes() throws InterpreterException {
 		JavaClass jSet = JavaClass.wrapperFor(Set.class);
 		JavaClass jCollection = JavaClass.wrapperFor(Collection.class);
-		ATStripe atSet = jSet.asStripe();
-		ATStripe atCollection = jCollection.asStripe();
-		// stripe name = 'java.util.Set'
-		assertEquals(AGSymbol.jAlloc("java.util.Set"), atSet.base_getStripeName());
-		// stripe parents = [ java.util.Collection ]
-		assertEquals(jCollection, atSet.base_getParentStripes().base_at(NATNumber.ONE));
-		// Set isSubstripeOf Collection? true
-		assertTrue(atSet.base_isSubstripeOf(atCollection).asNativeBoolean().javaValue);
-		// Collection isSubstripeOf Set? false
-		assertFalse(atCollection.base_isSubstripeOf(atSet).asNativeBoolean().javaValue);
-		// Set isSubstripeOf Set? true
-		assertTrue(atSet.base_isSubstripeOf(atSet).asNativeBoolean().javaValue);
+		ATTypeTag atSet = jSet.asTypeTag();
+		ATTypeTag atCollection = jCollection.asTypeTag();
+		// type name = 'java.util.Set'
+		assertEquals(AGSymbol.jAlloc("java.util.Set"), atSet.base_getTypeName());
+		// type parents = [ java.util.Collection ]
+		assertEquals(jCollection, atSet.base_getSuperTypes().base_at(NATNumber.ONE));
+		// Set isSubtypeOf Collection? true
+		assertTrue(atSet.base_isSubtypeOf(atCollection).asNativeBoolean().javaValue);
+		// Collection isSubtypeOf Set? false
+		assertFalse(atCollection.base_isSubtypeOf(atSet).asNativeBoolean().javaValue);
+		// Set isSubtypeOf Set? true
+		assertTrue(atSet.base_isSubtypeOf(atSet).asNativeBoolean().javaValue);
 	}
 	
 	/**
-	 * Test whether JavaObject wrappers are correctly striped with all
+	 * Test whether JavaObject wrappers are correctly typed with all
 	 * of the interfaces of the wrapped instance's class.
 	 * 
 	 * Test case: java.util.Vector implements List, RandomAccess, Cloneable, Serializable
 	 */
-	public void testStripedJavaObject() throws InterpreterException {
+	public void testTypedJavaObject() throws InterpreterException {
 		JavaClass jVector = JavaClass.wrapperFor(Vector.class);
 		JavaObject vec = jVector.meta_newInstance(NATTable.EMPTY).asJavaObjectUnderSymbiosis();
 		
-		ATStripe jListStripe = JavaClass.wrapperFor(List.class).asStripe();
-		ATStripe jCollectionStripe = JavaClass.wrapperFor(Collection.class).asStripe();
-		ATStripe jSerializableStripe = JavaClass.wrapperFor(Serializable.class).asStripe();
-		ATStripe jSetStripe = JavaClass.wrapperFor(Set.class).asStripe();
+		ATTypeTag jListType = JavaClass.wrapperFor(List.class).asTypeTag();
+		ATTypeTag jCollectionType = JavaClass.wrapperFor(Collection.class).asTypeTag();
+		ATTypeTag jSerializableType = JavaClass.wrapperFor(Serializable.class).asTypeTag();
+		ATTypeTag jSetType = JavaClass.wrapperFor(Set.class).asTypeTag();
 		
-		// vec is striped with List? true
-		assertTrue(vec.meta_isStripedWith(jListStripe).asNativeBoolean().javaValue);
-		// vec is striped with Collection? true
-		assertTrue(vec.meta_isStripedWith(jCollectionStripe).asNativeBoolean().javaValue);
-		// vec is striped with Serializable? true
-		assertTrue(vec.meta_isStripedWith(jSerializableStripe).asNativeBoolean().javaValue);
-		// vec is striped with Set? false
-		assertFalse(vec.meta_isStripedWith(jSetStripe).asNativeBoolean().javaValue);
+		// vec is tagged with List? true
+		assertTrue(vec.meta_isTaggedAs(jListType).asNativeBoolean().javaValue);
+		// vec is tagged with Collection? true
+		assertTrue(vec.meta_isTaggedAs(jCollectionType).asNativeBoolean().javaValue);
+		// vec is tagged with Serializable? true
+		assertTrue(vec.meta_isTaggedAs(jSerializableType).asNativeBoolean().javaValue);
+		// vec is tagged with Set? false
+		assertFalse(vec.meta_isTaggedAs(jSetType).asNativeBoolean().javaValue);
 	}
 	
 }

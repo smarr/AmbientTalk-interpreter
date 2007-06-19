@@ -31,7 +31,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * NATContext is a purely functional implementation of the ATContext interface.
@@ -71,8 +71,8 @@ public class NATContext extends NATByCopy implements ATContext {
 				                      ","+self_.meta_print().javaValue+")>");
 	}
 	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._CONTEXT_);
+    public ATTable meta_getTypeTags() throws InterpreterException {
+    	return NATTable.of(NativeTypeTags._CONTEXT_);
     }
     
 	public ATObject meta_clone() throws InterpreterException {

@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * An XIllegalParameter exception is raised when the interpreter detects a faulty
@@ -56,8 +56,8 @@ public class XIllegalParameter extends InterpreterException {
 		super("Illegal parameter list for " + ofFun + ": "+msg);
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._ILLPARAM_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._ILLPARAM_;
 	}
 
 }

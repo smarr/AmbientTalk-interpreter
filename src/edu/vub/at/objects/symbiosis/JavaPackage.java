@@ -31,9 +31,9 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XClassNotFound;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.mirrors.Reflection;
@@ -98,7 +98,7 @@ public final class JavaPackage extends NATObject {
 	 * @param path the pathname of this JavaPackage, e.g. 'java.' or 'java.lang.'
 	 */
 	public JavaPackage(String path) {
-		super(new ATStripe[] { NativeStripes._ISOLATE_ });
+		super(new ATTypeTag[] { NativeTypeTags._ISOLATE_ });
 		path_ = path;
 		try {
 			super.meta_addMethod(_PRIM_CLS_);
@@ -118,9 +118,9 @@ public final class JavaPackage extends NATObject {
 			  		   ATObject dynamicParent,
 			  		   ATObject lexicalParent,
 			  		   byte flags,
-			  		   ATStripe[] stripes,
+			  		   ATTypeTag[] types,
 			  		   String path) throws InterpreterException {
-		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types);
 		path_ = path;
 	}
 	
@@ -151,7 +151,7 @@ public final class JavaPackage extends NATObject {
 			  					MethodDictionary methodDict,
 			  					ATObject dynamicParent,
 			  					ATObject lexicalParent,
-			  					byte flags, ATStripe[] stripes) throws InterpreterException {
+			  					byte flags, ATTypeTag[] types) throws InterpreterException {
 		return new JavaPackage(map,
     		  				      state,
     		  				      customFields,
@@ -159,7 +159,7 @@ public final class JavaPackage extends NATObject {
     		  				      dynamicParent,
     		  				      lexicalParent,
     		  				      flags,
-    		  				      stripes,
+    		  				      types,
     		  				      path_);
 	}
 	

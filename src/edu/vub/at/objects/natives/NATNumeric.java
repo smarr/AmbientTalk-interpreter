@@ -34,7 +34,7 @@ import edu.vub.at.objects.ATFraction;
 import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
 /**
@@ -53,8 +53,8 @@ public abstract class NATNumeric extends AGExpression implements ATNumeric {
 		return this;
 	}
 	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._NUMERIC_);
+    public ATTable meta_getTypeTags() throws InterpreterException {
+    	return NATTable.of(NativeTypeTags._NUMERIC_);
     }
     
     // numbers and fractions are singletons

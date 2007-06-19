@@ -32,25 +32,25 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 import java.util.LinkedList;
 import java.util.Vector;
 
 /**
- * Instances of the class NATMethodInvocation represent first-class method invocations.
+ * Instances of this class represent first-class method invocations.
  * They encapsulate a selector and arguments and may be turned into an actual invocation by invoking meta_sendTo.
  * This method provides the invocation with a receiver to apply itself to.
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public final class NATMethodInvocation extends NATMessage implements ATMethodInvocation {
 
 	public NATMethodInvocation(ATSymbol sel, ATTable arg, ATTable annotations) throws InterpreterException {
-		super(sel, arg, annotations, NativeStripes._METHODINV_);
+		super(sel, arg, annotations, NativeTypeTags._METHODINV_);
 	}
 	
     /**
@@ -63,8 +63,8 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
             ATObject dynamicParent,
             ATObject lexicalParent,
             byte flags,
-            ATStripe[] stripes) throws InterpreterException {
-    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
+            ATTypeTag[] types) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types);
     }
 
 	/**
@@ -88,7 +88,7 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 			ATObject dynamicParent,
 			ATObject lexicalParent,
 			byte flags,
-			ATStripe[] stripes) throws InterpreterException {
+			ATTypeTag[] types) throws InterpreterException {
 		return new NATMethodInvocation(map,
 				state,
 				originalCustomFields,
@@ -96,7 +96,7 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 				dynamicParent,
 				lexicalParent,
 				flags,
-				stripes);
+				types);
 	}
 	
 }

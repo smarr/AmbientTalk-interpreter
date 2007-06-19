@@ -29,8 +29,8 @@ package edu.vub.at.exceptions;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.Reflection;
 
 import java.lang.reflect.Constructor;
@@ -111,8 +111,8 @@ public class XSymbiosisFailure extends InterpreterException {
 		return message_;
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._SYMBIOSISFAILURE_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._SYMBIOSISFAILURE_;
 	}
 
 }

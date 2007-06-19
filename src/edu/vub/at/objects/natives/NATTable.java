@@ -38,7 +38,7 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
@@ -165,8 +165,8 @@ public final class NATTable extends AGExpression implements ATTable {
 		return Evaluator.printElements(this, "[", ", ","]");
 	}
 	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._TABLE_);
+    public ATTable meta_getTypeTags() throws InterpreterException {
+    	return NATTable.of(NativeTypeTags._TABLE_);
     }
 	
 	public ATNumber base_getLength() { return NATNumber.atValue(elements_.length); }

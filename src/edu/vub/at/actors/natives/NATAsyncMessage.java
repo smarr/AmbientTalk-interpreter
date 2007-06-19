@@ -35,9 +35,9 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.FieldMap;
@@ -82,10 +82,10 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      * @param rcv the receiver of the message, fill in 'nil' if none is determined yet
      * @param sel the selector of the asynchronous message
      * @param arg the arguments of the asynchronous message
-     * @param stripes the stripes for the message. Isolate and AsyncMessage stripes are automatically added.
+     * @param types the types for the message. Isolate and AsyncMessage types are automatically added.
      */
-    public NATAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg, ATTable stripes) throws InterpreterException {
-    	super(sel, arg, stripes, NativeStripes._ASYNCMSG_);
+    public NATAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg, ATTable types) throws InterpreterException {
+    	super(sel, arg, types, NativeTypeTags._ASYNCMSG_);
         super.meta_defineField(_RECEIVER_, rcv);
         super.meta_addMethod(_PRIM_PRO_);
     }
@@ -100,8 +100,8 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
             ATObject dynamicParent,
             ATObject lexicalParent,
             byte flags,
-            ATStripe[] stripes) throws InterpreterException {
-    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
+            ATTypeTag[] types) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types);
     }
     
     /**
@@ -116,7 +116,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     		                        ATObject dynamicParent,
     		                        ATObject lexicalParent,
     		                        byte flags,
-    		                        ATStripe[] stripes) throws InterpreterException {
+    		                        ATTypeTag[] types) throws InterpreterException {
 		return new NATAsyncMessage(map,
 				                   state,
 				                   originalCustomFields,
@@ -124,7 +124,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 				                   dynamicParent,
 				                   lexicalParent,
 				                   flags,
-				                   stripes);
+				                   types);
 	}
     
     public ATObject base_getReceiver() throws InterpreterException {

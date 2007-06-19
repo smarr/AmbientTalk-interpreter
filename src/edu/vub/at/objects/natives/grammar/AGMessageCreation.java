@@ -78,8 +78,8 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 	 * It is important to note that the arguments are all eagerly evaluated.
 	 * 
 	 * The annotation to the message send is either included in the generated message
-	 * as a table of stripes, if it evaluates to a table, or a one-sized table of the
-	 * evaluated annotation is added as stripes. This means that <code>o.m(x)@y</code> is
+	 * as a table of type tags, if it evaluates to a table, or as a one-sized table of the
+	 * evaluated annotation. This means that <code>o.m(x)@y</code> is
 	 * evaluated as <code>o.m(x)@[y]</code>, for example.
 	 * 
 	 * AGMSG(sel,arg,ann).eval(ctx) = NATMSG(sel, map eval(ctx) over arg, (a:ann.eval(ctx).isTable? ? a : [a]))

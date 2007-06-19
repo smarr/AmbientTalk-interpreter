@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * An instance of the class XReflectionFailure is thrown when something goes wrong when reflectively
@@ -73,8 +73,8 @@ public class XReflectionFailure extends InterpreterException {
 		super(message);
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._REFLECTIONFAILURE_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._REFLECTIONFAILURE_;
 	}
 
 }

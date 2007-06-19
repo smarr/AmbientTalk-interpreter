@@ -710,50 +710,50 @@ public interface ATObject extends ATConversions {
     public ATBoolean meta_isCloneOf(ATObject other) throws InterpreterException;
 
     /* ---------------------------------
-     * -- Stripe Testing and Querying --
+     * -- Type Testing and Querying --
      * --------------------------------- */
     
     /**
-     * Tests whether the receiver mirror's base object is striped with a particular stripe.
+     * Tests whether the receiver mirror's base object is tagged as a particular type.
      * 
-     * The default implementation first compares the object's local stripes to the given stripe
-     * by means of the <tt>isSubstripeOf</tt> method defined on stripes. If no local stripe
+     * The default implementation first compares the object's local type tags to the given type
+     * by means of the {@link ATTypeTag#base_isSubtypeOf(ATTypeTag)} method. If no local type
      * is found, the test is applied recursively on this object's dynamic parent. In code:
-     * <pre>def isStripedWith(stripe) {
-     *  (nil != (self.stripesOf: object).find: { |localStripe|
-	 *    localStripe.isSubstripeOf(stripe)
-	 *  }).or: { (reflect: base.super).isStripedWith(stripe) }
+     * <pre>def isTaggedAs(type) {
+     *  (nil != (self.tagsOf: object).find: { |localType|
+	 *    localType.isSubtypeOf(type)
+	 *  }).or: { (reflect: base.super).isTaggedAs(type) }
 	 * };
      * </pre>
      * 
-     * The primitive method <tt>is: obj stripedWith: stripe</tt> is defined in terms of this
+     * The primitive method <tt>is: obj taggedAs: type</tt> is defined in terms of this
      * method:
      * <pre>
-     * def is: obj stripedWith: stripe {
-     *  (reflect: obj).isStripedWith(stripe)
+     * def is: obj taggedAs: type {
+     *  (reflect: obj).isTaggedAs(type)
      *};
      * </pre>
      * 
-     * @param stripe the stripe object to check for
-     * @return true if this mirror's base object or one of its parent objects is striped
-     * with a substripe of the given stripe, false otherwise.
+     * @param type the type tag object to check for
+     * @return true if this mirror's base object or one of its parent objects is tagged
+     * with a subtype of the given type, false otherwise.
      */
-    public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException;
+    public ATBoolean meta_isTaggedAs(ATTypeTag type) throws InterpreterException;
     
     /**
-     * Returns all of the local stripes of this object. The primitive method
-     * <tt>stripesOf: obj</tt> is defined in terms of this method:
+     * Returns all of the local type tags of this object. The primitive method
+     * <tt>tagsOf: obj</tt> is defined in terms of this method:
      * 
      * <pre>
-     * def stripesOf: obj {
-     *  (reflect: obj).stripes
+     * def tagsOf: obj {
+     *  (reflect: obj).typeTags
      *};
      * </pre>
      * 
-     * @return a table of the stripes that were attached directly to this mirror's base
-     * object. The stripes of its parent objects are not returned.
+     * @return a table of the type tags that were attached directly to this mirror's base
+     * object. The type tags of its parent objects are not returned.
      */
-    public ATTable meta_getStripes() throws InterpreterException;
+    public ATTable meta_getTypeTags() throws InterpreterException;
     
      /* -------------------------------
       * - Base Level Object interface -
@@ -763,7 +763,7 @@ public interface ATObject extends ATConversions {
      * Bound to the dynamic parent of this object.
      * 
      * The dynamic parent of an object is the object to which failed
-     * selection or invocation requests or stripe tests are delegated to.
+     * selection or invocation requests or type tests are delegated to.
      * 
      * @return the current dynamic parent of this object.
      */

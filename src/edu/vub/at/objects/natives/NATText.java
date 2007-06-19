@@ -38,7 +38,7 @@ import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 import edu.vub.util.Matcher;
 import edu.vub.util.Pattern;
@@ -83,8 +83,8 @@ public final class NATText extends AGExpression implements ATText {
 			return this;
 		}
 		
-	    public ATTable meta_getStripes() throws InterpreterException {
-	    	return NATTable.of(NativeStripes._TEXT_);
+	    public ATTable meta_getTypeTags() throws InterpreterException {
+	    	return NATTable.of(NativeTypeTags._TEXT_);
 	    }
 		
 		// comparison and identity operations

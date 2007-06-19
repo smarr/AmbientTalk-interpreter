@@ -99,7 +99,7 @@ public class DistributionTest extends TestCase {
 		
 		subscriber.sync_event_eval(
 				NATParser.parse("DistributionTest#setUpConnectionObservers()",
-						"defstripe Service; \n" +
+						"deftype Service; \n" +
 						"when: Service discovered: { | ref |" +
 						"  when: ref disconnected: { success(); }; \n" +
 						"  when: ref reconnected:  { success(); }; \n" +
@@ -110,7 +110,7 @@ public class DistributionTest extends TestCase {
 		
 		provider.sync_event_eval(
 				NATParser.parse("DistributionTest#setUpConnectionObservers()",
-						"defstripe Service; \n" +
+						"deftype Service; \n" +
 						"export: (object: { nil }) as: Service"));
 	}
 
@@ -370,7 +370,7 @@ public class DistributionTest extends TestCase {
 				NATParser.parse("DistributionTest#testRetract()",
 						"def messages := nil;" +
 						"def far := nil;" +
-						"defstripe Service; \n" +
+						"deftype Service; \n" +
 						"when: Service discovered: { | ref | \n" +
 						"  far := ref; \n" +
 						"  when: ref disconnected: { \n" +
@@ -382,7 +382,7 @@ public class DistributionTest extends TestCase {
 		
 		provider.sync_event_eval(
 				NATParser.parse("DistributionTest#testRetract()",
-						"defstripe Service; \n" +
+						"deftype Service; \n" +
 						"export: (object: { def inc(num) { num + 1; }; }) as: Service"));
 		
 		virtual1_.event_goOnline();
@@ -449,14 +449,14 @@ public class DistributionTest extends TestCase {
 			
 			alice.sync_event_eval(
 					NATParser.parse("CrossVMCommunicationTest#testSimple()", 
-							"defstripe HelloWorld; \n" +
+							"deftype HelloWorld; \n" +
 							"whenever: HelloWorld discovered: { | ref | \n" +
 							"  ref <- hello(\"alice\"); \n" +
 							"}; \n"));
 			
 			bob.sync_event_eval(
 					NATParser.parse("CrossVMCommunicationTest#testSimple()", 
-							"defstripe HelloWorld; \n" +
+							"deftype HelloWorld; \n" +
 							"def english := object: { \n" +
 							"  def hello( name ) { \"hello \" + name }; \n" +
 							"}; \n" +

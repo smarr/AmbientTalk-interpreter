@@ -40,7 +40,7 @@ import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNumber;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATBegin;
@@ -98,9 +98,9 @@ public interface ATConversions {
 	 */
 	public boolean isMessageCreation() throws InterpreterException;
 	/**
-	 * Used to identify stripes for stripe comparison using <tt>==</tt>.
+	 * Used to identify type tags for comparison using <tt>==</tt>.
 	 */
-	public boolean isStripe() throws InterpreterException;
+	public boolean isTypeTag() throws InterpreterException;
 	/**
 	 * Used when sending an asynchronous message, to determine whether to
 	 * invoke <tt>receive</tt> on the receiver object directly, or to pass
@@ -117,7 +117,7 @@ public interface ATConversions {
 	public ATField     asField() throws InterpreterException;
 	public ATMethod    asMethod() throws InterpreterException;
 	public ATHandler   asHandler() throws InterpreterException;
-	public ATStripe    asStripe() throws InterpreterException;
+	public ATTypeTag    asTypeTag() throws InterpreterException;
 	public ATFarReference asFarReference() throws InterpreterException;
 	public ATAsyncMessage asAsyncMessage() throws InterpreterException;
 	public ATActorMirror asActorMirror() throws InterpreterException;

@@ -38,7 +38,7 @@ import edu.vub.at.objects.natives.OBJLexicalRoot;
 
 /**
  * AGAsyncMessageCreation implements the ATAsyncMessageCreation interface natively. It is a container for the
- * message's selector, a table of arguments and a number of annotations (which later become the message's stripes)
+ * message's selector, a table of arguments and a number of annotations (which later become the message's type tags)
  * 
  * @author tvcutsem
  * @author smostinc

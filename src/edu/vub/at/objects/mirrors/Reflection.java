@@ -599,7 +599,7 @@ public final class Reflection {
 	 */
 	public static final ATObject downObject(ATObject metaObject) throws InterpreterException {
 		return metaObject;
-		/*if (metaObject.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+		/*if (metaObject.meta_isTaggedAs(NativeTypeTags._MIRROR_).asNativeBoolean().javaValue) {
 			return metaObject.meta_select(metaObject, OBJMirrorRoot._BASE_NAME_);
 		} else {
 			return metaObject; // most native objects represent both the object at the base and at the meta-level

@@ -28,8 +28,8 @@
 package edu.vub.at.exceptions;
 
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
@@ -65,8 +65,8 @@ public class XSelectorNotFound extends InterpreterException {
 		return "Lookup failure : selector " + selector_ + " could not be found in "+ obj;
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._SELECTORNOTFOUND_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._SELECTORNOTFOUND_;
 	}
 	
 	/**

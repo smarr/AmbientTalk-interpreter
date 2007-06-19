@@ -28,9 +28,9 @@
 package edu.vub.at.exceptions;
 
 import edu.vub.at.eval.Evaluator;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 
@@ -63,8 +63,8 @@ public class XImportConflict extends InterpreterException {
 		return NATTable.atValue(conflictingNames_);
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._IMPORTCONFLICT_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._IMPORTCONFLICT_;
 	}
 
 }

@@ -33,9 +33,9 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -44,12 +44,12 @@ import java.util.LinkedList;
 import java.util.Vector;
 
 /**
- * Instances of the class NATMessage represent first-class messages.
- * A NATMessage is an abstract class, as it can be either a synchronous method invocation or an asynchronous message send.
+ * Instances of this class represent first-class messages.
+ * This is an abstract class, as it can be either a synchronous method invocation or an asynchronous message send.
  * 
- * NATMessages subclass from NATIsolate, such that they represent true AmbientTalk objects.
+ * This class is a subclass of {@link NATObject}, such that its instances represent true AmbientTalk objects.
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public abstract class NATMessage extends NATObject implements ATMessage {
 	
@@ -72,35 +72,35 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 	
 	
     /**
-     * Converts the given table of annotations into an ATStripe array.
-     * Each element of the annotations table is converted into a stripe.
-     * Moreover, because messages are isolates, the Isolate stripe is automatically appended to the resulting array.
-     * Also, each type of message has its own type of stripe, so a substripe of Message is also added.
+     * Converts the given table of annotations into an ATTypeTag array.
+     * Each element of the annotations table is converted into a type.
+     * Moreover, because messages are isolates, the Isolate type is automatically appended to the resulting array.
+     * Also, each type of message has its own type of type, so a subtype of Message is also added.
      */
-    protected static ATStripe[] annotationsToStripes(ATStripe msgStripe, ATTable annotations) throws InterpreterException {
+    protected static ATTypeTag[] annotationsToTypes(ATTypeTag msgType, ATTable annotations) throws InterpreterException {
 		if (annotations == NATTable.EMPTY) {
-			return new ATStripe[] { NativeStripes._ISOLATE_, msgStripe };
+			return new ATTypeTag[] { NativeTypeTags._ISOLATE_, msgType };
 		}
     	
         ATObject[] unwrapped = annotations.asNativeTable().elements_;
-		ATStripe[] fullstripes = new ATStripe[unwrapped.length+2];
+		ATTypeTag[] fulltypes = new ATTypeTag[unwrapped.length+2];
 		for (int i = 0; i < unwrapped.length; i++) {
-			fullstripes[i] = unwrapped[i].asStripe();
+			fulltypes[i] = unwrapped[i].asTypeTag();
 		}
-		fullstripes[unwrapped.length] = NativeStripes._ISOLATE_;
-		fullstripes[unwrapped.length+1] = msgStripe;
-        return fullstripes;
+		fulltypes[unwrapped.length] = NativeTypeTags._ISOLATE_;
+		fulltypes[unwrapped.length+1] = msgType;
+        return fulltypes;
     }
 	
 	/**
 	 * Construct a new message from the given selector, arguments and annotations.
-	 * The annotations become this message's stripes.
+	 * The annotations become this message's types.
 	 * 
-	 * @param annotations a table of objects that should be convertible to stripes
-	 * @param msgStripe a substripe of the Message stripe, added by subclasses to mark which kind of native message is created
+	 * @param annotations a table of objects that should be convertible to types
+	 * @param msgType a subtype of the Message type, added by subclasses to mark which kind of native message is created
 	 */
-	protected NATMessage(ATSymbol sel, ATTable arg, ATTable annotations, ATStripe msgStripe) throws InterpreterException {
-		super(annotationsToStripes(msgStripe, annotations));
+	protected NATMessage(ATSymbol sel, ATTable arg, ATTable annotations, ATTypeTag msgType) throws InterpreterException {
+		super(annotationsToTypes(msgType, annotations));
 		super.meta_defineField(_SELECTOR_, sel);
 		super.meta_defineField(_ARGUMENTS_, arg);
 		super.meta_addMethod(_PRIM_SND_);
@@ -116,8 +116,8 @@ public abstract class NATMessage extends NATObject implements ATMessage {
             ATObject dynamicParent,
             ATObject lexicalParent,
             byte flags,
-            ATStripe[] stripes) throws InterpreterException {
-    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
+            ATTypeTag[] types) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types);
     }
 	
 	public ATSymbol base_getSelector() throws InterpreterException {

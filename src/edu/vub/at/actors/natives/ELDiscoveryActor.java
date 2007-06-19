@@ -37,7 +37,7 @@ import edu.vub.at.actors.net.cmd.CMDRequireService;
 import edu.vub.at.actors.net.comm.Address;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.MultiMap;
 
@@ -71,15 +71,15 @@ public final class ELDiscoveryActor extends ELActor {
      * @param pub - a publication containing the serialized forms of the topic and the exported service object
      */
 	public void event_servicePublished(final Publication pub) {
-		this.receive(new Event("servicePublished("+pub.providedStripe_+")") {
+		this.receive(new Event("servicePublished("+pub.providedTypeTag_+")") {
 			public void process(Object myself) {
 				try {
-					pub.deserializedTopic_ = pub.providedStripe_.unpack().asStripe();
+					pub.deserializedTopic_ = pub.providedTypeTag_.unpack().asTypeTag();
 					discoveryManager_.addLocalPublication(pub);
 					// broadcast the new publication to all currently connected VMs
-					new CMDProvideService(pub.providedStripe_, pub.exportedService_).send(host_.communicationBus_);
+					new CMDProvideService(pub.providedTypeTag_, pub.exportedService_).send(host_.communicationBus_);
 				} catch (InterpreterException e) {
-					Logging.VirtualMachine_LOG.error("error while publishing service " + pub.providedStripe_,e);
+					Logging.VirtualMachine_LOG.error("error while publishing service " + pub.providedTypeTag_,e);
 				}
 			}
 		});
@@ -96,16 +96,16 @@ public final class ELDiscoveryActor extends ELActor {
      * @param sub - a subscription containing the serialized forms of the topic and the subscription handler
      */
 	public void event_clientSubscribed(final Subscription sub) {
-		this.receive(new Event("clientSubscribed("+sub.requiredStripe_+")") {
+		this.receive(new Event("clientSubscribed("+sub.requiredTypeTag_+")") {
 			public void process(Object myself) {
 				try {
-					sub.deserializedTopic_ = sub.requiredStripe_.unpack().asStripe();
+					sub.deserializedTopic_ = sub.requiredTypeTag_.unpack().asTypeTag();
 					sub.deserializedHandler_ = sub.registeredHandler_.unpack();
 					discoveryManager_.addLocalSubscription(sub);
 					// broadcast the new subscription to all currently connected VMs
-					new CMDRequireService(sub.requiredStripe_).send(host_.communicationBus_);
+					new CMDRequireService(sub.requiredTypeTag_).send(host_.communicationBus_);
 				} catch (InterpreterException e) {
-					Logging.VirtualMachine_LOG.error("error while subscribing to service " + sub.requiredStripe_,e);
+					Logging.VirtualMachine_LOG.error("error while subscribing to service " + sub.requiredTypeTag_,e);
 				}
 			}
 		});
@@ -122,7 +122,7 @@ public final class ELDiscoveryActor extends ELActor {
      * @param pub - the original publication object to cancel
      */
 	public void event_cancelPublication(final Publication pub) {
-		this.receive(new Event("cancelPublication("+pub.providedStripe_+")") {
+		this.receive(new Event("cancelPublication("+pub.providedTypeTag_+")") {
 			public void process(Object myself) {
 				discoveryManager_.deleteLocalPublication(pub);
 			}
@@ -138,7 +138,7 @@ public final class ELDiscoveryActor extends ELActor {
      * @param sub - the original subscription object to cancel
      */
 	public void event_cancelSubscription(final Subscription sub) {
-		this.receive(new Event("cancelSubscription("+sub.requiredStripe_+")") {
+		this.receive(new Event("cancelSubscription("+sub.requiredTypeTag_+")") {
 			public void process(Object myself) {
 				discoveryManager_.deleteLocalSubscription(sub);
 			}
@@ -153,7 +153,7 @@ public final class ELDiscoveryActor extends ELActor {
 		this.receive(new Event("remotePublication("+serializedProvidedTopic+")") {
 			public void process(Object myself) {
 				try {
-					ATStripe providedTopic = serializedProvidedTopic.unpack().asStripe();
+					ATTypeTag providedTopic = serializedProvidedTopic.unpack().asTypeTag();
 					ATObject providedService = serializedProvidedService.unpack();
 					// notify subscribers of the new provided service
 					Logging.VirtualMachine_LOG.debug("notifyOfExternalPublication("+providedTopic+","+providedService+")");
@@ -168,7 +168,7 @@ public final class ELDiscoveryActor extends ELActor {
     /**
      * Received in response to the CMDJoinServices command of a remote VM
      * 
-     * @param matchingPublications - a map from serialized ATStripe topics to Sets of serialized
+     * @param matchingPublications - a map from serialized ATTypeTag topics to Sets of serialized
      * ATObjects that provide the serialized topic.
      */
 	public void event_batchRemotePublications(final MultiMap matchingPublications) {
@@ -180,7 +180,7 @@ public final class ELDiscoveryActor extends ELActor {
 				for (Iterator iter = topics.iterator(); iter.hasNext();) {
 					try {
 						Packet serializedTopic = (Packet) iter.next();
-						ATStripe unserializedTopic = serializedTopic.unpack().asStripe();
+						ATTypeTag unserializedTopic = serializedTopic.unpack().asTypeTag();
 						Set matchingServices = (Set) matchingPublications.get(serializedTopic);
 						Logging.VirtualMachine_LOG.debug("matchingPublications.get("+serializedTopic+") = "+matchingServices);
 						// for each serialized object exported under the topic
@@ -208,7 +208,7 @@ public final class ELDiscoveryActor extends ELActor {
 		this.receive(new Event("remoteSubscription("+serializedRequiredTopic+")") {
 			public void process(Object myself) {
 				try {
-					ATStripe requiredTopic = serializedRequiredTopic.unpack().asStripe();
+					ATTypeTag requiredTopic = serializedRequiredTopic.unpack().asTypeTag();
 					// query local discoverymanager for matching topic
 			    	Set matchingServices = discoveryManager_.getLocalPublishedServicesMatching(requiredTopic);
 			    	Logging.VirtualMachine_LOG.debug("getLocalPubServMatching("+requiredTopic+") = "+matchingServices+" ("+matchingServices.size()+" items)");
@@ -254,7 +254,7 @@ public final class ELDiscoveryActor extends ELActor {
      * local publication objects. A map of topic -> Set of publication objects is then returned
      * to the sender VM.
      * 
-     * @param subscriptionTopics - a Set of Packet objects representing serialized ATStripe topics
+     * @param subscriptionTopics - a Set of Packet objects representing serialized ATTypeTag topics
      */
 	public void event_receiveNewSubscriptionsFrom(final Set subscriptionTopics, final Address fromMember) {
 		this.receive(new Event("receiveNewSubscriptionsFrom("+fromMember+")") {
@@ -266,7 +266,7 @@ public final class ELDiscoveryActor extends ELActor {
 		    	for (Iterator iter = subscriptionTopics.iterator(); iter.hasNext();) {
 					try {
 						Packet serializedTopic = (Packet) iter.next();
-						ATStripe topic = serializedTopic.unpack().asStripe();
+						ATTypeTag topic = serializedTopic.unpack().asTypeTag();
 						Set matchingServices = discoveryManager_.getLocalPublishedServicesMatching(topic);
 						Logging.VirtualMachine_LOG.debug("getLocalPubServMatching("+topic+") ="+matchingServices+" ("+matchingServices.size()+" items)");
 						if (!matchingServices.isEmpty()) {

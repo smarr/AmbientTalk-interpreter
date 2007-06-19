@@ -40,9 +40,9 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.mirrors.Reflection;
@@ -68,7 +68,7 @@ import java.lang.ref.SoftReference;
  *  - all static fields and methods of the Java class are reflected under symbiosis as fields and methods of the AT object
  *  
  * A Java Class object that represents an interface can furthermore be used
- * as an AmbientTalk stripe. The stripe's name corresponds to the interface's full name.
+ * as an AmbientTalk type. The type's name corresponds to the interface's full name.
  *  
  * JavaClass instances are pooled (on a per-actor basis): there should exist only one JavaClass instance
  * for each Java class loaded into the JVM. Because the JVM ensures that a Java class
@@ -77,7 +77,7 @@ import java.lang.ref.SoftReference;
  *  
  * @author tvcutsem
  */
-public final class JavaClass extends NATObject implements ATStripe {
+public final class JavaClass extends NATObject implements ATTypeTag {
 	
 	/**
 	 * A thread-local hashmap pooling all of the JavaClass wrappers for
@@ -112,17 +112,17 @@ public final class JavaClass extends NATObject implements ATStripe {
 	
 	// primitive fields and method of a JavaClass wrapper
 	
-	private static final AGSymbol _PST_NAME_ = AGSymbol.jAlloc("parentStripes");
-	private static final AGSymbol _SNM_NAME_ = AGSymbol.jAlloc("stripeName");
+	private static final AGSymbol _PTS_NAME_ = AGSymbol.jAlloc("parentTypes");
+	private static final AGSymbol _TNM_NAME_ = AGSymbol.jAlloc("typeName");
 	
-	/** def isSubstripeOf(stripe) { nil } */
-	private static final PrimitiveMethod _PRIM_SST_ = new PrimitiveMethod(
-			AGSymbol.jAlloc("isSubstripeOf"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("stripe")})) {
+	/** def isSubtypeOf(type) { nil } */
+	private static final PrimitiveMethod _PRIM_STP_ = new PrimitiveMethod(
+			AGSymbol.jAlloc("isSubtypeOf"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("type")})) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			if (!arguments.base_getLength().equals(NATNumber.ONE)) {
-				throw new XArityMismatch("isSubstripeOf", 1, arguments.base_getLength().asNativeNumber().javaValue);
+				throw new XArityMismatch("isSubtypeOf", 1, arguments.base_getLength().asNativeNumber().javaValue);
 			}
-			return ctx.base_getLexicalScope().asJavaClassUnderSymbiosis().base_isSubstripeOf(arguments.base_at(NATNumber.ONE).asStripe());
+			return ctx.base_getLexicalScope().asJavaClassUnderSymbiosis().base_isSubtypeOf(arguments.base_at(NATNumber.ONE).asTypeTag());
 		}
 	};
 	
@@ -133,28 +133,28 @@ public final class JavaClass extends NATObject implements ATStripe {
 	 * and has NIL as its dynamic parent.
 	 * 
 	 * If the JavaClass wraps a Java interface type, JavaClass instances are
-	 * also stripes.
+	 * also types.
 	 */
 	private JavaClass(Class wrappedClass) {
 		super(wrappedClass.isInterface() ?
-			  new ATStripe[] { NativeStripes._STRIPE_ } :
-			  NATObject._NO_STRIPES_);
+			  new ATTypeTag[] { NativeTypeTags._TYPETAG_ } :
+			  NATObject._NO_TYPETAGS_);
 		wrappedClass_ = wrappedClass;
 		
-		// add the two fields and one method needed for an ATStripe
+		// add the two fields and one method needed for an ATTypeTag
 		if (wrappedClass.isInterface()) {
 			Class[] extendedInterfaces = wrappedClass_.getInterfaces();
-			ATObject[] stripes = new ATObject[extendedInterfaces.length];
+			ATObject[] types = new ATObject[extendedInterfaces.length];
 			for (int i = 0; i < extendedInterfaces.length; i++) {
-				stripes[i] = JavaClass.wrapperFor(extendedInterfaces[i]);
+				types[i] = JavaClass.wrapperFor(extendedInterfaces[i]);
 			}
 			
 			try {
-				super.meta_defineField(_PST_NAME_, NATTable.atValue(stripes));
-				super.meta_defineField(_SNM_NAME_, AGSymbol.jAlloc(wrappedClass_.getName()));
-				super.meta_addMethod(_PRIM_SST_);
+				super.meta_defineField(_PTS_NAME_, NATTable.atValue(types));
+				super.meta_defineField(_TNM_NAME_, AGSymbol.jAlloc(wrappedClass_.getName()));
+				super.meta_addMethod(_PRIM_STP_);
 			} catch (InterpreterException e) {
-				Logging.Actor_LOG.fatal("Error while initializing Java Class as stripe: " + wrappedClass.getName(), e);
+				Logging.Actor_LOG.fatal("Error while initializing Java Class as type tag: " + wrappedClass.getName(), e);
 			}
 		}
 	}
@@ -389,27 +389,27 @@ public final class JavaClass extends NATObject implements ATStripe {
     }
     
     /* ========================
-     * == ATStripe Interface ==
+     * == ATTypeTag Interface ==
      * ======================== */
     
     /**
-     * If this class represents an interface type, parentStripes
+     * If this class represents an interface type, parentTypes
      * are wrappers for all interfaces extended by this Java interface type
      */
-	public ATTable base_getParentStripes() throws InterpreterException {
-		return super.meta_select(this, _PST_NAME_).asTable();
+	public ATTable base_getSuperTypes() throws InterpreterException {
+		return super.meta_select(this, _PTS_NAME_).asTable();
 	}
 
-	public ATSymbol base_getStripeName() throws InterpreterException {
-		return super.meta_select(this, _SNM_NAME_).asSymbol();
+	public ATSymbol base_getTypeName() throws InterpreterException {
+		return super.meta_select(this, _TNM_NAME_).asSymbol();
 	}
 
 	/**
-	 * A Java interface type used as a stripe can only be a substripe of another
-	 * Java interface type used as a stripe, and only if this type is assignable
+	 * A Java interface type used as a type can only be a subtype of another
+	 * Java interface type used as a type, and only if this type is assignable
 	 * to the other type.
 	 */
-	public ATBoolean base_isSubstripeOf(ATStripe other) throws InterpreterException {
+	public ATBoolean base_isSubtypeOf(ATTypeTag other) throws InterpreterException {
 		if (other instanceof JavaClass) {
 			JavaClass otherClass = (JavaClass) other;
 			// wrappedClass <: otherClass <=> otherClass >= wrappedClass

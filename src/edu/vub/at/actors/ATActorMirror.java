@@ -32,7 +32,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 
@@ -66,9 +66,9 @@ public interface ATActorMirror extends ATObject {
 	 * 
 	 * @param selector the name of the method to trigger remotely
 	 * @param arguments the actual arguments of the message
-	 * @param stripes the stripes with which the message will be born
+	 * @param types the types with which the message will be born
 	 */
-	public ATAsyncMessage base_createMessage(ATSymbol selector, ATTable arguments, ATTable stripes) throws InterpreterException;
+	public ATAsyncMessage base_createMessage(ATSymbol selector, ATTable arguments, ATTable types) throws InterpreterException;
 	
 	/**
 	 * Creates a mirror on the given object. This method serves as the 'mirror factory'
@@ -92,7 +92,7 @@ public interface ATActorMirror extends ATObject {
 	 * a separate service description and an object offering the service. The return
 	 * value is a publication object which allows cancelling the service offer.
 	 */
-	public ATObject base_provide(ATStripe topic, ATObject service) throws InterpreterException;
+	public ATObject base_provide(ATTypeTag topic, ATObject service) throws InterpreterException;
 	
 	/**
 	 * This mechanism is the most basic mechanism to require a service. The return
@@ -100,7 +100,7 @@ public interface ATActorMirror extends ATObject {
 	 * @param bool - if true, the subscription is permanent, if false, once the subscription
 	 * has been satisfied, it is automatically cancelled.
 	 */
-	public ATObject base_require(ATStripe topic, ATClosure handler, ATBoolean bool) throws InterpreterException;
+	public ATObject base_require(ATTypeTag topic, ATClosure handler, ATBoolean bool) throws InterpreterException;
 	
 	/**
 	 * def oldprotocol := actor.install: newprotocol

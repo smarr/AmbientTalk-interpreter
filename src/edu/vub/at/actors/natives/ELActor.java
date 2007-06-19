@@ -47,7 +47,7 @@ import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATContext;
@@ -204,8 +204,8 @@ public class ELActor extends EventLoop {
 	 * @param id the identifier of the object to resolve
 	 * @return a near or far reference to the object, depending on where the designated object lives
 	 */
-	public ATObject resolve(ATObjectID id, ATStripe[] stripes) throws XObjectOffline {
-		return receptionists_.resolveObject(id, stripes);
+	public ATObject resolve(ATObjectID id, ATTypeTag[] types) throws XObjectOffline {
+		return receptionists_.resolveObject(id, types);
 	}
 	
 	/* -----------------------------
@@ -433,20 +433,20 @@ public class ELActor extends EventLoop {
 	 * another remote VM, the actor is asked to compare the incoming publication against
 	 * a subscription that it had announced previously.
 	 * 
-	 * @param requiredStripe serialized form of the stripe attached to the actor's subscription
+	 * @param requiredType serialized form of the type attached to the actor's subscription
 	 * @param myHandler the closure specified as a handler for the actor's subscription
-	 * @param discoveredStripe serialized form of the stripe attached to the new publication
+	 * @param discoveredType serialized form of the type attached to the new publication
 	 * @param remoteService serialized form of the reference to the remote discovered service
 	 */
-	public void event_serviceJoined(final Packet requiredStripePkt, final ATFarReference myHandler,
-			                        final Packet discoveredStripePkt, final Packet remoteServicePkt) {
+	public void event_serviceJoined(final Packet requiredTypePkt, final ATFarReference myHandler,
+			                        final Packet discoveredTypePkt, final Packet remoteServicePkt) {
 		receive(new Event("serviceJoined") {
 			public void process(Object myActorMirror) {
 				try {
-					ATStripe requiredStripe = requiredStripePkt.unpack().asStripe();
-					ATStripe discoveredStripe = discoveredStripePkt.unpack().asStripe();
+					ATTypeTag requiredType = requiredTypePkt.unpack().asTypeTag();
+					ATTypeTag discoveredType = discoveredTypePkt.unpack().asTypeTag();
 					// is there a match?
-					if (discoveredStripe.base_isSubstripeOf(requiredStripe).asNativeBoolean().javaValue) {
+					if (discoveredType.base_isSubtypeOf(requiredType).asNativeBoolean().javaValue) {
 						ATObject remoteService = remoteServicePkt.unpack();
 						// myhandler<-apply([remoteService])
 						myHandler.meta_receive(
@@ -457,9 +457,9 @@ public class ELActor extends EventLoop {
 								NATTable.EMPTY));
 					}
 				} catch (XIOProblem e) {
-					Logging.Actor_LOG.error("Error deserializing joined stripes or services: ", e.getCause());
+					Logging.Actor_LOG.error("Error deserializing joined types or services: ", e.getCause());
 				} catch (XClassNotFound e) {
-					Logging.Actor_LOG.fatal("Could not find class while deserializing joined stripes or services: ", e.getCause());
+					Logging.Actor_LOG.fatal("Could not find class while deserializing joined types or services: ", e.getCause());
 				} catch (InterpreterException e) {
 					Logging.Actor_LOG.error("Error while joining services: ", e);
 				}

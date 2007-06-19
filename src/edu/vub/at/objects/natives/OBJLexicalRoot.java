@@ -46,10 +46,10 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
 import edu.vub.at.parser.NATParser;
@@ -290,7 +290,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * extend: defaultMirror with: { ... }
 	 * </pre>
 	 * 
-	 * Note that the default mirror is striped with the <tt>/.at.stripes.Mirror</tt> stripe.
+	 * Note that the default mirror is typed with the <tt>/.at.types.Mirror</tt> type.
 	 */
 	public ATObject base_getDefaultMirror() {
 		return Evaluator.getMirrorRoot();
@@ -494,13 +494,13 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * <pre>actor.provide(topic, object)</pre>
 	 * 
 	 * This construct enables the given object to become discoverable by objects
-	 * in other actors by means of the topic stripe.
+	 * in other actors by means of the topic type.
 	 * 
 	 * @param object the object to export to remote actors' objects
-	 * @param topic a stripe denoting the abstract 'publication topic' for this object's publication
+	 * @param topic a type denoting the abstract 'publication topic' for this object's publication
 	 * @return a publication object whose <tt>cancel</tt> method can be used to cancel the publication.
 	 */
-	public ATObject base_export_as_(ATObject object, ATStripe topic) throws InterpreterException {
+	public ATObject base_export_as_(ATObject object, ATTypeTag topic) throws InterpreterException {
 		return ELActor.currentActor().getActorMirror().base_provide(topic, object);
 	}
 	
@@ -520,7 +520,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * subscription is cancelled, a request to apply the closure may already have been scheduled
 	 * for execution by the current actor. This request is not cancelled by invoking the <tt>cancel</tt> method.
 	 */
-	public ATObject base_when_discovered_(ATStripe topic, ATClosure handler) throws InterpreterException {
+	public ATObject base_when_discovered_(ATTypeTag topic, ATClosure handler) throws InterpreterException {
 		return ELActor.currentActor().getActorMirror().base_require(topic, handler, NATBoolean._FALSE_);
 	}
 	
@@ -541,7 +541,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * subscription is cancelled, a request to apply the closure may already have been scheduled
 	 * for execution by the current actor. This request is not cancelled by invoking the <tt>cancel</tt> method.
 	 */
-	public ATObject base_whenever_discovered_(ATStripe topic, ATClosure handler) throws InterpreterException {
+	public ATObject base_whenever_discovered_(ATTypeTag topic, ATClosure handler) throws InterpreterException {
 		return ELActor.currentActor().getActorMirror().base_require(topic, handler, NATBoolean._TRUE_);
 	}
 	
@@ -622,7 +622,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is <tt>nil</tt>.
 	 *  <li>The object's <b>parent type</b> is <b>SHARES-A</b> (i.e. it is not an extension of its parent).
-	 *  <li>The object's <b>stripes</b> is <tt>[]</tt> (i.e. it has no stripes).
+	 *  <li>The object's <b>types</b> is <tt>[]</tt> (i.e. it has no types).
 	 *  <li>The object's <b>mirror</b> is the <tt>defaultMirror</tt> on objects (i.e. it is an object
 	 *  with a 'native' metaobject protocol).
 	 * </ul>
@@ -630,7 +630,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>object: { def x := 1; }</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: nil extends: false stripedWith: [] mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: nil extends: false typedWith: [] mirroredBy: defaultMirror</pre>
 	 * 
 	 * The closure used to initialize the object may contain formal parameters. The closure
 	 * will always be invoked with <i>its own mandatory formal parameters</i>. E.g., a closure
@@ -646,10 +646,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * 
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent
 	 * @return a new AmbientTalk object with the properties defined above.
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
 	public ATObject base_object_(ATClosure code) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				NATNil._INSTANCE_,
 				NATBoolean._FALSE_ /* SHARES-A link */,
@@ -665,7 +665,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is the argument object.
 	 *  <li>The object's <b>parent type</b> is <b>IS-A</b> (i.e. it is an extension of its parent).
-	 *  <li>The object's <b>stripes</b> is <tt>[]</tt> (i.e. it has no stripes).
+	 *  <li>The object's <b>types</b> is <tt>[]</tt> (i.e. it has no types).
 	 *  <li>The object's <b>mirror</b> is the <tt>defaultMirror</tt> on objects (i.e. it is an object
 	 *  with a 'native' metaobject protocol).
 	 * </ul>
@@ -673,16 +673,16 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>extend: parent with: { def x := 1; }</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: true stripedWith: [] mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: parent extends: true typedWith: [] mirroredBy: defaultMirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
 	public ATObject base_extend_with_(ATObject parent, ATClosure code) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				parent,
 				NATBoolean._TRUE_ /* IS-A link */,
@@ -691,36 +691,36 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
     /**
-     * The <tt>extend:with:stripedWith:</tt> object creation primitive.
+     * The <tt>extend:with:typedWith:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is the argument object.
 	 *  <li>The object's <b>parent type</b> is <b>IS-A</b> (i.e. it is an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are initialized to the argument stripes table.
+	 *  <li>The object's <b>types</b> are initialized to the argument types table.
 	 *  <li>The object's <b>mirror</b> is the <tt>defaultMirror</tt> on objects (i.e. it is an object
 	 *  with a 'native' metaobject protocol).
 	 * </ul>
 	 * 
-	 * Example: <code>extend: parent with: { def x := 1; } stripedWith: [foo,bar]</code>
+	 * Example: <code>extend: parent with: { def x := 1; } typedWith: [foo,bar]</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: true stripedWith: stripes mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: parent extends: true typedWith: types mirroredBy: defaultMirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
-	 * @param stripes a table of stripes with which to stripe the newly created object.
+	 * @param types a table of types with which to type the newly created object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
-	public ATObject base_extend_with_stripedWith_(ATObject parent, ATClosure code, ATTable stripes) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+	public ATObject base_extend_with_taggedAs_(ATObject parent, ATClosure code, ATTable types) throws InterpreterException {
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				parent,
 				NATBoolean._TRUE_ /* IS-A link */,
-				stripes,
+				types,
 				base_getDefaultMirror());
 	}
 	
@@ -732,7 +732,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is the argument object.
 	 *  <li>The object's <b>parent type</b> is <b>IS-A</b> (i.e. it is an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are set to <tt>[]</tt> (i.e. the object has no stripes).
+	 *  <li>The object's <b>types</b> are set to <tt>[]</tt> (i.e. the object has no types).
 	 *  <li>The object's <b>mirror</b> is the given mirror. This means that this object is a <i>mirage</i>
 	 *  whose metaobject protocol is entirely dictated by the given mirror.
 	 * </ul>
@@ -740,17 +740,17 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>extend: parent with: { def x := 1; } mirroredBy: (mirror: {...})</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: true stripedWith: [] mirroredBy: mirror</pre>
+	 * <pre>object: code childOf: parent extends: true typedWith: [] mirroredBy: mirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
 	 * @param mirror the mirror of the newly created mirage object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
 	public ATObject base_extend_with_mirroredBy_(ATObject parent, ATClosure code, ATObject mirror) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				parent,
 				NATBoolean._TRUE_ /* IS-A link */,
@@ -759,37 +759,37 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
     /**
-     * The <tt>extend:with:stripedWith:mirroredBy:</tt> object creation primitive.
+     * The <tt>extend:with:typedWith:mirroredBy:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is the argument object.
 	 *  <li>The object's <b>parent type</b> is <b>IS-A</b> (i.e. it is an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are initialized to the argument stripes table.
+	 *  <li>The object's <b>types</b> are initialized to the argument types table.
 	 *  <li>The object's <b>mirror</b> is the given argument mirror. This means that the newly
 	 *  created object is a <i>mirage</i> whose metaobject protocol is dictated by the given mirror.
 	 * </ul>
 	 * 
-	 * Example: <code>extend: parent with: { def x := 1; } stripedWith: [foo,bar] mirroredBy: mirror</code>
+	 * Example: <code>extend: parent with: { def x := 1; } typedWith: [foo,bar] mirroredBy: mirror</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: true stripedWith: stripes mirroredBy: mirror</pre>
+	 * <pre>object: code childOf: parent extends: true typedWith: types mirroredBy: mirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
-	 * @param stripes a table of stripes with which to stripe the newly created object.
+	 * @param types a table of types with which to type the newly created object.
 	 * @param the mirror object of the newly created mirage object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
-	public ATObject base_extend_with_stripedWith_mirroredBy_(ATObject parent, ATClosure code, ATTable stripes, ATObject mirror) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+	public ATObject base_extend_with_taggedAs_mirroredBy_(ATObject parent, ATClosure code, ATTable types, ATObject mirror) throws InterpreterException {
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				parent,
 				NATBoolean._TRUE_ /* IS-A link */,
-				stripes,
+				types,
 				mirror);
 	}
 	
@@ -801,7 +801,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is the argument object.
 	 *  <li>The object's <b>parent type</b> is <b>SHARES-A</b> (i.e. it is not an extension of its parent).
-	 *  <li>The object's <b>stripes</b> is <tt>[]</tt> (i.e. it has no stripes).
+	 *  <li>The object's <b>types</b> is <tt>[]</tt> (i.e. it has no types).
 	 *  <li>The object's <b>mirror</b> is the <tt>defaultMirror</tt> on objects (i.e. it is an object
 	 *  with a 'native' metaobject protocol).
 	 * </ul>
@@ -809,16 +809,16 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>share: parent with: { def x := 1; }</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: false stripedWith: [] mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: parent extends: false typedWith: [] mirroredBy: defaultMirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
 	public ATObject base_share_with_(ATObject parent, ATClosure code) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				parent,
 				NATBoolean._FALSE_ /* SHARES-A link */,
@@ -827,36 +827,36 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 
     /**
-     * The <tt>share:with:stripedWith:</tt> object creation primitive.
+     * The <tt>share:with:typedWith:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is the argument object.
 	 *  <li>The object's <b>parent type</b> is <b>SHARES-A</b> (i.e. it is not an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are initialized to the argument stripes table.
+	 *  <li>The object's <b>types</b> are initialized to the argument types table.
 	 *  <li>The object's <b>mirror</b> is the <tt>defaultMirror</tt> on objects (i.e. it is an object
 	 *  with a 'native' metaobject protocol).
 	 * </ul>
 	 * 
-	 * Example: <code>share: parent with: { def x := 1; } stripedWith: [foo,bar]</code>
+	 * Example: <code>share: parent with: { def x := 1; } typedWith: [foo,bar]</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: false stripedWith: stripes mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: parent extends: false typedWith: types mirroredBy: defaultMirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
-	 * @param stripes a table of stripes with which to stripe the newly created object.
+	 * @param types a table of types with which to type the newly created object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
-	public ATObject base_share_with_stripedWith_(ATObject parent, ATClosure code, ATTable stripes) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+	public ATObject base_share_with_taggedAs_(ATObject parent, ATClosure code, ATTable types) throws InterpreterException {
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				parent,
 				NATBoolean._FALSE_ /* SHARES-A link */,
-				stripes,
+				types,
 				base_getDefaultMirror());
 	}
 	
@@ -868,7 +868,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is the argument object.
 	 *  <li>The object's <b>parent type</b> is <b>SHARES-A</b> (i.e. it is not an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are set to <tt>[]</tt> (i.e. the object has no stripes).
+	 *  <li>The object's <b>types</b> are set to <tt>[]</tt> (i.e. the object has no types).
 	 *  <li>The object's <b>mirror</b> is the given mirror. This means that this object is a <i>mirage</i>
 	 *  whose metaobject protocol is entirely dictated by the given mirror.
 	 * </ul>
@@ -876,17 +876,17 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>share: parent with: { def x := 1; } mirroredBy: (mirror: {...})</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: false stripedWith: [] mirroredBy: mirror</pre>
+	 * <pre>object: code childOf: parent extends: false typedWith: [] mirroredBy: mirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
 	 * @param mirror the mirror of the newly created mirage object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
 	public ATObject base_share_with_mirroredBy_(ATObject parent, ATClosure code, ATObject mirror) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				parent,
 				NATBoolean._FALSE_ /* SHARES-A link */,
@@ -895,70 +895,70 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
     /**
-     * The <tt>share:with:stripedWith:mirroredBy:</tt> object creation primitive.
+     * The <tt>share:with:typedWith:mirroredBy:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is the argument object.
 	 *  <li>The object's <b>parent type</b> is <b>SHARES-A</b> (i.e. it is not an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are initialized to the argument stripes table.
+	 *  <li>The object's <b>types</b> are initialized to the argument types table.
 	 *  <li>The object's <b>mirror</b> is the given argument mirror. This means that the newly
 	 *  created object is a <i>mirage</i> whose metaobject protocol is dictated by the given mirror.
 	 * </ul>
 	 * 
-	 * Example: <code>share: parent with: { def x := 1; } stripedWith: [foo,bar] mirroredBy: mirror</code>
+	 * Example: <code>share: parent with: { def x := 1; } typedWith: [foo,bar] mirroredBy: mirror</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: parent extends: false stripedWith: stripes mirroredBy: mirror</pre>
+	 * <pre>object: code childOf: parent extends: false typedWith: types mirroredBy: mirror</pre>
 	 * 
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
-	 * @param stripes a table of stripes with which to stripe the newly created object.
+	 * @param types a table of types with which to type the newly created object.
 	 * @param the mirror object of the newly created mirage object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
-	public ATObject base_share_with_stripedWith_mirroredBy_(ATObject parent, ATClosure code, ATTable stripes, ATObject mirror) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+	public ATObject base_share_with_taggedAs_mirroredBy_(ATObject parent, ATClosure code, ATTable types, ATObject mirror) throws InterpreterException {
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				parent,
 				NATBoolean._FALSE_ /* SHARES-A link */,
-				stripes,
+				types,
 				mirror);
 	}
 	
     /**
-     * The <tt>object:stripedWith:</tt> object creation primitive.
+     * The <tt>object:typedWith:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is <tt>nil</tt>.
 	 *  <li>The object's <b>parent type</b> is <b>SHARES-A</b> (i.e. it is not an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are initialized to the argument stripes table.
+	 *  <li>The object's <b>types</b> are initialized to the argument types table.
 	 *  <li>The object's <b>mirror</b> is <tt>defaultMirror</tt> (i.e. the object has the
 	 *  default metaobject protocol).
 	 * </ul>
 	 * 
-	 * Example: <code>object: { def x := 1; } stripedWith: [foo,bar]</code>
+	 * Example: <code>object: { def x := 1; } typedWith: [foo,bar]</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: nil extends: false stripedWith: stripes mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: nil extends: false typedWith: types mirroredBy: defaultMirror</pre>
 	 * 
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
-	 * @param stripes a table of stripes with which to stripe the newly created object.
+	 * @param types a table of types with which to type the newly created object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
-	public ATObject base_object_stripedWith_(ATClosure code, ATTable stripes) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+	public ATObject base_object_taggedAs_(ATClosure code, ATTable types) throws InterpreterException {
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				NATNil._INSTANCE_,
 				NATBoolean._FALSE_ /* SHARES-A link */,
-				stripes,
+				types,
 				base_getDefaultMirror());
 	}
 	
@@ -968,11 +968,11 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
 	 *  <li>The object's <b>lexical parent</b> is initialized to the lexical scope of the argument closure,
-	 *  but because it is striped as an isolate, the parent link is replaced by a link to the lexical <tt>root</tt>.
+	 *  but because it is typed as an isolate, the parent link is replaced by a link to the lexical <tt>root</tt>.
 	 *  <li>The object's <b>dynamic parent</b> is <tt>nil</tt>.
 	 *  <li>The object's <b>parent type</b> is <b>SHARES-A</b> (i.e. it is not an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are initialized to <tt>[/.at.stripes.Isolate]</tt>, i.e.
-	 *  the object is striped as an isolate.
+	 *  <li>The object's <b>types</b> are initialized to <tt>[/.at.types.Isolate]</tt>, i.e.
+	 *  the object is typed as an isolate.
 	 *  <li>The object's <b>mirror</b> is <tt>defaultMirror</tt> (i.e. the object has the
 	 *  default metaobject protocol).
 	 * </ul>
@@ -980,7 +980,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>isolate: { def x := 1; }</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: nil extends: false stripedWith: [/.at.stripes.Isolate] mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: nil extends: false taggedAs: [/.at.types.Isolate] mirroredBy: defaultMirror</pre>
 	 * 
 	 * An isolate is an object without a proper lexical parent. It is as if the isolate is always
 	 * defined at top-level. However, lexically visible variables can be retained by copying them into the isolate
@@ -990,10 +990,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
 	public ATObject base_isolate_(ATClosure code) throws InterpreterException {
-		return base_object_stripedWith_(code, NATTable.of(NativeStripes._ISOLATE_));
+		return base_object_taggedAs_(code, NATTable.of(NativeTypeTags._ISOLATE_));
 	}
 	
     /**
@@ -1004,7 +1004,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is <tt>defaultMirror</tt>.
 	 *  <li>The object's <b>parent type</b> is <b>IS-A</b> (i.e. it is an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are initialized to <tt>[]</tt>.
+	 *  <li>The object's <b>types</b> are initialized to <tt>[]</tt>.
 	 *  <li>The object's <b>mirror</b> is <tt>defaultMirror</tt> (i.e. the object has the
 	 *  default metaobject protocol).
 	 * </ul>
@@ -1012,7 +1012,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>mirror: { def x := 1; }</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: defaultMirror extends: true stripedWith: [] mirroredBy: defaultMirror</pre>
+	 * <pre>object: code childOf: defaultMirror extends: true taggedAs: [] mirroredBy: defaultMirror</pre>
 	 * 
 	 * This construct is mere syntactic sugar for creating an extension of the default mirror root.
 	 * It follows that AmbientTalk mirrors are plain AmbientTalk objects. They simply need to implement
@@ -1025,10 +1025,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
 	public ATObject base_mirror_(ATClosure code) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				base_getDefaultMirror(),
 				NATBoolean._TRUE_ /* IS-A link */, 
@@ -1044,7 +1044,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is <tt>nil</tt>.
 	 *  <li>The object's <b>parent type</b> is <b>SHARES-A</b> (i.e. it is not an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are set to <tt>[]</tt> (i.e. the object has no stripes).
+	 *  <li>The object's <b>types</b> are set to <tt>[]</tt> (i.e. the object has no types).
 	 *  <li>The object's <b>mirror</b> is the given mirror. This means that this object is a <i>mirage</i>
 	 *  whose metaobject protocol is entirely dictated by the given mirror.
 	 * </ul>
@@ -1052,7 +1052,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Example: <code>object: { def x := 1; } mirroredBy: (mirror: {...})</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: nil extends: false stripedWith: [] mirroredBy: mirror</pre>
+	 * <pre>object: code childOf: nil extends: false taggedAs: [] mirroredBy: mirror</pre>
 	 * 
 	 * This primitive allows the construction of so-called <i>mirage</i> objects which are
 	 * AmbientTalk objects whose metaobject protocol behaviour is dictated by a custom mirror
@@ -1062,10 +1062,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @param mirror the mirror of the newly created mirage object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
 	public ATObject base_object_mirroredBy_(ATClosure code, ATObject mirror) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				NATNil._INSTANCE_,
 				NATBoolean._FALSE_ /* SHARES-A link */,
@@ -1074,56 +1074,56 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
     /**
-     * The <tt>object:stripedWith:mirroredBy:</tt> object creation primitive.
+     * The <tt>object:taggedAs:mirroredBy:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is <tt>nil</tt>.
 	 *  <li>The object's <b>parent type</b> is <b>SHARES-A</b> (i.e. it is not an extension of its parent).
-	 *  <li>The object's <b>stripes</b> are set to the argument stripes.
+	 *  <li>The object's <b>types</b> are set to the argument types.
 	 *  <li>The object's <b>mirror</b> is the given mirror. This means that this object is a <i>mirage</i>
 	 *  whose metaobject protocol is entirely dictated by the given mirror.
 	 * </ul>
 	 * 
-	 * Example: <code>object: { def x := 1; } stripedWith: [foo,bar] mirroredBy: (mirror: {...})</code>
+	 * Example: <code>object: { def x := 1; } taggedAs: [foo,bar] mirroredBy: (mirror: {...})</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>object: code childOf: nil extends: false stripedWith: stripes mirroredBy: mirror</pre>
+	 * <pre>object: code childOf: nil extends: false taggedAs: types mirroredBy: mirror</pre>
 	 * 
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
-	 * @param stripes a table of stripes with which to stripe the newly created object.
+	 * @param types a table of types with which to type the newly created object.
 	 * @param mirror the mirror of the newly created mirage object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
-	 * @see #base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
+	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
 	 */
-	public ATObject base_object_stripedWith_mirroredBy_(ATClosure code, ATTable stripes, ATObject mirror) throws InterpreterException {
-		return base_object_childOf_extends_stripedWith_mirroredBy_(
+	public ATObject base_object_taggedAs_mirroredBy_(ATClosure code, ATTable types, ATObject mirror) throws InterpreterException {
+		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
 				NATNil._INSTANCE_,
 				NATBoolean._FALSE_ /* SHARES-A link */,
-				stripes,
+				types,
 				mirror);
 	}
 	
     /**
-     * The <tt>object:childOf:extends:stripedWith:mirroredBy:</tt> object creation primitive.
+     * The <tt>object:childOf:extends:taggedAs:mirroredBy:</tt> object creation primitive.
 	 * This construct creates a new AmbientTalk object where:
 	 * <ul>
 	 *  <li>The object is initialized with the <i>code</i> of the argument closure.
 	 *  <li>The object's <b>lexical parent</b> is the lexical scope of the argument closure. 
 	 *  <li>The object's <b>dynamic parent</b> is the argument parent object.
 	 *  <li>The object's <b>parent type</b> is the argument parent type, true being <tt>IS-A</tt>, false being <tt>SHARES-A</tt>.
-	 *  <li>The object's <b>stripes</b> are set to the argument stripes table.
+	 *  <li>The object's <b>types</b> are set to the argument types table.
 	 *  <li>The object's <b>mirror</b> is the given mirror. This means that this object is a <i>mirage</i>
 	 *  whose metaobject protocol is entirely dictated by the given mirror, if the mirror is not <tt>defaultMirror</tt>.
 	 * </ul>
 	 * 
-	 * Example: <code>object: { def x := 1; } childOf: parent extends: true stripedWith: [foo,bar] mirroredBy: mirror</code>
+	 * Example: <code>object: { def x := 1; } childOf: parent extends: true taggedAs: [foo,bar] mirroredBy: mirror</code>
 	 * <p>
 	 * Pseudo-implementation:
-	 * <pre>let o = OBJECT(parent,code.lexicalParent,parentType,stripes);
+	 * <pre>let o = OBJECT(parent,code.lexicalParent,parentType,types);
 	 *  code.applyInScope(o, code.mandatoryPars);
 	 *  o
 	 * </pre>
@@ -1131,13 +1131,13 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param parentType a boolean denoting whether or not the object is an extension of its dynamic parent.
-	 * @param stripes a table of stripes with which the newly created object should be striped.
+	 * @param types a table of types with which the newly created object should be typed.
 	 * @param mirror the mirror of the newly created object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure) for more information about the properties of the passed closure.
 	 */
-	public ATObject base_object_childOf_extends_stripedWith_mirroredBy_(ATClosure code, ATObject parent, ATBoolean parentType, ATTable stripes, ATObject mirror) throws InterpreterException {
-		ATStripe[] stripeArray = NATStripe.toStripeArray(stripes);
+	public ATObject base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure code, ATObject parent, ATBoolean parentType, ATTable types, ATObject mirror) throws InterpreterException {
+		ATTypeTag[] typeArray = NATTypeTag.toTypeTagArray(types);
 		boolean parentRelation = parentType.asNativeBoolean().javaValue;
 		NATObject newObject;
 		// if the mirror is a 'default' mirror...
@@ -1146,10 +1146,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 			newObject = new NATObject(parent, // dynamic parent
 					                  code.base_getContext().base_getLexicalScope(), // lexical parent
 					                  parentRelation, // IS-A or SHARES-A
-					                  stripeArray); // initial stripes
+					                  typeArray); // initial types
 		} else {
 			// else create a mirage mirrored by the custom mirror
-			newObject = NATMirage.createMirage(code, parent, parentRelation, stripeArray, mirror);
+			newObject = NATMirage.createMirage(code, parent, parentRelation, typeArray, mirror);
 		}
 		
 		newObject.initializeWithCode(code);
@@ -1183,7 +1183,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Therefore, the clone: operator is implemented as follows:
 	 * 
      * <pre>def clone: obj {
-     *   if: (is: obj stripedWith: Mirror) then: {
+     *   if: (is: obj taggedAs: Mirror) then: {
      *     reflect: (clone: obj.base)
      *   } else: {
      *     (reflect: obj).clone()
@@ -1200,7 +1200,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a clone of the given object (default semantics results in a shallow copy)
 	 */
 	public ATObject base_clone_(ATObject original) throws InterpreterException {
-		if (original.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+		if (original.meta_isTaggedAs(NativeTypeTags._MIRROR_).asNativeBoolean().javaValue) {
 		    return base_reflect_(base_clone_(original.meta_select(original, OBJMirrorRoot._BASE_NAME_)));
 		} else {
 			return original.meta_clone();
@@ -1223,23 +1223,23 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 }
 	
 	/* -------------------
-	 * -- Stripe Support -
+	 * -- Type Support -
 	 * ------------------- */
 	
 	/**
-	 * The <tt>is: object stripedWith: stripe</tt> construct.
-	 * @return true if the given object is striped with the given stripe, false otherwise
+	 * The <tt>is: object taggedAs: type</tt> construct.
+	 * @return true if the given object is typed with the given type, false otherwise
 	 */
-	public ATBoolean base_is_stripedWith_(ATObject object, ATStripe stripe) throws InterpreterException {
-		return object.meta_isStripedWith(stripe);
+	public ATBoolean base_is_taggedAs_(ATObject object, ATTypeTag type) throws InterpreterException {
+		return object.meta_isTaggedAs(type);
 	}
 	
 	/**
-	 * The <tt>stripesOf: object</tt>
-	 * @return a table of all of the <i>local</i> stripes of an object.
+	 * The <tt>tagsOf: object</tt>
+	 * @return a table of all of the <i>local</i> types of an object.
 	 */
-	public ATTable base_stripesOf_(ATObject object) throws InterpreterException {
-		return object.meta_getStripes();
+	public ATTable base_tagsOf_(ATObject object) throws InterpreterException {
+		return object.meta_getTypeTags();
 	}
 	
 	/* -------------------------------
@@ -1317,12 +1317,12 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
-	 * The <tt>try: { tryBlock} catch: stripe using: { |e| replacementCode }</tt>
+	 * The <tt>try: { tryBlock} catch: type using: { |e| replacementCode }</tt>
 	 * 
 	 * 'Syntactic sugar' for one "in-line", native handler.
 	 * @see #base_try_usingHandlers_(ATClosure, ATTable)
 	 */
-	public ATObject base_try_catch_using_(ATClosure tryBlock, ATStripe filter, ATClosure replacementCode) throws InterpreterException {
+	public ATObject base_try_catch_using_(ATClosure tryBlock, ATTypeTag filter, ATClosure replacementCode) throws InterpreterException {
 		return base_try_using_(tryBlock, new NATHandler(filter, replacementCode));
 	}
 	
@@ -1331,9 +1331,9 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * 
 	 * <pre>try: {
 	 *   tryBlock
-	 * } catch: stripe using: { |e|
+	 * } catch: type using: { |e|
 	 *   replacementCode
-	 * } catch: stripe2 using: { |e|
+	 * } catch: type2 using: { |e|
 	 *   replacementCode2
 	 * }</pre>
 	 * 
@@ -1341,8 +1341,8 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @see #base_try_usingHandlers_(ATClosure, ATTable)
 	 */
 	public ATObject base_try_catch_using_catch_using_(	ATClosure tryBlock,
-													ATStripe filter1, ATClosure hdl1,
-			                						   	ATStripe filter2, ATClosure hdl2) throws InterpreterException {
+													ATTypeTag filter1, ATClosure hdl1,
+			                						   	ATTypeTag filter2, ATClosure hdl2) throws InterpreterException {
 		return base_try_using_using_(tryBlock, new NATHandler(filter1, hdl1), new NATHandler(filter2, hdl2));
 	}
 	
@@ -1351,11 +1351,11 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * 
 	 * <pre>try: {
 	 *   tryBlock
-	 * } catch: stripe using: { |e|
+	 * } catch: type using: { |e|
 	 *   replacementCode
-	 * } catch: stripe2 using: { |e|
+	 * } catch: type2 using: { |e|
 	 *   replacementCode2
-	 * } catch: stripe3 using: { |e|
+	 * } catch: type3 using: { |e|
 	 *   replacementCode3
 	 * }</pre>
 	 * 
@@ -1363,19 +1363,19 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @see #base_try_usingHandlers_(ATClosure, ATTable)
 	 */
 	public ATObject base_try_catch_using_catch_using_catch_using_(ATClosure tryBlock,
-															   ATStripe filter1, ATClosure hdl1,
-															   ATStripe filter2, ATClosure hdl2,
-															   ATStripe filter3, ATClosure hdl3) throws InterpreterException {
+															   ATTypeTag filter1, ATClosure hdl1,
+															   ATTypeTag filter2, ATClosure hdl2,
+															   ATTypeTag filter3, ATClosure hdl3) throws InterpreterException {
 		return base_try_using_using_using_(tryBlock, new NATHandler(filter1, hdl1), new NATHandler(filter2, hdl2), new NATHandler(filter3, hdl3));
 	}
 	
 	/**
-	 * The <tt>handle: stripe with: { |e| replacementCode }</tt> construct.
+	 * The <tt>handle: type with: { |e| replacementCode }</tt> construct.
 	 * 
 	 * @return a first-class handler from a filter prototype and some handler code.
 	 * @see ATHandler for the interface to which a handler object responds.
 	 */
-	public ATObject base_handle_with_(ATStripe filter, ATClosure replacementCode) {
+	public ATObject base_handle_with_(ATTypeTag filter, ATClosure replacementCode) {
 		return new NATHandler(filter, replacementCode);
 	}
 	

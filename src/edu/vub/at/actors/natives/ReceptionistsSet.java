@@ -33,7 +33,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.util.MultiMap;
 
 import java.lang.ref.WeakReference;
@@ -85,7 +85,7 @@ public class ReceptionistsSet {
 		farReferences_ = new Hashtable();
 	}
 	
-	private NATRemoteFarRef createRemoteFarRef(ATObjectID objectId, ATStripe[] stripes) {
+	private NATRemoteFarRef createRemoteFarRef(ATObjectID objectId, ATTypeTag[] types) {
 		NATRemoteFarRef farref;
 		WeakReference pooled = (WeakReference) remoteReferences_.get(objectId);
 		if (pooled != null) {
@@ -94,12 +94,12 @@ public class ReceptionistsSet {
 				return farref;
 			}
 		}
-		farref = new NATRemoteFarRef(objectId, owner_, stripes);
+		farref = new NATRemoteFarRef(objectId, owner_, types);
 		remoteReferences_.put(objectId, new WeakReference(farref));
 		return farref;
 	}
 	
-	private NATLocalFarRef createLocalFarRef(ELActor actor, ATObjectID objectId, ATStripe[] stripes) {
+	private NATLocalFarRef createLocalFarRef(ELActor actor, ATObjectID objectId, ATTypeTag[] types) {
 		NATLocalFarRef farref;
 		WeakReference pooled = (WeakReference) farReferences_.get(objectId);
 		if (pooled != null) {
@@ -109,7 +109,7 @@ public class ReceptionistsSet {
 			}
 		}
 
-		farref = new NATLocalFarRef(actor, objectId, stripes, owner_);
+		farref = new NATLocalFarRef(actor, objectId, types, owner_);
 		farReferences_.put(objectId, new WeakReference(farref));
 		return farref;
 	}
@@ -139,11 +139,11 @@ public class ReceptionistsSet {
 			exportedObjectsTable_.put(objId, object);
 		}
 		
-		// copy stripes of local object
-		ATObject[] origStripes = object.meta_getStripes().asNativeTable().elements_;
-		ATStripe[] stripes = new ATStripe[origStripes.length];
-		System.arraycopy(origStripes, 0, stripes, 0, origStripes.length);
-		return createLocalFarRef(owner_, objId, stripes);
+		// copy types of local object
+		ATObject[] origTypes = object.meta_getTypeTags().asNativeTable().elements_;
+		ATTypeTag[] types = new ATTypeTag[origTypes.length];
+		System.arraycopy(origTypes, 0, types, 0, origTypes.length);
+		return createLocalFarRef(owner_, objId, types);
 	}
 	
 	/**
@@ -182,7 +182,7 @@ public class ReceptionistsSet {
 	 * @return either the local object corresponding to that identifier, or a far reference designating the id
 	 * @throws XObjectOffline if the object was not found locally
 	 */
-	public ATObject resolveObject(ATObjectID objectId, ATStripe[] stripes) throws XObjectOffline {
+	public ATObject resolveObject(ATObjectID objectId, ATTypeTag[] types) throws XObjectOffline {
 		if (objectId.getActorId().equals(owner_.getActorID())) { // does objectId denote a local object?
 			
 			// object should be found in this actor
@@ -195,11 +195,11 @@ public class ReceptionistsSet {
 			
 		} else if (objectId.isRemote()) { // the resolved object is not local
 			// the designated object does not live in this VM
-			return createRemoteFarRef(objectId, stripes);
+			return createRemoteFarRef(objectId, types);
 		} else {
 			// the designated object lives in the same VM as this actor
 			ELActor localActor = owner_.getHost().getActor(objectId.getActorId());
-			return createLocalFarRef(localActor, objectId, stripes);
+			return createLocalFarRef(localActor, objectId, types);
 		}
 	}
 	

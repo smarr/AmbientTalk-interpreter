@@ -40,9 +40,9 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NativeClosure;
@@ -137,8 +137,8 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
      * -- Language Construct to Actor Protocol --
      * ------------------------------------------ */
 
-	public ATAsyncMessage base_createMessage(ATSymbol selector, ATTable arguments, ATTable stripes) throws InterpreterException {
-		return new NATAsyncMessage(NATNil._INSTANCE_, selector, arguments, stripes);
+	public ATAsyncMessage base_createMessage(ATSymbol selector, ATTable arguments, ATTable types) throws InterpreterException {
+		return new NATAsyncMessage(NATNil._INSTANCE_, selector, arguments, types);
 	}
 	
 	public ATObject base_createMirror(ATObject reflectee) throws InterpreterException {
@@ -157,7 +157,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		private static final AGSymbol _TOPIC_ = AGSymbol.jAlloc("topic");
 		private static final AGSymbol _SERVICE_ = AGSymbol.jAlloc("service");
 		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
-		public NATPublication(final ELDiscoveryActor discoveryActor, ATStripe topic, ATObject service, final Publication pub) throws InterpreterException {
+		public NATPublication(final ELDiscoveryActor discoveryActor, ATTypeTag topic, ATObject service, final Publication pub) throws InterpreterException {
 			meta_defineField(_TOPIC_, topic);
 			meta_defineField(_SERVICE_, service);
 			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
@@ -185,7 +185,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		private static final AGSymbol _HANDLER_ = AGSymbol.jAlloc("handler");
 		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
 		public NATSubscription(final ELDiscoveryActor discoveryActor,
-				               ATStripe topic, ATClosure handler,
+				               ATTypeTag topic, ATClosure handler,
 				               final Subscription sub) throws InterpreterException {
 			meta_defineField(_TOPIC_, topic);
 			meta_defineField(_HANDLER_, handler);
@@ -201,7 +201,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		}
 	}
 	
-	public ATObject base_provide(final ATStripe topic, final ATObject service) throws InterpreterException {
+	public ATObject base_provide(final ATTypeTag topic, final ATObject service) throws InterpreterException {
 		Publication pub = new Publication(ELActor.currentActor(),
 				                          new Packet(topic),
 				                          new Packet(service));
@@ -209,7 +209,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return new NATPublication(discoveryActor_, topic, service, pub);
 	}
 	
-	public ATObject base_require(final ATStripe topic, final ATClosure handler, ATBoolean isPermanent) throws InterpreterException {
+	public ATObject base_require(final ATTypeTag topic, final ATClosure handler, ATBoolean isPermanent) throws InterpreterException {
 		Subscription sub = new Subscription(ELActor.currentActor(),
 				                            new Packet(topic),
 				                            new Packet(handler),
@@ -266,8 +266,8 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return NATNil._INSTANCE_;
 	}
 	
-    public ATTable meta_getStripes() throws InterpreterException {
-    	return NATTable.of(NativeStripes._ACTORMIRROR_);
+    public ATTable meta_getTypeTags() throws InterpreterException {
+    	return NATTable.of(NativeTypeTags._ACTORMIRROR_);
     }
 	
 	/**

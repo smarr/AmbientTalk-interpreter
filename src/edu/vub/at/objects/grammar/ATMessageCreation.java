@@ -32,7 +32,7 @@ import edu.vub.at.objects.ATTable;
 /**
  * The public interface to a first-class message AG element.
  * An ATMessageCreation may represent synchronous, asynchronous or delegation messages.
- * An abstract message at least contains a selector, arguments and annotations (stripes)
+ * An abstract message at least contains a selector, arguments and annotations (type tags)
  * 
  * @author tvcutsem
  */
@@ -55,7 +55,7 @@ public interface ATMessageCreation extends ATExpression {
 	public ATTable base_getArguments();
 	
 	/**
-	 * Messages may optionally have annotations (stripes)
+	 * Messages may optionally have annotations (type tags)
 	 * @return the annotations of the message
 	 */
 	public ATExpression base_getAnnotations();

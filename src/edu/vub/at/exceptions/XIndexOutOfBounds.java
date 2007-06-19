@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * An XIndexOutOfBounds exception is raised when an attempt is made to access or modify an 
@@ -50,8 +50,8 @@ public final class XIndexOutOfBounds extends InterpreterException {
 		super("Index out of bounds: "+ atIndex + " (size = " + atLength + ")");
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._IDXOUTOFBOUNDS_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._IDXOUTOFBOUNDS_;
 	}
 
 }

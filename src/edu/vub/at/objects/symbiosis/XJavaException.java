@@ -28,8 +28,8 @@
 package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -114,8 +114,8 @@ public final class XJavaException extends InterpreterException {
 		return wrappedJavaException_.toString();
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._JAVAEXCEPTION_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._JAVAEXCEPTION_;
 	}
 	
 }

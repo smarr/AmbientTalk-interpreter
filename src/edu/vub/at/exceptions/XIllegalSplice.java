@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
@@ -63,7 +63,7 @@ public final class XIllegalSplice extends InterpreterException {
 	 */
 	public ATExpression getSpliceExpression() { return spliceExpression_; }
 
-	public ATStripe getStripeType() {
-		return NativeStripes._ILLSPLICE_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._ILLSPLICE_;
 	}
 }

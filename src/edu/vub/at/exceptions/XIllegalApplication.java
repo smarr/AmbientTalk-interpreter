@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * XIllegalApplication is thrown when a natively implemented method is applied incorrectly.
@@ -59,8 +59,8 @@ public final class XIllegalApplication extends InterpreterException {
 		return nativeImplementor_;
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._ILLAPP_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._ILLAPP_;
 	}
 
 }

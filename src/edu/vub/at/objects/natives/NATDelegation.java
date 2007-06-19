@@ -32,9 +32,9 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -53,7 +53,7 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 	private final static AGSymbol _DELEGATOR_ = AGSymbol.jAlloc("delegator");
 	
 	public NATDelegation(ATObject delegator, ATSymbol sel, ATTable arg, ATTable annotations) throws InterpreterException {
-		super(sel, arg, annotations, NativeStripes._DELEGATION_);
+		super(sel, arg, annotations, NativeTypeTags._DELEGATION_);
 		super.meta_defineField(_DELEGATOR_, delegator);
 	}
 	
@@ -67,8 +67,8 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
             ATObject dynamicParent,
             ATObject lexicalParent,
             byte flags,
-            ATStripe[] stripes) throws InterpreterException {
-    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
+            ATTypeTag[] types) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types);
     }
 
 	/**
@@ -93,7 +93,7 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 			ATObject dynamicParent,
 			ATObject lexicalParent,
 			byte flags,
-			ATStripe[] stripes) throws InterpreterException {
+			ATTypeTag[] types) throws InterpreterException {
 		return new NATDelegation(map,
 				state,
 				originalCustomFields,
@@ -101,7 +101,7 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 				dynamicParent,
 				lexicalParent,
 				flags,
-				stripes);
+				types);
 	}
 	
 }

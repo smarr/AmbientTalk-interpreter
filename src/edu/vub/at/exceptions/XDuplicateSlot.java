@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 
@@ -53,8 +53,8 @@ public final class XDuplicateSlot extends InterpreterException {
 		slotName_ = slotName;
 	}
 	
-	public ATStripe getStripeType() {
-		return NativeStripes._DUPLICATESLOT_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._DUPLICATESLOT_;
 	}
 
 	

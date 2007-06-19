@@ -39,7 +39,7 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
@@ -112,20 +112,20 @@ public final class JavaObject extends NATObject implements ATObject {
 	 * A JavaObject wrapping an object o has a dynamic SHARES-A parent pointing to the
 	 * wrapper of o's class.
 	 * 
-	 * A symbiotic Java object is striped with all of the Java interface
-	 * stripes that correspond to the interface types implemented by the
+	 * A symbiotic Java object is tagged with all of the Java interface
+	 * type tags that correspond to the interface types implemented by the
 	 * wrapped Java object's class.
 	 */
 	private JavaObject(Object wrappedObject) {
 		super(JavaClass.wrapperFor(wrappedObject.getClass()), NATObject._SHARES_A_);
 		wrappedObject_ = wrappedObject;
 		
-		// initialize the Java symbiotic object's stripes
+		// initialize the Java symbiotic object's type tags
 		Class[] extendedInterfaces = wrappedObject_.getClass().getInterfaces();
 		if (extendedInterfaces.length > 0) {
-			stripes_ = new ATStripe[extendedInterfaces.length];
+			typeTags_ = new ATTypeTag[extendedInterfaces.length];
 			for (int i = 0; i < extendedInterfaces.length; i++) {
-				stripes_[i] = JavaClass.wrapperFor(extendedInterfaces[i]);
+				typeTags_[i] = JavaClass.wrapperFor(extendedInterfaces[i]);
 			}	
 		}
 	}

@@ -38,9 +38,9 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
@@ -62,13 +62,13 @@ import java.util.Vector;
  */
 public class NATMirage extends NATObject {
 
-	// Whenever this field is set, the object should be tested for the _MIRROR_ native stripe
+	// Whenever this field is set, the object should be tested for the _MIRROR_ native type tag
 	private ATObject mirror_;
 	
-	public static NATMirage createMirage(ATClosure code, ATObject dynamicParent, boolean parentType, ATStripe[] stripes, ATObject mirror) throws InterpreterException {
-		if (mirror.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
+	public static NATMirage createMirage(ATClosure code, ATObject dynamicParent, boolean parentType, ATTypeTag[] types, ATObject mirror) throws InterpreterException {
+		if (mirror.meta_isTaggedAs(NativeTypeTags._MIRROR_).asNativeBoolean().javaValue) {
 			// create a new, uninitialized mirage
-			NATMirage newMirage = new NATMirage(dynamicParent, code.base_getContext().base_getLexicalScope(), parentType, stripes);
+			NATMirage newMirage = new NATMirage(dynamicParent, code.base_getContext().base_getLexicalScope(), parentType, types);
 			
 			// create a new instance of the mirror with the uninitialized mirage, this implicitly clones
 			// the mirror and re-initializes it, setting the base field to this new mirage
@@ -80,7 +80,7 @@ public class NATMirage extends NATObject {
 			newMirage.initializeWithMirror(mirrorClone);
 			return newMirage;
 		} else {
-			throw new XIllegalArgument("Object used as a mirror without having the Mirror stripe: " + mirror);
+			throw new XIllegalArgument("Object used as a mirror without having the Mirror type tag: " + mirror);
 		}
 	}
 	
@@ -92,8 +92,8 @@ public class NATMirage extends NATObject {
 		mirror_ = mirror;
 	}
 	
-	public NATMirage(ATObject dynamicParent, ATObject lexParent, boolean parentType, ATStripe[] stripes) {
-		super(dynamicParent, lexParent, parentType, stripes);
+	public NATMirage(ATObject dynamicParent, ATObject lexParent, boolean parentType, ATTypeTag[] types) {
+		super(dynamicParent, lexParent, parentType, types);
 		mirror_ = NATNil._INSTANCE_; // set to nil while not initialized
 	}
 	
@@ -124,8 +124,8 @@ public class NATMirage extends NATObject {
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
-			         ATStripe[] stripes) throws InterpreterException {
-		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, stripes);
+			         ATTypeTag[] types) throws InterpreterException {
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types);
 		mirror_ = NATNil._INSTANCE_;
 	}
 	
@@ -140,7 +140,7 @@ public class NATMirage extends NATObject {
 			MethodDictionary methodDict,
 			ATObject dynamicParent,
 			ATObject lexicalParent,
-			byte flags, ATStripe[] stripes) throws InterpreterException {
+			byte flags, ATTypeTag[] types) throws InterpreterException {
 		NATMirage clonedMirage = new NATMirage(map,
 				state,
 				customFields,
@@ -148,7 +148,7 @@ public class NATMirage extends NATObject {
 				dynamicParent,
 				lexicalParent,
 				flags,
-				stripes);
+				types);
         // clonedMirage.mirror := myMirror.new(clonedMirage)
 		clonedMirage.mirror_ = mirror_.meta_invoke(mirror_, NATObject._NEW_NAME_, NATTable.of(clonedMirage));
 		return clonedMirage;
@@ -175,16 +175,6 @@ public class NATMirage extends NATObject {
 	public ATObject magic_clone() throws InterpreterException {
 		return super.meta_clone();
 	}
-	
-	/*
-		if(cloneMirror.meta_isStripedWith(NativeStripes._MIRROR_).asNativeBoolean().javaValue) {
-			NATMirage clone = (NATMirage)super.meta_clone();
-			clone.mirror_ = cloneMirror;
-			return clone;
-		} else {
-			throw new XIllegalArgument("Stratification violation : attempted to create a mirage from an object which is not striped to be a valid mirror.");
-		}
-	}*/
 	
 	public ATNil magic_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		return super.meta_defineField(name, value);
@@ -281,12 +271,12 @@ public class NATMirage extends NATObject {
 		return super.meta_resolve();
 	}
 	
-	public ATBoolean magic_isStripedWith(ATStripe stripe) throws InterpreterException {
-		return super.meta_isStripedWith(stripe);
+	public ATBoolean magic_isTaggedAs(ATTypeTag type) throws InterpreterException {
+		return super.meta_isTaggedAs(type);
 	}
 	
-	public ATTable magic_getStripes() throws InterpreterException {
-		return super.meta_getStripes();
+	public ATTable magic_getTypeTags() throws InterpreterException {
+		return super.meta_getTypeTags();
 	}
 
 	public ATBoolean magic_isCloneOf(ATObject original) throws InterpreterException {
@@ -492,15 +482,15 @@ public class NATMirage extends NATObject {
 				mirror_, AGSymbol.jAlloc("resolve"), NATTable.EMPTY);
     }
     
-    public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException {
+    public ATBoolean meta_isTaggedAs(ATTypeTag type) throws InterpreterException {
     	return mirror_.meta_invoke(
-				mirror_, AGSymbol.jAlloc("isStripedWith"), NATTable.of(stripe)).asBoolean();
+				mirror_, AGSymbol.jAlloc("isTaggedAs"), NATTable.of(type)).asBoolean();
     }
     
-    public ATTable meta_getStripes() throws InterpreterException {
+    public ATTable meta_getTypeTags() throws InterpreterException {
 		return mirror_.meta_select(
 				mirror_,
-				AGSymbol.jAlloc("stripes")).asTable();
+				AGSymbol.jAlloc("typeTags")).asTable();
     }
 	
 	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {

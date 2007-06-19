@@ -45,10 +45,10 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.Coercer;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -98,7 +98,7 @@ import java.util.Vector;
  *  <li> a dynamic object parent, to delegate select and invoke operations
  *   ( this parent slot is represented by a true AmbientTalk field, rather than by an instance variable )
  *  <li> a lexical object parent, to support lexical scoping
- *  <li> a table of stripes that were attached to this object (for classification purposes)
+ *  <li> a table of type tags that were attached to this object (for classification purposes)
  * </ul>
  * 
  * @author tvcutsem
@@ -183,9 +183,9 @@ public class NATObject extends NATCallframe implements ATObject {
 	private static final byte _IS_ISOLATE_FLAG_ = 1<<3;
 
 	/**
-	 * An empty stripe array shared by those objects that do not have any stripes.
+	 * An empty type tag array shared by those objects that do not have any type tags.
 	 */
-	public static final ATStripe[] _NO_STRIPES_ = new ATStripe[0];
+	public static final ATTypeTag[] _NO_TYPETAGS_ = new ATTypeTag[0];
 	
 	/**
 	 * The flags of an AmbientTalk object encode the following boolean information:
@@ -208,22 +208,22 @@ public class NATObject extends NATCallframe implements ATObject {
 	private MethodDictionary methodDictionary_;
 	
 	/**
-	 * The stripes with which this object has been striped.
+	 * The types with which this object has been tagged.
 	 */
-	protected ATStripe[] stripes_;
+	protected ATTypeTag[] typeTags_;
 	
 	/* ------------------
 	 * -- Constructors --
 	 * ------------------ */
 	
 	/**
-	 * Creates an object striped with the at.stripes.Isolate stripe.
+	 * Creates an object tagged with the at.types.Isolate type.
 	 * Such an object is called an isolate because:
 	 *  - it has no access to an enclosing lexical scope (except for the root lexical scope)
 	 *  - it can therefore be passed by copy
 	 */
 	public static NATObject createIsolate() {
-		return new NATObject(new ATStripe[] { NativeStripes._ISOLATE_ });
+		return new NATObject(new ATTypeTag[] { NativeTypeTags._ISOLATE_ });
 	}
 	
 	/**
@@ -234,8 +234,8 @@ public class NATObject extends NATCallframe implements ATObject {
 		this(Evaluator.getGlobalLexicalScope());
 	}
 	
-	public NATObject(ATStripe[] stripes) {
-		this(Evaluator.getGlobalLexicalScope(), stripes);
+	public NATObject(ATTypeTag[] tags) {
+		this(Evaluator.getGlobalLexicalScope(), tags);
 	}
 	
 	/**
@@ -249,10 +249,10 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	/**
 	 * Constructs a new ambienttalk object parametrised by a lexical scope.
-	 * The object's dynamic parent is nil and is striped with the given table of stripes
+	 * The object's dynamic parent is nil and is tagged with the given table of type tags
 	 */
-	public NATObject(ATObject lexicalParent, ATStripe[] stripes) {
-		this(NATNil._INSTANCE_, lexicalParent, _SHARES_A_, stripes);
+	public NATObject(ATObject lexicalParent, ATTypeTag[] tags) {
+		this(NATNil._INSTANCE_, lexicalParent, _SHARES_A_, tags);
 	}
 
 	/**
@@ -267,31 +267,31 @@ public class NATObject extends NATCallframe implements ATObject {
 
 	/**
 	 * Constructs a new ambienttalk object based on a set of parent pointers.
-	 * The object has no stripes.
+	 * The object has no types.
 	 * @param dynamicParent - the parent object of the newly created object
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
 	 * @param parentType - how this object extends its dynamic parent (is-a or shares-a)
 	 */
 	public NATObject(ATObject dynamicParent, ATObject lexicalParent, boolean parentType) {
-	   this(dynamicParent, lexicalParent, parentType, _NO_STRIPES_);
+	   this(dynamicParent, lexicalParent, parentType, _NO_TYPETAGS_);
 	}
 	
 	/**
 	 * Constructs a new ambienttalk object based on a set of parent pointers.
-	 * The object is striped with the given stripes.
+	 * The object is typed with the given types.
 	 * @param dynamicParent - the parent object of the newly created object
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
 	 * @param parentType - how this object extends its dynamic parent (is-a or shares-a)
-	 * @param stripes - the stripes attached to this object
+	 * @param tags - the type tags attached to this object
 	 */
-	public NATObject(ATObject dynamicParent, ATObject lexicalParent, boolean parentType, ATStripe[] stripes) {
+	public NATObject(ATObject dynamicParent, ATObject lexicalParent, boolean parentType, ATTypeTag[] tags) {
 		super(lexicalParent);
 		
         // by default, an object has a shares-a parent, does not share its map
 		// or dictionary and is no isolate, so all flags are set to 0
 		flags_ = 0;
 		
-		stripes_ = stripes;
+		typeTags_ = tags;
 		
 		methodDictionary_ = new MethodDictionary();
 		
@@ -312,18 +312,18 @@ public class NATObject extends NATCallframe implements ATObject {
 		}
 		
 		try {
-            // if this object is striped as at.stripes.Isolate, flag it as an isolate
-            // we cannot perform 'this.meta_isStripedWith(ISOLATE)' because this would trigger mirages too early
-			if (isLocallyStripedWith(NativeStripes._ISOLATE_)
-			     || dynamicParent.meta_isStripedWith(NativeStripes._ISOLATE_).asNativeBoolean().javaValue) {
+            // if this object is tagged as at.types.Isolate, flag it as an isolate
+            // we cannot perform 'this.meta_isTypedAs(ISOLATE)' because this would trigger mirages too early
+			if (isLocallyTaggedAs(NativeTypeTags._ISOLATE_)
+			     || dynamicParent.meta_isTaggedAs(NativeTypeTags._ISOLATE_).asNativeBoolean().javaValue) {
 				setFlag(_IS_ISOLATE_FLAG_);
 				// isolates can only have the global lexical root as their lexical scope
 				lexicalParent_ = Evaluator.getGlobalLexicalScope();
 			}
 		} catch (InterpreterException e) {
-			// some custom stripe failed to match agains the Isolate stripe,
+			// some custom type failed to match agains the Isolate type,
 			// the object is not considered an Isolate
-			Logging.Actor_LOG.error("Error testing for Isolate stripe, ignored:", e);
+			Logging.Actor_LOG.error("Error testing for Isolate type, ignored:", e);
 		}
 	}
 	
@@ -343,14 +343,14 @@ public class NATObject extends NATCallframe implements ATObject {
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
-			         ATStripe[] stripes) throws InterpreterException {
+			         ATTypeTag[] types) throws InterpreterException {
 		super(map, state, lexicalParent, null);
 		methodDictionary_ = methodDict;
 		
 		flags_ = flags; //a cloned object inherits all flags from original
 		
-		// clone inherits all stripes (this implies that clones of isolates are also isolates)
-		stripes_ = stripes;
+		// clone inherits all types (this implies that clones of isolates are also isolates)
+		typeTags_ = types;
 		
 		// ==, new and init should already be present in the method dictionary
 		
@@ -597,7 +597,7 @@ public class NATObject extends NATCallframe implements ATObject {
 				          methodDictionary_,
 				          dynamicParent,
 				          lexicalParent_,
-				          flags_, stripes_);
+				          flags_, typeTags_);
 		
 		return clone;
 	}
@@ -667,11 +667,11 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		if (stripes_.length == 0) {
+		if (typeTags_.length == 0) {
 			return NATText.atValue("<object:"+this.hashCode()+">");
 		} else {
 			return NATText.atValue("<object:"+this.hashCode()+
-					               Evaluator.printElements(stripes_, "[", ",", "]").javaValue+">");
+					               Evaluator.printElements(typeTags_, "[", ",", "]").javaValue+">");
 		}
 	}
 	
@@ -692,7 +692,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	         					  ATObject dynamicParent,
 	         					  ATObject lexicalParent,
 	         					  byte flags,
-	         					  ATStripe[] stripes) throws InterpreterException {
+	         					  ATTypeTag[] types) throws InterpreterException {
 		return new NATObject(map,
 	            state,
 	            originalCustomFields,
@@ -700,7 +700,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	            dynamicParent,
 	            lexicalParent,
 	            flags,
-	            stripes);
+	            types);
 	}
 		
     /* ----------------------------------
@@ -730,34 +730,34 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
     /* ---------------------------------
-     * -- Stripe Testing and Querying --
+     * -- Type Testing and Querying --
      * --------------------------------- */
 	
     /**
-     * Check whether one of the stripes of this object is a substripe of the given stripe.
+     * Check whether one of the type tags of this object is a subtype of the given type.
      * If not, then delegate the query to the dynamic parent.
      */
-    public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException {
-    	if (isLocallyStripedWith(stripe)) {
+    public ATBoolean meta_isTaggedAs(ATTypeTag type) throws InterpreterException {
+    	if (isLocallyTaggedAs(type)) {
     		return NATBoolean._TRUE_;
     	} else {
-        	// no stripes match, ask the parent
-        	return base_getSuper().meta_isStripedWith(stripe);
+        	// no type tags match, ask the parent
+        	return base_getSuper().meta_isTaggedAs(type);
     	}
     }
     
     /**
-     * Return the stripes that were directly attached to this object.
+     * Return the type tags that were directly attached to this object.
      */
-    public ATTable meta_getStripes() throws InterpreterException {
-    	// make a copy of the internal stripes array to ensure that the stripes
+    public ATTable meta_getTypeTags() throws InterpreterException {
+    	// make a copy of the internal type tag array to ensure that the types
     	// of the object are immutable. Tables allow assignment!
-    	if (stripes_.length == 0) {
+    	if (typeTags_.length == 0) {
     		return NATTable.EMPTY;
     	} else { 
-    		ATStripe[] stripes = new ATStripe[stripes_.length];
-        	System.arraycopy(stripes_, 0, stripes, 0, stripes_.length);
-        	return NATTable.atValue(stripes);
+    		ATTypeTag[] types = new ATTypeTag[typeTags_.length];
+        	System.arraycopy(typeTags_, 0, types, 0, typeTags_.length);
+        	return NATTable.atValue(types);
     	}
     }
     
@@ -805,48 +805,48 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * ALL asXXX methods return a coercer object which returns a proxy of the correct interface that will 'down'
 	 * subsequent Java base-level invocations to the AmbientTalk level.
 	 * 
-	 * Coercion only happens if the object is striped with the correct stripe.
+	 * Coercion only happens if the object is tagged with the correct type.
 	 */
-	private Object coerce(ATStripe requiredStripe, Class providedInterface) throws InterpreterException {
-		if (this.meta_isStripedWith(requiredStripe).asNativeBoolean().javaValue) {
+	private Object coerce(ATTypeTag requiredType, Class providedInterface) throws InterpreterException {
+		if (this.meta_isTaggedAs(requiredType).asNativeBoolean().javaValue) {
 			return Coercer.coerce(this, providedInterface);
 		} else {
-			// if the object does not possess the right stripe, raise a type error
+			// if the object does not possess the right type tag, raise a type error
 			throw new XTypeMismatch(providedInterface, this);
 		}
 	}
 	
-	public ATBoolean asBoolean() throws InterpreterException { return (ATBoolean) coerce(NativeStripes._BOOLEAN_, ATBoolean.class); }
-	public ATClosure asClosure() throws InterpreterException { return (ATClosure) coerce(NativeStripes._CLOSURE_, ATClosure.class); }
-	public ATField asField() throws InterpreterException { return (ATField) coerce(NativeStripes._FIELD_, ATField.class); }
-	public ATMessage asMessage() throws InterpreterException { return (ATMessage) coerce(NativeStripes._MESSAGE_, ATMessage.class); }
-	public ATMethod asMethod() throws InterpreterException { return (ATMethod) coerce(NativeStripes._METHOD_, ATMethod.class); }
-	public ATHandler asHandler() throws InterpreterException { return (ATHandler) coerce(NativeStripes._HANDLER_, ATHandler.class); }
-	public ATNumber asNumber() throws InterpreterException { return (ATNumber) coerce(NativeStripes._NUMBER_, ATNumber.class); }
-	public ATTable asTable() throws InterpreterException { return (ATTable) coerce(NativeStripes._TABLE_, ATTable.class); }
-    public ATAsyncMessage asAsyncMessage() throws InterpreterException { return (ATAsyncMessage) coerce(NativeStripes._ASYNCMSG_, ATAsyncMessage.class);}
-    public ATActorMirror asActorMirror() throws InterpreterException { return (ATActorMirror) coerce(NativeStripes._ACTORMIRROR_, ATActorMirror.class); }
-    public ATStripe asStripe() throws InterpreterException { return (ATStripe) coerce(NativeStripes._STRIPE_, ATStripe.class); }
+	public ATBoolean asBoolean() throws InterpreterException { return (ATBoolean) coerce(NativeTypeTags._BOOLEAN_, ATBoolean.class); }
+	public ATClosure asClosure() throws InterpreterException { return (ATClosure) coerce(NativeTypeTags._CLOSURE_, ATClosure.class); }
+	public ATField asField() throws InterpreterException { return (ATField) coerce(NativeTypeTags._FIELD_, ATField.class); }
+	public ATMessage asMessage() throws InterpreterException { return (ATMessage) coerce(NativeTypeTags._MESSAGE_, ATMessage.class); }
+	public ATMethod asMethod() throws InterpreterException { return (ATMethod) coerce(NativeTypeTags._METHOD_, ATMethod.class); }
+	public ATHandler asHandler() throws InterpreterException { return (ATHandler) coerce(NativeTypeTags._HANDLER_, ATHandler.class); }
+	public ATNumber asNumber() throws InterpreterException { return (ATNumber) coerce(NativeTypeTags._NUMBER_, ATNumber.class); }
+	public ATTable asTable() throws InterpreterException { return (ATTable) coerce(NativeTypeTags._TABLE_, ATTable.class); }
+    public ATAsyncMessage asAsyncMessage() throws InterpreterException { return (ATAsyncMessage) coerce(NativeTypeTags._ASYNCMSG_, ATAsyncMessage.class);}
+    public ATActorMirror asActorMirror() throws InterpreterException { return (ATActorMirror) coerce(NativeTypeTags._ACTORMIRROR_, ATActorMirror.class); }
+    public ATTypeTag asTypeTag() throws InterpreterException { return (ATTypeTag) coerce(NativeTypeTags._TYPETAG_, ATTypeTag.class); }
 	
-	public ATBegin asBegin() throws InterpreterException { return (ATBegin) coerce(NativeStripes._BEGIN_, ATBegin.class); }
-	public ATStatement asStatement() throws InterpreterException { return (ATStatement) coerce(NativeStripes._STATEMENT_, ATStatement.class); }
-    public ATUnquoteSplice asUnquoteSplice() throws InterpreterException { return (ATUnquoteSplice) coerce(NativeStripes._UQSPLICE_, ATUnquoteSplice.class); }
-    public ATSymbol asSymbol() throws InterpreterException { return (ATSymbol) coerce(NativeStripes._SYMBOL_, ATSymbol.class); }
-    public ATSplice asSplice() throws InterpreterException { return (ATSplice) coerce(NativeStripes._SPLICE_, ATSplice.class); }
-	public ATDefinition asDefinition() throws InterpreterException { return (ATDefinition) coerce(NativeStripes._DEFINITION_, ATDefinition.class); }
-	public ATMessageCreation asMessageCreation() throws InterpreterException { return (ATMessageCreation) coerce(NativeStripes._MSGCREATION_, ATMessageCreation.class); }
+	public ATBegin asBegin() throws InterpreterException { return (ATBegin) coerce(NativeTypeTags._BEGIN_, ATBegin.class); }
+	public ATStatement asStatement() throws InterpreterException { return (ATStatement) coerce(NativeTypeTags._STATEMENT_, ATStatement.class); }
+    public ATUnquoteSplice asUnquoteSplice() throws InterpreterException { return (ATUnquoteSplice) coerce(NativeTypeTags._UQSPLICE_, ATUnquoteSplice.class); }
+    public ATSymbol asSymbol() throws InterpreterException { return (ATSymbol) coerce(NativeTypeTags._SYMBOL_, ATSymbol.class); }
+    public ATSplice asSplice() throws InterpreterException { return (ATSplice) coerce(NativeTypeTags._SPLICE_, ATSplice.class); }
+	public ATDefinition asDefinition() throws InterpreterException { return (ATDefinition) coerce(NativeTypeTags._DEFINITION_, ATDefinition.class); }
+	public ATMessageCreation asMessageCreation() throws InterpreterException { return (ATMessageCreation) coerce(NativeTypeTags._MSGCREATION_, ATMessageCreation.class); }
 	
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
 	public boolean isAmbientTalkObject() { return true; }
 	
 	// objects can only be 'cast' to a native category if they are marked with
-	// the appropriate native stripe
-	public boolean isSplice() throws InterpreterException { return meta_isStripedWith(NativeStripes._SPLICE_).asNativeBoolean().javaValue; }
-	public boolean isSymbol() throws InterpreterException { return meta_isStripedWith(NativeStripes._SYMBOL_).asNativeBoolean().javaValue; }
-	public boolean isTable() throws InterpreterException { return meta_isStripedWith(NativeStripes._TABLE_).asNativeBoolean().javaValue; }
-	public boolean isUnquoteSplice() throws InterpreterException { return meta_isStripedWith(NativeStripes._UQSPLICE_).asNativeBoolean().javaValue; }
-	public boolean isStripe() throws InterpreterException { return meta_isStripedWith(NativeStripes._STRIPE_).asNativeBoolean().javaValue; }
+	// the appropriate native type
+	public boolean isSplice() throws InterpreterException { return meta_isTaggedAs(NativeTypeTags._SPLICE_).asNativeBoolean().javaValue; }
+	public boolean isSymbol() throws InterpreterException { return meta_isTaggedAs(NativeTypeTags._SYMBOL_).asNativeBoolean().javaValue; }
+	public boolean isTable() throws InterpreterException { return meta_isTaggedAs(NativeTypeTags._TABLE_).asNativeBoolean().javaValue; }
+	public boolean isUnquoteSplice() throws InterpreterException { return meta_isTaggedAs(NativeTypeTags._UQSPLICE_).asNativeBoolean().javaValue; }
+	public boolean isTypeTag() throws InterpreterException { return meta_isTaggedAs(NativeTypeTags._TYPETAG_).asNativeBoolean().javaValue; }
 	
 	
 	// private methods
@@ -877,13 +877,13 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
 	/**
-	 * Performs a stripe test for this object locally.
-	 * @return whether this object is striped with a particular stripe or not.
+	 * Performs a type test for this object locally.
+	 * @return whether this object is tagged with a particular type tag or not.
 	 */
-	private boolean isLocallyStripedWith(ATStripe stripe) throws InterpreterException {
-    	for (int i = 0; i < stripes_.length; i++) {
-			if (stripes_[i].base_isSubstripeOf(stripe).asNativeBoolean().javaValue) {
-				// if one stripe matches, return true
+	private boolean isLocallyTaggedAs(ATTypeTag tag) throws InterpreterException {
+    	for (int i = 0; i < typeTags_.length; i++) {
+			if (typeTags_[i].base_isSubtypeOf(tag).asNativeBoolean().javaValue) {
+				// if one type matches, return true
 				return true;
 			}
 		}

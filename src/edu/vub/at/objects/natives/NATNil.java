@@ -49,7 +49,7 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATBegin;
@@ -370,7 +370,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
         return false;
     }
     
-    public boolean isStripe() throws InterpreterException {
+    public boolean isTypeTag() throws InterpreterException {
         return false;
     }
     
@@ -410,8 +410,8 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     	    throw new XTypeMismatch(ATHandler.class, this);
     }
 
-    public ATStripe asStripe() throws InterpreterException {
-	    throw new XTypeMismatch(ATStripe.class, this);
+    public ATTypeTag asTypeTag() throws InterpreterException {
+	    throw new XTypeMismatch(ATTypeTag.class, this);
     }
     
     // Conversions for concurrency and distribution related object
@@ -568,17 +568,17 @@ public class NATNil implements ATExpression, ATNil, Serializable {
 	}
 	
     /* ---------------------------------
-     * -- Stripe Testing and Querying --
+     * -- Type Testing and Querying --
      * --------------------------------- */
 	
     /**
-     * Native objects implement the stripe test non-recursively: only the stripes
-     * returned by meta_getStripes are tested against.
+     * Native objects implement the type test non-recursively: only the type tags
+     * returned by {@link this#meta_getTypeTags()} are tested against.
      */
-    public ATBoolean meta_isStripedWith(ATStripe stripe) throws InterpreterException {
-    	ATObject[] stripes = this.meta_getStripes().asNativeTable().elements_;
-    	for (int i = 0; i < stripes.length; i++) {
-			if (stripes[i].asStripe().base_isSubstripeOf(stripe).asNativeBoolean().javaValue) {
+    public ATBoolean meta_isTaggedAs(ATTypeTag type) throws InterpreterException {
+    	ATObject[] types = this.meta_getTypeTags().asNativeTable().elements_;
+    	for (int i = 0; i < types.length; i++) {
+			if (types[i].asTypeTag().base_isSubtypeOf(type).asNativeBoolean().javaValue) {
 				return NATBoolean._TRUE_;
 			}
 		}
@@ -586,9 +586,9 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     }
     
     /**
-     * By default, a native object (and also nil) has no stripes.
+     * By default, a native object (and also nil) has no type tags.
      */
-    public ATTable meta_getStripes() throws InterpreterException {
+    public ATTable meta_getTypeTags() throws InterpreterException {
     	return NATTable.EMPTY;
     }
 	

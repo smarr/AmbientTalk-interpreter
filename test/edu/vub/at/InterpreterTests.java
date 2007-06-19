@@ -43,7 +43,7 @@ import edu.vub.at.objects.natives.NATNamespaceTest;
 import edu.vub.at.objects.natives.NATObjectClosureTest;
 import edu.vub.at.objects.natives.NATObjectTest;
 import edu.vub.at.objects.natives.PrimitivesTest;
-import edu.vub.at.objects.natives.StripesTest;
+import edu.vub.at.objects.natives.TypeTagTest;
 import edu.vub.at.objects.natives.TestFieldMap;
 import edu.vub.at.objects.natives.grammar.TestEval;
 import edu.vub.at.objects.natives.grammar.TestParameterBinding;
@@ -85,7 +85,7 @@ public class InterpreterTests {
 		suite.addTestSuite(CustomFieldsTest.class);
 		suite.addTestSuite(TestParameterBinding.class);
 		suite.addTestSuite(SerializationTest.class);
-		suite.addTestSuite(StripesTest.class);
+		suite.addTestSuite(TypeTagTest.class);
 		//$JUnit-END$
 		return suite;
 	}

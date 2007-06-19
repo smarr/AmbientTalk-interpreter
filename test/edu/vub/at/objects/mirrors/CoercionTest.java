@@ -33,9 +33,9 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
@@ -58,7 +58,7 @@ public class CoercionTest extends TestCase {
 	/*
 	 * def customContext := object: {
 	 *   def self := 24
-	 * } stripedWith: [ /.at.stripes.Context ]
+	 * } taggedAs: [ /.at.types.Context ]
 	 * 
 	 * def customClosure := object: {
 	 *   def apply := { |args|
@@ -66,11 +66,11 @@ public class CoercionTest extends TestCase {
 	 *   }
 	 *   def method := <NATMETHOD foo() { nil }>;
 	 *   def context := customContext;
-	 * } stripedWith: [ /.at.stripes.Closure ]
+	 * } taggedAs: [ /.at.types.Closure ]
 	 */
 	public void setUp() {
 		try {
-			customClosure_ = new NATObject(new ATStripe[] { NativeStripes._CLOSURE_ });
+			customClosure_ = new NATObject(new ATTypeTag[] { NativeTypeTags._CLOSURE_ });
 			customClosure_.meta_defineField(AGSymbol.jAlloc("apply"), new NativeClosure(customClosure_) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					ATTable apply_args = get(args, 1).asTable();
@@ -79,7 +79,7 @@ public class CoercionTest extends TestCase {
 				}
 			});
 			customClosure_.meta_defineField(AGSymbol.jAlloc("method"), new NATMethod(AGSymbol.jAlloc("foo"), NATTable.EMPTY, new AGBegin(NATTable.EMPTY)));
-			customContext_ = new NATObject(new ATStripe[] { NativeStripes._CONTEXT_ });
+			customContext_ = new NATObject(new ATTypeTag[] { NativeTypeTags._CONTEXT_ });
 			customContext_.meta_defineField(AGSymbol.jAlloc("self"), NATNumber.atValue(24));
 			customClosure_.meta_defineField(AGSymbol.jAlloc("context"), customContext_);
 		} catch (InterpreterException e) {

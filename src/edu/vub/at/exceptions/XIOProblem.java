@@ -27,8 +27,8 @@
  */
 package edu.vub.at.exceptions;
 
-import edu.vub.at.objects.ATStripe;
-import edu.vub.at.objects.coercion.NativeStripes;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 import java.io.IOException;
 
@@ -60,7 +60,7 @@ public class XIOProblem extends InterpreterException {
 		return  getCause().getClass() + ": " + getCause().getMessage();
 	}
 
-	public ATStripe getStripeType() {
-		return NativeStripes._IOPROBLEM_;
+	public ATTypeTag getType() {
+		return NativeTypeTags._IOPROBLEM_;
 	}
 }

@@ -30,7 +30,7 @@ package edu.vub.at.actors.natives;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATStripe;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.util.logging.Logging;
 
@@ -52,12 +52,12 @@ public final class DiscoveryManager {
 	 */
 	public static class Publication {
 		public final ELActor providerActor_;
-		public final Packet providedStripe_;
+		public final Packet providedTypeTag_;
 		public final Packet exportedService_;
-		public ATStripe deserializedTopic_;
-		public Publication(ELActor provider, Packet stripe, Packet exportedService) {
+		public ATTypeTag deserializedTopic_;
+		public Publication(ELActor provider, Packet type, Packet exportedService) {
 			providerActor_ = provider;
-			providedStripe_ = stripe;
+			providedTypeTag_ = type;
 			exportedService_ = exportedService;
 		}
 	}
@@ -67,14 +67,14 @@ public final class DiscoveryManager {
 	 */
 	public static class Subscription {
 		public final ELActor subscriberActor_;
-		public final Packet requiredStripe_;
+		public final Packet requiredTypeTag_;
 		public final Packet registeredHandler_;
 		public final boolean isPermanentSubscription_;
-		public ATStripe deserializedTopic_;
+		public ATTypeTag deserializedTopic_;
 		public ATObject deserializedHandler_;
-		public Subscription(ELActor subscriber, Packet stripe, Packet registeredHandler, boolean permanent) {
+		public Subscription(ELActor subscriber, Packet type, Packet registeredHandler, boolean permanent) {
 			subscriberActor_ = subscriber;
-			requiredStripe_ = stripe;
+			requiredTypeTag_ = type;
 			registeredHandler_ = registeredHandler;
 			isPermanentSubscription_ = permanent;
 		}
@@ -142,16 +142,16 @@ public final class DiscoveryManager {
 	 * @return a Set of Packet objects representing the serialized form of objects
 	 * published under a topic matching the argument topic.
 	 */
-	public Set getLocalPublishedServicesMatching(ATStripe topic) {
+	public Set getLocalPublishedServicesMatching(ATTypeTag topic) {
 		HashSet matchingPubs = new HashSet();
 		for (Iterator iter = publications_.iterator(); iter.hasNext();) {
 			Publication pub = (Publication) iter.next();
 			try {
-				if (pub.deserializedTopic_.base_isSubstripeOf(topic).asNativeBoolean().javaValue) {
+				if (pub.deserializedTopic_.base_isSubtypeOf(topic).asNativeBoolean().javaValue) {
 					matchingPubs.add(pub.exportedService_);
 				}
 			} catch (InterpreterException e) {
-				Logging.Actor_LOG.error("error matching stripes while querying local publications:",e);
+				Logging.Actor_LOG.error("error matching types while querying local publications:",e);
 			}
 		}
 		return matchingPubs;
@@ -165,7 +165,7 @@ public final class DiscoveryManager {
 		HashSet openSubs = new HashSet();
 		for (Iterator iter = subscriptions_.iterator(); iter.hasNext();) {
 			Subscription sub = (Subscription) iter.next();
-			openSubs.add(sub.requiredStripe_);
+			openSubs.add(sub.requiredTypeTag_);
 		}
 		return openSubs;
 	}
@@ -178,12 +178,12 @@ public final class DiscoveryManager {
 	 * @param topic an outstanding subscription topic of this VM
 	 * @param remoteService the remote service matching the topic
 	 */
-	public void notifyOfExternalPublication(ATStripe pubTopic, ATObject remoteService) {
+	public void notifyOfExternalPublication(ATTypeTag pubTopic, ATObject remoteService) {
 		for (Iterator iter = subscriptions_.iterator(); iter.hasNext();) {
 			Subscription sub = (Subscription) iter.next();
 			try {
-				// publication stripe Tp <: subscription stripe Ts
-				if (pubTopic.base_isSubstripeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
+				// publication type Tp <: subscription type Ts
+				if (pubTopic.base_isSubtypeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
 					// no need to test for separate actors, publisher is remote to this VM, so surely different actors
 					notify(sub.deserializedHandler_, remoteService);
 					// if the subscription is not permanent, cancel it
@@ -192,7 +192,7 @@ public final class DiscoveryManager {
 					}
 				}
 			} catch (InterpreterException e) {
-				Logging.Actor_LOG.error("error matching stripes during external notification:",e);
+				Logging.Actor_LOG.error("error matching types during external notification:",e);
 			}
 		}
 	}
@@ -206,8 +206,8 @@ public final class DiscoveryManager {
 		for (Iterator iter = subscriptions_.iterator(); iter.hasNext();) {
 			Subscription sub = (Subscription) iter.next();
 			try {
-                // publication stripe Tp <: subscription stripe Ts
-				if (pub.deserializedTopic_.base_isSubstripeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
+                // publication type Tp <: subscription type Ts
+				if (pub.deserializedTopic_.base_isSubtypeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
 					
 					// only notify if subscriber is hosted by another actor than publisher
 					if (sub.subscriberActor_ != pub.providerActor_) {
@@ -225,7 +225,7 @@ public final class DiscoveryManager {
 					}
 				}
 			} catch (InterpreterException e) {
-				Logging.Actor_LOG.error("error matching stripes during local notification:",e);
+				Logging.Actor_LOG.error("error matching types during local notification:",e);
 			}
 		}
 	}
@@ -239,8 +239,8 @@ public final class DiscoveryManager {
 		for (Iterator iter = publications_.iterator(); iter.hasNext();) {
 			Publication pub = (Publication) iter.next();
 			try {
-                // publication stripe Tp <: subscription stripe Ts
-				if (pub.deserializedTopic_.base_isSubstripeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
+                // publication type Tp <: subscription type Ts
+				if (pub.deserializedTopic_.base_isSubtypeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
 					
 					// only notify if subscriber is hosted by another actor than publisher
 					if (sub.subscriberActor_ != pub.providerActor_) {
@@ -258,7 +258,7 @@ public final class DiscoveryManager {
 					}
 				}
 			} catch (InterpreterException e) {
-				Logging.Actor_LOG.error("error matching stripes during local notification:",e);
+				Logging.Actor_LOG.error("error matching types during local notification:",e);
 			}
 		}
 	}
