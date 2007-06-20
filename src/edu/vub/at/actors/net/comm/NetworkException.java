@@ -49,7 +49,7 @@ public class NetworkException extends Exception {
 		cause_ = cause;
 	}
 	
-	public IOException getCause() {
+	public Throwable getCause() {
 		return cause_;
 	}
 	
