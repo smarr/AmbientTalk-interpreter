@@ -48,7 +48,7 @@ import java.util.HashMap;
 public class AGSymbol extends AGExpression implements ATSymbol {
 
 	/** hashmap shared by ALL actors/VMs, hence, thread access should be explicitly synchronized */
-	private static final HashMap _STRINGPOOL_ = new HashMap();
+	protected static final HashMap _STRINGPOOL_ = new HashMap();
 
 	private final String txt_;
 	
@@ -56,7 +56,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		txt_ = txt;
 	}
 	
-	public static final AGSymbol jAlloc(String name) {
+	public static AGSymbol jAlloc(String name) {
 		synchronized (_STRINGPOOL_) {
 			AGSymbol existing = (AGSymbol) _STRINGPOOL_.get(name);
 			if (existing == null) {

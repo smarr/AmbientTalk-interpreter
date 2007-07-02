@@ -13,6 +13,7 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATMessageSend;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
@@ -183,7 +184,7 @@ public class TestEval extends AmbientTalkTest {
 		x.meta_addMethod(y);
 		ctx_.base_getLexicalScope().meta_defineField(atX_, x);
 
-		assertEquals(evalAndReturn("x.y").asClosure().base_getMethod(), y);
+		assertEquals(evalAndReturn("x.&y").asClosure().base_getMethod(), y);
 	}
 	
 	public void testFirstClassMessage() throws InterpreterException {
@@ -310,6 +311,36 @@ public class TestEval extends AmbientTalkTest {
 		evalAndCompareTo("def [x, @y ] := [1, 2, 3, @[4, 5]]", "[1, 2, 3, 4, 5]");
 		assertEquals(NATNumber.ONE, ctx_.base_getLexicalScope().meta_lookup(atX_));
 		assertEquals("[2, 3, 4, 5]", ctx_.base_getLexicalScope().meta_lookup(atY_).meta_print().javaValue);
+	}
+	
+	public void testNativeNoArgMethods() throws InterpreterException {
+		// (-1).abs -> (-1).abs() -> 1
+		// [1, 2, 3].length -> [1, 2, 3].length() -> 3
+		evalAndCompareTo("(-1).abs", NATNumber.ONE);
+		evalAndCompareTo("[1, 2, 3].length", atThree_);
+	}
+	
+	public void testNativeSelection() throws InterpreterException {
+		// ((-1).&abs)() -> 1
+		// ([1, 2, 3].&length)() -> 3
+		evalAndCompareTo("((-1).&abs)()", NATNumber.ONE);
+		evalAndCompareTo("([1, 2, 3].&length)()", atThree_);
+	}
+	
+	public void testNativeAssignment() throws InterpreterException {
+		// (`o.m()).receiverExpression := `object
+		evalAndReturn("def x := `(o.m()); x.receiverExpression := `object");
+		assertEquals(AGSymbol.jAlloc("object"), ((ATMessageSend)ctx_.base_getLexicalScope().meta_lookup(atX_)).base_getReceiverExpression());
+	}
+	
+	public void testParameterlessApplication() throws InterpreterException {
+		// def x := object: { def y() { 3 } }
+		NATObject x = new NATObject(ctx_.base_getSelf());
+		NATMethod y = new NATMethod(atY_, NATTable.EMPTY, new AGBegin(NATTable.atValue(new ATObject[] { atThree_ })));
+		x.meta_addMethod(y);
+		ctx_.base_getLexicalScope().meta_defineField(atX_, x);
+
+		assertEquals(evalAndReturn("x.y"), atThree_);
 	}
 	
 }

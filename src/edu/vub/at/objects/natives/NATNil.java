@@ -27,6 +27,10 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.io.InvalidObjectException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
@@ -49,8 +53,8 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
@@ -61,15 +65,13 @@ import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.NATMirage;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 import edu.vub.at.util.logging.Logging;
-
-import java.io.InvalidObjectException;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
 
 /**
  * NATNil implements default semantics for all test and conversion methods.
@@ -119,28 +121,64 @@ public class NATNil implements ATExpression, ATNil, Serializable {
      * The default behaviour of 'invoke' for primitive non-object ambienttalk language values is
      * to check whether the requested functionality is provided by a native Java method
      * with the same selector, but prefixed with <tt>base_</tt>.
-     *
+     * 
      * Because an explicit AmbientTalk method invocation must be converted into an implicit
      * Java method invocation, the invocation must be deified ('upped'). The result of the
      * upped invocation is a Java object, which must subsequently be 'downed' again.
      * 
-     * If no method to invoke is found, doesNotUnderstand is invoked which should
+     * According to the uniform access principle, access to slots (both for reading and mutating)
+     * is handled by the invoke operation. This implies that when no corresponding method is
+     * found for a given selector, the selector is treated as a field name (possibly followed by 
+     * :=) and is mapped to a native Java method but prefixed with <tt>base_get</tt> (resp. 
+     * <tt>base_set</tt>).
+     *
+     * If still no method to invoke is found, doesNotUnderstand is invoked which should
      * return a closure to be invoked with the appropriate arguments.
      */
-    public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
+    public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
+    	// Add base_ prefix
+        String jSelector = Reflection.upBaseLevelSelector(selector);
         try {
-			String jSelector = Reflection.upBaseLevelSelector(atSelector);
-			return Reflection.upInvocation(this /*receiver*/, jSelector, atSelector, arguments);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(atSelector);
-			return receiver.meta_doesNotUnderstand(atSelector).asClosure().base_apply(arguments);
+        	// Attempt to invoke the method
+        	return Reflection.upInvocation(this /*receiver*/, jSelector, selector, arguments);
+        } catch (XSelectorNotFound e) {
+        	e.catchOnlyIfSelectorEquals(selector);
+        	
+        	// If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
+        	if (selector instanceof AGAssignmentSymbol) {
+				selector = ((AGAssignmentSymbol)selector).asDefaultSymbol();
+				
+		    	jSelector = Reflection.upBaseFieldMutationSelector(selector);
+		    	
+		        // try to invoke a native base_setName method
+		        try {	   
+		           Reflection.upFieldAssignment(receiver, jSelector, selector, arguments.base_at(NATNumber.ONE));
+				} catch (XSelectorNotFound e2) {
+					e2.catchOnlyIfSelectorEquals(selector);
+					// if such a method does not exist, the field assignment has failed
+					throw new XUnassignableField(selector.base_getText().asNativeText().javaValue);
+				}
+				
+		        return NATNil._INSTANCE_;
+				
+			} else {
+				// try to read the corresponding field
+				jSelector = Reflection.upBaseFieldAccessSelector(selector);
+
+				try {
+					return Reflection.upFieldSelection(this, jSelector, selector);
+				} catch (XSelectorNotFound e2) {
+					e2.catchOnlyIfSelectorEquals(selector);
+					return receiver.meta_doesNotUnderstand(selector).asClosure().base_apply(arguments);
+				}
+			}
 		}
     }
 
     /**
-     * An ambienttalk language value can respond to a message if it implements
-     * a native Java method corresponding to the selector prefixed by 'base_'.
-     */
+	 * An ambienttalk language value can respond to a message if it implements a
+	 * native Java method corresponding to the selector prefixed by 'base_'.
+	 */
     public ATBoolean meta_respondsTo(ATSymbol atSelector) throws InterpreterException {
         String jSelector = Reflection.upBaseLevelSelector(atSelector);
         return NATBoolean.atValue(Reflection.upRespondsTo(this, jSelector));
@@ -167,35 +205,67 @@ public class NATNil implements ATExpression, ATNil, Serializable {
      *  base_getM which means m is represented as a readable field, or
      *  base_m which means m is represented as a method
      */
-    public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-        String jSelector = Reflection.upBaseFieldAccessSelector(selector);
-        try {
-            return Reflection.upFieldSelection(this, jSelector, selector);
-        } catch (XSelectorNotFound e) {
-        	e.catchOnlyIfSelectorEquals(selector);
-            jSelector = Reflection.upBaseLevelSelector(selector);
+    public ATObject meta_select(ATObject receiver, final ATSymbol selector)
+			throws InterpreterException {
+		try {
+			final String methSelector = Reflection.upBaseLevelSelector(selector);
+			
+			return Reflection.upMethodSelection(this, methSelector, selector);
+		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(selector);
 
-            try {
-				return Reflection.upMethodSelection(this, jSelector, selector);
-			} catch (XSelectorNotFound e2) {
-				e2.catchOnlyIfSelectorEquals(selector);
-				return receiver.meta_doesNotUnderstand(selector);
+        	// If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
+        	if (selector instanceof AGAssignmentSymbol) {
+				final ATSymbol origSelector = ((AGAssignmentSymbol)selector).asDefaultSymbol();
+				
+		    	final String assignmentSelector = Reflection.upBaseFieldMutationSelector(selector);
+		    	
+		    	if(Reflection.upRespondsTo(this, assignmentSelector)) {
+		    		return new NativeClosure(this) {
+						public ATObject base_apply(ATTable arguments) throws InterpreterException {
+							try {	// the fact that a field assignment exists does not make it assignable (the method may result in an error)   
+								Reflection.upFieldAssignment(scope_, assignmentSelector, origSelector, arguments.base_at(NATNumber.ONE));
+							} catch (XSelectorNotFound e2) {
+								e2.catchOnlyIfSelectorEquals(origSelector);
+								// if such a method does not exist, the field assignment has failed
+								throw new XUnassignableField(origSelector.base_getText().asNativeText().javaValue);
+							}
+							
+							return NATNil._INSTANCE_;
+						}
+		    		};
+        		}
+			} else {
+				final String fieldSelector = Reflection.upBaseFieldAccessSelector(selector);
+
+				if(Reflection.upRespondsTo(this, fieldSelector)) {
+					return new NativeClosure(this) {
+						public ATObject base_apply(ATTable arguments) throws InterpreterException {
+							return Reflection.upFieldSelection(scope_, fieldSelector, selector);
+						}
+					};
+				}
 			}
-        }
-    }
+			
+        	return receiver.meta_doesNotUnderstand(selector);
+		}
+	}
 
     /**
-     * A lookup can only be issued at the base level by writing <tt>selector</tt> inside the scope
-     * of a particular object. For primitive language values, this should not happen
-     * as no AmbientTalk code can be possibly nested within native code. However, using
-     * meta-programming a primitive object could be installed as the lexical parent of an AmbientTalk object.
-     *
-     * One particular case where this method will often be called is when a lookup reaches
-     * the lexical root, OBJLexicalRoot, which inherits this implementation.
-     *
-     * In such cases a lookup is treated exactly like a selection, where the 'original receiver'
-     * of the selection equals the primitive object.
-     */
+	 * A lookup can only be issued at the base level by writing
+	 * <tt>selector</tt> inside the scope of a particular object. For
+	 * primitive language values, this should not happen as no AmbientTalk code
+	 * can be possibly nested within native code. However, using
+	 * meta-programming a primitive object could be installed as the lexical
+	 * parent of an AmbientTalk object.
+	 * 
+	 * One particular case where this method will often be called is when a
+	 * lookup reaches the lexical root, OBJLexicalRoot, which inherits this
+	 * implementation.
+	 * 
+	 * In such cases a lookup is treated exactly like a selection, where the
+	 * 'original receiver' of the selection equals the primitive object.
+	 */
     public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
         try {
         	  return this.meta_select(this, selector);
