@@ -36,9 +36,8 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * @author tvc
- *
- * The native implementation of a selection AG element.
+ * The native implementation of a selection AG element <tt>o.&m</tt>.
+ * @author tvcutsem
  */
 public final class AGSelection extends AGExpression implements ATSelection {
 
@@ -78,7 +77,7 @@ public final class AGSelection extends AGExpression implements ATSelection {
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue(rcvExp_.meta_print().javaValue + "." + selector_.meta_print().javaValue);
+		return NATText.atValue(rcvExp_.meta_print().javaValue + ".&" + selector_.meta_print().javaValue);
 	}
 
 }

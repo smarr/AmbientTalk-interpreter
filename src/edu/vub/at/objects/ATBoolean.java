@@ -78,36 +78,6 @@ public interface ATBoolean extends ATObject {
 	public ATObject base_ifTrue_ifFalse_(ATClosure cons, ATClosure alt) throws InterpreterException;
 	
 	/**
-	 * And infix operator. Returns: 
-	 * <ul>
-	 * <li>true & otherBoolean = otherBoolean
-	 * <li>false & otherBoolean = false
-	 * </ul>
-	 * <p>
-	 * This is not a shortcut operation, thus the other boolean is always evaluated.
-	 * 
-	 * @param other a boolean.
-	 * @return a boolean resulting of an and operation between the receiver and the result of evaluating the other boolean. 
-	 * @throws InterpreterException if raised in the evaluation of the other boolean. 
-	 */	
-	public ATBoolean base__opand_(ATBoolean other) throws InterpreterException;
-	
-	/**
-	 * Or infix operator. Returns: 
-	 * <ul>
-	 * <li>true | otherBoolean = true
-	 * <li>false | otherBoolean =  otherBoolean
-	 * </ul>
-	 * <p>
-	 * This is not a shortcut operation, thus the other boolean is always evaluated.
-	 * 
-	 * @param other a boolean.
-	 * @return a boolean resulting of an or operation between the receiver and the result of evaluating the other boolean. 
-	 * @throws InterpreterException if raised in the evaluation of the other boolean. 
-	 */	
-	public ATBoolean base__oppls_(ATBoolean other) throws InterpreterException;
-	
-	/**
 	 * Returns false if the receiver is false or the result of the evaluation of the other
 	 * boolean expression passed as argument if the receiver is true.
 	 * <p>

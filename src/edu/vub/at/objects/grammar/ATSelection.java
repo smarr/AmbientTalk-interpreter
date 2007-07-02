@@ -30,22 +30,22 @@ package edu.vub.at.objects.grammar;
 /**
  * The public interface to a selection AG element.
  * 
- * Example: <code>o.x</code>
+ * Example: <code>o.&x</code>
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public interface ATSelection extends ATExpression {
 
 	/**
 	 * The receiver may be any valid AmbientTalk expression
-	 * Example: <code>`(o.x).reveiverExpression == `o</code>
+	 * Example: <code>`(o.&x).reveiverExpression == `o</code>
 	 * @return the reveiver expression
 	 */
 	public ATExpression base_getReceiverExpression();
 	
 	/**
 	 * The selector must be a literal symbol
-	 * Example: <code>`(o.x).selector == `x</code>
+	 * Example: <code>`(o.&x).selector == `x</code>
 	 * @return the selector
 	 */
 	public ATSymbol base_getSelector();
