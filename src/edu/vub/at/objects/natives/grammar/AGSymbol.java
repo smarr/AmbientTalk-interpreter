@@ -105,6 +105,10 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		return this;
 	}
 	
+	public AGAssignmentSymbol asAssignmentSymbol() {
+		return (AGAssignmentSymbol) AGAssignmentSymbol.jAlloc(txt_+":=");
+	}
+	
 	// comparison and identity operations
 	
 	public boolean equals(Object other) {

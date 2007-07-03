@@ -29,6 +29,7 @@ package edu.vub.at.objects.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 
 /**
  * The public interface to a symbol reference AG element.
@@ -43,5 +44,11 @@ public interface ATSymbol extends ATExpression {
 	 * @return the text of the symbol
 	 */
 	public ATText base_getText() throws InterpreterException;
+	
+	/**
+	 * Example: `(foo).asAssignmentSymbol => `foo:=
+	 * @return a symbol denoting the assignment selector for the receiver field name
+	 */
+	public AGAssignmentSymbol asAssignmentSymbol() throws InterpreterException;
 	
 }

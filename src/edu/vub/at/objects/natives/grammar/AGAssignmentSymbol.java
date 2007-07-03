@@ -46,6 +46,9 @@ import edu.vub.at.objects.natives.NATText;
  */
 public class AGAssignmentSymbol extends AGSymbol{
 
+	/**
+	 * @param name a string with a ':=' suffix
+	 */
 	public static AGSymbol jAlloc(String name) {
 		synchronized (_STRINGPOOL_) {
 			AGSymbol existing = (AGSymbol) _STRINGPOOL_.get(name);
@@ -57,20 +60,15 @@ public class AGAssignmentSymbol extends AGSymbol{
 		}
 	}
 	
-	public static ATSymbol alloc(ATSymbol sym) {
-		if (sym instanceof AGAssignmentSymbol) {
-			return sym;
-		} else {
-			return jAlloc(sym.toString()+":=");
-		}
-	}
-	
 	protected AGAssignmentSymbol(String txt) {
 		// cut the := part of the symbol name, e.g. foo:= -> foo
 		super(txt.substring(0,txt.length()-2));
-		System.err.println("created an assignment symbol: "+txt);
 	}
 
+	public AGAssignmentSymbol asAssignmentSymbol() {
+		return this;
+	}
+	
 	public ATText base_getText() {
 		return NATText.atValue(toString());
 	}

@@ -73,4 +73,15 @@ public final class AGUnquoteSymbol extends AGUnquote implements ATSymbol {
 	public ATText base_getText() throws InterpreterException {
 		throw new XIllegalUnquote(unqExp_);
 	}
+	
+	/**
+	 * The use of an unquoted symbol as if it were the symbol itself indicates that the 
+	 * unquotation was most probably not used in a quotation. Therefore the sematics are
+	 * identical to the ones enforced in meta_eval, namely an error is reported.
+	 * 
+	 * @throws XIllegalUnquote
+	 */
+	public AGAssignmentSymbol asAssignmentSymbol() throws InterpreterException {
+		throw new XIllegalUnquote(unqExp_);
+	}
 }

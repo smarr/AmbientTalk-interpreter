@@ -63,14 +63,18 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 	 * To evaluate a field assignment, evaluate the receiver expression, evaluate the right hand side and ask
 	 * the receiver object to assign the RHS value to the field corresponding to the given field name.
 	 * 
-	 * AGASSFIELD(rcv,nam,val).eval(ctx) = rcv.eval(ctx).assignField(nam, val.eval(ctx))
+	 * In AmbientTalk using the uniform access principle, assignments are represented as message sends.
+	 * For example <tt>o.x := 5</tt> is represented as <tt>o.x:=(5)</tt> where <tt>`x:=</tt> is a special
+	 * selector identifying a field assignment.
+	 * 
+	 * AGASSFIELD(rcv,nam,val).eval(ctx) = rcv.eval(ctx).invoke(rcv,nam:=, [ val.eval(ctx) ])
 	 * 
 	 * @return the new value of the field
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject receiver = rcvExp_.meta_eval(ctx);
 		ATObject val = valueExp_.meta_eval(ctx);
-		receiver.meta_invoke(receiver, AGAssignmentSymbol.alloc(fieldName_), NATTable.atValue(new ATObject[] { val }));
+		receiver.meta_invoke(receiver, fieldName_.asAssignmentSymbol(), NATTable.atValue(new ATObject[] { val }));
 		return val;
 	}
 
