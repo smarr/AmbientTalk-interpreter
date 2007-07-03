@@ -167,10 +167,11 @@ public class NATCallframe extends NATByRef implements ATObject {
 		} else { 
 			return new NativeClosure(this) {
 				public ATObject base_apply(ATTable arguments) throws InterpreterException {
-					if(arguments.base_getLength().asNativeNumber().javaValue != 0) {
-						getLocalField(selector);
-					}
-					return super.base_apply(arguments);
+		        	int len = arguments.base_getLength().asNativeNumber().javaValue;
+		        	if(len != 0)
+		        		throw new XArityMismatch(selector.toString(), 0, len);
+		        	
+					return	getLocalField(selector);
 				}
 			};
 		}

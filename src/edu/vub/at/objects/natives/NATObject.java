@@ -436,6 +436,10 @@ public class NATObject extends NATCallframe implements ATObject {
 				selector = ((AGAssignmentSymbol) selector).getFieldName();
 				
 				if(this.hasLocalField(selector)) {
+		        	int len = arguments.base_getLength().asNativeNumber().javaValue;
+		        	if(len != 1)
+		        		throw new XArityMismatch(selector.toString(), 1, len);
+		        	
 					this.setLocalField(selector, arguments.base_at(NATNumber.ONE));
 					return NATNil._INSTANCE_;
 				} 
@@ -509,6 +513,10 @@ public class NATObject extends NATCallframe implements ATObject {
 				if(this.hasLocalField(origSelector)) {
 		    		return new NativeClosure(this) {
 						public ATObject base_apply(ATTable arguments) throws InterpreterException {
+				        	int len = arguments.base_getLength().asNativeNumber().javaValue;
+				        	if(len != 1)
+				        		throw new XArityMismatch(selector.toString(), 1, len);
+				        	
 							setLocalField(origSelector, arguments.base_at(NATNumber.ONE));
 							return NATNil._INSTANCE_;
 						}

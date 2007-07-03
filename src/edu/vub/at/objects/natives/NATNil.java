@@ -38,6 +38,7 @@ import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.actors.net.SerializationException;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -151,8 +152,11 @@ public class NATNil implements ATExpression, ATNil, Serializable {
 		    	jSelector = Reflection.upBaseFieldMutationSelector(selector);
 		    	
 		        // try to invoke a native base_setName method
-		        try {	   
-		           Reflection.upFieldAssignment(receiver, jSelector, selector, arguments.base_at(NATNumber.ONE));
+		        try {
+		        	int len = arguments.base_getLength().asNativeNumber().javaValue;
+		        	if(len != 1)
+		        		throw new XArityMismatch(selector.toString(), 1, len);
+		        	Reflection.upFieldAssignment(receiver, jSelector, selector, arguments.base_at(NATNumber.ONE));
 				} catch (XSelectorNotFound e2) {
 					e2.catchOnlyIfSelectorEquals(selector);
 					// if such a method does not exist, the field assignment has failed
@@ -223,7 +227,11 @@ public class NATNil implements ATExpression, ATNil, Serializable {
 		    	if(Reflection.upRespondsTo(this, assignmentSelector)) {
 		    		return new NativeClosure(this) {
 						public ATObject base_apply(ATTable arguments) throws InterpreterException {
-							try {	// the fact that a field assignment exists does not make it assignable (the method may result in an error)   
+							try {
+					        	int len = arguments.base_getLength().asNativeNumber().javaValue;
+					        	if(len != 1)
+					        		throw new XArityMismatch(selector.toString(), 1, len);
+								// the fact that a field assignment exists does not make it assignable (the method may result in an error)   
 								Reflection.upFieldAssignment(scope_, assignmentSelector, origSelector, arguments.base_at(NATNumber.ONE));
 							} catch (XSelectorNotFound e2) {
 								e2.catchOnlyIfSelectorEquals(origSelector);
