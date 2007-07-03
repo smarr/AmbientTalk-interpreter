@@ -34,7 +34,9 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -47,7 +49,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  */
 public class XAmbienttalk extends InterpreterException {
 
-	private static final ATSymbol _STACKTRACE_SYM_ = AGSymbol.jAlloc("stackTrace");
+	private static final ATSymbol _STACKTRACE_SYM_ = AGAssignmentSymbol.jAlloc("stackTrace:=");
 	private static final ATSymbol _MESSAGE_SYM_ = AGSymbol.jAlloc("message");
 	
 	private static final long serialVersionUID = -2859841280138142649L;
@@ -68,7 +70,7 @@ public class XAmbienttalk extends InterpreterException {
 		StringWriter buffer = new StringWriter();
 		
 		runtimeStack_.printStackTrace(new PrintWriter(buffer, /* autoflush = */ true));
-		customException_.meta_assignField(customException_, _STACKTRACE_SYM_, NATText.atValue(buffer.toString()));
+		customException_.meta_invoke(customException_, _STACKTRACE_SYM_, NATTable.atValue(new ATObject[] { NATText.atValue(buffer.toString()) } ));
 	}
 
 	public ATObject getAmbientTalkRepresentation() {

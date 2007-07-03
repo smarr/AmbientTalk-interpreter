@@ -388,6 +388,8 @@ public interface ATObject extends ATConversions {
      * @param value the value to assign to the field.
      * @return nil
      * @throws XUnassignableField if the field to assign to cannot be found.
+     * 
+     * @deprecated field assignment should be done through invoke with an assignment symbol
      */
     public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException;
 

@@ -92,7 +92,10 @@ public class AGAssignmentSymbol extends AGSymbol{
 		return super.toString() + ":=";
 	}
 	
-	public AGSymbol asDefaultSymbol() {
+	/**
+	 * @return the field name being assigned by this assignment symbol
+	 */
+	public AGSymbol getFieldName() {
 		return AGSymbol.jAlloc(super.toString());
 	}
 	

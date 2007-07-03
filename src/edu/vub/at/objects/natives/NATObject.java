@@ -59,6 +59,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
+import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
@@ -425,16 +426,37 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * but has a specialized implementation for performance reasons (no unnecessary closure is created)
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
-		if (this.hasLocalField(selector)) {
-			return this.getLocalField(selector).asClosure().base_apply(arguments);
-		} else if (this.hasLocalMethod(selector)) {
+		if (this.hasLocalMethod(selector)) {
 			// immediately execute the method in the context ctx where
 			//  ctx.scope = the implementing scope, being this object, under which an additional callframe will be inserted
 			//  ctx.self  = the late bound receiver, being the passed receiver
 			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver));
 		} else {
-			return base_getSuper().meta_invoke(receiver, selector, arguments);
+			if (selector instanceof AGAssignmentSymbol) {
+				selector = ((AGAssignmentSymbol) selector).getFieldName();
+				
+				if(this.hasLocalField(selector)) {
+					this.setLocalField(selector, arguments.base_at(NATNumber.ONE));
+					return NATNil._INSTANCE_;
+				} 
+			} else {
+				if (this.hasLocalField(selector)) {
+					ATObject fieldValue = this.getLocalField(selector);
+					
+					if(fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+						return fieldValue.asClosure().base_apply(arguments);
+					} else { 
+						if(arguments == NATTable.EMPTY) {
+							return fieldValue;
+						} else {
+							throw new XArityMismatch(selector.toString(), 0, arguments.base_getLength().asNativeNumber().javaValue);
+						}
+					}
+				}
+			}
+			
 		}
+		return base_getSuper().meta_invoke(receiver, selector, arguments);
 	}
 	
 	/**
@@ -472,10 +494,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * @param selector the selector to look up
 	 * @return the value of the found field, or a closure wrapping a found method
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-		if (this.hasLocalField(selector)) {
-			return this.getLocalField(selector);
-		} else if (this.hasLocalMethod(selector)) {
+	public ATObject meta_select(ATObject receiver, final ATSymbol selector) throws InterpreterException {
+		if (this.hasLocalMethod(selector)) {
 			// return a new closure (mth, ctx) where
 			//  mth = the method found in this object
 			//  ctx.scope = the implementing scope, being this object
@@ -483,8 +503,35 @@ public class NATObject extends NATCallframe implements ATObject {
 			//  ctx.super = the parent of the implementor
 			return new NATClosure(this.getLocalMethod(selector), this, receiver);
 		} else {
-			return base_getSuper().meta_select(receiver, selector);
+			if (selector instanceof AGAssignmentSymbol) {
+				final ATSymbol origSelector = ((AGAssignmentSymbol) selector).getFieldName();
+				
+				if(this.hasLocalField(origSelector)) {
+		    		return new NativeClosure(this) {
+						public ATObject base_apply(ATTable arguments) throws InterpreterException {
+							setLocalField(origSelector, arguments.base_at(NATNumber.ONE));
+							return NATNil._INSTANCE_;
+						}
+		    		};
+				}
+			} else {
+				if(this.hasLocalField(selector)) {
+					ATObject fieldValue = this.getLocalField(selector);
+				
+					if(fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+						return fieldValue;
+					} else {
+						return new NativeClosure(this) {
+							public ATObject base_apply(ATTable arguments) throws InterpreterException {
+								return getLocalField(selector);
+							}
+			    		};
+					}
+				}
+			}
 		}
+		
+		return base_getSuper().meta_select(receiver, selector);
 	}
 	
 	/**

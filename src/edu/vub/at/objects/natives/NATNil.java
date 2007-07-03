@@ -146,7 +146,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
         	
         	// If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
         	if (selector instanceof AGAssignmentSymbol) {
-				selector = ((AGAssignmentSymbol)selector).asDefaultSymbol();
+				selector = ((AGAssignmentSymbol)selector).getFieldName();
 				
 		    	jSelector = Reflection.upBaseFieldMutationSelector(selector);
 		    	
@@ -216,7 +216,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
 
         	// If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
         	if (selector instanceof AGAssignmentSymbol) {
-				final ATSymbol origSelector = ((AGAssignmentSymbol)selector).asDefaultSymbol();
+				final ATSymbol origSelector = ((AGAssignmentSymbol)selector).getFieldName();
 				
 		    	final String assignmentSelector = Reflection.upBaseFieldMutationSelector(selector);
 		    	
