@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -38,7 +39,9 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NativeClosure;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -110,7 +113,17 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		// assert(this == receiver)
-		return this.getLocalField(selector).asClosure().base_apply(arguments);
+		ATObject fieldValue = this.getLocalField(selector);
+		
+		if(fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+			return fieldValue.asClosure().base_apply(arguments);
+		} else { 
+			if(arguments == NATTable.EMPTY) {
+				return fieldValue;
+			} else {
+				throw new XArityMismatch(selector.toString(), 0, arguments.base_getLength().asNativeNumber().javaValue);
+			}
+		}
 	}
 	
 	/**
@@ -145,11 +158,21 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 * When o is a call frame, the call frame is searched for a field 'm'.
 	 * If it is not found, a call frame does not delegate to any dynamic parent, and yields an error.
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-		if (this.hasLocalField(selector)) {
-			return this.getLocalField(selector);
-		} else {
-			throw new XSelectorNotFound(selector, this);
+	public ATObject meta_select(ATObject receiver, final ATSymbol selector) throws InterpreterException {
+		// assert(this == receiver)
+		ATObject fieldValue = this.getLocalField(selector);
+		
+		if(fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+			return fieldValue;
+		} else { 
+			return new NativeClosure(this) {
+				public ATObject base_apply(ATTable arguments) throws InterpreterException {
+					if(arguments.base_getLength().asNativeNumber().javaValue != 0) {
+						getLocalField(selector);
+					}
+					return super.base_apply(arguments);
+				}
+			};
 		}
 	}
 	
