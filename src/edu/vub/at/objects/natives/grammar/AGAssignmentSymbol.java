@@ -48,10 +48,10 @@ public class AGAssignmentSymbol extends AGSymbol{
 
 	public static AGSymbol jAlloc(String name) {
 		synchronized (_STRINGPOOL_) {
-			AGSymbol existing = (AGSymbol) _STRINGPOOL_.get(name + ":=");
+			AGSymbol existing = (AGSymbol) _STRINGPOOL_.get(name);
 			if (existing == null) {
 				existing = new AGAssignmentSymbol(name);
-				_STRINGPOOL_.put(name + ":=", existing);
+				_STRINGPOOL_.put(name, existing);
 			}
 			return existing;	
 		}
@@ -61,12 +61,14 @@ public class AGAssignmentSymbol extends AGSymbol{
 		if (sym instanceof AGAssignmentSymbol) {
 			return sym;
 		} else {
-			return jAlloc(sym.toString());
+			return jAlloc(sym.toString()+":=");
 		}
 	}
 	
 	protected AGAssignmentSymbol(String txt) {
-		super(txt);
+		// cut the := part of the symbol name, e.g. foo:= -> foo
+		super(txt.substring(0,txt.length()-2));
+		System.err.println("created an assignment symbol: "+txt);
 	}
 
 	public ATText base_getText() {
