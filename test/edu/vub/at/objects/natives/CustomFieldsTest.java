@@ -31,7 +31,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 
 		foo_ = AGSymbol.jAlloc("foo");
 		
-		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("Field"), NativeTypeTags._FIELD_);
+		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("Field"), NativeTypeTags._FIELD_);
 		testField_ = evalAndReturn(
 				"object: { def name := `foo;" +
 				          "def host := nil; def init(newhost) { host := newhost; };" +
@@ -99,7 +99,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	 */
 	public void testFieldListing() throws Exception {
 		testHost_.meta_addField(testField_.meta_clone().asField());
-		assertEquals(3, testHost_.meta_listFields().base_getLength().asNativeNumber().javaValue);
+		assertEquals(3, testHost_.meta_listFields().base_length().asNativeNumber().javaValue);
 	}
 	
 	/**

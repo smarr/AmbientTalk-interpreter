@@ -124,7 +124,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		int siz = elements_.length;
 		for (int i = 0; i < elements_.length; i++) {
 			if (elements_[i].isSplice()) {
-				ATObject[] tbl = elements_[i].asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
+				ATObject[] tbl = elements_[i].asSplice().base_expression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -149,7 +149,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		int siz = elements_.length;
 		for (int i = 0; i < elements_.length; i++) {
 			if (elements_[i].isUnquoteSplice()) {
-				ATObject[] tbl = elements_[i].asUnquoteSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
+				ATObject[] tbl = elements_[i].asUnquoteSplice().base_expression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -165,11 +165,11 @@ public final class NATTable extends AGExpression implements ATTable {
 		return Evaluator.printElements(this, "[", ", ","]");
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._TABLE_);
     }
 	
-	public ATNumber base_getLength() { return NATNumber.atValue(elements_.length); }
+	public ATNumber base_length() { return NATNumber.atValue(elements_.length); }
 
 	public ATObject base_at(ATNumber index) throws InterpreterException {
 		return elements_[extractIndex(index)];

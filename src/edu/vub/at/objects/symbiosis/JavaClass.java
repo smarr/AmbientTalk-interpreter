@@ -126,10 +126,10 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 	private static final PrimitiveMethod _PRIM_STP_ = new PrimitiveMethod(
 			AGSymbol.jAlloc("isSubtypeOf"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("type")})) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			if (!arguments.base_getLength().equals(NATNumber.ONE)) {
-				throw new XArityMismatch("isSubtypeOf", 1, arguments.base_getLength().asNativeNumber().javaValue);
+			if (!arguments.base_length().equals(NATNumber.ONE)) {
+				throw new XArityMismatch("isSubtypeOf", 1, arguments.base_length().asNativeNumber().javaValue);
 			}
-			return ctx.base_getLexicalScope().asJavaClassUnderSymbiosis().base_isSubtypeOf(arguments.base_at(NATNumber.ONE).asTypeTag());
+			return ctx.base_lexicalScope().asJavaClassUnderSymbiosis().base_isSubtypeOf(arguments.base_at(NATNumber.ONE).asTypeTag());
 		}
 	};
 	
@@ -420,7 +420,7 @@ public final class JavaClass extends NATObject implements ATTypeTag {
      * exist in the Java class.
      */
     public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
-        ATSymbol name = method.base_getName();
+        ATSymbol name = method.base_name();
         if (Symbiosis.hasMethod(wrappedClass_, Reflection.upSelector(name), true)) {
     	    throw new XDuplicateSlot(name);
         } else {
@@ -501,11 +501,11 @@ public final class JavaClass extends NATObject implements ATTypeTag {
      * If this class represents an interface type, parentTypes
      * are wrappers for all interfaces extended by this Java interface type
      */
-	public ATTable base_getSuperTypes() throws InterpreterException {
+	public ATTable base_superTypes() throws InterpreterException {
 		return super.meta_select(this, _PTS_NAME_).asTable();
 	}
 
-	public ATSymbol base_getTypeName() throws InterpreterException {
+	public ATSymbol base_typeName() throws InterpreterException {
 		return super.meta_select(this, _TNM_NAME_).asSymbol();
 	}
 

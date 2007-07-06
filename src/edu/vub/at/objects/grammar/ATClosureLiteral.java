@@ -46,13 +46,13 @@ public interface ATClosureLiteral extends ATExpression {
 	 * Example: <code>`({ |a, b| a + b }).arguments == `[a, b]</code>
 	 * @return The formal argument list
 	 */
-	public ATTable base_getArguments();
+	public ATTable base_arguments();
 	
 	/**
 	 * The body of a literal closure may not be empty.
 	 * Example: <code>`({ |a, b| a + b }).bodyExpression == `(a.+(b))</code>
 	 * @return The body of the literal closure
 	 */
-	public ATBegin base_getBodyExpression();
+	public ATBegin base_bodyExpression();
 
 }

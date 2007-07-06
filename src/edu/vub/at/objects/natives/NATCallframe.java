@@ -329,10 +329,10 @@ public class NATCallframe extends NATByRef implements ATObject {
 	public ATNil meta_addField(ATField field) throws InterpreterException {
 		// when adding a native field, revert to the more optimized implementation using the map
 		if (field.isNativeField()) {
-			return this.meta_defineField(field.base_getName(), field.base_readField());
+			return this.meta_defineField(field.base_name(), field.base_readField());
 		}
 		
-		ATSymbol name = field.base_getName();
+		ATSymbol name = field.base_name();
 		if (this.hasLocalField(name)) {
 			// field already exists...
 			throw new XDuplicateSlot(name);			
@@ -352,7 +352,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	
 	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
 		throw new XIllegalOperation("Cannot add method "+
-								   method.base_getName().base_getText().asNativeText().javaValue +
+								   method.base_name().base_text().asNativeText().javaValue +
 				                    " to a call frame. Add it as a closure field instead.");
 	}
 	
@@ -408,11 +408,11 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 * Also note that this method performs the behaviour equivalent to evaluating
 	 * 'super' and not 'self.super', which could lead to infinite loops.
 	 */
-	public ATObject base_getSuper() throws InterpreterException {
+	public ATObject base_super() throws InterpreterException {
 		return this.meta_lookup(NATObject._SUPER_NAME_);
 	};
 	
-	public ATObject meta_getLexicalParent() throws InterpreterException {
+	public ATObject meta_lexicalParent() throws InterpreterException {
 		return lexicalParent_;
 	}
 
@@ -461,7 +461,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 			Iterator it = customFields_.iterator();
 			while (it.hasNext()) {
 				ATField field = (ATField) it.next();
-				if (field.base_getName().equals(selector)) {
+				if (field.base_name().equals(selector)) {
 					return true;
 				}
 			}
@@ -497,7 +497,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 			Iterator it = customFields_.iterator();
 			while (it.hasNext()) {
 				ATField field = (ATField) it.next();
-				if (field.base_getName().equals(selector)) {
+				if (field.base_name().equals(selector)) {
 					return field;
 				}
 			}

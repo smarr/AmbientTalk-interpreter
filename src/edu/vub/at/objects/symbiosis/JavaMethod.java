@@ -69,7 +69,7 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 	}
 	
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-		ATObject wrapper = ctx.base_getSelf();
+		ATObject wrapper = ctx.base_self();
 		Object receiver;
 		if (wrapper.isJavaObjectUnderSymbiosis()) {
 			receiver = wrapper.asJavaObjectUnderSymbiosis().getWrappedObject();
@@ -84,7 +84,7 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 		return base_apply(arguments, ctx);
 	}
 	
-	public ATBegin base_getBodyExpression() throws InterpreterException {
+	public ATBegin base_bodyExpression() throws InterpreterException {
 		// list all of the method signatures of the (possibly overloaded) Java method
 		StringBuffer buff = new StringBuffer("Java implementation of: ");
 		for (int i = 0; i < choices_.length; i++) {
@@ -95,11 +95,11 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 		return new AGBegin(NATTable.atValue(new ATObject[] { NATText.atValue(buff.toString()) }));
 	}
 
-	public ATSymbol base_getName() throws InterpreterException {
+	public ATSymbol base_name() throws InterpreterException {
 		return Reflection.downSelector(choices_[0].getName());
 	}
 
-	public ATTable base_getParameters() throws InterpreterException {
+	public ATTable base_parameters() throws InterpreterException {
 		return Evaluator._ANON_MTH_ARGS_;
 	}
 
@@ -107,7 +107,7 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 		return NATText.atValue("<java method:"+choices_[0].getName()+">");
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._METHOD_);
     }
 	

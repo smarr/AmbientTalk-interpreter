@@ -71,24 +71,24 @@ public interface ATDefExternalMethod extends ATDefinition {
 	 * Example: <code>`{ def o.m() { 5 } }.statements[1].receiver == `o</code>
 	 * @return the receiver on which the method will be defined
 	 */
-	public ATSymbol base_getReceiver();
+	public ATSymbol base_receiver();
 	
 	/**
 	 * Example: <code>`{ def o.m() { 5 } }.statements[1].selector == `m</code>
 	 * @return the selector of the new method
 	 */
-	public ATSymbol base_getSelector();
+	public ATSymbol base_selector();
 	
 	/**
 	 * Example: <code>`{ def o.m(a, @b) { b } }.statements[1].arguments == `[a, @b]</code>
 	 * @return the argument list of the new method
 	 */
-	public ATTable base_getArguments();
+	public ATTable base_arguments();
 	
 	/**
 	 * Example: <code>`{ def o.m() { o.n(); 1+2+3 } }.statements[1].bodyExpression == `{o.n(); 1.+(2).+(3)}</code>
 	 * @return the body of the new method
 	 */
-	public ATBegin base_getBodyExpression();
+	public ATBegin base_bodyExpression();
 	
 }

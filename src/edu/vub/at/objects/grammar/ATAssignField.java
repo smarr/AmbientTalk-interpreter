@@ -44,20 +44,20 @@ public interface ATAssignField extends ATAssignment {
 	 * Example: <code>`{ o.x := 5}.statements[1].receiverExpression == `o</code>
 	 * @return The expression for the object whose field is about to be assigned
 	 */
-	public ATExpression base_getReceiverExpression();
+	public ATExpression base_receiverExpression();
 	
 	/**
 	 * The field name must be a literal symbol
 	 * Example: <code>`{ o.x := 5}.statements[1].fieldName == `x</code>
 	 * @return The name of the field
 	 */
-	public ATSymbol base_getFieldName();
+	public ATSymbol base_fieldName();
 	
 	/**
 	 * The value expression may be any valid AmbientTalk expression.
 	 * Example: <code>`{ o.x := 5}.statements[1].valueExpression == `5</code>
 	 * @return The expression for the value that will be assigned to the field
 	 */
-	public ATExpression base_getValueExpression();
+	public ATExpression base_valueExpression();
 	
 }

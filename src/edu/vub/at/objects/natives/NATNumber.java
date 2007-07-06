@@ -83,7 +83,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
         return NATText.atValue(String.valueOf(javaValue));
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._NUMBER_);
     }
 	

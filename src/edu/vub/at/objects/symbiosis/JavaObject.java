@@ -403,7 +403,7 @@ public final class JavaObject extends NATObject implements ATObject {
 	 * Invoking new on a JavaObject will exhibit the same behaviour as if new was invoked on the parent class.
 	 */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-    	return base_getSuper().meta_newInstance(initargs);
+    	return base_super().meta_newInstance(initargs);
     }
     
     /**
@@ -411,7 +411,7 @@ public final class JavaObject extends NATObject implements ATObject {
      * exist in the Java object's class.
      */
     public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
-        ATSymbol name = method.base_getName();
+        ATSymbol name = method.base_name();
         if (Symbiosis.hasMethod(wrappedObject_.getClass(), Reflection.upSelector(name), false)) {
     	    throw new XDuplicateSlot(name);
         } else {

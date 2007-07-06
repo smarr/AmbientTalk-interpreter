@@ -63,7 +63,7 @@ public class NATMethod extends NATByCopy implements ATMethod {
 		
 		// calculate the parameter binding strategy to use using partial evaluation
 		parameterBindingFunction_ =
-			PartialBinder.calculateResidual(name_.base_getText().asNativeText().javaValue, parameters);
+			PartialBinder.calculateResidual(name_.base_text().asNativeText().javaValue, parameters);
 	}
 	
 	/**
@@ -76,7 +76,7 @@ public class NATMethod extends NATByCopy implements ATMethod {
 		PartialBinder parameterBindingFunction;
 		try {
 			// calculate the parameter binding strategy to use using partial evaluation
-			parameterBindingFunction = PartialBinder.calculateResidual(name_.base_getText().asNativeText().javaValue, parameters);
+			parameterBindingFunction = PartialBinder.calculateResidual(name_.base_text().asNativeText().javaValue, parameters);
 		} catch (InterpreterException e) {
 			parameterBindingFunction = null;
 			// this indicates a bug, primitive methods should not contain erroneous parameter lists
@@ -85,15 +85,15 @@ public class NATMethod extends NATByCopy implements ATMethod {
 		parameterBindingFunction_ = parameterBindingFunction;
 	}
 
-	public ATSymbol base_getName() {
+	public ATSymbol base_name() {
 		return name_;
 	}
 
-	public ATTable base_getParameters() {
+	public ATTable base_parameters() {
 		return parameters_;
 	}
 
-	public ATBegin base_getBodyExpression() {
+	public ATBegin base_bodyExpression() {
 		return body_;
 	}
 	
@@ -113,7 +113,7 @@ public class NATMethod extends NATByCopy implements ATMethod {
 	 * @return the value of evaluating the function body
 	 */
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-		NATCallframe cf = new NATCallframe(ctx.base_getLexicalScope());
+		NATCallframe cf = new NATCallframe(ctx.base_lexicalScope());
 		ATContext evalCtx = ctx.base_withLexicalEnvironment(cf);
 		PartialBinder.defineParamsForArgs(parameterBindingFunction_, evalCtx, arguments);
 		return body_.meta_eval(evalCtx);
@@ -147,7 +147,7 @@ public class NATMethod extends NATByCopy implements ATMethod {
 		return this;
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._METHOD_);
     }
 

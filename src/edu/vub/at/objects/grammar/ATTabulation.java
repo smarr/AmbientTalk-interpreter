@@ -41,13 +41,13 @@ public interface ATTabulation extends ATExpression {
 	 * Example: <code>`(m()[idx+1]).tableExpression == `(m())</code>
 	 * @return the table expression
 	 */
-	public ATExpression base_getTableExpression();
+	public ATExpression base_tableExpression();
 	
 	/**
 	 * The index expression must evaluate to a native number
 	 * Example: <code>`(m()[idx+1]).indexExpression == `(idx.+(1))</code>
 	 * @return the index expression
 	 */
-	public ATExpression base_getIndexExpression();
+	public ATExpression base_indexExpression();
 	
 }

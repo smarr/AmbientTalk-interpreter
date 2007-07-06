@@ -56,14 +56,14 @@ public interface ATTypeTag extends ATObject {
 	 * 
 	 * @return an {@link ATSymbol} representing the unique name by which the type can be identified.
 	 */
-	public ATSymbol base_getTypeName() throws InterpreterException;
+	public ATSymbol base_typeName() throws InterpreterException;
 	
 	/**
 	 * Returns a table with the supertypes of this type tag.
 	 * 
 	 * @return an {@link ATTable} with the super types of the receiver type tags.
 	 */
-	public ATTable base_getSuperTypes() throws InterpreterException;
+	public ATTable base_superTypes() throws InterpreterException;
 	
 	/**
 	 * Returns true if this type tag is a subtype of a given type tag.

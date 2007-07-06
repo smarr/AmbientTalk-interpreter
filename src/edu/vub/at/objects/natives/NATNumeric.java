@@ -53,7 +53,7 @@ public abstract class NATNumeric extends AGExpression implements ATNumeric {
 		return this;
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._NUMERIC_);
     }
     

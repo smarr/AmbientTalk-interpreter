@@ -53,14 +53,14 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 		message_ = msg;
 	}
 	
-	public ATExpression base_getReceiverExpression() { return rcvExp_; }
+	public ATExpression base_receiverExpression() { return rcvExp_; }
 	
-	public ATNil base_setReceiverExpression(ATExpression rcv) { 
+	public ATNil base_receiverExpression__opeql_(ATExpression rcv) { 
 		rcvExp_ = rcv;
 		return NATNil._INSTANCE_;
 	}
 
-	public ATExpression base_getMessageExpression() { return message_; }
+	public ATExpression base_messageExpression() { return message_; }
 
 	/**
 	 * To evaluate a message send, evaluate the receiver expression into an object.
@@ -78,7 +78,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 		InvocationStack stack = InvocationStack.getInvocationStack();
 		try {
 			stack.methodInvoked(this, rcvr, msg);
-			result = msg.base_sendTo(rcvr, ctx.base_getSelf());
+			result = msg.base_sendTo(rcvr, ctx.base_self());
 		} finally {
 			stack.methodReturned(result);
 		}

@@ -38,8 +38,6 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * ATMethod into {@link ATClosure}). As a consequence, it is not possible to
  * get hold of an ATMethod at the base-level (since lookup implies wrapping).
  * 
- * TODO: turn base_getxxx into meta_getxxx?
- * 
  * @author smostinc
  * @author tvcutsem
  */
@@ -81,19 +79,19 @@ public interface ATMethod extends ATObject {
 	 * 
 	 * @return an {@link ATSymbol} representing the name by which the method can be identified.
 	 */
-	public ATSymbol base_getName() throws InterpreterException;
+	public ATSymbol base_name() throws InterpreterException;
 	
 	/**
 	 * Returns the parameter list of the method which is normally a table of symbols.
 	 * 
 	 * @return an {@link ATTable} representing the parameter list of the method.
 	 */
-	public ATTable base_getParameters() throws InterpreterException;
+	public ATTable base_parameters() throws InterpreterException;
 	
 	/**
 	 * Returns the body of the method.
 	 * 
 	 * @return an {@link ATBegin} representing the body of the method.
 	 */
-	public ATBegin base_getBodyExpression() throws InterpreterException;
+	public ATBegin base_bodyExpression() throws InterpreterException;
 }

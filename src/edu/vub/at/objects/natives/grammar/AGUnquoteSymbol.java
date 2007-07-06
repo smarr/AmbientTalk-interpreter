@@ -70,7 +70,7 @@ public final class AGUnquoteSymbol extends AGUnquote implements ATSymbol {
 	 * 
 	 * @throws XIllegalUnquote
 	 */
-	public ATText base_getText() throws InterpreterException {
+	public ATText base_text() throws InterpreterException {
 		throw new XIllegalUnquote(unqExp_);
 	}
 

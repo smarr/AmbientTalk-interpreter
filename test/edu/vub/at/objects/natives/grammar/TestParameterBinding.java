@@ -351,7 +351,7 @@ public class TestParameterBinding extends AmbientTalkTest {
 	public void testMultiAssignmentWithOptionalAndRestParameters() throws InterpreterException {
 		// def [a,x:=a,@rest] := [0,1,2]
 		AGMultiDefinition multiDef = new AGMultiDefinition(
-				fun4.base_getParameters(),
+				fun4.base_parameters(),
 				NATTable.atValue(new ATObject[] { NATNumber.ZERO, NATNumber.ONE, NATNumber.atValue(2) }));
 		multiDef.meta_eval(bindCtx_);
 		ensureBound(at_a, NATNumber.ZERO);

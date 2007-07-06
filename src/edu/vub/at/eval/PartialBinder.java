@@ -205,7 +205,7 @@ public abstract class PartialBinder implements Serializable {
 				// no mandatory and no optional parameters
 				if (hasSplice) {
 					// only a rest parameter
-					return makeVariableArity(forFunction, pars[paridx].asSplice().base_getExpression().asSymbol());
+					return makeVariableArity(forFunction, pars[paridx].asSplice().base_expression().asSymbol());
 				} else {
 					// no mandatory, no optional and no rest parameter: this can normally only happen when
 					// the formal parameter list is empty, but this case is checked at the beginning
@@ -247,7 +247,7 @@ public abstract class PartialBinder implements Serializable {
 					throw new XArityMismatch(funnam, numMandatoryArguments, args.length);
 				}
 				
-				ATObject scope = inContext.base_getLexicalScope();
+				ATObject scope = inContext.base_lexicalScope();
 				
 				// bind all mandatory arguments
 				for (int paridx = 0; paridx < numMandatoryArguments; paridx++) {
@@ -273,7 +273,7 @@ public abstract class PartialBinder implements Serializable {
 				}
 				
 				int paridx = 0;
-				ATObject scope = inContext.base_getLexicalScope();
+				ATObject scope = inContext.base_lexicalScope();
 				
 				// bind all mandatory arguments
 				for (; paridx < numMandatory; paridx++) {
@@ -285,11 +285,11 @@ public abstract class PartialBinder implements Serializable {
 				for (; paridx < numMandatory + numOptional; paridx++) {
 					if (paridx < args.length) {
 						// bind formal to actual and ignore default initialization expression
-						binder.bindParamToArg(scope, formals[paridx].asVariableAssignment().base_getName(), args[paridx]);	
+						binder.bindParamToArg(scope, formals[paridx].asVariableAssignment().base_name(), args[paridx]);	
 					} else {
 						// no more actuals: bind optional parameter to default initialization expression
 						ATAssignVariable param = formals[paridx].asVariableAssignment();
-						binder.bindParamToArg(scope, param.base_getName(), param.base_getValueExpression().meta_eval(inContext));
+						binder.bindParamToArg(scope, param.base_name(), param.base_valueExpression().meta_eval(inContext));
 					}
 				}
 			}
@@ -310,17 +310,17 @@ public abstract class PartialBinder implements Serializable {
 					throw new XArityMismatch(funnam, numOptional, args.length);
 				}
 				
-				ATObject scope = inContext.base_getLexicalScope();
+				ATObject scope = inContext.base_lexicalScope();
 				
 				// bind all optional arguments
 				for (int paridx = 0; paridx < numOptional; paridx++) {
 					if (paridx < args.length) {
 						// bind formal to actual and ignore default initialization expression
-						binder.bindParamToArg(scope, formals[paridx].asVariableAssignment().base_getName(), args[paridx]);	
+						binder.bindParamToArg(scope, formals[paridx].asVariableAssignment().base_name(), args[paridx]);	
 					} else {
 						// no more actuals: bind optional parameter to default initialization expression
 						ATAssignVariable param = formals[paridx].asVariableAssignment();
-						binder.bindParamToArg(scope, param.base_getName(), param.base_getValueExpression().meta_eval(inContext));
+						binder.bindParamToArg(scope, param.base_name(), param.base_valueExpression().meta_eval(inContext));
 					}
 				}
 			}
@@ -336,7 +336,7 @@ public abstract class PartialBinder implements Serializable {
 				// no arity check needed
 				
 				// bind the formal parameter to all given arguments
-				binder.bindParamToArg(inContext.base_getLexicalScope(), formal, NATTable.atValue(args));
+				binder.bindParamToArg(inContext.base_lexicalScope(), formal, NATTable.atValue(args));
 			}
 		};
 	}
@@ -354,7 +354,7 @@ public abstract class PartialBinder implements Serializable {
 					throw new XArityMismatch(funnam, numMandatoryArguments, args.length);
 				}
 				
-				ATObject scope = inContext.base_getLexicalScope();
+				ATObject scope = inContext.base_lexicalScope();
 				
 				// bind all mandatory arguments
 				for (int paridx = 0; paridx < numMandatoryArguments; paridx++) {
@@ -368,7 +368,7 @@ public abstract class PartialBinder implements Serializable {
 				for (int i = 0; i < numRemainingArgs; i++) {
 					restArgs[i] = args[numMandatoryArguments + i];
 				}
-				ATSymbol restArgsName = formals[numMandatoryArguments].asSplice().base_getExpression().asSymbol();
+				ATSymbol restArgsName = formals[numMandatoryArguments].asSplice().base_expression().asSymbol();
 				binder.bindParamToArg(scope, restArgsName, NATTable.atValue(restArgs));
 			}
 		};
@@ -384,22 +384,22 @@ public abstract class PartialBinder implements Serializable {
 				
 				// no arity check needed
 
-				ATObject scope = inContext.base_getLexicalScope();
+				ATObject scope = inContext.base_lexicalScope();
 				
 				// bind all optional arguments
 				for (int paridx = 0; paridx < numOptional; paridx++) {
 					if (paridx < args.length) {
 						// bind formal to actual and ignore default initialization expression
-						binder.bindParamToArg(scope, formals[paridx].asVariableAssignment().base_getName(), args[paridx]);	
+						binder.bindParamToArg(scope, formals[paridx].asVariableAssignment().base_name(), args[paridx]);	
 					} else {
 						// no more actuals: bind optional parameter to default initialization expression
 						ATAssignVariable param = formals[paridx].asVariableAssignment();
-						binder.bindParamToArg(scope, param.base_getName(), param.base_getValueExpression().meta_eval(inContext));
+						binder.bindParamToArg(scope, param.base_name(), param.base_valueExpression().meta_eval(inContext));
 					}
 				}
 				
 				// bind remaining arguments to the rest parameter
-				ATSymbol restArgsName = formals[numOptional+1].asSplice().base_getExpression().asSymbol();
+				ATSymbol restArgsName = formals[numOptional+1].asSplice().base_expression().asSymbol();
 				
 				if (args.length <= numOptional) {
 					// no more actual arguments to bind to the rest parameter
@@ -430,7 +430,7 @@ public abstract class PartialBinder implements Serializable {
 				}
 				
 				int paridx = 0;
-				ATObject scope = inContext.base_getLexicalScope();
+				ATObject scope = inContext.base_lexicalScope();
 				
 				// bind all mandatory arguments
 				for (; paridx < numMandatory; paridx++) {
@@ -444,17 +444,17 @@ public abstract class PartialBinder implements Serializable {
 				for (; paridx < numMandatory + numOptional; paridx++) {
 					if (paridx < args.length) {
 						// bind formal to actual and ignore default initialization expression
-						binder.bindParamToArg(scope, formals[paridx].asVariableAssignment().base_getName(), args[paridx]);	
+						binder.bindParamToArg(scope, formals[paridx].asVariableAssignment().base_name(), args[paridx]);	
 						numFilledInOptionals++;
 					} else {
 						// no more actuals: bind optional parameter to default initialization expression
 						ATAssignVariable param = formals[paridx].asVariableAssignment();
-						binder.bindParamToArg(scope, param.base_getName(), param.base_getValueExpression().meta_eval(inContext));
+						binder.bindParamToArg(scope, param.base_name(), param.base_valueExpression().meta_eval(inContext));
 					}
 				}
 				
 				// bind remaining arguments to the rest parameter
-				ATSymbol restArgsName = formals[formals.length-1].asSplice().base_getExpression().asSymbol();
+				ATSymbol restArgsName = formals[formals.length-1].asSplice().base_expression().asSymbol();
 				
 				if (args.length <= numMandatory + numOptional) {
 					// no more actual arguments to bind to the rest parameter

@@ -189,31 +189,31 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * <tt>nil</tt> evaluates to the nil object, which is
 	 * the empty, dynamic parent of all AmbientTalk objects. 
 	 */
-	public ATNil base_getNil() {
+	public ATNil base_nil() {
 		return NATNil._INSTANCE_;
 	}
 	
 	/**
 	 * <tt>true</tt> evaluates to the unique boolean true object.
 	 */
-	public ATBoolean base_getTrue() {
+	public ATBoolean base_true() {
 		return NATBoolean._TRUE_;
 	}
 	
 	/**
 	 * <tt>false</tt> evaluates to the unique boolean false object.
 	 */
-	public ATBoolean base_getFalse() {
+	public ATBoolean base_false() {
 		return NATBoolean._FALSE_;
 	}
 	
 	/**
 	 * <tt>/</tt> evaluates to the global namespace. It is
 	 * simply an alias for <tt>lobby</tt>.
-	 * @see #base_getLobby()
+	 * @see #base_lobby()
 	 */
-	public ATObject base_get_opdiv_() {
-		return base_getLobby();
+	public ATObject base__opdiv_() {
+		return base_lobby();
 	}
 	
 	/**
@@ -226,7 +226,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Accessing the lobby allows loading in AmbientTalk source code
 	 * from external files.
 	 */
-	public ATObject base_getLobby() {
+	public ATObject base_lobby() {
 		return Evaluator.getLobbyNamespace();
 	}
 	
@@ -237,7 +237,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * is assumed to be "nested" in the lexical root, so all definitions
 	 * of this object are lexically accessible.
 	 */
-	public ATObject base_getRoot() {
+	public ATObject base_root() {
 		return Evaluator.getGlobalLexicalScope();
 	}
 	
@@ -254,7 +254,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * <code>jlobby.java.util.Vector</code> evaluates to a reference to
 	 * the Java <tt>Vector</tt> class.
 	 */
-	public ATObject base_getJlobby() {
+	public ATObject base_jlobby() {
 		return Evaluator.getJLobbyRoot();
 	}
 
@@ -268,7 +268,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  remote references to remote objects will become disconnected.
 	 * </ul>
 	 */
-	public ATObject base_getNetwork() {
+	public ATObject base_network() {
 		return OBJNetwork._INSTANCE_;
 	}
 	
@@ -292,7 +292,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * 
 	 * Note that the default mirror is typed with the <tt>/.at.types.Mirror</tt> type.
 	 */
-	public ATObject base_getDefaultMirror() {
+	public ATObject base_defaultMirror() {
 		return Evaluator.getMirrorRoot();
 	}
 	
@@ -467,10 +467,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a far reference to the behaviour of the new actor
 	 */
 	public ATObject base_actor_(ATClosure closure) throws InterpreterException {
-		ATMethod method = closure.base_getMethod();
+		ATMethod method = closure.base_method();
 		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-				method.base_getParameters(),
-				closure.base_getContext());
+				method.base_parameters(),
+				closure.base_context());
 		
 		Packet serializedBindings = new Packet("actor-bindings", copiedBindings);
 		Packet serializedInitCode = new Packet("actor-initcode", method);
@@ -485,7 +485,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * other objects. It can be replaced by a custom mirror by means of the actor
 	 * mirror's <tt>install:</tt> primitive.
 	 */
-	public ATActorMirror base_getActor() throws InterpreterException {
+	public ATActorMirror base_actor() throws InterpreterException {
 		return ELActor.currentActor().getActorMirror();
 	}
 	
@@ -654,7 +654,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 				NATNil._INSTANCE_,
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				NATTable.EMPTY,
-				base_getDefaultMirror());
+				base_defaultMirror());
 	}
 	
 	/**
@@ -687,7 +687,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 				parent,
 				NATBoolean._TRUE_ /* IS-A link */,
 				NATTable.EMPTY,
-				base_getDefaultMirror());
+				base_defaultMirror());
 	}
 	
     /**
@@ -721,7 +721,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 				parent,
 				NATBoolean._TRUE_ /* IS-A link */,
 				types,
-				base_getDefaultMirror());
+				base_defaultMirror());
 	}
 	
     /**
@@ -823,7 +823,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 				parent,
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				NATTable.EMPTY,
-				base_getDefaultMirror());
+				base_defaultMirror());
 	}
 
     /**
@@ -857,7 +857,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 				parent,
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				types,
-				base_getDefaultMirror());
+				base_defaultMirror());
 	}
 	
     /**
@@ -959,7 +959,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 				NATNil._INSTANCE_,
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				types,
-				base_getDefaultMirror());
+				base_defaultMirror());
 	}
 	
     /**
@@ -1030,10 +1030,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	public ATObject base_mirror_(ATClosure code) throws InterpreterException {
 		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
-				base_getDefaultMirror(),
+				base_defaultMirror(),
 				NATBoolean._TRUE_ /* IS-A link */, 
 			    NATTable.EMPTY,
-			    base_getDefaultMirror());
+			    base_defaultMirror());
 	}
 	
     /**
@@ -1144,7 +1144,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 		if (mirror instanceof OBJMirrorRoot) {
 			// then create a native object
 			newObject = new NATObject(parent, // dynamic parent
-					                  code.base_getContext().base_getLexicalScope(), // lexical parent
+					                  code.base_context().base_lexicalScope(), // lexical parent
 					                  parentRelation, // IS-A or SHARES-A
 					                  typeArray); // initial types
 		} else {
@@ -1170,7 +1170,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @see ATActorMirror#base_createMirror(ATObject) for the details about mirror creation on objects.
 	 */
 	public ATObject base_reflect_(ATObject reflectee) throws InterpreterException {
-		return base_getActor().base_createMirror(reflectee);
+		return base_actor().base_createMirror(reflectee);
 	}
 	
 	/**
@@ -1239,7 +1239,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a table of all of the <i>local</i> types of an object.
 	 */
 	public ATTable base_tagsOf_(ATObject object) throws InterpreterException {
-		return object.meta_getTypeTags();
+		return object.meta_typeTags();
 	}
 	
 	/* -------------------------------

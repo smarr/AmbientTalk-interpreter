@@ -81,7 +81,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 	 * rather than the runtime context of the invoker.
 	 */
 	public ATObject base_apply(ATTable arguments) throws InterpreterException {
-		return method_.base_apply(arguments, this.base_getContext());
+		return method_.base_apply(arguments, this.base_context());
 	}
 
 	/**
@@ -205,11 +205,11 @@ public class NATClosure extends NATByRef implements ATClosure {
 		public boolean alreadyReturned = false;
 	}
 
-	public ATContext base_getContext() throws InterpreterException {
+	public ATContext base_context() throws InterpreterException {
 		return context_;
 	}
 
-	public ATMethod base_getMethod() {
+	public ATMethod base_method() {
 		return method_;
 	}
 
@@ -218,10 +218,10 @@ public class NATClosure extends NATByRef implements ATClosure {
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<closure:"+method_.base_getName()+">");
+		return NATText.atValue("<closure:"+method_.base_name()+">");
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._CLOSURE_);
     }
     

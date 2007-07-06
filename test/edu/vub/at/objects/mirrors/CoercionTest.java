@@ -117,8 +117,8 @@ public class CoercionTest extends TestCase {
 	public void testCoercedBaselevelFieldAccess() {
 		try {
 			ATClosure coercedObject = customClosure_.asClosure();
-			ATMethod m = coercedObject.base_getMethod();
-			assertEquals("foo", m.base_getName().base_getText().asNativeText().javaValue);
+			ATMethod m = coercedObject.base_method();
+			assertEquals("foo", m.base_name().base_text().asNativeText().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -127,8 +127,8 @@ public class CoercionTest extends TestCase {
 	public void testCoercedReturnValue() {
 		try {
 			ATClosure coercedObject = customClosure_.asClosure();
-			ATContext coercedContext = coercedObject.base_getContext();
-			assertEquals(24, coercedContext.base_getSelf().asNativeNumber().javaValue);
+			ATContext coercedContext = coercedObject.base_context();
+			assertEquals(24, coercedContext.base_self().asNativeNumber().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}

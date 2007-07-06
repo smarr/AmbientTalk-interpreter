@@ -54,9 +54,9 @@ public final class AGApplication extends AGExpression implements ATApplication {
 		arguments_ = arg;
 	}
 	
-	public ATExpression base_getFunction() { return funExp_; }
+	public ATExpression base_function() { return funExp_; }
 
-	public ATTable base_getArguments() { return arguments_; }
+	public ATTable base_arguments() { return arguments_; }
 
 	/**
 	 * To evaluate a function application, evaluate the receiver expression to a function, then evaluate the arguments

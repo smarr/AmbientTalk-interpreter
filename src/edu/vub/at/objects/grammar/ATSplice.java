@@ -41,6 +41,6 @@ public interface ATSplice extends ATExpression {
 	 * Example: <code>`([@m()])[1].expression == `(m())</code>
 	 * @return the expression for the table that needs to be spliced
 	 */
-	public ATExpression base_getExpression();
+	public ATExpression base_expression();
 	
 }

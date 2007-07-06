@@ -48,7 +48,7 @@ public interface ATTable extends ATExpression {
 	 *
 	 * @return the length of the table as an {@link ATNumber}.
 	 */	
-	public ATNumber base_getLength() throws InterpreterException;
+	public ATNumber base_length() throws InterpreterException;
 	
 	/**
 	 * Returns the value of the element at the index passed as argument. 

@@ -51,9 +51,9 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 		valueExp_ = val;
 	}
 	
-	public ATSymbol base_getName() { return variableName_; }
+	public ATSymbol base_name() { return variableName_; }
 
-	public ATExpression base_getValueExpression() { return valueExp_; }
+	public ATExpression base_valueExpression() { return valueExp_; }
 	
 	/**
 	 * To evaluate a variable assignment, evaluate the right hand side and ask
@@ -65,7 +65,7 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject val = valueExp_.meta_eval(ctx);
-		ctx.base_getLexicalScope().meta_assignVariable(variableName_, val);
+		ctx.base_lexicalScope().meta_assignVariable(variableName_, val);
 		return val;
 	}
 

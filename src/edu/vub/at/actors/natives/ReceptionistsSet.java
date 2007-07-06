@@ -140,7 +140,7 @@ public class ReceptionistsSet {
 		}
 		
 		// copy types of local object
-		ATObject[] origTypes = object.meta_getTypeTags().asNativeTable().elements_;
+		ATObject[] origTypes = object.meta_typeTags().asNativeTable().elements_;
 		ATTypeTag[] types = new ATTypeTag[origTypes.length];
 		System.arraycopy(origTypes, 0, types, 0, origTypes.length);
 		return createLocalFarRef(owner_, objId, types);

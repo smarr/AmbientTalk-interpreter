@@ -162,7 +162,7 @@ public final class Evaluator {
 		int siz = els.length;
 		for (int i = 0; i < els.length; i++) {
 			if (els[i].isSplice()) {
-				ATObject[] tbl = els[i].asSplice().base_getExpression().meta_eval(ctx).asNativeTable().elements_;
+				ATObject[] tbl = els[i].asSplice().base_expression().meta_eval(ctx).asNativeTable().elements_;
 				for (int j = 0; j < tbl.length; j++) {
 					result.add(tbl[j]);
 				}
@@ -203,7 +203,7 @@ public final class Evaluator {
 			if (arguments == NATTable.EMPTY)
 				return; // no need to bind any arguments
 			else
-				throw new XArityMismatch(funnam, 0, arguments.base_getLength().asNativeNumber().javaValue); 
+				throw new XArityMismatch(funnam, 0, arguments.base_length().asNativeNumber().javaValue); 
 		}
 		
 		ATObject[] pars = parameters.asNativeTable().elements_;
@@ -228,7 +228,7 @@ public final class Evaluator {
 		
 		int paridx = 0;
 		int numMandatoryArguments = 0;
-		ATObject scope = context.base_getLexicalScope();
+		ATObject scope = context.base_lexicalScope();
 		
 		// determine number of mandatory arguments
 		for (; paridx < pars.length && pars[paridx].isSymbol(); paridx++) {
@@ -260,11 +260,11 @@ public final class Evaluator {
 			for (; paridx < pars.length && pars[paridx].isVariableAssignment(); paridx++) {
 				if (paridx < args.length) {
 					// bind formal to actual and ignore default initialization expression
-					binder.bindParamToArg(scope, pars[paridx].asVariableAssignment().base_getName(), args[paridx]);	
+					binder.bindParamToArg(scope, pars[paridx].asVariableAssignment().base_name(), args[paridx]);	
 				} else {
 					// no more actuals: bind optional parameter to default initialization expression
 					ATAssignVariable param = pars[paridx].asVariableAssignment();
-					binder.bindParamToArg(scope, param.base_getName(), param.base_getValueExpression().meta_eval(context));
+					binder.bindParamToArg(scope, param.base_name(), param.base_valueExpression().meta_eval(context));
 					numDefaultOptionals++;
 				}
 			}
@@ -285,7 +285,7 @@ public final class Evaluator {
 					for (int i = 0; i < numRemainingArgs; i++) {
 						restArgs[i] = args[i + paridx];
 					}
-					ATSymbol restArgsName = pars[paridx].asSplice().base_getExpression().asSymbol();
+					ATSymbol restArgsName = pars[paridx].asSplice().base_expression().asSymbol();
 					binder.bindParamToArg(scope, restArgsName, NATTable.atValue(restArgs));
 					
 					// rest parameter should always be last

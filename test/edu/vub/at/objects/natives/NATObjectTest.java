@@ -41,7 +41,7 @@ public class NATObjectTest extends AmbientTalkTest {
 					}
 				});
 		
-		extension = new NATObject(original.base_getSuper(), original.lexicalParent_, NATObject._IS_A_);
+		extension = new NATObject(original.base_super(), original.lexicalParent_, NATObject._IS_A_);
 	}
 	
 	public void testisCloneOf() throws Exception {

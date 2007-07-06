@@ -65,14 +65,14 @@ public final class JavaClosure extends NATClosure implements ATJavaClosure {
 	 * 
 	 * A 'default' context is lazily constructed and returned.
 	 */
-	public ATContext base_getContext() throws InterpreterException {
+	public ATContext base_context() throws InterpreterException {
 		if (context_ == null)
 			context_ = new NATContext(scope_, scope_);
 		return context_;
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<java closure:"+base_getMethod().base_getName().base_getText().asNativeText().javaValue+">");
+		return NATText.atValue("<java closure:"+base_method().base_name().base_text().asNativeText().javaValue+">");
 	}
 
 	/**

@@ -85,8 +85,8 @@ public final class NATClosureMethod extends NATByRef implements ATMethod {
 		
 		// hostObject = the object to which the external method was added (actually the object in which
 		// the external method was now found)
-		ATObject hostObject = ctx.base_getLexicalScope();
-		ATObject hostParent = hostObject.base_getSuper();
+		ATObject hostObject = ctx.base_lexicalScope();
+		ATObject hostParent = hostObject.base_super();
 		
 		NATCallframe externalFrame = new NATCallframe(lexicalScope_);
 		// super = the parent of the object to which this method was added
@@ -99,27 +99,27 @@ public final class NATClosureMethod extends NATByRef implements ATMethod {
 		return method_.base_applyInScope(arguments, ctx);
 	}
 
-	public ATBegin base_getBodyExpression() throws InterpreterException {
-		return method_.base_getBodyExpression();
+	public ATBegin base_bodyExpression() throws InterpreterException {
+		return method_.base_bodyExpression();
 	}
 
-	public ATSymbol base_getName() throws InterpreterException {
-		return method_.base_getName();
+	public ATSymbol base_name() throws InterpreterException {
+		return method_.base_name();
 	}
 
-	public ATTable base_getParameters() throws InterpreterException {
-		return method_.base_getParameters();
+	public ATTable base_parameters() throws InterpreterException {
+		return method_.base_parameters();
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<closure:"+method_.base_getName()+">");
+		return NATText.atValue("<closure:"+method_.base_name()+">");
 	}
 
 	public ATMethod asMethod() throws XTypeMismatch {
 		return this;
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._METHOD_);
     }
 	

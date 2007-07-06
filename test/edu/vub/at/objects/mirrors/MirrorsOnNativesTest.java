@@ -41,9 +41,9 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 		try {
 			ATObject clo = evalAndReturn("mirrorOn1.select(mirrorOn1.base, `+)");
 			ATClosure c = clo.asClosure();
-			ATMethod m = c.base_getMethod();
+			ATMethod m = c.base_method();
 			assertEquals(NativeMethod.class, m.getClass());
-			assertEquals(AGSymbol.jAlloc("+"), m.base_getName());
+			assertEquals(AGSymbol.jAlloc("+"), m.base_name());
 			assertEquals(NATNumber.atValue(2), c.base_apply(NATTable.atValue(new ATObject[] { NATNumber.ONE })));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -59,7 +59,7 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 		try {
 			ATMethod nativeMethod = evalAndReturn("mirrorOn1.grabMethod(`+)").asMethod();
 			assertEquals(NativeMethod.class, nativeMethod.getClass());
-			assertEquals(AGSymbol.jAlloc("+"), nativeMethod.base_getName());
+			assertEquals(AGSymbol.jAlloc("+"), nativeMethod.base_name());
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}

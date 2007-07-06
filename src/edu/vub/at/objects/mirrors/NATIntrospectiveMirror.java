@@ -110,7 +110,7 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * implementation.
 	 * @return the base-level entity this mirror reflects on
 	 */
-	public ATObject base_getBase() {
+	public ATObject base_base() {
 		return principal_;
 	}
 	
@@ -250,14 +250,7 @@ public class NATIntrospectiveMirror extends NATByRef {
 	}
 	
     public ATField meta_grabField(ATSymbol fieldName) throws InterpreterException {
-        try {
-        	    // try to find a meta_get / meta_set field in the principal_
-			return Reflection.downMetaLevelField(principal_, fieldName);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(fieldName);
-			// try to find a base_get / base_set field in the mirror
-			return super.meta_grabField(fieldName);
-		}
+    	throw new XSelectorNotFound(fieldName, this);
     }
     
     public ATMethod meta_grabMethod(ATSymbol methodName) throws InterpreterException {
@@ -272,19 +265,16 @@ public class NATIntrospectiveMirror extends NATByRef {
     }
     
 	/**
-	 * Listing the fields of a mirror requires us to list all of the meta_get methods
-	 * of the principal + all of the base_get methods of the mirror itself
+	 * Listing the fields of a mirror returns an empty table, as native implementation
+	 * objects no longer have any fields, they are subsumed in methods.
 	 */
 	public ATTable meta_listFields() throws InterpreterException {
-    	ATField[] principalMetaFields = Reflection.downMetaLevelFields(principal_);
-    	ATField[] mirrorBaseFields = Reflection.downBaseLevelFields(this);
-        return NATTable.atValue(NATTable.collate(principalMetaFields, mirrorBaseFields));
+		return NATTable.EMPTY;
     }
 
 	/**
 	 * Listing the methods of a mirror requires us to list all of the meta_ methods
-	 * of the principal (excluding meta_get/set methods) + all of the base_ methods
-	 * (excluding base_get/set methods) of the mirror itself
+	 * of the principal + all of the base_ methods of the mirror itself
 	 */
     public ATTable meta_listMethods() throws InterpreterException {
    	    ATMethod[] principalMetaMethods = Reflection.downMetaLevelMethods(principal_);
@@ -322,7 +312,7 @@ public class NATIntrospectiveMirror extends NATByRef {
 		return NATText.atValue("<mirror on:"+principal_.meta_print().javaValue+">");
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._MIRROR_);
     }
 	

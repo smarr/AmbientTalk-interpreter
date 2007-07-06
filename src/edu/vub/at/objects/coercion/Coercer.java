@@ -49,11 +49,11 @@ import java.lang.reflect.Proxy;
  * 
  * For example, a method from an AT interface
  * 
- * ATExpression base_getExpression() throws NATException
+ * ATExpression base_expression() throws NATException
  * 
  * receives the following implementation:
  * 
- * ATExpression getExpression() throws NATException {
+ * ATExpression expression() throws NATException {
  *	return principal.meta_invoke(principal, Reflection.downSelector("getExpression"), NATTable.EMPTY).asExpression();
  * }
  * 

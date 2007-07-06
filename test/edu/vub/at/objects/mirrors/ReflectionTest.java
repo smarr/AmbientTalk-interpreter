@@ -45,7 +45,7 @@ public class ReflectionTest extends TestCase {
 	
 	private void compareSymbol(String str, ATSymbol sym) {
 		try {
-			assertEquals(str, sym.base_getText().asNativeText().javaValue);
+			assertEquals(str, sym.base_text().asNativeText().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}

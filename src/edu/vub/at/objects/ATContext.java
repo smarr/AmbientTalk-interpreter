@@ -44,14 +44,14 @@ public interface ATContext extends ATObject {
 	 * 
 	 * @return an {@link ATObject} representing the lexical environment of the current context.
 	 */
-	public ATObject base_getLexicalScope() throws InterpreterException;
+	public ATObject base_lexicalScope() throws InterpreterException;
 	
 	/**
 	 * Returns the receiver (self pseudovariable) in the current context.
 	 * 
 	 * @return an {@link ATObject} representing the receiver in the current context.
 	 */
-	public ATObject base_getSelf() throws InterpreterException;
+	public ATObject base_self() throws InterpreterException;
 	
 	/*
 	 * Factory methods for creating new context objects as a delta w.r.t. the receiver context object.

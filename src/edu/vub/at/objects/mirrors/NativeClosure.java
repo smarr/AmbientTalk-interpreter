@@ -100,7 +100,7 @@ public class NativeClosure extends NATClosure {
 	 * If receiver is an anonymous NativeClosure, an 'anonymous' NativeMethod is returned.
 	 * @return a NativeMethod wrapped by this NativeClosure.
 	 */
-	public ATMethod base_getMethod() {
+	public ATMethod base_method() {
 		if (method_ == null)
 			method_ = new NativeAnonymousMethod(scope_.getClass());
 		return method_;
@@ -111,7 +111,7 @@ public class NativeClosure extends NATClosure {
 	 * 
 	 * A 'default' context is lazily constructed and returned.
 	 */
-	public ATContext base_getContext() throws InterpreterException {
+	public ATContext base_context() throws InterpreterException {
 		if (context_ == null)
 			context_ = new NATContext(scope_, scope_);
 		return context_;
@@ -126,7 +126,7 @@ public class NativeClosure extends NATClosure {
 			// this method is supposed to be overridden by an anonymous subclass
 			throw new RuntimeException("NativeClosure's base_apply not properly overridden by " + scope_.getClass());
 		} else {
-			return method_.base_apply(arguments, this.base_getContext());
+			return method_.base_apply(arguments, this.base_context());
 		}
 	}
 	
@@ -145,7 +145,7 @@ public class NativeClosure extends NATClosure {
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<native closure:"+base_getMethod().base_getName().base_getText().asNativeText().javaValue+">");
+		return NATText.atValue("<native closure:"+base_method().base_name().base_text().asNativeText().javaValue+">");
 	}
 	
 	/**
@@ -176,7 +176,7 @@ public class NativeClosure extends NATClosure {
 	}
 	
 	public void checkArity(ATTable args, int required) throws InterpreterException {
-		int provided = args.base_getLength().asNativeNumber().javaValue;
+		int provided = args.base_length().asNativeNumber().javaValue;
 		if (provided != required) {
 			throw new XArityMismatch(Evaluator._ANON_MTH_NAM_.toString(), required, provided);
 		}
@@ -184,11 +184,11 @@ public class NativeClosure extends NATClosure {
 	
 	public static void checkNullaryArguments(ATSymbol selector, ATTable args) throws InterpreterException {
 		if (args != NATTable.EMPTY)
-			throw new XArityMismatch("access to " + selector.toString(), 0, args.base_getLength().asNativeNumber().javaValue);
+			throw new XArityMismatch("access to " + selector.toString(), 0, args.base_length().asNativeNumber().javaValue);
 	}
 	
     public static ATObject checkUnaryArguments(ATSymbol selector, ATTable args) throws InterpreterException {
-    	int len = args.base_getLength().asNativeNumber().javaValue;
+    	int len = args.base_length().asNativeNumber().javaValue;
 		if (len != 1)
 			throw new XArityMismatch("mutation of " + selector.toString(), 1, len);
 		return args.base_at(NATNumber.ONE);
@@ -206,7 +206,7 @@ public class NativeClosure extends NATClosure {
 		}
 		public ATObject base_apply(ATTable args) throws InterpreterException {
 			if (args != NATTable.EMPTY) {
-				throw new XArityMismatch("accessor for " + name_, 0, args.base_getLength().asNativeNumber().javaValue);
+				throw new XArityMismatch("accessor for " + name_, 0, args.base_length().asNativeNumber().javaValue);
 			} else {
 				return access();
 			}
@@ -225,7 +225,7 @@ public class NativeClosure extends NATClosure {
 			name_ = name;
 		}
 		public ATObject base_apply(ATTable args) throws InterpreterException {
-			int len = args.base_getLength().asNativeNumber().javaValue;
+			int len = args.base_length().asNativeNumber().javaValue;
 			if (len != 1) {
 				throw new XArityMismatch("mutator for " + name_, 1, len);
 			} else {

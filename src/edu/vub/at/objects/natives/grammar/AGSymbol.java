@@ -78,7 +78,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		return jAlloc(txt.javaValue);
 	}
 	
-	public ATText base_getText() { return NATText.atValue(txt_); }
+	public ATText base_text() { return NATText.atValue(txt_); }
 	
 	/**
 	 * To evaluate a symbol reference, look up the symbol in the lexical scope.
@@ -88,7 +88,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	 * @return the value bound to this symbol in the lexical environment
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return ctx.base_getLexicalScope().meta_lookup(this);
+		return ctx.base_lexicalScope().meta_lookup(this);
 	}
 
 	/**

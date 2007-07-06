@@ -50,7 +50,7 @@ public final class AGSelf extends AGSymbol {
 	 * AGSelf().eval(ctx) = ctx.self
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return ctx.base_getSelf();
+		return ctx.base_self();
 	}
 
 	/**

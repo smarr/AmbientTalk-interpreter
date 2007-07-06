@@ -43,7 +43,7 @@ public interface ATDefMethod extends ATDefinition {
 	 * Example: <code>`{ def m() { 5 } }.statements[1].selector == `m</code>
 	 * @return the selector of the method
 	 */
-	public ATSymbol base_getSelector();
+	public ATSymbol base_selector();
 	
 	/**
 	 * A method may have zero, one or more formal arguments.
@@ -51,13 +51,13 @@ public interface ATDefMethod extends ATDefinition {
 	 * Example: <code>`{ def m(a, @b) { b } }.statements[1].arguments == `[a, @b]</code>
 	 * @return the formal argument list
 	 */
-	public ATTable base_getArguments();
+	public ATTable base_arguments();
 	
 	/**
 	 * The body of a method may not be empty.
 	 * Example: <code>`{ def m(a, b) { a.n(); b+1 } }.statements[1].bodyExpression == `{ a.n(); b.+(1) }</code>
 	 * @return The body of the method
 	 */
-	public ATBegin base_getBodyExpression();
+	public ATBegin base_bodyExpression();
 	
 }

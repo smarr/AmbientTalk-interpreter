@@ -49,7 +49,7 @@ public interface ATMultiAssignment extends ATAssignment {
 	 * Example: <code>`{ [ x, y ] := [ y, x ] }.statements[1].parameters == `[x, y]</code>
 	 * @return a table with valid left-expressions
 	 */
-	public ATTable base_getParameters();
+	public ATTable base_parameters();
 	
 	/**
 	 * The right-hand side of the assignment may be any valid AmbientTalk expression
@@ -57,6 +57,6 @@ public interface ATMultiAssignment extends ATAssignment {
 	 * Example: <code>`{ [ x, y ] := [ y, x ] }.statements[1].valueExpression == `[y, x]</code>
 	 * @return the value expression
 	 */
-	public ATExpression base_getValueExpression();
+	public ATExpression base_valueExpression();
 
 }

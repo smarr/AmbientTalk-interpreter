@@ -205,7 +205,7 @@ public class MirageTest extends AmbientTalkTest {
 		
 		BufferedEcho buffer = new BufferedEcho();
 		
-		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("echo:"), buffer);
+		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("echo:"), buffer);
 
 		
 		// define a simple logging mirror which uses a shared lexical scope to logs method invocations with proper indentation

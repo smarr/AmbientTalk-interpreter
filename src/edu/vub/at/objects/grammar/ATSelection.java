@@ -41,13 +41,13 @@ public interface ATSelection extends ATExpression {
 	 * Example: <code>`(o.&x).reveiverExpression == `o</code>
 	 * @return the reveiver expression
 	 */
-	public ATExpression base_getReceiverExpression();
+	public ATExpression base_receiverExpression();
 	
 	/**
 	 * The selector must be a literal symbol
 	 * Example: <code>`(o.&x).selector == `x</code>
 	 * @return the selector
 	 */
-	public ATSymbol base_getSelector();
+	public ATSymbol base_selector();
 	
 }

@@ -79,11 +79,11 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 	 * @return the return value of the invoked method.
 	 */
 	public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException {
-		return receiver.meta_invoke(super.meta_select(self, _DELEGATOR_), self.base_getSelector(), self.base_getArguments());
+		return receiver.meta_invoke(super.meta_select(self, _DELEGATOR_), self.base_selector(), self.base_arguments());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<delegation:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
+		return NATText.atValue("<delegation:"+base_selector()+Evaluator.printAsList(base_arguments()).javaValue+">");
 	}
 	
 	protected NATObject createClone(FieldMap map,

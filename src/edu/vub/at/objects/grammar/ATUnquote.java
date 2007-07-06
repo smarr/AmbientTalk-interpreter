@@ -41,6 +41,6 @@ public interface ATUnquote extends ATExpression {
 	 * Example: <code>`(`(#(m()))).statement.expression == `(m())</code>
 	 * @return the expressions that needs to be unquoted
 	 */
-	public ATExpression base_getExpression();
+	public ATExpression base_expression();
 
 }

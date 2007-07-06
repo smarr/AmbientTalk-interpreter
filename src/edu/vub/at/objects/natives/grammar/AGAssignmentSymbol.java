@@ -73,7 +73,7 @@ public class AGAssignmentSymbol extends AGSymbol implements ATAssignmentSymbol {
 		return this;
 	}
 	
-	public ATText base_getText() {
+	public ATText base_text() {
 		return NATText.atValue(toString());
 	}
 

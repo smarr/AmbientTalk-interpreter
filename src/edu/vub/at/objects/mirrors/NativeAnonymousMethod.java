@@ -79,11 +79,11 @@ public class NativeAnonymousMethod extends NATByRef implements ATMethod {
 		return base_apply(arguments, ctx);
 	}
 
-	public ATSymbol base_getName() { return Evaluator._ANON_MTH_NAM_; }
+	public ATSymbol base_name() { return Evaluator._ANON_MTH_NAM_; }
 
-	public ATTable base_getParameters() { return Evaluator._ANON_MTH_ARGS_; }
+	public ATTable base_parameters() { return Evaluator._ANON_MTH_ARGS_; }
 
-	public ATBegin base_getBodyExpression() {
+	public ATBegin base_bodyExpression() {
 		return new AGBegin(NATTable.atValue(new ATObject[] {
 				AGSymbol.jAlloc("Native anonymous implementation in " + creatorClass_.getName())}));
 	}
@@ -92,7 +92,7 @@ public class NativeAnonymousMethod extends NATByRef implements ATMethod {
 		return NATText.atValue("<anonymous java method in "+creatorClass_.getName()+">");
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._METHOD_);
     }
 

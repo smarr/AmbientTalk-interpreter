@@ -98,11 +98,11 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 		parentTypes_ = parentTypes;
 	}
 
-	public ATSymbol base_getTypeName() throws InterpreterException {
+	public ATSymbol base_typeName() throws InterpreterException {
 		return typeName_;
 	}
 
-	public ATTable base_getSuperTypes() throws InterpreterException {
+	public ATTable base_superTypes() throws InterpreterException {
 		return parentTypes_;
 	}
 
@@ -116,7 +116,7 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 	 *	};
 	 */
 	public ATBoolean base_isSubtypeOf(final ATTypeTag supertype) throws InterpreterException {
-		if (supertype.base_getTypeName().equals(typeName_)) {
+		if (supertype.base_typeName().equals(typeName_)) {
 			return NATBoolean._TRUE_;
 		} else {
 			ATObject found = parentTypes_.base_find_(new NativeClosure(this) {
@@ -134,7 +134,7 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 	 */
     public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
     	if (comparand.isTypeTag()) {
-    		return comparand.asTypeTag().base_getTypeName().base__opeql__opeql_(typeName_);
+    		return comparand.asTypeTag().base_typeName().base__opeql__opeql_(typeName_);
     	} else {
     		return NATBoolean._FALSE_;
     	}
@@ -155,7 +155,7 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 		return this;
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._TYPETAG_);
     }
 	
@@ -180,7 +180,7 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 		 * The root type is only a subtype of the root type itself
 		 */
 		public ATBoolean base_isSubtypeOf(ATTypeTag supertype) throws InterpreterException {
-			return NATBoolean.atValue(supertype.base_getTypeName().equals(_ROOT_NAME_));
+			return NATBoolean.atValue(supertype.base_typeName().equals(_ROOT_NAME_));
 		}
 		
 	}

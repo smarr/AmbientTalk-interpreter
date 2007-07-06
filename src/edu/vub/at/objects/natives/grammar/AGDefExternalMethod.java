@@ -63,19 +63,19 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 		bodyStmts_ = bdy;
 	}
 
-	public ATSymbol base_getReceiver() {
+	public ATSymbol base_receiver() {
 		return rcvNam_;
 	}
 	
-	public ATSymbol base_getSelector() {
+	public ATSymbol base_selector() {
 		return selectorExp_;
 	}
 
-	public ATTable base_getArguments() {
+	public ATTable base_arguments() {
 		return argumentExps_;
 	}
 
-	public ATBegin base_getBodyExpression() {
+	public ATBegin base_bodyExpression() {
 		return bodyStmts_;
 	}
 	
@@ -105,7 +105,7 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 			throw new XIllegalOperation("Cannot define external methods on isolates");
 			
 		} else {
-			NATClosureMethod extMethod = new NATClosureMethod(ctx.base_getLexicalScope(),
+			NATClosureMethod extMethod = new NATClosureMethod(ctx.base_lexicalScope(),
                     preprocessedMethod_);
 
 			receiver.meta_addMethod(extMethod);

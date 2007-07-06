@@ -43,7 +43,7 @@ public interface ATSymbol extends ATExpression {
 	 * Example: <code>`foo.text == "foo"</code>
 	 * @return the text of the symbol
 	 */
-	public ATText base_getText() throws InterpreterException;
+	public ATText base_text() throws InterpreterException;
 	
 	/**
 	 * Returns whether or not the receiver denotes a symbol ending in <tt>:=</tt>.

@@ -122,25 +122,25 @@ public class NATObject extends NATCallframe implements ATObject {
 	private static final PrimitiveMethod _PRIM_EQL_ = new PrimitiveMethod(
 			_EQL_NAME_, NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("comparand")})) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			if (!arguments.base_getLength().equals(NATNumber.ONE)) {
-				throw new XArityMismatch("==", 1, arguments.base_getLength().asNativeNumber().javaValue);
+			if (!arguments.base_length().equals(NATNumber.ONE)) {
+				throw new XArityMismatch("==", 1, arguments.base_length().asNativeNumber().javaValue);
 			}
 			// primitive implementation uses pointer equality (as dictated by NATNil)
-			return NATBoolean.atValue(ctx.base_getLexicalScope() == arguments.base_at(NATNumber.ONE));
+			return NATBoolean.atValue(ctx.base_lexicalScope() == arguments.base_at(NATNumber.ONE));
 		}
 	};
 	/** def new(@initargs) { nil } */
 	private static final PrimitiveMethod _PRIM_NEW_ = new PrimitiveMethod(
 			_NEW_NAME_, NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("initargs")) })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			return ctx.base_getLexicalScope().base_new(arguments.asNativeTable().elements_);
+			return ctx.base_lexicalScope().base_new(arguments.asNativeTable().elements_);
 		}
 	};
 	/** def init(@initargs) { nil } */
 	private static final PrimitiveMethod _PRIM_INI_ = new PrimitiveMethod(
 			_INI_NAME_, NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("initargs")) })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			return ctx.base_getLexicalScope().asAmbientTalkObject().prim_init(ctx.base_getSelf(), arguments.asNativeTable().elements_);
+			return ctx.base_lexicalScope().asAmbientTalkObject().prim_init(ctx.base_self(), arguments.asNativeTable().elements_);
 		}
 	};
 	
@@ -383,8 +383,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	public void initializeWithCode(ATClosure code) throws InterpreterException {
 		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-				code.base_getMethod().base_getParameters(),
-				code.base_getContext());
+				code.base_method().base_parameters(),
+				code.base_context());
 		code.base_applyInScope(copiedBindings, this);
 	}
 
@@ -406,7 +406,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * }
 	 */
     private ATObject prim_init(ATObject self, ATObject[] initargs) throws InterpreterException {
-    	ATObject parent = base_getSuper();
+    	ATObject parent = base_super();
     	return parent.meta_invoke(self, Evaluator._INIT_, NATTable.atValue(initargs));
     }
     
@@ -442,7 +442,7 @@ public class NATObject extends NATCallframe implements ATObject {
 				// reuse code of call frame to try and treat a field as an accessor
 				return super.impl_accessSlot(receiver, selector, arguments);
 			} else {
-				return base_getSuper().impl_accessSlot(receiver, selector, arguments);
+				return base_super().impl_accessSlot(receiver, selector, arguments);
 			}
 		}
 	}
@@ -472,7 +472,7 @@ public class NATObject extends NATCallframe implements ATObject {
 				return super.impl_mutateSlot(receiver, selector, arguments);
 			} catch (XSelectorNotFound e) {
 				// if no field matching the selector exists, delegate to the parent
-				return base_getSuper().impl_mutateSlot(receiver, selector, arguments);
+				return base_super().impl_mutateSlot(receiver, selector, arguments);
 			}
 		}
 	}
@@ -491,7 +491,7 @@ public class NATObject extends NATCallframe implements ATObject {
 				}
 			}
 		}
-		return base_getSuper().meta_respondsTo(selector);
+		return base_super().meta_respondsTo(selector);
 	}
 
 	/* ------------------------------------------
@@ -523,7 +523,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			if (this.hasLocalField(selector)) {
 				return super.impl_selectAccessor(receiver, selector);
 			} else {
-				return base_getSuper().impl_selectAccessor(receiver, selector);
+				return base_super().impl_selectAccessor(receiver, selector);
 			}
 		}
 	}
@@ -555,7 +555,7 @@ public class NATObject extends NATCallframe implements ATObject {
 				return super.impl_selectMutator(receiver, selector);
 			} catch (XSelectorNotFound e) {
 				// if no field matching the selector exists, delegate to the parent
-				return base_getSuper().impl_selectMutator(receiver, selector);
+				return base_super().impl_selectMutator(receiver, selector);
 			}
 		}
 	}
@@ -626,7 +626,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		if (this.setLocalField(selector, value)) {
 			return NATNil._INSTANCE_;
 		} else {
-			return base_getSuper().meta_assignField(receiver, selector, value);
+			return base_super().meta_assignField(receiver, selector, value);
 		}
 	}
 	
@@ -653,10 +653,10 @@ public class NATObject extends NATCallframe implements ATObject {
 		ATObject dynamicParent;
 		if(this.isFlagSet(_ISAPARENT_FLAG_)) {
 			// IS-A Relation : clone the dynamic parent.
-			dynamicParent = base_getSuper().meta_clone();
+			dynamicParent = base_super().meta_clone();
 		} else {
 			// SHARES_A Relation : share the dynamic parent.
-			dynamicParent = base_getSuper();
+			dynamicParent = base_super();
 		}
 		
 		// ! set the shares flags of this object *and* of its clone
@@ -711,7 +711,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * method instead.
 	 */
 	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
-		ATSymbol name = method.base_getName();
+		ATSymbol name = method.base_name();
 		if (methodDictionary_.containsKey(name) && !isPrimitive(name)) {
 			throw new XDuplicateSlot(name);
 		} else {
@@ -797,7 +797,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		return this.meta_isCloneOf(object).base_or_(
 				new NativeClosure(this) {
 					public ATObject base_apply(ATTable args) throws InterpreterException {
-						return scope_.base_getSuper().meta_isRelatedTo(object);
+						return scope_.base_super().meta_isRelatedTo(object);
 					}
 				}).asBoolean();
 	}
@@ -815,14 +815,14 @@ public class NATObject extends NATCallframe implements ATObject {
     		return NATBoolean._TRUE_;
     	} else {
         	// no type tags match, ask the parent
-        	return base_getSuper().meta_isTaggedAs(type);
+        	return base_super().meta_isTaggedAs(type);
     	}
     }
     
     /**
      * Return the type tags that were directly attached to this object.
      */
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	// make a copy of the internal type tag array to ensure that the types
     	// of the object are immutable. Tables allow assignment!
     	if (typeTags_.length == 0) {
@@ -970,11 +970,11 @@ public class NATObject extends NATCallframe implements ATObject {
 	public static ATField[] listTransitiveFields(ATObject obj) throws InterpreterException {
 		Vector fields = new Vector();
 		HashSet encounteredNames = new HashSet(); // to filter duplicates
-		for (; obj != NATNil._INSTANCE_ ; obj = obj.base_getSuper()) {
+		for (; obj != NATNil._INSTANCE_ ; obj = obj.base_super()) {
 			ATObject[] localFields = obj.meta_listFields().asNativeTable().elements_;
 			for (int i = 0; i < localFields.length; i++) {
 				ATField field = localFields[i].asField();
-				ATSymbol fieldName = field.base_getName();
+				ATSymbol fieldName = field.base_name();
 				if (!encounteredNames.contains(fieldName)) {
 					fields.add(field);
 					encounteredNames.add(fieldName);
@@ -991,13 +991,13 @@ public class NATObject extends NATCallframe implements ATObject {
 	public static ATMethod[] listTransitiveMethods(ATObject obj) throws InterpreterException {
 		Vector methods = new Vector();
 		HashSet encounteredNames = new HashSet(); // to filter duplicates		
-		for (; obj != NATNil._INSTANCE_ ; obj = obj.base_getSuper()) {
+		for (; obj != NATNil._INSTANCE_ ; obj = obj.base_super()) {
 			// fast-path for native objects
 			if (obj instanceof NATObject) {
 				Collection localMethods = ((NATObject) obj).methodDictionary_.values();
 				for (Iterator iter = localMethods.iterator(); iter.hasNext();) {
 					ATMethod localMethod = (ATMethod) iter.next();
-					ATSymbol methodName = localMethod.base_getName();
+					ATSymbol methodName = localMethod.base_name();
 					if (!encounteredNames.contains(methodName)) {
 						methods.add(localMethod);
 						encounteredNames.add(methodName);
@@ -1007,7 +1007,7 @@ public class NATObject extends NATCallframe implements ATObject {
 				ATObject[] localMethods = obj.meta_listMethods().asNativeTable().elements_;
 				for (int i = 0; i < localMethods.length; i++) {
 					ATMethod localMethod = localMethods[i].asMethod();
-					ATSymbol methodName = localMethod.base_getName();
+					ATSymbol methodName = localMethod.base_name();
 					if (!encounteredNames.contains(methodName)) {
 						methods.add(localMethod);
 						encounteredNames.add(methodName);

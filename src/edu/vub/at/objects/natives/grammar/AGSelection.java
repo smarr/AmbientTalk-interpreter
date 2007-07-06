@@ -49,9 +49,9 @@ public final class AGSelection extends AGExpression implements ATSelection {
 		selector_ = sel;
 	}
 	
-	public ATExpression base_getReceiverExpression() { return rcvExp_; }
+	public ATExpression base_receiverExpression() { return rcvExp_; }
 
-	public ATSymbol base_getSelector() { return selector_; }
+	public ATSymbol base_selector() { return selector_; }
 
 	/**
 	 * To evaluate a selection, evaluate the receiver expression to an object and select

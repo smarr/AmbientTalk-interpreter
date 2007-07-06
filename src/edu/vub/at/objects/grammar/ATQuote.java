@@ -44,6 +44,6 @@ public interface ATQuote extends ATExpression {
 	 * Example: <code>`(`(1+2)).statement == `(1.+(2))</code>
 	 * @return the quoted statement
 	 */
-	public ATStatement base_getStatement();
+	public ATStatement base_statement();
 
 }

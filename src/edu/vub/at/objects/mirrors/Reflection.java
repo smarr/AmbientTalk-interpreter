@@ -27,6 +27,9 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import java.lang.reflect.Method;
+import java.util.Vector;
+
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
@@ -37,15 +40,11 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.Symbiosis;
 import edu.vub.util.Matcher;
 import edu.vub.util.Pattern;
-
-import java.lang.reflect.Method;
-import java.util.Vector;
 
 /**
  * Reflection is an auxiliary class meant to serve as a repository for methods
@@ -70,13 +69,8 @@ import java.util.Vector;
  */
 public final class Reflection {
 	
-	public static final String _BASE_PREFIX_ = "base_";
-	public static final String _BGET_PREFIX_ = "base_get";
-	public static final String _BSET_PREFIX_ = "base_set";
-	
-	public static final String _META_PREFIX_ = "meta_";
-	public static final String _MGET_PREFIX_ = "meta_get";
-	public static final String _MSET_PREFIX_ = "meta_set";
+	private static final String _BASE_PREFIX_ = "base_";
+	private static final String _META_PREFIX_ = "meta_";
 	
 	/**
 	 * A selector passed from the Java to the AmbientTalk level undergoes the following transformations:
@@ -107,10 +101,6 @@ public final class Reflection {
 	public static final ATSymbol downBaseLevelSelector(String jSelector) throws InterpreterException {
 		if (jSelector.startsWith(Reflection._BASE_PREFIX_)) {
 			return downSelector(stripPrefix(jSelector, Reflection._BASE_PREFIX_));
-		} else if (jSelector.startsWith(Reflection._MGET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, Reflection._MGET_PREFIX_));
-		} else if (jSelector.startsWith(Reflection._MSET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, Reflection._MSET_PREFIX_));
 		} else if (jSelector.startsWith(Reflection._META_PREFIX_)) {
 			return downSelector(stripPrefix(jSelector, Reflection._META_PREFIX_));
 		} else {
@@ -127,75 +117,6 @@ public final class Reflection {
 		} else {
 			throw new XIllegalArgument("Illegal meta level selector to down: " + jSelector);
 		}
-	}
-	
-	/**
-	 * Transforms a Java selector prefixed with base_get into an equivalent AmbientTalk selector.
-	 * 
-	 * Example:
-	 *  downBaseFieldAccessSelector("base_getReceiver") => ATSymbol("receiver")
-	 */
-	public static final ATSymbol downBaseFieldAccessSelector(String jSelector) throws InterpreterException {
-		if (jSelector.startsWith(Reflection._BGET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, Reflection._BGET_PREFIX_));
-		} else {
-			throw new XIllegalArgument("Illegal base level accessor to down: " + jSelector);
-		}
-	}
-
-	/**
-	 * Transforms a Java selector prefixed with base_set into an equivalent AmbientTalk selector.
-	 * 
-	 * Example:
-	 *  downBaseFieldMutationSelector("base_setReceiver") => ATSymbol("receiver")
-	 */
-	public static final ATSymbol downBaseFieldMutationSelector(String jSelector) throws InterpreterException {
-		if (jSelector.startsWith(Reflection._BSET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, Reflection._BSET_PREFIX_));
-		} else {
-			throw new XIllegalArgument("Illegal base level mutator to down: " + jSelector);
-		}
-	}
-
-	/**
-	 * Transforms a Java selector prefixed with meta_get into an equivalent AmbientTalk selector
-	 * 
-	 * Example:
-	 *  downMetaFieldAccessSelector("meta_getReceiver") => ATSymbol("receiver")
-	 */
-	public static final ATSymbol downMetaFieldAccessSelector(String jSelector) throws InterpreterException {
-		if (jSelector.startsWith(Reflection._MGET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, Reflection._MGET_PREFIX_));
-		} else {
-			throw new XIllegalArgument("Illegal meta level accessor to down: " + jSelector);
-		}
-	}
-	
-	/**
-	 * Transforms a Java selector prefixed with meta_set into an equivalent AmbientTalk selector.
-	 * 
-	 * Example:
-	 *  downMetaFieldMutationSelector("meta_setReceiver") => ATSymbol("receiver")
-	 */
-	public static final ATSymbol downMetaFieldMutationSelector(String jSelector) throws InterpreterException {
-		if (jSelector.startsWith(Reflection._MSET_PREFIX_)) {
-			return downFieldName(stripPrefix(jSelector, Reflection._MSET_PREFIX_));
-		} else {
-			throw new XIllegalArgument("Illegal meta level mutator to down: " + jSelector);
-		}
-	}
-	
-	/**
-	 * A field name "Field" passed from the Java to the AmbientTalk level undergoes the following transformations:
-	 * 
-	 *  - the same transformations applicable to downSelector
-	 *    @see Reflection#downSelector(String)
-	 *  - the first letter is transformed into lower case (as it was uppercased for Java conventions)
-	 */
-	public static final ATSymbol downFieldName(String jName) throws InterpreterException {
-		char[] charArray = jName.toCharArray();
-		charArray[0] = Character.toLowerCase(charArray[0]);
-		return downSelector(new String(charArray));
 	}
 	
 	/**
@@ -219,7 +140,7 @@ public final class Reflection {
 	 */
 	public static final String upSelector(ATSymbol atSelector) throws InterpreterException {
 		// : -> _
-		String nam = atSelector.base_getText().asNativeText().javaValue;
+		String nam = atSelector.base_text().asNativeText().javaValue;
         // Backport from JDK 1.4 to 1.3
 		// nam = nam.replaceAll(":", "_");
         nam = Pattern.compile(":").matcher(new StringBuffer(nam)).replaceAll("_");
@@ -250,104 +171,7 @@ public final class Reflection {
 	public static final String upMetaLevelSelector(ATSymbol atSelector) throws InterpreterException {
 		return Reflection._META_PREFIX_ + upSelector(atSelector);
 	}
-	
-	/**
-	 * A field name "field" passed from the AmbientTalk to the Java level undergoes the following transformations:
-	 * 
-	 *  - the same transformations applicable to upSelector
-	 *    @see Reflection#upSelector(ATSymbol)
-	 *  - the first letter is transformed into upper case such that it can be accessed using respectively
-	 *    "getField" | "setField" methods at the Java level.  
-	 */
-	public static final String upFieldName(ATSymbol atName) throws InterpreterException {
-		char[] charArray = upSelector(atName).toCharArray();
-		charArray[0] = Character.toUpperCase(charArray[0]);
-		return new String(charArray);
-	}
-	
-	/**
-	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "base_get".
-	 * 
-	 * Example:
-	 *  upBaseFieldAccessSelector(ATSymbol('receiver')) => "base_getReceiver"
-	 */
-	public static final String upBaseFieldAccessSelector(ATSymbol atName) throws InterpreterException {
-		return Reflection._BGET_PREFIX_ + upFieldName(atName);
-	}
-
-	/**
-	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "base_set".
-	 * 
-	 * Example:
-	 *  upBaseFieldMutationSelector(ATSymbol('receiver')) => "base_setReceiver"
-	 */
-	public static final String upBaseFieldMutationSelector(ATSymbol atName) throws InterpreterException {
-		return Reflection._BSET_PREFIX_ + upFieldName(atName);
-	}
-
-	/**
-	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "meta_get".
-	 * 
-	 * Example:
-	 *  upMetaFieldAccessSelector(ATSymbol('receiver')) => "meta_getReceiver"
-	 */
-	public static final String upMetaFieldAccessSelector(ATSymbol atName) throws InterpreterException {
-		return Reflection._MGET_PREFIX_ + upFieldName(atName);
-	}
-	
-	/**
-	 * Transforms an AmbientTalk selector into an equivalent Java selector uppercased and prefixed with "meta_set".
-	 * 
-	 * Example:
-	 *  upMetaFieldMutationSelector(ATSymbol('receiver')) => "meta_setReceiver"
-	 */
-	public static final String upMetaFieldMutationSelector(ATSymbol atName) throws InterpreterException {
-		return Reflection._MSET_PREFIX_ + upFieldName(atName);
-	}
-	
-	/**
-	 * Constructs an AmbientTalk ATField from a pair of accessor/mutator methods of
-	 * a Java object. Given an object obj and a String sel, it is checked whether
-	 *  a) obj has a method named getPrefix + Sel, if so, a field can be created
-	 *  b) obj has a method named setPrefix + Sel, if so, the field is mutable, otherwise it is read-only
-	 *
-	 * The accessor method cannot take any arguments, the mutator method must have a unary arity.
-	 *
-	 * @param natObject the native AT object in whose class the accessor/mutator methods should be found
-	 * @param atSelector the AmbientTalk name of the field
-	 * @return a reified field, which may either be read-only or mutable depending on available methods
-	 * 
-	 * Example:
-	 *  eval "(reflect: msg).getField('selector')" where msg is a NATMessage
-	 *  => downField(aNATMessage, "selector", "base_get", "base_set")
-	 *  => NATMessage must have a zero-arg method base_getSelector and optionally base_setSelector
-	 */
-	public static final ATField downField(ATObject natObject, ATSymbol atSelector,
-			                              String getPrefix, String setPrefix) throws InterpreterException {
-		String fieldName = upFieldName(atSelector);
-		try {
-			Method accessorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, getPrefix + fieldName, atSelector);
-			Method mutatorMethod = null;
-			try {
-				mutatorMethod = JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, setPrefix + fieldName, atSelector);
-			} catch (XSelectorNotFound e) {
-				// no setter, return a read-only field
-			}
-			return new NativeField(natObject, atSelector, accessorMethod, mutatorMethod);
-		} catch (XSelectorNotFound e) {
-			// selector not found exceptions have to be translated to field not found exceptions
-			throw new XUndefinedSlot("field access", atSelector.toString());
-		}
-	}
-	
-	public static final ATField downBaseLevelField(ATObject natObject, ATSymbol atSelector) throws InterpreterException {
-		return downField(natObject, atSelector, Reflection._BGET_PREFIX_, Reflection._BSET_PREFIX_);
-	}
-	
-	public static final ATField downMetaLevelField(ATObject natObject, ATSymbol atSelector) throws InterpreterException {
-		return downField(natObject, atSelector, Reflection._MGET_PREFIX_, Reflection._MSET_PREFIX_);
-	}
-	
+		
 	/**
 	 * Constructs an AmbientTalk ATMethod from a Java method.
 	 * Given an object obj and a String sel, it is checked whether obj has a method
@@ -397,10 +221,7 @@ public final class Reflection {
 	 *  
 	 * Depending on the prefix of the invoked Java method selector, the following translation should occur:
 	 *  - obj.base_selector(args) => obj.meta_invoke(obj, selector, args)
-	 *  - obj.base_getSelector() => obj.meta_select(obj, selector)
-	 *  - obj.base_setSelector(x) => obj.meta_assignField(selector, x)
 	 *  - obj.meta_selector(args) => obj.meta_selector(args)
-	 *  - obj.meta_set|getSelector(args) => obj.meta_set|getSelector(args)
 	 *  - obj.selector(args) => either obj.selector(args) if selector is understood natively
 	 *                          or     obj.meta_invoke(obj, selector, args) otherwise
 	 */
@@ -408,19 +229,7 @@ public final class Reflection {
 		String jSelector = jMethod.getName();
 		if (jArgs == null) { jArgs = NATTable.EMPTY.elements_; }
 		
-		if (jSelector.startsWith(Reflection._BGET_PREFIX_)) {
-			// obj.base_getSelector() => obj.meta_select(obj, selector)
-			if (jArgs.length != 0) {
-				throw new XArityMismatch(downBaseFieldAccessSelector(jSelector).toString(), 0, jArgs.length);
-			}
-			return atRcvr.meta_select(atRcvr, downBaseFieldAccessSelector(jSelector));
-		} else if (jSelector.startsWith(Reflection._BSET_PREFIX_)) {
-			// obj.base_setSelector(x) => obj.meta_assignField(selector, x)
-			if (jArgs.length != 1) {
-				throw new XArityMismatch(downBaseFieldMutationSelector(jSelector).toString(), 1, jArgs.length);
-			}
-			return atRcvr.meta_assignField(atRcvr, downBaseFieldMutationSelector(jSelector), jArgs[0]);
-		} else if (jSelector.startsWith(Reflection._BASE_PREFIX_)) {
+		if (jSelector.startsWith(Reflection._BASE_PREFIX_)) {
 			// obj.base_selector(args) => obj.meta_invoke(obj, selector, args)
 			return atRcvr.meta_invoke(atRcvr, downBaseLevelSelector(jSelector), NATTable.atValue(jArgs));
 		} else if (jSelector.startsWith(Reflection._META_PREFIX_)) {
@@ -487,71 +296,6 @@ public final class Reflection {
 				jRcvr.getClass(),
 				jSelector);
 	}
-
-//	/**
-//	 * downSelection takes an implicit Java selection (in the guise of invoking a getter method)
-//	 * and turns it into an explicit AmbientTalk selection process. This happens when Java code sends normal
-//	 * Java messages to AmbientTalk objects (wrapped by a mirage).
-//	 * 
-//	 * @param atRcvr the AmbientTalk object having received the Java selection
-//	 * @param jSelector the Java selector, without the 'get' prefix, to be converted to an AmbientTalk selector
-//	 * @return the value of the AmbientTalk field selected by the java selection.
-//	 * 
-//	 * Example:
-//	 *  in Java: "msg.getSelector()" where msg is am ATMessage mirage wrapping a NATObject
-//	 *  => downSelection(aNATObject, "selector")
-//	 *  => aNATObject must implement a field named "selector"
-//	 * The get prefix is normally stripped off by a mirage
-//	 */
-//	public static final ATObject downSelection(ATObject atRcvr, String jSelector) {
-//		return null;
-//	}
-	
-	/**
-	 * upFieldSelection takes an explicit AmbientTalk field selection and turns it into 
-	 * an implicitly performed Java selection by invoking a getter method, if such a getter method
-	 * exists. 
-	 * 
-	 * @param atOrigRcvr the original AmbientTalk object that received the selection
-	 * @param jSelector the selector of the message to be invoked, already converted to a Java selector
-	 * @return the return value of the Java getter method invoked via the AmbientTalk selection.
-	 * 
-	 * Example:
-	 *  eval "msg.selector" where msg is a NATMessage
-	 *  => upSelection(aNATMessage, "selector")
-	 *  => NATMessage must have a zero-argument method named getSelector
-	 *  
-	 */
-	public static final ATObject upFieldSelection(ATObject atOrigRcvr, String jSelector, ATSymbol atSelector) throws InterpreterException {
-		return JavaInterfaceAdaptor.invokeNativeATMethod(
-				atOrigRcvr.getClass(),
-				atOrigRcvr,
-				jSelector,
-				atSelector, NATTable.EMPTY.elements_);		
-	}
-	
-	/**
-	 * upFieldAssignment takes an explicit AmbientTalk field assignment and turns it into 
-	 * an implicitly performed Java field assignment by invoking a mutator method, if such a method
-	 * exists. 
-	 * 
-	 * @param atOrigRcvr the original AmbientTalk object that received the assignField request
-	 * @param jSelector the selector of the message to be invoked, already converted to a Java selector
-	 * @return the return value of the Java mutator method invoked via the AmbientTalk assignField request.
-	 * 
-	 * Example:
-	 *  eval "msg.selector := v" where msg is a NATMessage
-	 *  => upFieldAssignment(aNATMessage, "selector", v)
-	 *  => NATMessage must have a one-argument method named base_setSelector
-	 *  
-	 */
-	public static final ATObject upFieldAssignment(ATObject atOrigRcvr, String jSelector, ATSymbol atSelector, ATObject value) throws InterpreterException {
-		return JavaInterfaceAdaptor.invokeNativeATMethod(
-				atOrigRcvr.getClass(),
-				atOrigRcvr,
-				jSelector,
-				atSelector, new ATObject[] { value });
-	}
 	
 	/**
 	 * upMethodSelection takes an explicit AmbientTalk field selection and checks whether 
@@ -616,77 +360,35 @@ public final class Reflection {
 	}
 	
 	/**
-	 * Returns, for a given AmbientTalk object atObj, an array of NativeField objects corresponding
-	 * to all non-static methods of that object's Java class, where each method's name is prefixed with 'base_get'
-	 */
-	public static final ATField[] downBaseLevelFields(ATObject atObj) throws InterpreterException {
-		Method[] allBaseGetMethods =
-			JavaInterfaceAdaptor.allMethodsPrefixed(atObj.getClass(), Reflection._BGET_PREFIX_, false);
-		ATField[] fields = new ATField[allBaseGetMethods.length];
-		for (int i = 0; i < allBaseGetMethods.length; i++) {
-			Method m = allBaseGetMethods[i];
-			fields[i] = downBaseLevelField(atObj, downBaseFieldAccessSelector(m.getName()));
-		}
-		return fields;
-	}
-	
-	/**
-	 * Returns, for a given AmbientTalk object atObj, an array of NativeField objects corresponding
-	 * to all non-static methods of that object's Java class, where each method's name is prefixed with 'meta_get'
-	 */
-	public static final ATField[] downMetaLevelFields(ATObject atObj) throws InterpreterException {
-		Method[] allMetaGetMethods =
-			JavaInterfaceAdaptor.allMethodsPrefixed(atObj.getClass(), Reflection._MGET_PREFIX_, false);
-		ATField[] fields = new ATField[allMetaGetMethods.length];
-		for (int i = 0; i < allMetaGetMethods.length; i++) {
-			Method m = allMetaGetMethods[i];
-			fields[i] = downMetaLevelField(atObj, downMetaFieldAccessSelector(m.getName()));
-		}
-		return fields;
-	}
-	
-	/**
 	 * Returns, for a given AmbientTalk object atObj, an array of NativeMethod objects corresponding
-	 * to all non-static methods of that object's class, where each method's name:
-	 *  - is prefixed with 'base_'
-	 *  - is not prefixed with 'base_get'
-	 *  - is not prefixed with 'base_set'
+	 * to all non-static methods of that object's class, where each method's name is prefixed with 'base_'
 	 */
 	public static final ATMethod[] downBaseLevelMethods(ATObject atObj) throws InterpreterException {
 		Method[] allBaseMethods =
 			JavaInterfaceAdaptor.allMethodsPrefixed(atObj.getClass(), Reflection._BASE_PREFIX_, false);
-		Vector allNonFieldBaseMethods = new Vector();
+		Vector allATBaseMethods = new Vector();
 		for (int i = 0; i < allBaseMethods.length; i++) {
 			Method m = allBaseMethods[i];
 			String nam = m.getName();
-			if (!((nam.startsWith(Reflection._BGET_PREFIX_)) ||
-			      (nam.startsWith(Reflection._BSET_PREFIX_)))) {
-				allNonFieldBaseMethods.add(new NativeMethod(m, downBaseLevelSelector(nam)));
-			}
+			allATBaseMethods.add(new NativeMethod(m, downBaseLevelSelector(nam)));
 		}
-		return (ATMethod[]) allNonFieldBaseMethods.toArray(new ATMethod[allNonFieldBaseMethods.size()]);
+		return (ATMethod[]) allATBaseMethods.toArray(new ATMethod[allATBaseMethods.size()]);
 	}
 	
 	/**
 	 * Returns, for a given AmbientTalk object natObj, an array of NativeMethod objects corresponding
-	 * to all non-static methods of that object's class, where each method's name:
-	 *  - is prefixed with 'meta_'
-	 *  - is not prefixed with 'meta_get'
-	 *  - is not prefixed with 'meta_set'
+	 * to all non-static methods of that object's class, where each method's name is prefixed with 'meta_'
 	 */
 	public static final ATMethod[] downMetaLevelMethods(ATObject natObj) throws InterpreterException {
 		Method[] allMetaMethods =
 			JavaInterfaceAdaptor.allMethodsPrefixed(natObj.getClass(), Reflection._META_PREFIX_, false);
-		Vector allNonFieldMetaMethods = new Vector();
+		Vector allATMetaMethods = new Vector();
 		for (int i = 0; i < allMetaMethods.length; i++) {
 			Method m = allMetaMethods[i];
 			String nam = m.getName();
-			if (!((nam.startsWith(Reflection._MGET_PREFIX_)) ||
-			      (nam.startsWith(Reflection._MSET_PREFIX_)))) {
-				allNonFieldMetaMethods.add(new NativeMethod(m, downMetaLevelSelector(nam)));
-			}
+			allATMetaMethods.add(new NativeMethod(m, downMetaLevelSelector(nam)));
 		}
-		return (ATMethod[]) allNonFieldMetaMethods.toArray(new ATMethod[allNonFieldMetaMethods.size()]);
+		return (ATMethod[]) allATMetaMethods.toArray(new ATMethod[allATMetaMethods.size()]);
 	}
 	
 	private static final Pattern oprCode = Pattern.compile("_op(\\w\\w\\w)_"); //'_op', 3 chars, '_'

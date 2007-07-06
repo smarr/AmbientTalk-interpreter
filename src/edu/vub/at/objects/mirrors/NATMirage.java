@@ -68,7 +68,7 @@ public class NATMirage extends NATObject {
 	public static NATMirage createMirage(ATClosure code, ATObject dynamicParent, boolean parentType, ATTypeTag[] types, ATObject mirror) throws InterpreterException {
 		if (mirror.meta_isTaggedAs(NativeTypeTags._MIRROR_).asNativeBoolean().javaValue) {
 			// create a new, uninitialized mirage
-			NATMirage newMirage = new NATMirage(dynamicParent, code.base_getContext().base_getLexicalScope(), parentType, types);
+			NATMirage newMirage = new NATMirage(dynamicParent, code.base_context().base_lexicalScope(), parentType, types);
 			
 			// create a new instance of the mirror with the uninitialized mirage, this implicitly clones
 			// the mirror and re-initializes it, setting the base field to this new mirage
@@ -259,8 +259,8 @@ public class NATMirage extends NATObject {
 		return super.meta_isExtensionOfParent();
 	}
 
-	public ATObject magic_getLexicalParent() throws InterpreterException {
-		return super.meta_getLexicalParent();
+	public ATObject magic_lexicalParent() throws InterpreterException {
+		return super.meta_lexicalParent();
 	}
 	
 	public ATObject magic_pass() throws InterpreterException {
@@ -275,8 +275,8 @@ public class NATMirage extends NATObject {
 		return super.meta_isTaggedAs(type);
 	}
 	
-	public ATTable magic_getTypeTags() throws InterpreterException {
-		return super.meta_getTypeTags();
+	public ATTable magic_typeTags() throws InterpreterException {
+		return super.meta_typeTags();
 	}
 
 	public ATBoolean magic_isCloneOf(ATObject original) throws InterpreterException {
@@ -466,7 +466,7 @@ public class NATMirage extends NATObject {
 				AGSymbol.jAlloc("isExtensionOfParent")).asBoolean();
 	}
 
-	public ATObject meta_getLexicalParent() throws InterpreterException {
+	public ATObject meta_lexicalParent() throws InterpreterException {
 		return mirror_.meta_select(
 				mirror_,
 				AGSymbol.jAlloc("lexicalParent"));
@@ -487,7 +487,7 @@ public class NATMirage extends NATObject {
 				mirror_, AGSymbol.jAlloc("isTaggedAs"), NATTable.of(type)).asBoolean();
     }
     
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
 		return mirror_.meta_select(
 				mirror_,
 				AGSymbol.jAlloc("typeTags")).asTable();

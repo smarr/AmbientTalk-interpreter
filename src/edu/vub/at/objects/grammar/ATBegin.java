@@ -47,6 +47,6 @@ public interface ATBegin extends ATStatement {
 	 * Example: <code>`{ x := 5; 1 + 2}.statements == `[x := 5, 1.+(2)]</code>
 	 * @return A non-empty table of expressions
 	 */
-	public ATTable base_getStatements();
+	public ATTable base_statements();
 	
 }

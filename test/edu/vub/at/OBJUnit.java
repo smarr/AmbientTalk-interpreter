@@ -143,7 +143,7 @@ public class OBJUnit extends NATNil {
 				/* dynamic parent */
 				clone,
 				/* lexical parent */
-				code.base_getContext().base_getLexicalScope(),
+				code.base_context().base_lexicalScope(),
 				/* parent pointer type */
 				NATObject._SHARES_A_);
 		

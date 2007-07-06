@@ -37,9 +37,9 @@ public class TypeTagTest extends AmbientTalkTest {
 	// types defined without supertypes have the root type as single supertype
 	
 	public void testParentlessType() throws InterpreterException {
-		assertTrue(typeA_.base_getSuperTypes().base_getLength().equals(NATNumber.ONE));
+		assertTrue(typeA_.base_superTypes().base_length().equals(NATNumber.ONE));
 		
-		ATTypeTag root = typeA_.base_getSuperTypes().base_at(NATNumber.ONE).asTypeTag();
+		ATTypeTag root = typeA_.base_superTypes().base_at(NATNumber.ONE).asTypeTag();
 		assertEquals(NATTypeTag.OBJRootType._INSTANCE_, root);
 	}
 	

@@ -405,12 +405,12 @@ public class SymbiosisTest extends AmbientTalkTest {
 		try {
 			// def result := (reflect: atTestObject).grabField("xtest")
 			ATField result = atTestObject.meta_grabField(AGSymbol.jAlloc("xtest")).asField();
-			assertEquals("xtest", result.base_getName().toString());
+			assertEquals("xtest", result.base_name().toString());
 			assertEquals(TEST_OBJECT_INIT, result.base_readField().asNativeNumber().javaValue);
 			
 			// result := (reflect: atTestClass).grabField("ytest")
 			result = atTestClass.meta_grabField(AGSymbol.jAlloc("ytest")).asField();
-			assertEquals("ytest", result.base_getName().toString());
+			assertEquals("ytest", result.base_name().toString());
 			assertEquals(ytest, result.base_readField().asNativeText().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -424,7 +424,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 		try {
 			// def result := (reflect: atTestObject).grabMethod("gettertest")
 			ATMethod result = atTestObject.meta_grabMethod(AGSymbol.jAlloc("gettertest")).asMethod();
-			assertEquals("gettertest", result.base_getName().toString());
+			assertEquals("gettertest", result.base_name().toString());
 			// assert (42 == result())
 			assertEquals(TEST_OBJECT_INIT, result.base_apply(NATTable.EMPTY,
 					new NATContext(atTestObject, atTestObject)).asNativeNumber().javaValue);
@@ -436,7 +436,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			
 			// result := (reflect: atTestClass).grabMethod("prefix")
 			result = atTestClass.meta_grabMethod(AGSymbol.jAlloc("prefix")).asMethod();
-			assertEquals("prefix", result.base_getName().toString());
+			assertEquals("prefix", result.base_name().toString());
 			// assert ("AmbientTalk" == result(""))
 			assertEquals(ytest, result.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue("") }),
 					new NATContext(atTestClass, atTestClass)).asNativeText().javaValue);	
@@ -471,14 +471,14 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testSymbiontParents() {
 		try {
 			// the dynamic parent of atTestObject is atTestClass
-			assertEquals(atTestClass, atTestObject.base_getSuper());
+			assertEquals(atTestClass, atTestObject.base_super());
 			// the dynamic parent of atTestClass is nil
-			assertEquals(NATNil._INSTANCE_, atTestClass.base_getSuper());
+			assertEquals(NATNil._INSTANCE_, atTestClass.base_super());
 			
 			// the lexical parent of atTestObject is the lexical root
-			assertEquals(Evaluator.getGlobalLexicalScope(), atTestObject.meta_getLexicalParent());
+			assertEquals(Evaluator.getGlobalLexicalScope(), atTestObject.meta_lexicalParent());
 			// the lexical parent of atTestClass is the lexical root
-			assertEquals(Evaluator.getGlobalLexicalScope(), atTestClass.meta_getLexicalParent());
+			assertEquals(Evaluator.getGlobalLexicalScope(), atTestClass.meta_lexicalParent());
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -495,7 +495,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals(NATNumber.ONE, atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("x")));
 			
 			// (reflect: atTestObject).addMethod(<method:"foo",[x],{x}>)
-			ATMethod foo = evalAndReturn("def foo(x) { x }; foo").asClosure().base_getMethod();
+			ATMethod foo = evalAndReturn("def foo(x) { x }; foo").asClosure().base_method();
 			atTestObject.meta_addMethod(foo);
 			// assert(atTestObject.foo(0) == 0)
 			assertEquals(NATNumber.ZERO, atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("foo"),
@@ -519,7 +519,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			}
 			try {
 				// def atTestObject.gettertest() { nil }
-				ATMethod getter = evalAndReturn("def gettertest() { nil }; gettertest").asClosure().base_getMethod();
+				ATMethod getter = evalAndReturn("def gettertest() { nil }; gettertest").asClosure().base_method();
 				atTestObject.meta_addMethod(getter);
 				fail("expected a duplicate slot exception");
 			} catch (XDuplicateSlot e) {
@@ -544,7 +544,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals(NATNumber.ONE, atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("z")));
 			
 			// (reflect: atTestClass).addMethod(<method:"get",[],{self.xtest}>)
-			ATMethod get = evalAndReturn("def get() { self.xtest }; get").asClosure().base_getMethod();
+			ATMethod get = evalAndReturn("def get() { self.xtest }; get").asClosure().base_method();
 			atTestClass.meta_addMethod(get);
 			// assert(atTestObject.xtest == atTestObject.get())
 			assertEquals(atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("xtest")),
@@ -664,7 +664,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 					NATTable.atValue(new ATObject[] { NATNumber.atValue(55) }));
 			
 			assertEquals(55, instance.meta_select(instance, AGSymbol.jAlloc("xtest")).asNativeNumber().javaValue);
-			assertEquals(atTestClass, instance.base_getSuper());
+			assertEquals(atTestClass, instance.base_super());
 			assertEquals(jTestObject.xtest, atTestObject.meta_select(atTestObject,
 					AGSymbol.jAlloc("xtest")).asNativeNumber().javaValue);
 		} catch (InterpreterException e) {
@@ -685,7 +685,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// def orignew := atTestClass.new; def atTestClass.new(x,y) { def o := orignew(x); def o.ytest := y; o }
 			ATClosure newClo = evalAndReturn("def new(x,y) { def o := orignew(x); def o.ytest := y; o }; new").asClosure();
 			atTestClass.meta_defineField(AGSymbol.jAlloc("orignew"), atTestClass.meta_select(atTestClass, AGSymbol.jAlloc("new")));
-			atTestClass.meta_addMethod(newClo.base_getMethod());
+			atTestClass.meta_addMethod(newClo.base_method());
 			
 			// def instance := atTestClass.new(10, 11)
 			ATObject instance = atTestClass.meta_invoke(atTestClass, AGSymbol.jAlloc("new"),
@@ -780,9 +780,9 @@ public class SymbiosisTest extends AmbientTalkTest {
 		ATTypeTag atSet = jSet.asTypeTag();
 		ATTypeTag atCollection = jCollection.asTypeTag();
 		// type name = 'java.util.Set'
-		assertEquals(AGSymbol.jAlloc("java.util.Set"), atSet.base_getTypeName());
+		assertEquals(AGSymbol.jAlloc("java.util.Set"), atSet.base_typeName());
 		// type parents = [ java.util.Collection ]
-		assertEquals(jCollection, atSet.base_getSuperTypes().base_at(NATNumber.ONE));
+		assertEquals(jCollection, atSet.base_superTypes().base_at(NATNumber.ONE));
 		// Set isSubtypeOf Collection? true
 		assertTrue(atSet.base_isSubtypeOf(atCollection).asNativeBoolean().javaValue);
 		// Collection isSubtypeOf Set? false

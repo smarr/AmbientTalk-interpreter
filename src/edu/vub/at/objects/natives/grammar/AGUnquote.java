@@ -48,7 +48,7 @@ public class AGUnquote extends AGExpression implements ATUnquote {
 		unqExp_ = exp;
 	}
 	
-	public ATExpression base_getExpression() { return unqExp_; }
+	public ATExpression base_expression() { return unqExp_; }
 
 	/**
 	 * An unquotation cannot be evaluated, but rather gives rise to an XIllegalUnquote exception.

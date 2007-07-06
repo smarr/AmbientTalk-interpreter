@@ -56,17 +56,17 @@ public class NATException extends NATByCopy {
 		return wrappedException_;
 	}
 
-	public NATText base_getMessage() throws InterpreterException {
+	public NATText base_message() throws InterpreterException {
 		return NATText.atValue(wrappedException_.getMessage());
 	}
 	
-	public NATText base_getStackTrace() throws InterpreterException {
+	public NATText base_stackTrace() throws InterpreterException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		wrappedException_.printAmbientTalkStackTrace(new PrintStream(out));
 		return NATText.atValue(out.toString());
 	}
 	
-	public NATNil base_setStackTrace(NATText newTrace) throws InterpreterException {
+	public NATNil base_stackTrace__opeql_(NATText newTrace) throws InterpreterException {
 		return NATNil._INSTANCE_;
 	}
 	
@@ -84,7 +84,7 @@ public class NATException extends NATByCopy {
 		}
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(wrappedException_.getType());
     }
     

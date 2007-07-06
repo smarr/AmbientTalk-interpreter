@@ -56,14 +56,14 @@ public interface ATClosure extends ATObject {
 	 * 
 	 * @return an {@link ATMethod} that returns the encapsulated method.
 	 */
-	public ATMethod base_getMethod() throws InterpreterException;
+	public ATMethod base_method() throws InterpreterException;
 
 	/**
 	 * Returns the scope of the closure.
 	 * 
 	 * @return an {@link ATMethod} that returns the scope of the closure.
 	 */
-	public ATContext base_getContext() throws InterpreterException;
+	public ATContext base_context() throws InterpreterException;
 	
 	/**
 	 * Applies the closure to the given arguments, already wrapped in a table.

@@ -46,13 +46,13 @@ public interface ATMessageSend extends ATExpression {
 	 * Example: <code>`(f().m()).getReceiverExpression() == `(f())</code>
 	 * @return the receiver of the message
 	 */
-	public ATExpression base_getReceiverExpression();
+	public ATExpression base_receiverExpression();
 	
 	/**
 	 * @param rcv the new receiver
 	 * @return nil
 	 */
-	public ATNil base_setReceiverExpression(ATExpression rcv);
+	public ATNil base_receiverExpression__opeql_(ATExpression rcv);
 	
 	/**
 	 * The message to be sent must be an AmbientTalk expression that evaluates
@@ -60,6 +60,6 @@ public interface ATMessageSend extends ATExpression {
 	 * Example: <code>`(f().m()).getMessageExpression() == `(.m())</code>
 	 * @return the message expression
 	 */
-	public ATExpression base_getMessageExpression();
+	public ATExpression base_messageExpression();
 	
 }

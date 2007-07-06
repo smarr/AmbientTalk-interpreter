@@ -44,20 +44,20 @@ public interface ATAssignTable extends ATAssignment {
 	 * Example: <code>`{ tab[idx] := 5}.statements[1].tableExpression == `tab</code>
 	 * @return The table expression
 	 */
-	public ATExpression base_getTableExpression();
+	public ATExpression base_tableExpression();
 	
 	/**
 	 * The index may be any AmbientTalk expression that evaluates to a native number.
 	 * Example: <code>`{ tab[idx] := 5}.statements[1].indexExpression == `idx</code>
 	 * @return The index expression
 	 */
-	public ATExpression base_getIndexExpression();
+	public ATExpression base_indexExpression();
 	
 	/**
 	 * The value expression may be any valid AmbientTalk expression
 	 * Example: <code>`{ tab[idx] := 5}.statements[1].valueExpression == `5</code>
 	 * @return The value expression
 	 */
-	public ATExpression base_getValueExpression();
+	public ATExpression base_valueExpression();
 	
 }

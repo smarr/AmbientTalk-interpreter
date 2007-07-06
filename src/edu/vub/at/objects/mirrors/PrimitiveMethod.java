@@ -81,7 +81,7 @@ public class PrimitiveMethod extends NATMethod {
 			return this;
 		}
 		
-		public ATTable base_getStatements() { return NATTable.of(NATNil._INSTANCE_); }
+		public ATTable base_statements() { return NATTable.of(NATNil._INSTANCE_); }
 		
 		public NATText meta_print() throws InterpreterException {
 			return NATText.atValue("<primitive body>");
@@ -111,7 +111,7 @@ public class PrimitiveMethod extends NATMethod {
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<primitive method:"+base_getName()+">");
+		return NATText.atValue("<primitive method:"+base_name()+">");
 	}
 	
 }

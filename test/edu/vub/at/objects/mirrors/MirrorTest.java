@@ -49,8 +49,8 @@ public class MirrorTest extends AmbientTalkTest {
 	protected void setUp() throws Exception {
 		super.setUp();
 		
-		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("Mirror"), NativeTypeTags._MIRROR_);
-		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("context"), ctx_);
+		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("Mirror"), NativeTypeTags._MIRROR_);
+		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("context"), ctx_);
 		
 		
 		evalAndReturn(
@@ -216,38 +216,6 @@ public class MirrorTest extends AmbientTalkTest {
 		
 	}
 	
-	
-//	/**
-//	 * Tests the correctness of the up-down relation in Java : 
-//	 * - down(up(o)) == o
-//	 */
-//	public void testJavaMirrorBaseRelation() {
-//		try {
-//			ATObject[] objects 		= new ATObject[] { 
-//					NATNil._INSTANCE_, NATBoolean._TRUE_, NATNumber.ZERO, new NATObject(),
-//					NATTable.EMPTY, NATIntrospectiveMirror.atValue(NATNil._INSTANCE_),
-//					new NATIntercessiveMirror(Evaluator.getGlobalLexicalScope(), true)
-//			};
-//			ATMirror[] mirrors 		= new ATMirror[objects.length];
-//			
-//			for (int i = 0; i < objects.length; i++) {
-//				mirrors[i] = NATIntrospectiveMirror.atValue(objects[i]);
-//			}
-//			
-//			for (int i = 0; i < objects.length; i++) {
-//				assertEquals(objects[i], mirrors[i].base_getBase());
-//			}
-//
-////			TODO(discuss) should NATIntrospectiveMirrors be unique? 
-////			(requires a map or every object has a lazily initialised pointer)
-////			for (int i = 0; i < objects.length; i++) {
-////				assertEquals(mirrors[i], NATMirrorFactory._INSTANCE_.createMirror(objects[i]));
-////			}
-//		} catch (InterpreterException e) {
-//			fail(e.getMessage());
-//		}
-//	}
-	
 	/**
 	 * Tests the correctness of the up-down relation in AmbientTalk : 
 	 * - down(up(o)) == o
@@ -267,25 +235,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"  (objects[i] == mirrors[i].base) \n" +
 				"    .ifFalse: { at.unit.fail(\"down(up(\" + objects[i] + \")) != \" + objects[i]); } \n" +
 				"} \n");
-	}	
-		
-//	public void testJavaMirrorInvocation() {
-//		try {
-//			ATMirror trueMirror = NATIntrospectiveMirror.atValue(NATBoolean._TRUE_);
-//			ATMirror responds = (ATMirror)trueMirror.meta_invoke(
-//					trueMirror,
-//					AGSymbol.jAlloc("respondsTo"),
-//					NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("ifTrue:") }));
-//			responds.base_getBase().base_asBoolean().base_ifFalse_(new NativeClosure(NATNil._INSTANCE_) {
-//				public ATObject base_apply(ATTable arguments) throws InterpreterException {
-//					throw new XUserDefined(NATNil._INSTANCE_);
-//				}
-//			});
-//		} catch (InterpreterException e) {
-//			e.printStackTrace();
-//			fail("exception: "+ e);
-//		}
-//	}
+	}
 			
 	public void testMirrorInvocation() {
 		evalAndReturn(

@@ -57,11 +57,11 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 		initExp_ = ini;
 	}
 	
-	public ATSymbol base_getName() { return tblName_; }
+	public ATSymbol base_name() { return tblName_; }
 
-	public ATExpression base_getSizeExpression() { return sizExp_; }
+	public ATExpression base_sizeExpression() { return sizExp_; }
 
-	public ATBegin base_getInitializer() { return initExp_; }
+	public ATBegin base_initializer() { return initExp_; }
 
 	/**
 	 * Defining a table requires evaluating its index expression to a size s,
@@ -89,7 +89,7 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 			throw new XIllegalIndex(e.getMessage());
 		}
 		
-		NATCallframe initscope = new NATCallframe(ctx.base_getLexicalScope());
+		NATCallframe initscope = new NATCallframe(ctx.base_lexicalScope());
 		ATContext initctx = ctx.base_withLexicalEnvironment(initscope);
 		ATObject[] tab = new ATObject[siz];
 		for (int i = 0; i < tab.length; i++) {
@@ -97,7 +97,7 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 		}
 		
 		NATTable tbl = NATTable.atValue(tab);
-		ctx.base_getLexicalScope().meta_defineField(tblName_, tbl);
+		ctx.base_lexicalScope().meta_defineField(tblName_, tbl);
 		
 		return tbl;
 	}

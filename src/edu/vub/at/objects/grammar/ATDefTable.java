@@ -43,20 +43,20 @@ public interface ATDefTable extends ATDefinition {
 	 * Example: <code>`{ def tab[5] { m() } }.statements[1].name == `tab</code>
 	 * @return the name of the table
 	 */
-	public ATSymbol base_getName();
+	public ATSymbol base_name();
 	
 	/**
 	 * The size may be any valid AmbientTalk expression that evaluates to a number
 	 * Example: <code>`{ def tab[5] { m() } }.statements[1].sizeExpression == `5</code>
 	 * @return the size expression
 	 */
-	public ATExpression base_getSizeExpression();
+	public ATExpression base_sizeExpression();
 	
 	/**
 	 * The initializer is at least one expression and may be a sequence of expressions
 	 * Example: <code>`{ def tab[5] { m() } }.statements[1].initializer == `{ m() }</code>
 	 * @return the initializer
 	 */
-	public ATBegin base_getInitializer();
+	public ATBegin base_initializer();
 	
 }

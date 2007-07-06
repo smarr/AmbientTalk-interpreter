@@ -45,7 +45,7 @@ public interface ATAsyncMessage extends ATMessage {
      * object, or a representative of an object inside another actor.
      * @return the receiver of the message
      */
-    public ATObject base_getReceiver() throws InterpreterException;
+    public ATObject base_receiver() throws InterpreterException;
     
     /**
      * This method is responsible for processing the message in a certain actor.

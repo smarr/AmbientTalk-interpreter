@@ -42,20 +42,20 @@ public interface ATDefExternalField extends ATDefinition {
 	 * Example: <code>`{ def o.x := 5 }.statements[1].receiver == `o</code>
 	 * @return The expression for the object
 	 */
-	public ATSymbol base_getReceiver();
+	public ATSymbol base_receiver();
 	
 	/**
 	 * The name of the field must be a literal symbol
 	 * Example: <code>`{ def o.x := 5 }.statements[1].name == `x</code>
 	 * @return the name of the field
 	 */
-	public ATSymbol base_getName();
+	public ATSymbol base_name();
 	
 	/**
 	 * The value may be any AmbientTalk expression.
 	 * Example: <code>`{ def o.x := 5 }.statements[1].valueExpression == `5</code>
 	 * @return the value expression
 	 */
-	public ATExpression base_getValueExpression();
+	public ATExpression base_valueExpression();
 	
 }

@@ -61,15 +61,15 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 		bodyStmts_ = bdy;
 	}
 	
-	public ATSymbol base_getSelector() {
+	public ATSymbol base_selector() {
 		return selectorExp_;
 	}
 
-	public ATTable base_getArguments() {
+	public ATTable base_arguments() {
 		return argumentExps_;
 	}
 
-	public ATBegin base_getBodyExpression() {
+	public ATBegin base_bodyExpression() {
 		return bodyStmts_;
 	}
 	
@@ -98,7 +98,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 			preprocessedMethod_ = new NATMethod(selectorExp_, argumentExps_, bodyStmts_);
 		}
 		
-		ATObject current = ctx.base_getLexicalScope();
+		ATObject current = ctx.base_lexicalScope();
 		if (current.isCallFrame()) {
 			NATClosure clo = new NATClosure(preprocessedMethod_, ctx);
 			current.meta_defineField(selectorExp_, clo);
@@ -127,7 +127,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 				" { " + bodyStmts_.meta_print().javaValue + " }");
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._METHOD_DEFINITION_);
     }
 

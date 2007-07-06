@@ -243,7 +243,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			ATTable vowels = evalAndReturn("[\"a\", \"e\", \"i\", \"o\", \"u\"]").asTable();
 
 			// vowels.length = 5
-			assertEquals(5, vowels.base_getLength().asNativeNumber().javaValue);
+			assertEquals(5, vowels.base_length().asNativeNumber().javaValue);
 			
 			// vowels.at(1) = "a"
 			assertEquals("a", vowels.base_at(NATNumber.ONE).asNativeText().javaValue);

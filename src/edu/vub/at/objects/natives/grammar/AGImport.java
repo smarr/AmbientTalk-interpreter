@@ -78,15 +78,15 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 		excludedSymbols_ = Import.preprocessExcludes(excludesDeclarations_);
 	}
 	
-	public ATTable base_getAliasedSymbols() throws InterpreterException {
+	public ATTable base_aliasedSymbols() throws InterpreterException {
 		return aliasDeclarations_;
 	}
 
-	public ATTable base_getExcludedSymbols() throws InterpreterException {
+	public ATTable base_excludedSymbols() throws InterpreterException {
 		return excludesDeclarations_;
 	}
 
-	public ATExpression base_getImportedObjectExpression() throws InterpreterException {
+	public ATExpression base_importedObjectExpression() throws InterpreterException {
 		return importedObjectExp_;
 	}
 

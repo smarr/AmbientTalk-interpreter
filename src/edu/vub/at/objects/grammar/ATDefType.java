@@ -47,13 +47,13 @@ public interface ATDefType extends ATDefinition {
 	 * Example: <code>`{ deftype foo }.statements[1].typeName == `foo</code>
 	 * @return the name of the type
 	 */
-	public ATSymbol base_getTypeName();
+	public ATSymbol base_typeName();
 	
 	/**
 	 * A type can have zero, one or more parent types. 
 	 * Example: <code>`{ deftype foo <: bar, o.baz() }.statements[1].parentTypeExpressions == `[ bar, o.baz() ]</code>
 	 * @return a table with expressions that each must evaluate to a type
 	 */
-	public ATTable base_getParentTypeExpressions();
+	public ATTable base_parentTypeExpressions();
 	
 }

@@ -87,7 +87,7 @@ public class SerializationTest extends AmbientTalkTest {
 		AGAssignField ass = new AGAssignField(boeTXT, fooSYM, boeTXT);
 		AGAssignField ass2 = (AGAssignField) copy(ass);
 		assertEquals(ass.toString(), ass2.toString());
-		assertTrue(ass.base_getFieldName() == ass2.base_getFieldName());
+		assertTrue(ass.base_fieldName() == ass2.base_fieldName());
 	}
 	
 	public void testParseTreeSerialization() throws InterpreterException {

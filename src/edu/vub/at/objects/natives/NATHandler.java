@@ -64,7 +64,7 @@ public class NATHandler extends NATByRef implements ATHandler {
 		return this;
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
 		return NATTable.of(NativeTypeTags._HANDLER_);
 	}
     

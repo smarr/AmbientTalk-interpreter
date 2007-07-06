@@ -47,13 +47,13 @@ public interface ATAssignVariable extends ATAssignment {
 	 * Example: <code>`{ x := 5}.statements[1].name == `x</code>
 	 * @return The name of the variable
 	 */
-	public ATSymbol base_getName();
+	public ATSymbol base_name();
 	
 	/**
 	 * The value expression may be any valid AmbientTalk expression.
 	 * Example: <code>`{ x := 5}.statements[1].valueExpression == `5</code>
 	 * @return The expression for the value that will be assigned to the variable
 	 */
-	public ATExpression base_getValueExpression();
+	public ATExpression base_valueExpression();
 	
 }

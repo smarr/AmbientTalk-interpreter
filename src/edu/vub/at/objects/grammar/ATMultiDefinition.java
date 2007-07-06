@@ -50,7 +50,7 @@ public interface ATMultiDefinition extends ATDefinition {
 	 * Example: <code>`{ def [ x, y ] := [ y, x ] }.statements[1].parameters == `[x, y]</code>
 	 * @return a table with valid left-expressions
 	 */
-	public ATTable base_getParameters();
+	public ATTable base_parameters();
 	
 	/**
 	 * The right-hand side of the definition may be any valid AmbientTalk expression
@@ -58,6 +58,6 @@ public interface ATMultiDefinition extends ATDefinition {
 	 * Example: <code>`{ def [ x, y ] := [ y, x ] }.statements[1].valueExpression == `[y, x]</code>
 	 * @return the value expression
 	 */
-	public ATExpression base_getValueExpression();
+	public ATExpression base_valueExpression();
 	
 }

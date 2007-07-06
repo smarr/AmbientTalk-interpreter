@@ -113,7 +113,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
      * contained.
      */
     public ATObject meta_send(ATAsyncMessage message) throws InterpreterException {
-    	return OBJLexicalRoot._INSTANCE_.base_getActor().base_send(message);
+    	return OBJLexicalRoot._INSTANCE_.base_actor().base_send(message);
     }
 
     /**
@@ -163,8 +163,34 @@ public class NATNil implements ATExpression, ATNil, Serializable {
         } catch (XSelectorNotFound e) {
         	e.catchOnlyIfSelectorEquals(selector);
         	
+<<<<<<< .mine
+        	// If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
+        	if (selector instanceof AGAssignmentSymbol) {
+				selector = ((AGAssignmentSymbol)selector).getFieldName();
+				
+		    	jSelector = Reflection.upBaseFieldMutationSelector(selector);
+		    	
+		        // try to invoke a native base_setName method
+		        try {
+		        	int len = arguments.base_length().asNativeNumber().javaValue;
+		        	if(len != 1)
+		        		throw new XArityMismatch(selector.toString(), 1, len);
+		        	Reflection.upFieldAssignment(receiver, jSelector, selector, arguments.base_at(NATNumber.ONE));
+				} catch (XSelectorNotFound e2) {
+					e2.catchOnlyIfSelectorEquals(selector);
+					// if such a method does not exist, the field assignment has failed
+					throw new XUnassignableField(selector.base_text().asNativeText().javaValue);
+				}
+				
+		        return NATNil._INSTANCE_;
+				
+			} else {
+				// try to read the corresponding field
+				jSelector = Reflection.upBaseFieldAccessSelector(selector);
+=======
 			// try to read the corresponding field
 			jSelector = Reflection.upBaseFieldAccessSelector(selector);
+>>>>>>> .r599
 
 			try {
 				NativeClosure.checkNullaryArguments(selector, arguments);
@@ -275,7 +301,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
         	  return this.meta_select(this, selector);
         } catch(XSelectorNotFound e) {
         	  // transform selector not found in undefined variable access
-        	  throw new XUndefinedSlot("variable access", selector.base_getText().asNativeText().javaValue);
+        	  throw new XUndefinedSlot("variable access", selector.base_text().asNativeText().javaValue);
         }
     }
 
@@ -297,18 +323,8 @@ public class NATNil implements ATExpression, ATNil, Serializable {
         return this.meta_assignField(this, name, value);
     }
 
+    /** @deprecated */
     public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-    	String jSelector = Reflection.upBaseFieldMutationSelector(name);
-    	
-        // try to invoke a native base_setName method
-        try {	   
-           Reflection.upFieldAssignment(receiver, jSelector, name, value);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(name);
-			// if such a method does not exist, the field assignment has failed
-			throw new XUnassignableField(name.base_getText().asNativeText().javaValue);
-		}
-		
         return NATNil._INSTANCE_;
     }
 
@@ -337,7 +353,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     }
 
     public ATField meta_grabField(ATSymbol fieldName) throws InterpreterException {
-        return Reflection.downBaseLevelField(this, fieldName);
+    	throw new XSelectorNotFound(fieldName, this);
     }
 
     public ATMethod meta_grabMethod(ATSymbol methodName) throws InterpreterException {
@@ -345,7 +361,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     }
 
     public ATTable meta_listFields() throws InterpreterException {
-        return NATTable.atValue(Reflection.downBaseLevelFields(this));
+    	return NATTable.EMPTY;
     }
 
     public ATTable meta_listMethods() throws InterpreterException {
@@ -388,7 +404,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     /**
      * By default numbers, tables and so on do not have lexical parents,
      */
-    public ATObject meta_getLexicalParent() throws InterpreterException {
+    public ATObject meta_lexicalParent() throws InterpreterException {
         return NATNil._INSTANCE_;
     }
     
@@ -410,7 +426,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
      * returned by {@link this#meta_getTypeTags()} are tested against.
      */
     public ATBoolean meta_isTaggedAs(ATTypeTag type) throws InterpreterException {
-    	ATObject[] types = this.meta_getTypeTags().asNativeTable().elements_;
+    	ATObject[] types = this.meta_typeTags().asNativeTable().elements_;
     	for (int i = 0; i < types.length; i++) {
 			if (types[i].asTypeTag().base_isSubtypeOf(type).asNativeBoolean().javaValue) {
 				return NATBoolean._TRUE_;
@@ -422,7 +438,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     /**
      * By default, a native object (and also nil) has no type tags.
      */
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.EMPTY;
     }
 	
@@ -665,9 +681,9 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     /**
      * Only true objects have a dynamic pointer, native objects denote 'nil' to
      * be their dynamic parent when asked for it. Note that, for native objects,
-     * 'super' is a read-only field (i.e. there is no base_setSuper).
+     * 'super' is a read-only field.
      */
-    public ATObject base_getSuper() throws InterpreterException {
+    public ATObject base_super() throws InterpreterException {
         return NATNil._INSTANCE_;
     };
 

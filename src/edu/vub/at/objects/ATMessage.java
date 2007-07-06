@@ -51,7 +51,7 @@ public interface ATMessage extends ATObject {
 	 * 
 	 * @return an {@link ATSymbol} denoting the selector
 	 */
-	public ATSymbol base_getSelector() throws InterpreterException;
+	public ATSymbol base_selector() throws InterpreterException;
 	
 	/**
 	 * Returns the arguments passed to the invocation, if any.
@@ -61,7 +61,7 @@ public interface ATMessage extends ATObject {
 	 * @return an {@link ATTable} containing the arguments passed to the invocation.
 	 * 
 	 */
-	public ATTable base_getArguments() throws InterpreterException;
+	public ATTable base_arguments() throws InterpreterException;
 	
 	/**
 	 * Assigns the arguments passed of a first class method. 
@@ -69,7 +69,7 @@ public interface ATMessage extends ATObject {
 	 * @param arguments a table containing the arguments to be assigned.
 	 * @return nil
 	 */
-	public ATNil base_setArguments(ATTable arguments) throws InterpreterException;
+	public ATNil base_arguments__opeql_(ATTable arguments) throws InterpreterException;
 	
 	/**
 	 * Sends this message to a particular receiver object. The way in which the message

@@ -60,12 +60,12 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 	private static final PrimitiveMethod _PRIM_SND_ = new PrimitiveMethod(
 			AGSymbol.jAlloc("sendTo"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("receiver"), AGSymbol.jAlloc("sender") })) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			int arity = arguments.base_getLength().asNativeNumber().javaValue;
+			int arity = arguments.base_length().asNativeNumber().javaValue;
 			if (arity != 2) {
 				throw new XArityMismatch("sendTo", 2, arity);
 			}
-			return ctx.base_getLexicalScope().asMessage().prim_sendTo(
-					ctx.base_getSelf().asMessage(),
+			return ctx.base_lexicalScope().asMessage().prim_sendTo(
+					ctx.base_self().asMessage(),
 					arguments.base_at(NATNumber.ONE), arguments.base_at(NATNumber.atValue(2)));
 		}
 	};
@@ -120,15 +120,15 @@ public abstract class NATMessage extends NATObject implements ATMessage {
     	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types);
     }
 	
-	public ATSymbol base_getSelector() throws InterpreterException {
+	public ATSymbol base_selector() throws InterpreterException {
 		return super.meta_select(this, _SELECTOR_).asSymbol();
 	}
 
-	public ATTable base_getArguments() throws InterpreterException {
+	public ATTable base_arguments() throws InterpreterException {
 		return super.meta_select(this, _ARGUMENTS_).asTable();
 	}
 	
-	public ATNil base_setArguments(ATTable arguments) throws InterpreterException {
+	public ATNil base_arguments__opeql_(ATTable arguments) throws InterpreterException {
 		super.meta_assignField(this, _ARGUMENTS_, arguments);
 		return NATNil._INSTANCE_;
 	}

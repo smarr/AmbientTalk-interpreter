@@ -78,7 +78,7 @@ public final class NATFraction extends NATNumeric implements ATFraction {
         return NATText.atValue(String.valueOf(javaValue));
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._FRACTION_);
     }
 	

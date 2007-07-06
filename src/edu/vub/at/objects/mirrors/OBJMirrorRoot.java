@@ -148,7 +148,7 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 		return new OBJMirrorRoot(base_);
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._MIRROR_);
     }
     
@@ -160,7 +160,7 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 	/**
 	 * The read-only field containing the mirror's base-level mirage.
 	 */
-	public NATMirage base_getBase() throws InterpreterException {
+	public NATMirage base_base() throws InterpreterException {
 		return base_;
 	}
 	
@@ -200,119 +200,119 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 	 * ======================================================================== */
 
 	public ATObject base_clone() throws InterpreterException {
-		return base_getBase().magic_clone();
+		return base_base().magic_clone();
 	}
 	
-    public ATTable base_getTypeTags() throws InterpreterException {
-		return base_getBase().magic_getTypeTags();
+    public ATTable base_typeTags() throws InterpreterException {
+		return base_base().magic_typeTags();
     }
     
     public NATText base_print() throws InterpreterException {
-		return base_getBase().magic_print();
+		return base_base().magic_print();
     }
 	
 	public ATObject base_pass() throws InterpreterException {
-		return base_getBase().magic_pass();
+		return base_base().magic_pass();
 	}
 
 	public ATObject base_resolve() throws InterpreterException {
-		return base_getBase().magic_resolve();
+		return base_base().magic_resolve();
 	}
 
 	public ATNil base_addField(ATField field) throws InterpreterException {
-		return base_getBase().magic_addField(field);
+		return base_base().magic_addField(field);
 	}
 
 	public ATNil base_addMethod(ATMethod method) throws InterpreterException {
-		return base_getBase().magic_addMethod(method);
+		return base_base().magic_addMethod(method);
 	}
 
 	public ATNil base_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-		return base_getBase().magic_assignField(receiver, name, value);
+		return base_base().magic_assignField(receiver, name, value);
 	}
 
 	public ATNil base_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
-		return base_getBase().magic_assignVariable(name, value);
+		return base_base().magic_assignVariable(name, value);
 	}
 
 	public ATNil base_defineField(ATSymbol name, ATObject value) throws InterpreterException {
-		return base_getBase().magic_defineField(name, value);
+		return base_base().magic_defineField(name, value);
 	}
 
 	public ATObject base_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
-		return base_getBase().magic_doesNotUnderstand(selector);
+		return base_base().magic_doesNotUnderstand(selector);
 	}
 
 	public ATObject base_eval(ATContext ctx) throws InterpreterException {
-		return base_getBase().magic_eval(ctx);
+		return base_base().magic_eval(ctx);
 	}
 
 	public ATBoolean base_isExtensionOfParent() throws InterpreterException {
-		return base_getBase().magic_isExtensionOfParent();
+		return base_base().magic_isExtensionOfParent();
 	}
 
-	public ATObject base_getLexicalParent() throws InterpreterException {
-		return base_getBase().magic_getLexicalParent();
+	public ATObject base_lexicalParent() throws InterpreterException {
+		return base_base().magic_lexicalParent();
 	}
 
 	public ATField base_grabField(ATSymbol fieldName) throws InterpreterException {
-		return base_getBase().magic_grabField(fieldName);
+		return base_base().magic_grabField(fieldName);
 	}
 
 	public ATMethod base_grabMethod(ATSymbol methodName) throws InterpreterException {
-		return base_getBase().magic_grabMethod(methodName);
+		return base_base().magic_grabMethod(methodName);
 	}
 
 	public ATObject base_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
-		return base_getBase().magic_invoke(receiver, atSelector, arguments);
+		return base_base().magic_invoke(receiver, atSelector, arguments);
 	}
 
 	public ATBoolean base_isCloneOf(ATObject original) throws InterpreterException {
-		return base_getBase().magic_isCloneOf(original);
+		return base_base().magic_isCloneOf(original);
 	}
 
 	public ATBoolean base_isRelatedTo(ATObject object) throws InterpreterException {
-		return base_getBase().magic_isRelatedTo(object);
+		return base_base().magic_isRelatedTo(object);
 	}
 
 	public ATBoolean base_isTaggedAs(ATTypeTag type) throws InterpreterException {
-		return base_getBase().magic_isTaggedAs(type);
+		return base_base().magic_isTaggedAs(type);
 	}
 
 	public ATTable base_listFields() throws InterpreterException {
-		return base_getBase().magic_listFields();
+		return base_base().magic_listFields();
 	}
 
 	public ATTable base_listMethods() throws InterpreterException {
-		return base_getBase().magic_listMethods();
+		return base_base().magic_listMethods();
 	}
 
 	public ATObject base_lookup(ATSymbol selector) throws InterpreterException {
-		return base_getBase().magic_lookup(selector);
+		return base_base().magic_lookup(selector);
 	}
 
 	public ATObject base_newInstance(ATTable initargs) throws InterpreterException {
-		return base_getBase().magic_newInstance(initargs);
+		return base_base().magic_newInstance(initargs);
 	}
 
 	public ATObject base_quote(ATContext ctx) throws InterpreterException {
-		return base_getBase().magic_quote(ctx);
+		return base_base().magic_quote(ctx);
 	}
 
 	public ATObject base_receive(ATAsyncMessage message) throws InterpreterException {
-		return base_getBase().magic_receive(message);
+		return base_base().magic_receive(message);
 	}
 
 	public ATBoolean base_respondsTo(ATSymbol atSelector) throws InterpreterException {
-		return base_getBase().magic_respondsTo(atSelector);
+		return base_base().magic_respondsTo(atSelector);
 	}
 
 	public ATObject base_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-		return base_getBase().magic_select(receiver, selector);
+		return base_base().magic_select(receiver, selector);
 	}
 
 	public ATObject base_send(ATAsyncMessage message) throws InterpreterException {
-		return base_getBase().magic_send(message);
+		return base_base().magic_send(message);
 	}
 	
 }

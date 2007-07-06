@@ -388,7 +388,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * The types of a far reference are the types of the remote object
 	 * it points to, plus the FarReference type.
 	 */
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.atValue(types_);
     }
 	

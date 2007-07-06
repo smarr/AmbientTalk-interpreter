@@ -57,11 +57,11 @@ public final class AGDefType extends NATAbstractGrammar implements ATDefType {
 		parentTypeExpressions_ = parentTypeExpressions;
 	}
 
-	public ATTable base_getParentTypeExpressions() {
+	public ATTable base_parentTypeExpressions() {
 		return parentTypeExpressions_;
 	}
 
-	public ATSymbol base_getTypeName() {
+	public ATSymbol base_typeName() {
 		return typeName_;
 	}
 	
@@ -81,7 +81,7 @@ public final class AGDefType extends NATAbstractGrammar implements ATDefType {
 		});
 		
 		ATTypeTag type = NATTypeTag.atValue(typeName_, parentTypes);
-		ctx.base_getLexicalScope().meta_defineField(typeName_, type);
+		ctx.base_lexicalScope().meta_defineField(typeName_, type);
 		return type;
 	}
 

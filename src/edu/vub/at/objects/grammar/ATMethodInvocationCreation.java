@@ -35,7 +35,7 @@ package edu.vub.at.objects.grammar;
  */
 public interface ATMethodInvocationCreation extends ATMessageCreation {
 	
-	//public ATSymbol base_getSelector();
-	//public ATTable base_getArguments();
+	//public ATSymbol base_selector();
+	//public ATTable base_arguments();
 	
 }

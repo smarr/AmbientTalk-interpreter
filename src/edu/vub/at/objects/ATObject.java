@@ -640,7 +640,7 @@ public interface ATObject extends ATConversions {
      * @return the object denoting this mirror's base object's lexically
      * enclosing scope.
      */
-    public ATObject meta_getLexicalParent() throws InterpreterException;
+    public ATObject meta_lexicalParent() throws InterpreterException;
 
     /* ------------------------------------------
       * -- Abstract Grammar evaluation protocol --
@@ -768,7 +768,7 @@ public interface ATObject extends ATConversions {
      * @return a table of the type tags that were attached directly to this mirror's base
      * object. The type tags of its parent objects are not returned.
      */
-    public ATTable meta_getTypeTags() throws InterpreterException;
+    public ATTable meta_typeTags() throws InterpreterException;
     
      /* -------------------------------
       * - Base Level Object interface -
@@ -782,7 +782,7 @@ public interface ATObject extends ATConversions {
      * 
      * @return the current dynamic parent of this object.
      */
-    public ATObject base_getSuper() throws InterpreterException;
+    public ATObject base_super() throws InterpreterException;
     
     /**
      * The identity operator. In AmbientTalk, equality of objects

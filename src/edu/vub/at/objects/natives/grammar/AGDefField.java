@@ -53,8 +53,8 @@ public final class AGDefField extends NATAbstractGrammar implements ATDefField {
 		valueExp_ = value;
 	}
 	
-	public ATSymbol base_getName() { return name_; }
-	public ATExpression base_getValueExpression() { return valueExp_; }
+	public ATSymbol base_name() { return name_; }
+	public ATExpression base_valueExpression() { return valueExp_; }
 	
 	/**
 	 * Defines a new field in the current scope. The return value is
@@ -65,7 +65,7 @@ public final class AGDefField extends NATAbstractGrammar implements ATDefField {
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject val = valueExp_.meta_eval(ctx);
-		ctx.base_getLexicalScope().meta_defineField(name_, val);
+		ctx.base_lexicalScope().meta_defineField(name_, val);
 		return val;
 	}
 

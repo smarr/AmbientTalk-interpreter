@@ -67,12 +67,12 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 	private static final PrimitiveMethod _PRIM_PRO_ = new PrimitiveMethod(
 			AGSymbol.jAlloc("process"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("bhv")})) {
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			int arity = arguments.base_getLength().asNativeNumber().javaValue;
+			int arity = arguments.base_length().asNativeNumber().javaValue;
 			if (arity != 1) {
 				throw new XArityMismatch("process", 1, arity);
 			}
-			return ctx.base_getLexicalScope().asAsyncMessage().prim_process(
-					ctx.base_getSelf().asAsyncMessage(),
+			return ctx.base_lexicalScope().asAsyncMessage().prim_process(
+					ctx.base_self().asAsyncMessage(),
 					arguments.base_at(NATNumber.ONE));
 		}
 	};
@@ -127,7 +127,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 				                   types);
 	}
     
-    public ATObject base_getReceiver() throws InterpreterException {
+    public ATObject base_receiver() throws InterpreterException {
     	return super.meta_select(this, _RECEIVER_);
     }
     
@@ -143,8 +143,8 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      * The default implementation is to invoke the method corresponding to this message's selector.
      */
     public ATObject prim_process(ATAsyncMessage self, ATObject receiver) throws InterpreterException {
-    	// receiver is not necessarily equal to base_getReceiver() anymore
-    	return receiver.meta_invoke(receiver, self.base_getSelector(), self.base_getArguments());
+    	// receiver is not necessarily equal to base_receiver() anymore
+    	return receiver.meta_invoke(receiver, self.base_selector(), self.base_arguments());
     }
 
     /**
@@ -160,7 +160,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     }
     
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<asynchronous message:"+base_getSelector()+Evaluator.printAsList(base_getArguments()).javaValue+">");
+		return NATText.atValue("<asynchronous message:"+base_selector()+Evaluator.printAsList(base_arguments()).javaValue+">");
 	}
 
     public ATAsyncMessage asAsyncMessage() throws XTypeMismatch {

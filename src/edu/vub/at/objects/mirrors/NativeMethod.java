@@ -71,7 +71,7 @@ public final class NativeMethod extends NATByRef implements ATMethod {
 	 * The name of a wrapped Java method is the name of the Java method, converted to an
 	 * AmbientTalk selector name.
 	 */
-	public ATSymbol base_getName() throws InterpreterException {
+	public ATSymbol base_name() throws InterpreterException {
 		return name_;
 	}
 	
@@ -79,7 +79,7 @@ public final class NativeMethod extends NATByRef implements ATMethod {
 	 * The parameters of a wrapped method are represented as symbols
 	 * representing the class name of the parameter type.
 	 */
-	public ATTable base_getParameters() throws InterpreterException {
+	public ATTable base_parameters() throws InterpreterException {
 		Class[] paramTypes = javaMethod_.getParameterTypes();
 		AGSymbol[] paramNames = new AGSymbol[paramTypes.length];
 		for (int i = 0; i < paramTypes.length; i++) {
@@ -88,13 +88,13 @@ public final class NativeMethod extends NATByRef implements ATMethod {
 		return NATTable.atValue(paramNames);
 	}
 
-	public ATBegin base_getBodyExpression() {
+	public ATBegin base_bodyExpression() {
 		return new AGBegin(NATTable.atValue(new ATObject[] {
 				NATText.atValue("Native implementation of " + javaMethod_.toString())}));
 	}
 	
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-		return JavaInterfaceAdaptor.invokeNativeATMethod(javaMethod_, ctx.base_getLexicalScope(),
+		return JavaInterfaceAdaptor.invokeNativeATMethod(javaMethod_, ctx.base_lexicalScope(),
 						                                arguments.asNativeTable().elements_);
 	}
 	
@@ -110,7 +110,7 @@ public final class NativeMethod extends NATByRef implements ATMethod {
 		return NATText.atValue("<native method:"+name_+">");
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._METHOD_);
     }
 	

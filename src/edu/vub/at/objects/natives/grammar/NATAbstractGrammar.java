@@ -49,7 +49,7 @@ public abstract class NATAbstractGrammar extends NATByCopy implements ATAbstract
 	// subclasses of NATAbstractGrammar will override meta_eval and meta_quote as appropriate,
 	// except for the literal grammar elements which can inherit the self-evaluating behaviour of NATNil.
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._ABSTRACTGRAMMAR_);
     }
 	

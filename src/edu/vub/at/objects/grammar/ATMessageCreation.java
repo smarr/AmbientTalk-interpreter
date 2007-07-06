@@ -44,7 +44,7 @@ public interface ATMessageCreation extends ATExpression {
      * Example: <code>`(<-m()).selector == `m</code>
      * @return a symbol denoting the selector
      */
-	public ATSymbol base_getSelector();
+	public ATSymbol base_selector();
 	
 	/**
      * Messages may optionally have arguments if they represent invocations.
@@ -52,12 +52,12 @@ public interface ATMessageCreation extends ATExpression {
      * Example: <code>`(<-m(a, @b)).arguments == `[a, @b]</code>
      * @return the arguments passed to the invocation
      */
-	public ATTable base_getArguments();
+	public ATTable base_arguments();
 	
 	/**
 	 * Messages may optionally have annotations (type tags)
 	 * @return the annotations of the message
 	 */
-	public ATExpression base_getAnnotations();
+	public ATExpression base_annotations();
 
 }

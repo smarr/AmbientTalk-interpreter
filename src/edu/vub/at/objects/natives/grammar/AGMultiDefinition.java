@@ -54,9 +54,9 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
 		binderPartialFunction_ = PartialBinder.calculateResidual("multi-definition", par);
 	}
 
-	public ATTable base_getParameters() { return parameters_; }
+	public ATTable base_parameters() { return parameters_; }
 	
-	public ATExpression base_getValueExpression() { return valueExp_; }
+	public ATExpression base_valueExpression() { return valueExp_; }
 	
 	/**
 	 * To evaluate a multiple definition, evaluate the right hand side to a table

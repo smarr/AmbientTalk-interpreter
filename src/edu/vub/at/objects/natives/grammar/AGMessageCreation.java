@@ -58,11 +58,11 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 		annotations_ = annotations;
 	}
 	
-	public ATSymbol base_getSelector() { return selector_; }
+	public ATSymbol base_selector() { return selector_; }
 
-	public ATTable base_getArguments() { return arguments_; }
+	public ATTable base_arguments() { return arguments_; }
 
-	public ATExpression base_getAnnotations() { return annotations_; }
+	public ATExpression base_annotations() { return annotations_; }
 	
 	public boolean isMessageCreation() {
    	    return true;

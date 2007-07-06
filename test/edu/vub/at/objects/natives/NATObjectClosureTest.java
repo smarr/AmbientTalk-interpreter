@@ -75,24 +75,24 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 		public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 			// SCOPE-test
 			// Is the current callframe lexically connected to the expected scope
-			ATObject lexEnv = ctx.base_getLexicalScope();
+			ATObject lexEnv = ctx.base_lexicalScope();
 			while (lexEnv != scope_) {
 				if(lexEnv == NATNil._INSTANCE_) {
 					fail("Lexical scope not found");
 					break;
 				}
-				lexEnv = lexEnv.meta_getLexicalParent();
+				lexEnv = lexEnv.meta_lexicalParent();
 			}
 			
 			// SELF-tests
 			// Is the current value of self consistent with our expectations
-			assertEquals(self_, ctx.base_getSelf());
+			assertEquals(self_, ctx.base_self());
 			// Is the expected value of self accessible through the pseudovariable
 			assertEquals(self_, AGSelf._INSTANCE_.meta_eval(ctx));	
 			
 			// SUPER-tests
 			// Is the current value of super consistent with our expectations
-			assertEquals(super_, ctx.base_getLexicalScope().meta_lookup(NATObject._SUPER_NAME_));
+			assertEquals(super_, ctx.base_lexicalScope().meta_lookup(NATObject._SUPER_NAME_));
 
 			return this;
 		}
@@ -400,10 +400,10 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 	 */
 	public void testMethodInvocation() {
 		try {
-			ATObject object = new NATObject(ctx_.base_getLexicalScope());
+			ATObject object = new NATObject(ctx_.base_lexicalScope());
 
 			AGScopeTest expectedValues = 
-				new AGScopeTest(object, object, object.base_getSuper());
+				new AGScopeTest(object, object, object.base_super());
 			
 			ATSymbol scopeTest = AGSymbol.jAlloc("scopeTest");
 			
@@ -426,12 +426,12 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 	 */
 	public void testDelegatedMethodInvocation() {
 		try {
-			NATObject parent = new NATObject(ctx_.base_getLexicalScope());
+			NATObject parent = new NATObject(ctx_.base_lexicalScope());
 			
-			NATObject child = new NATObject(parent, ctx_.base_getLexicalScope(), NATObject._IS_A_);
+			NATObject child = new NATObject(parent, ctx_.base_lexicalScope(), NATObject._IS_A_);
 			
-			AGScopeTest lateBoundSelfTest		= new AGScopeTest(parent, child, parent.base_getSuper());
-			AGScopeTest superSemanticsTest	= new AGScopeTest(child, child, child.base_getSuper());
+			AGScopeTest lateBoundSelfTest		= new AGScopeTest(parent, child, parent.base_super());
+			AGScopeTest superSemanticsTest	= new AGScopeTest(child, child, child.base_super());
 			
 			ATSymbol lateBoundSelf = AGSymbol.alloc(NATText.atValue("lateBoundSelf"));
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
@@ -456,7 +456,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 	 */
 	public void testExtend() {
 		try {
-			NATObject parent = new NATObject(ctx_.base_getLexicalScope());
+			NATObject parent = new NATObject(ctx_.base_lexicalScope());
 			
 			ATSymbol superSemantics = AGSymbol.alloc(NATText.atValue("superSemantics"));
 
@@ -471,15 +471,15 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 											new AGDefFunction(superSemantics, NATTable.EMPTY, 
 													new AGBegin(
 															NATTable.atValue(new ATObject[] { superSemanticsTest })))}))),
-															ctx_.base_getLexicalScope(),
-															ctx_.base_getLexicalScope()));
+															ctx_.base_lexicalScope(),
+															ctx_.base_lexicalScope()));
 			
 			superSemanticsTest.scope_ = child;
 			superSemanticsTest.self_ = child;
-			superSemanticsTest.super_ = child.base_getSuper();
+			superSemanticsTest.super_ = child.base_super();
 			
 			ATSymbol lateBoundSelf = AGSymbol.alloc(NATText.atValue("lateBoundSelf"));
-			AGScopeTest lateBoundSelfTest = new AGScopeTest(parent, child, parent.base_getSuper());
+			AGScopeTest lateBoundSelfTest = new AGScopeTest(parent, child, parent.base_super());
 			
 			parent.meta_addMethod(lateBoundSelfTest.transformToMethodNamed(lateBoundSelf));
 			
@@ -517,7 +517,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 		ATObject host = new NATObject(hostParent, Evaluator.getGlobalLexicalScope(), NATObject._IS_A_);
 		ATObject extender = new NATObject();
 		
-		ctx_.base_getLexicalScope().meta_defineField(AGSymbol.jAlloc("scopetest"), new AGScopeTest(extender, host, hostParent));
+		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("scopetest"), new AGScopeTest(extender, host, hostParent));
 		ATObject methodBody = evalAndReturn("`{def o.m() { #scopetest }}");
 		
 		extender.meta_addMethod(new NATMethod(AGSymbol.jAlloc("extend"),

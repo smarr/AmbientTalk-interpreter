@@ -53,7 +53,7 @@ public interface ATApplication extends ATExpression {
 	 * 
 	 * @return the function expression of the application
 	 */
-	public ATExpression base_getFunction();
+	public ATExpression base_function();
 	
 	/**
 	 * Zero, one or more arguments may be passed. It is allowed to use splicing
@@ -61,6 +61,6 @@ public interface ATApplication extends ATExpression {
 	 * Example: <code>`(f(1, 2, @[3, 4])).arguments == `[1, 2, @[3, 4]]</code>
 	 * @return the argument list of the application
 	 */
-	public ATTable base_getArguments();
+	public ATTable base_arguments();
 	
 }

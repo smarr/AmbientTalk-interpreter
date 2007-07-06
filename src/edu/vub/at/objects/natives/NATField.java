@@ -54,7 +54,7 @@ public class NATField extends NATByRef implements ATField {
 		frame_ = frame;
 	}
 
-	public ATSymbol base_getName() {
+	public ATSymbol base_name() {
 		return name_;
 	}
 
@@ -88,7 +88,7 @@ public class NATField extends NATByRef implements ATField {
 	 * They expect the new owner of the field as the sole instance to their 'new' method
 	 */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-		if (initargs.base_getLength() != NATNumber.ONE) {
+		if (initargs.base_length() != NATNumber.ONE) {
 			return super.meta_newInstance(initargs);
 		} else {
 			ATObject newhost = initargs.base_at(NATNumber.ONE);
@@ -96,7 +96,7 @@ public class NATField extends NATByRef implements ATField {
 		}
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._FIELD_);
     }
 

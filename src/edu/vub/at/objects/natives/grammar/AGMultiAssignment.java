@@ -54,9 +54,9 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 		binderPartialFunction_ = PartialBinder.calculateResidual("multi-assignment", par);
 	}
 
-	public ATTable base_getParameters() { return parameters_; }
+	public ATTable base_parameters() { return parameters_; }
 	
-	public ATExpression base_getValueExpression() { return valueExp_; }
+	public ATExpression base_valueExpression() { return valueExp_; }
 	
 	/**
 	 * To evaluate a multiple assignment, evaluate the right hand side to a table

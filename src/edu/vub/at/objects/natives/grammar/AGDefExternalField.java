@@ -53,9 +53,9 @@ public class AGDefExternalField extends NATAbstractGrammar implements ATDefExter
 		valueExp_ = value;
 	}
 	
-	public ATSymbol base_getReceiver() { return rcvNam_; }
-	public ATSymbol base_getName() { return name_; }
-	public ATExpression base_getValueExpression() { return valueExp_; }
+	public ATSymbol base_receiver() { return rcvNam_; }
+	public ATSymbol base_name() { return name_; }
+	public ATExpression base_valueExpression() { return valueExp_; }
 	
 	/**
 	 * Defines a new field in the object denoted by the receiver symbol.

@@ -48,7 +48,7 @@ public final class AGDelegationCreation extends AGMessageCreation {
 	}
 	
 	public ATMessage createMessage(ATContext ctx, ATSymbol selector, ATTable evaluatedArgs, ATTable annotations) throws InterpreterException {
-		return new NATDelegation(ctx.base_getSelf(), // the current 'self' is the delegator, to which 'self' should remain bound
+		return new NATDelegation(ctx.base_self(), // the current 'self' is the delegator, to which 'self' should remain bound
 				                 selector,
 				                 evaluatedArgs,
 				                 annotations);

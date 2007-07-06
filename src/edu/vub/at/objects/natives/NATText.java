@@ -83,7 +83,7 @@ public final class NATText extends AGExpression implements ATText {
 			return this;
 		}
 		
-	    public ATTable meta_getTypeTags() throws InterpreterException {
+	    public ATTable meta_typeTags() throws InterpreterException {
 	    	return NATTable.of(NativeTypeTags._TEXT_);
 	    }
 		

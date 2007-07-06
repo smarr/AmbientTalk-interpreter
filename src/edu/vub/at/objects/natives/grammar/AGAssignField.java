@@ -53,11 +53,11 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 		valueExp_ = val;
 	}
 	
-	public ATExpression base_getReceiverExpression() { return rcvExp_; }
+	public ATExpression base_receiverExpression() { return rcvExp_; }
 	
-	public ATSymbol base_getFieldName() { return fieldName_; }
+	public ATSymbol base_fieldName() { return fieldName_; }
 
-	public ATExpression base_getValueExpression() { return valueExp_; }
+	public ATExpression base_valueExpression() { return valueExp_; }
 	
 	/**
 	 * To evaluate a field assignment, evaluate the receiver expression, evaluate the right hand side and ask

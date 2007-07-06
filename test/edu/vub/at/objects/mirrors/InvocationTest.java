@@ -135,7 +135,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 	 */
 	public void testJavaBaseFieldAccess() {
 		try {
-			ATObject element = closures.base_at(closures.base_getLength());
+			ATObject element = closures.base_at(closures.base_length());
 			element.asClosure().base_apply(NATTable.EMPTY);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
@@ -205,9 +205,9 @@ public class InvocationTest extends ReflectiveAccessTest {
 					NATTable.EMPTY,
 					NATTable.EMPTY);
 			
-			message.base_setArguments( 
+			message.base_arguments__opeql_( 
 					NATTable.atValue(new ATObject[] {
-							closures.base_getLength()	
+							closures.base_length()	
 					}));
 
 			ATObject element = message.base_sendTo(closures, NATNil._INSTANCE_);
@@ -237,7 +237,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 			message.meta_assignVariable(
 					AGSymbol.jAlloc("arguments"), 
 					NATTable.atValue(new ATObject[] {
-							closures.base_getLength()	
+							closures.base_length()	
 					}));
 
 			ATObject element = message.base_sendTo(closures, NATNil._INSTANCE_);

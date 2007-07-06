@@ -43,6 +43,6 @@ public interface ATUnquoteSplice extends ATExpression {
 	 * Example: <code>`(`(#@(m()))).statement.expression == `(m())</code>
 	 * @return the expression that must be evaluated and spliced
 	 */
-	public ATExpression base_getExpression();
+	public ATExpression base_expression();
 	
 }

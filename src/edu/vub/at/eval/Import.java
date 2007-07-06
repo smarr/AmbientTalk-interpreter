@@ -164,7 +164,7 @@ public final class Import {
 	 */
 	public static ATObject performImport(ATObject sourceObject, ATContext ctx,
 			                             Hashtable aliases, HashSet exclude) throws InterpreterException {
-		ATObject hostObject = ctx.base_getLexicalScope();
+		ATObject hostObject = ctx.base_lexicalScope();
 
 		// stores all conflicting symbols, initialized lazily
 		Vector conflicts = null;
@@ -177,13 +177,13 @@ public final class Import {
 		for (int i = 0; i < fields.length; i++) {
 			ATField field = fields[i];
 			// skip excluded fields, such as the 'super' field
-			if (!exclude.contains(field.base_getName())) {
+			if (!exclude.contains(field.base_name())) {
 				
 				// check whether the field needs to be aliased
-				alias = (ATSymbol) aliases.get(field.base_getName());
+				alias = (ATSymbol) aliases.get(field.base_name());
 				if (alias == null) {
 					// no alias, use the original name
-					alias = field.base_getName();
+					alias = field.base_name();
 				}
 				
 				try {
@@ -208,7 +208,7 @@ public final class Import {
 			delegateScope.meta_defineField(_IMPORTED_OBJECT_NAME_, sourceObject);
 			
 			for (int i = 0; i < methods.length; i++) {
-				ATSymbol origMethodName = methods[i].base_getName();
+				ATSymbol origMethodName = methods[i].base_name();
 
 				// filter out exluded methods, such as primitive methods like '==', 'new' and 'init'
 				if (exclude.contains(origMethodName)) {

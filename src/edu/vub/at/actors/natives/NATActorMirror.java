@@ -231,7 +231,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
      *  => same effect as evaluating 'actor: closure'
      */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-		int length = initargs.base_getLength().asNativeNumber().javaValue;
+		int length = initargs.base_length().asNativeNumber().javaValue;
 		if(length != 1)
 			throw new XArityMismatch("newInstance", 1, length);
 		
@@ -253,7 +253,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 *  - if rcv is a far reference, schedule msg in far reference's outbox
 	 */
 	public ATObject meta_send(ATAsyncMessage msg) throws InterpreterException {
-		ATObject rcv = msg.base_getReceiver();
+		ATObject rcv = msg.base_receiver();
 		if (rcv.isFarReference()) {
 			return rcv.meta_receive(msg);
 		} else {
@@ -266,7 +266,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return NATNil._INSTANCE_;
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._ACTORMIRROR_);
     }
 	
@@ -295,49 +295,6 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		myEventLoop.setActorMirror(newActorMirror);
 		return oldMirror;
 	}
-	
-	/**
-	 * A protocol object is defined as:
-	 * object: {
-	 *   def installedMirror := //the installed actor mirror;
-	 *   def uninstall() { //uninstall the protocol object }
-	 * }
-	 */
-	/*public static class NATMOPInstallation extends NATObject {
-		private static final AGSymbol _INSTALLED_ = AGSymbol.jAlloc("installedMirror");
-		private static final AGSymbol _UNINSTALL_ = AGSymbol.jAlloc("uninstall");
-		public NATMOPInstallation(final ELActor eventLoop, ATActorMirror newMirror) throws InterpreterException {
-			meta_defineField(_INSTALLED_, newMirror);
-			meta_defineField(_UNINSTALL_, 	new NativeClosure(this) {
-				public ATObject base_apply(ATTable args) throws InterpreterException {
-					ATObject mirrorToRemove = scope_.meta_select(scope_, _INSTALLED_);
-					
-					ATObject current = eventLoop.getActorMirror();
-					if (current.equals(mirrorToRemove)) {
-						// just set the actor mirror to the parent
-						eventLoop.setActorMirror(mirrorToRemove.meta_getDynamicParent().base_asActorMirror());
-					} else {
-						// find the child of the mirror to remove
-						while ((current != NATNil._INSTANCE_) && !current.meta_getDynamicParent().equals(mirrorToRemove)) {
-							current = current.meta_getDynamicParent();
-						}
-						if (current == NATNil._INSTANCE_) {
-							// mirror not found
-							throw new XIllegalOperation("Tried to uninstall a protocol that was not installed: " + mirrorToRemove);
-						} else {
-							// current.super := mirrorToRemove.super
-							current.meta_assignField(current, NATObject._SUPER_NAME_, mirrorToRemove.meta_getDynamicParent());
-						}
-					}
-					
-					return NATNil._INSTANCE_;
-				}
-			});
-	    }
-		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<protocol:"+meta_select(this, _INSTALLED_)+">");
-		}
-	}*/
 	
     public ATActorMirror asActorMirror() throws XTypeMismatch {
     	return this;

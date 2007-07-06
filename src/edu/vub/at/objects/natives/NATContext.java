@@ -50,11 +50,11 @@ public class NATContext extends NATByCopy implements ATContext {
 		self_ = self;
 	}
 
-	public ATObject base_getLexicalScope() {
+	public ATObject base_lexicalScope() {
 		return scope_;
 	}
 
-	public ATObject base_getSelf() {
+	public ATObject base_self() {
 		return self_;
 	}
 
@@ -71,7 +71,7 @@ public class NATContext extends NATByCopy implements ATContext {
 				                      ","+self_.meta_print().javaValue+")>");
 	}
 	
-    public ATTable meta_getTypeTags() throws InterpreterException {
+    public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._CONTEXT_);
     }
     
