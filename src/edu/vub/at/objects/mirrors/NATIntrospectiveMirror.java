@@ -137,21 +137,18 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * mirror. An added advantage of this technique is that it permits a mirror to 
 	 * give out a reference to its principal.</p>
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
-		String jSelector = Reflection.upMetaLevelSelector(atSelector);
-		
-		try {
-			return Reflection.upInvocation(
-								principal_, // implementor and self
-								jSelector,
-								atSelector,
-								arguments);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(atSelector);
+	public ATObject native_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
+    	// Add meta_ prefix
+        String jSelector = Reflection.upMetaLevelSelector(atSelector);
+        try {
+        	// Attempt to invoke the method
+        	return Reflection.upInvocation(principal_ /*implementor and self*/, jSelector, atSelector, arguments);
+        } catch (XSelectorNotFound e) {
+        	e.catchOnlyIfSelectorEquals(atSelector);
 			// Principal does not have a corresponding meta_level method
 			// try for a base_level method of the mirror itself.
-			return super.meta_invoke(receiver, atSelector, arguments);
-		}	
+			return super.native_invoke(receiver, atSelector, arguments);
+        }
 	}
 	
 	/* ------------------------------------------
@@ -181,36 +178,16 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * advantage of this technique is that it permits a mirror to have a field 
 	 * referring to its principal.</p>
 	 */
-	public ATClosure meta_select(ATObject receiver, final ATSymbol atSelector) throws InterpreterException {
-		final String jSelector = Reflection.upMetaFieldAccessSelector(atSelector);
-		
+	public ATClosure native_select(ATObject receiver, final ATSymbol selector) throws InterpreterException {
 		try {
-			final ATObject val = Reflection.upFieldSelection(principal_, jSelector, atSelector);
-			if (val.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
-				return val.asClosure();
-			} else {
-				return new NativeClosure(this) {
-					public ATObject base_apply(ATTable args) throws InterpreterException {
-						return Reflection.upFieldSelection(principal_, jSelector, atSelector);
-					}
-				};
-			}
+			final String methSelector = Reflection.upMetaLevelSelector(selector);
+			return Reflection.upMethodSelection(this, methSelector, selector);
 		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(atSelector);
-			try {
-				String jMutatorSelector = Reflection.upMetaLevelSelector(atSelector);
-
-				return Reflection.upMethodSelection(
-								principal_, 
-								jMutatorSelector,
-								atSelector);
-			} catch (XSelectorNotFound e2) {
-				e2.catchOnlyIfSelectorEquals(atSelector);
-				// Principal does not have a corresponding meta_level field nor
-				// method try for a base_level field or method of the mirror itself.
-				return super.meta_select(receiver, atSelector);
-			}
-		}			
+			e.catchOnlyIfSelectorEquals(selector);
+			// Principal does not have a corresponding meta_level field nor
+			// method try for a base_level field or method of the mirror itself.
+			return super.native_select(receiver, selector);
+		}		
 	}
 	
     /**
@@ -220,8 +197,7 @@ public class NATIntrospectiveMirror extends NATByRef {
      */
     public ATBoolean meta_respondsTo(ATSymbol atSelector) throws InterpreterException {
         String jSelector = Reflection.upMetaLevelSelector(atSelector);
-        boolean metaResponds = Reflection.upRespondsTo(principal_, jSelector);
-        if (metaResponds) {
+        if (Reflection.upRespondsTo(principal_, jSelector)) {
           return NATBoolean._TRUE_;
         } else {
           return super.meta_respondsTo(atSelector);
@@ -233,9 +209,11 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * of the reflectee is altered (in this case, the passed value must be a mirror to
 	 * uphold stratification). Otherwise it is possible that a base field of the mirror
 	 * itself is changed.
+	 * 
+	 * @deprecated use invocation instead (UAP)
 	 */
 	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-		String jSelector = Reflection.upMetaFieldMutationSelector(name);
+		/*String jSelector = Reflection.upMetaFieldMutationSelector(name);
 		try{
 			Reflection.upFieldAssignment(principal_, jSelector, name, value);
 		} catch (XSelectorNotFound e) {
@@ -244,7 +222,7 @@ public class NATIntrospectiveMirror extends NATByRef {
 			// OR the passed value is not a mirror object
 			// try for a base_level method of the mirror itself.
 			return super.meta_assignField(receiver, name, value);
-		}			
+		}	*/		
 		
 		return NATNil._INSTANCE_;
 	}

@@ -41,6 +41,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
@@ -402,7 +403,6 @@ public class NATMirage extends NATObject {
 		return NATNil._INSTANCE_;
 	}
 
-
 	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
 		mirror_.meta_invoke(
 				mirror_,
@@ -461,15 +461,17 @@ public class NATMirage extends NATObject {
 	}
 
 	public ATBoolean meta_isExtensionOfParent() throws InterpreterException {
-		return mirror_.meta_select(
+		return mirror_.meta_invoke(
 				mirror_,
-				AGSymbol.jAlloc("isExtensionOfParent")).asBoolean();
+				AGSymbol.jAlloc("isExtensionOfParent"),
+				NATTable.EMPTY).asBoolean();
 	}
 
 	public ATObject meta_lexicalParent() throws InterpreterException {
-		return mirror_.meta_select(
+		return mirror_.meta_invoke(
 				mirror_,
-				AGSymbol.jAlloc("lexicalParent"));
+				AGSymbol.jAlloc("lexicalParent"),
+				NATTable.EMPTY);
 	}
 	
     public ATObject meta_pass() throws InterpreterException {
@@ -488,9 +490,10 @@ public class NATMirage extends NATObject {
     }
     
     public ATTable meta_typeTags() throws InterpreterException {
-		return mirror_.meta_select(
+		return mirror_.meta_invoke(
 				mirror_,
-				AGSymbol.jAlloc("typeTags")).asTable();
+				AGSymbol.jAlloc("typeTags"),
+				NATTable.EMPTY).asTable();
     }
 	
 	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
@@ -505,6 +508,38 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.jAlloc("isRelatedTo"),
 				NATTable.atValue(new ATObject[] { object })).asBoolean();
+	}
+
+	/** implementation-level method is mapped onto regular MOP method */
+	public ATObject impl_accessSlot(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
+		return mirror_.meta_invoke(
+				mirror_,
+				AGSymbol.jAlloc("invoke"),
+				NATTable.atValue(new ATObject[] { receiver, selector, arguments }));
+	}
+
+	/** implementation-level method is mapped onto regular MOP method */
+	public ATObject impl_mutateSlot(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
+		return mirror_.meta_invoke(
+				mirror_,
+				AGSymbol.jAlloc("invoke"),
+				NATTable.atValue(new ATObject[] { receiver, selector, arguments }));
+	}
+
+	/** implementation-level method is mapped onto regular MOP method */
+	public ATClosure impl_selectAccessor(ATObject receiver, ATSymbol selector) throws InterpreterException {
+		return mirror_.meta_invoke(
+				mirror_,
+				AGSymbol.jAlloc("select"),
+				NATTable.atValue(new ATObject[] { receiver, selector })).asClosure();
+	}
+
+	/** implementation-level method is mapped onto regular MOP method */
+	public ATClosure impl_selectMutator(ATObject receiver, ATAssignmentSymbol selector) throws InterpreterException {
+		return mirror_.meta_invoke(
+				mirror_,
+				AGSymbol.jAlloc("select"),
+				NATTable.atValue(new ATObject[] { receiver, selector })).asClosure();
 	}
 	
 }

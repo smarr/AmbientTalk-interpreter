@@ -48,11 +48,11 @@ import edu.vub.at.objects.natives.NATTable;
 public class TestParameterBinding extends AmbientTalkTest {
 
 	private void ensureBound(ATSymbol var, ATObject value) throws InterpreterException {
-		assertEquals(value, bindScope_.meta_select(bindScope_, var));
+		assertEquals(value, bindScope_.impl_accessSlot(bindScope_, var, NATTable.EMPTY));
 	}
 	
 	private void ensureBoundToTable(ATSymbol var, ATObject[] expected) throws InterpreterException {
-		NATTable val = bindScope_.meta_select(bindScope_, var).asNativeTable();
+		NATTable val = bindScope_.impl_accessSlot(bindScope_, var, NATTable.EMPTY).asNativeTable();
 		ATObject[] values = val.elements_;
 		assertEquals(expected.length, values.length);
 		for (int i = 0; i < values.length; i++) {

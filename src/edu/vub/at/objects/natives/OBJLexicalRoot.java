@@ -1201,7 +1201,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_clone_(ATObject original) throws InterpreterException {
 		if (original.meta_isTaggedAs(NativeTypeTags._MIRROR_).asNativeBoolean().javaValue) {
-		    return base_reflect_(base_clone_(original.meta_select(original, OBJMirrorRoot._BASE_NAME_)));
+		    return base_reflect_(base_clone_(original.impl_accessSlot(original, OBJMirrorRoot._BASE_NAME_, NATTable.EMPTY)));
 		} else {
 			return original.meta_clone();
 		}

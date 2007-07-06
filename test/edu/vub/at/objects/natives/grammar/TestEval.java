@@ -94,7 +94,7 @@ public class TestEval extends AmbientTalkTest {
 		ctx_.base_lexicalScope().meta_defineField(rcvnam, rcvr);
         evalAndCompareTo("def o2.x := 3", atThree_);
         try {
-        	  assertEquals(atThree_, rcvr.meta_select(rcvr, atX_));
+        	  assertEquals(atThree_, rcvr.impl_accessSlot(rcvr, atX_, NATTable.EMPTY));
         } catch(XUndefinedSlot e) {
         	  fail("broken external field definition:"+e.getMessage());
         }
@@ -126,7 +126,7 @@ public class TestEval extends AmbientTalkTest {
 		ctx_.base_lexicalScope().meta_defineField(atX_, x);
 		
          evalAndCompareTo("x.y := 3", atThree_);
-         assertEquals(atThree_, x.meta_select(x, atY_));
+         assertEquals(atThree_, x.impl_accessSlot(x, atY_, NATTable.EMPTY));
 	}
 	
 	public void testMultiAssignment() throws InterpreterException {

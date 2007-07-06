@@ -222,7 +222,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * The only operation that is allowed to be synchronously invoked on far references is '=='
 	 * @throws XIllegalOperation Cannot synchronously invoke a method on a far reference
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
+	public ATObject native_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
 		if (atSelector.equals(NATObject._EQL_NAME_)) {
 			return super.meta_invoke(receiver, atSelector, arguments);
 		}
@@ -275,8 +275,11 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	/**
 	 * @throws XIllegalOperation - cannot select in objects hosted by another actor.
 	 */
-	public ATClosure meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-		throw new XIllegalOperation("Cannot select " + selector + " from far reference " + this);
+	public ATClosure native_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
+		if (atSelector.equals(NATObject._EQL_NAME_)) {
+			return super.meta_select(receiver, atSelector);
+		}
+		throw new XIllegalOperation("Cannot select " + atSelector + " from far reference " + this);
 	}
 
 	/**
@@ -449,10 +452,10 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			this.meta_defineField(_HANDLER_, handler);
 			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					NATFarReference reference = scope_.meta_select(scope_, _REFERENCE_).asNativeFarReference();
+					NATFarReference reference = scope_.impl_accessSlot(scope_, _REFERENCE_, NATTable.EMPTY).asNativeFarReference();
 					if(reference instanceof NATRemoteFarRef) {
 						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
-						ATObject handler = scope_.meta_select(scope_, _HANDLER_);
+						ATObject handler = scope_.impl_accessSlot(scope_, _HANDLER_, NATTable.EMPTY);
 						remote.removeDisconnectionListener(handler);
 					}
 					return NATNil._INSTANCE_;
@@ -460,7 +463,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<disconnection subscription:"+ this.meta_select(this, _REFERENCE_)+">");
+			return NATText.atValue("<disconnection subscription:"+ this.impl_accessSlot(this, _REFERENCE_,NATTable.EMPTY)+">");
 		}
 	}
 	
@@ -473,10 +476,10 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			this.meta_defineField(_HANDLER_, handler);
 			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					NATFarReference reference = scope_.meta_select(scope_, _REFERENCE_).asNativeFarReference();
+					NATFarReference reference = scope_.impl_accessSlot(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
 					if(reference instanceof NATRemoteFarRef) {
 						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
-						ATObject handler = scope_.meta_select(scope_, _HANDLER_);
+						ATObject handler = scope_.impl_accessSlot(scope_, _HANDLER_,NATTable.EMPTY);
 						remote.removeReconnectionListener(handler);
 					}
 					return NATNil._INSTANCE_;
@@ -484,7 +487,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<reconnection subscription:"+ this.meta_select(this, _REFERENCE_)+">");
+			return NATText.atValue("<reconnection subscription:"+ this.impl_accessSlot(this, _REFERENCE_,NATTable.EMPTY)+">");
 		}
 	}
 	
@@ -497,10 +500,10 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			this.meta_defineField(_HANDLER_, handler);
 			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					NATFarReference reference = scope_.meta_select(scope_, _REFERENCE_).asNativeFarReference();
+					NATFarReference reference = scope_.impl_accessSlot(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
 					if(reference instanceof NATRemoteFarRef) {
 						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
-						ATObject handler = scope_.meta_select(scope_, _HANDLER_);
+						ATObject handler = scope_.impl_accessSlot(scope_, _HANDLER_,NATTable.EMPTY);
 						remote.removeTakenOfflineListener(handler);
 					}
 					return NATNil._INSTANCE_;
@@ -508,7 +511,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<expired subscription:"+ this.meta_select(this, _REFERENCE_)+">");
+			return NATText.atValue("<expired subscription:"+ this.impl_accessSlot(this, _REFERENCE_,NATTable.EMPTY)+">");
 		}
 	}
 	

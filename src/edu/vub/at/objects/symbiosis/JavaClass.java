@@ -502,11 +502,11 @@ public final class JavaClass extends NATObject implements ATTypeTag {
      * are wrappers for all interfaces extended by this Java interface type
      */
 	public ATTable base_superTypes() throws InterpreterException {
-		return super.meta_select(this, _PTS_NAME_).asTable();
+		return super.impl_accessSlot(this, _PTS_NAME_, NATTable.EMPTY).asTable();
 	}
 
 	public ATSymbol base_typeName() throws InterpreterException {
-		return super.meta_select(this, _TNM_NAME_).asSymbol();
+		return super.impl_accessSlot(this, _TNM_NAME_, NATTable.EMPTY).asSymbol();
 	}
 
 	/**

@@ -298,7 +298,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
 	 */
     public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
         try {
-        	  return this.meta_select(this, selector);
+        	  return this.meta_invoke(this, selector, NATTable.EMPTY);
         } catch(XSelectorNotFound e) {
         	  // transform selector not found in undefined variable access
         	  throw new XUndefinedSlot("variable access", selector.base_text().asNativeText().javaValue);
@@ -732,7 +732,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
      * 
      * Field access needs no specific code: a field is simply represented as accessor or mutator methods.
      */
-    private ATObject native_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
+    protected ATObject native_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
     	// Add base_ prefix
         String jSelector = Reflection.upBaseLevelSelector(selector);
         try {
@@ -749,7 +749,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
      * Field selection needs no specific attention: fields are selected as either their
      * accessor or mutator methods.
      */
-    private ATClosure native_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
+    protected ATClosure native_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
 		try {
 			final String methSelector = Reflection.upBaseLevelSelector(selector);
 			return Reflection.upMethodSelection(this, methSelector, selector);

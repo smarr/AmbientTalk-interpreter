@@ -29,6 +29,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATContext;
@@ -151,10 +152,10 @@ public class InvocationTest extends ReflectiveAccessTest {
 	 */
 	public void testSimulatedBaseFieldAccess() {
 		try {
-			ATObject accessor = closures.meta_select(closures, AGSymbol.jAlloc("at"));
-			ATObject element = accessor.asClosure().base_apply(
+			ATClosure accessor = closures.meta_select(closures, AGSymbol.jAlloc("at"));
+			ATObject element = accessor.base_apply(
 					NATTable.atValue(new ATObject[] {
-							closures.meta_select(closures, AGSymbol.jAlloc("length"))}));
+							closures.meta_invoke(closures, AGSymbol.jAlloc("length"), NATTable.EMPTY)}));
 			element.asClosure().base_apply(NATTable.EMPTY);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
@@ -170,7 +171,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 	public void testBaseFieldAccess() {
 		try {
 			evaluateInput(
-					"def accessor := closures.at;" +
+					"def accessor := closures.&at;" +
 					"def expanded := accessor(closures.length);" +
 					"def coated := closures[closures.length];" +
 					"expanded();" +
@@ -205,10 +206,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					NATTable.EMPTY,
 					NATTable.EMPTY);
 			
-			message.base_arguments__opeql_( 
-					NATTable.atValue(new ATObject[] {
-							closures.base_length()	
-					}));
+			message.base_arguments__opeql_(NATTable.of(closures.base_length()));
 
 			ATObject element = message.base_sendTo(closures, NATNil._INSTANCE_);
 			

@@ -245,36 +245,6 @@ public final class JavaObject extends NATObject implements ATObject {
     }
     
     /**
-     * When selecting a field from a symbiotic Java object, if the
-     * Java symbiont object's class has a non-static field with a matching selector,
-     * it is automatically read; if it has a corresponding method, the method is returned
-     * in a closure. If no matching field is found, the fields and methods of the
-     * AmbientTalk symbiont are checked.
-     */
-    public ATClosure meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-    	final String jSelector = Reflection.upSelector(selector);
-    	try {
-   			ATObject val = Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
-   			if (val.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
-   				return val.asClosure();
-   			} else {
-   				return new NativeClosure.Accessor(selector,this) {
-   					public ATObject access() throws InterpreterException {
-   						return Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
-   					}
-   				};
-   			}
-    	} catch(XUndefinedSlot e) {
-       	    JavaMethod choices = Symbiosis.getMethods(wrappedObject_.getClass(), jSelector, false);
-       	    if (choices != null) {
-       	     	return new JavaClosure(this, choices);
-       	    } else {
-       	    	return super.meta_select(receiver, selector);
-       	    }
-    	}
-    }
-    
-    /**
      * When a slot (field or method) is selected from a symbiotic Java object, the
      * selection proceeds as follows:
      *  - if the selector matches a non-static Java method, a closure wrapping that method is returned.

@@ -51,7 +51,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 		assertEquals(1, testHost_.customFields_.size());
 		assertTrue(testHost_.meta_respondsTo(foo_).asNativeBoolean().javaValue);
 		ATObject foo = testHost_.meta_grabField(foo_);
-		assertEquals(testHost_, foo.meta_select(foo, AGSymbol.jAlloc("host")));
+		assertEquals(testHost_, foo.impl_accessSlot(foo, AGSymbol.jAlloc("host"), NATTable.EMPTY));
 	}
 	
 	/**
@@ -59,7 +59,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	 */
 	public void testCustomFieldRead() throws Exception {
 		testHost_.meta_addField(testField_.asField());
-		assertEquals(NATNil._INSTANCE_, testHost_.meta_select(testHost_, foo_));
+		assertEquals(NATNil._INSTANCE_, testHost_.impl_accessSlot(testHost_, foo_, NATTable.EMPTY));
 	}
 
 	/**
@@ -70,7 +70,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 		// testHost.foo := 1
 		assertEquals(NATNil._INSTANCE_, testHost_.meta_assignField(testHost_, foo_, NATNumber.ONE));
 		// testHost.foo == 2
-		assertEquals(NATNumber.atValue(2), testHost_.meta_select(testHost_, foo_));
+		assertEquals(NATNumber.atValue(2), testHost_.impl_accessSlot(testHost_, foo_, NATTable.EMPTY));
 	}
 	
 	/**
@@ -113,7 +113,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 		// set foo field of clone to 55
 		clone.meta_assignField(clone, foo_, NATNumber.atValue(55));
 		// check whether original foo field of testHost is not modified (remember: writeField increments with + 1)
-		assertEquals(2, testHost_.meta_select(testHost_, foo_).asNativeNumber().javaValue);
+		assertEquals(2, testHost_.impl_accessSlot(testHost_, foo_, NATTable.EMPTY).asNativeNumber().javaValue);
 	}
 	
 	/**
@@ -126,8 +126,8 @@ public class CustomFieldsTest extends AmbientTalkTest {
 		assertNull(empty.customFields_);
 		empty.meta_addField(testHost_.meta_grabField(AGSymbol.jAlloc("x")));
 		assertNull(empty.customFields_);
-		assertEquals(testHost_.meta_select(testHost_, AGSymbol.jAlloc("x")),
-				empty.meta_select(empty, AGSymbol.jAlloc("x")));
+		assertEquals(testHost_.impl_accessSlot(testHost_, AGSymbol.jAlloc("x"), NATTable.EMPTY),
+				empty.impl_accessSlot(empty, AGSymbol.jAlloc("x"), NATTable.EMPTY));
 		// only when custom fields are added does the customFields_ list grow
 		empty.meta_addField(testHost_.meta_grabField(foo_));
 		assertNotNull(empty.customFields_);

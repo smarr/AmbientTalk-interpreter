@@ -74,8 +74,7 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject receiver = rcvExp_.meta_eval(ctx);
 		ATObject val = valueExp_.meta_eval(ctx);
-		receiver.meta_invoke(receiver, fieldName_.asAssignmentSymbol(), NATTable.atValue(new ATObject[] { val }));
-		return val;
+		return receiver.impl_mutateSlot(receiver, fieldName_.asAssignmentSymbol(), NATTable.of(val));
 	}
 
 	/**

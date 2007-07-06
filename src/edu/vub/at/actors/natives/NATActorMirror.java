@@ -157,7 +157,9 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		private static final AGSymbol _TOPIC_ = AGSymbol.jAlloc("topic");
 		private static final AGSymbol _SERVICE_ = AGSymbol.jAlloc("service");
 		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
-		public NATPublication(final ELDiscoveryActor discoveryActor, ATTypeTag topic, ATObject service, final Publication pub) throws InterpreterException {
+		public NATPublication(final ELDiscoveryActor discoveryActor,
+				              ATTypeTag topic, ATObject service,
+				              final Publication pub) throws InterpreterException {
 			meta_defineField(_TOPIC_, topic);
 			meta_defineField(_SERVICE_, service);
 			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
@@ -168,7 +170,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<publication:"+meta_select(this, _TOPIC_)+">");
+			return NATText.atValue("<publication:"+impl_accessSlot(this, _TOPIC_, NATTable.EMPTY)+">");
 		}
 	}
 	
@@ -197,7 +199,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<subscription:"+meta_select(this, _TOPIC_)+">");
+			return NATText.atValue("<subscription:"+impl_accessSlot(this, _TOPIC_, NATTable.EMPTY)+">");
 		}
 	}
 	

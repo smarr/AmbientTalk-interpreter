@@ -430,7 +430,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 					new NATContext(atTestObject, atTestObject)).asNativeNumber().javaValue);
 			
 			// clo := atTestObject.gettertest
-			ATClosure clo = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("gettertest")).asClosure();
+			ATClosure clo = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("gettertest"));
 			// assert (42 == clo())
 			assertEquals(TEST_OBJECT_INIT, clo.base_apply(NATTable.EMPTY).asNativeNumber().javaValue);
 			
@@ -457,7 +457,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testCasting() {
 		try {
 			// invokes overloadedmatch2(SymbiosisTest) via explicit casting
-			ATClosure method = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("overloadedmatch2")).asClosure();
+			ATClosure method = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("overloadedmatch2"));
 			ATClosure castedMethod = method.meta_invoke(method, AGSymbol.jAlloc("cast"), NATTable.atValue(new ATObject[] { atTestClass })).asClosure();
 			castedMethod.base_apply(NATTable.atValue(new ATObject[] { atTestObject }));
 		} catch (InterpreterException e) {
@@ -539,15 +539,15 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// (reflect: atTestClass).defineField("z", 1)
 			atTestClass.meta_defineField(AGSymbol.jAlloc("z"), NATNumber.ONE);
 			// assert(atTestClass.z == 1)
-			assertEquals(NATNumber.ONE, atTestClass.meta_select(atTestClass, AGSymbol.jAlloc("z")));
+			assertEquals(NATNumber.ONE, atTestClass.impl_accessSlot(atTestClass, AGSymbol.jAlloc("z"), NATTable.EMPTY));
 			// assert(aTestObject.z == 1) -> delegation to class
-			assertEquals(NATNumber.ONE, atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("z")));
+			assertEquals(NATNumber.ONE, atTestObject.impl_accessSlot(atTestObject, AGSymbol.jAlloc("z"), NATTable.EMPTY));
 			
 			// (reflect: atTestClass).addMethod(<method:"get",[],{self.xtest}>)
 			ATMethod get = evalAndReturn("def get() { self.xtest }; get").asClosure().base_method();
 			atTestClass.meta_addMethod(get);
 			// assert(atTestObject.xtest == atTestObject.get())
-			assertEquals(atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("xtest")),
+			assertEquals(atTestObject.impl_accessSlot(atTestObject, AGSymbol.jAlloc("xtest"), NATTable.EMPTY),
 					     atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("get"), NATTable.EMPTY));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -663,10 +663,10 @@ public class SymbiosisTest extends AmbientTalkTest {
 			ATObject instance = atTestObject.meta_newInstance(
 					NATTable.atValue(new ATObject[] { NATNumber.atValue(55) }));
 			
-			assertEquals(55, instance.meta_select(instance, AGSymbol.jAlloc("xtest")).asNativeNumber().javaValue);
+			assertEquals(55, instance.impl_accessSlot(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);
 			assertEquals(atTestClass, instance.base_super());
-			assertEquals(jTestObject.xtest, atTestObject.meta_select(atTestObject,
-					AGSymbol.jAlloc("xtest")).asNativeNumber().javaValue);
+			assertEquals(jTestObject.xtest, atTestObject.impl_accessSlot(atTestObject,
+					AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -691,8 +691,8 @@ public class SymbiosisTest extends AmbientTalkTest {
 			ATObject instance = atTestClass.meta_invoke(atTestClass, AGSymbol.jAlloc("new"),
 					NATTable.atValue(new ATObject[] { NATNumber.atValue(10), NATNumber.atValue(11) }));
 			
-			assertEquals(10, instance.meta_select(instance, AGSymbol.jAlloc("xtest")).asNativeNumber().javaValue);
-			assertEquals(11, instance.meta_select(instance, AGSymbol.jAlloc("ytest")).asNativeNumber().javaValue);
+			assertEquals(10, instance.impl_accessSlot(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);
+			assertEquals(11, instance.impl_accessSlot(instance, AGSymbol.jAlloc("ytest"), NATTable.EMPTY).asNativeNumber().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -704,13 +704,13 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 * Tests whether jlobby.java.lang.Object results in the proper loading of that class
 	 */
 	public void testJLobbyPackageLoading() throws InterpreterException {
-		ATObject jpkg = jLobby_.meta_select(jLobby_, AGSymbol.jAlloc("java"));
+		ATObject jpkg = jLobby_.impl_accessSlot(jLobby_, AGSymbol.jAlloc("java"), NATTable.EMPTY);
 		assertEquals(JavaPackage.class, jpkg.getClass());
 		assertTrue(jLobby_.meta_respondsTo(AGSymbol.jAlloc("java")).asNativeBoolean().javaValue);
-		ATObject jlpkg = jpkg.meta_select(jpkg, AGSymbol.jAlloc("lang"));
+		ATObject jlpkg = jpkg.impl_accessSlot(jpkg, AGSymbol.jAlloc("lang"), NATTable.EMPTY);
 		assertEquals(JavaPackage.class, jlpkg.getClass());
 		assertTrue(jpkg.meta_respondsTo(AGSymbol.jAlloc("lang")).asNativeBoolean().javaValue);
-		ATObject jObject = jlpkg.meta_select(jlpkg, AGSymbol.jAlloc("Object"));
+		ATObject jObject = jlpkg.impl_accessSlot(jlpkg, AGSymbol.jAlloc("Object"), NATTable.EMPTY);
 		assertEquals(JavaClass.class, jObject.getClass());
 		assertTrue(jlpkg.meta_respondsTo(AGSymbol.jAlloc("Object")).asNativeBoolean().javaValue);
 	}
@@ -736,7 +736,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testJLobbyNonexistentClassLoading() throws InterpreterException {
 		try {
-			jLobby_.meta_select(jLobby_, AGSymbol.jAlloc("Foo"));
+			jLobby_.impl_accessSlot(jLobby_, AGSymbol.jAlloc("Foo"), NATTable.EMPTY);
 			fail("expected a class not found exception");
 		} catch (XClassNotFound e) {
 			// success: expected exception
@@ -748,7 +748,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testJLobbyExplicitPackageLoading() throws InterpreterException {
 		// def fooPkg := jLobby.foo;
-		ATObject fooPkg = jLobby_.meta_select(jLobby_, AGSymbol.jAlloc("foo"));
+		ATObject fooPkg = jLobby_.impl_accessSlot(jLobby_, AGSymbol.jAlloc("foo"), NATTable.EMPTY);
 		// def BarPkg := foo.package(`Bar);
 		ATObject BarPkg = fooPkg.meta_invoke(fooPkg,
 										   AGSymbol.jAlloc("package"),
