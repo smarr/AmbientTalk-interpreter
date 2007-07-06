@@ -28,7 +28,6 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -106,6 +105,19 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 * -- Message Sending Protocol --
 	 * ------------------------------ */
 	
+	/**
+	 * For call frames and base-level objects, invoke should dispatch to specific invocation primitives
+	 * depending on whether or not the given selector denotes an assignment.
+	 */
+    public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
+        // If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
+		if (selector.isAssignmentSymbol()) {
+			return this.impl_mutateSlot(receiver, selector.asAssignmentSymbol(), arguments);
+		} else {
+			return this.impl_accessSlot(receiver, selector, arguments);
+		}
+    }
+	
     /**
 	 * Normally, call frames are not used in receiverful method invocation expressions.
 	 * That is, normally, the content of call frames is accessed via the {@link this#meta_lookup(ATSymbol)} operation.
@@ -125,12 +137,9 @@ public class NATCallframe extends NATByRef implements ATObject {
 		
 		if (fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
 			return fieldValue.asClosure().base_apply(arguments);
-		} else { 
-			if(arguments == NATTable.EMPTY) {
-				return fieldValue;
-			} else {
-				throw new XArityMismatch(selector.toString(), 0, arguments.base_getLength().asNativeNumber().javaValue);
-			}
+		} else {
+			NativeClosure.checkNullaryArguments(selector, arguments);
+			return fieldValue;
 		}
 	}
 	
@@ -143,11 +152,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	public ATObject impl_mutateSlot(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
 		ATSymbol fieldSelector = selector.getFieldName();
 		if (this.hasLocalField(fieldSelector)) {
-			int len = arguments.base_getLength().asNativeNumber().javaValue;
-			if (len != 1) {
-				throw new XArityMismatch(selector.toString(), 1, len);
-			}
-			ATObject value = arguments.base_at(NATNumber.ONE);
+			ATObject value = NativeClosure.checkUnaryArguments(selector, arguments);
 			this.setLocalField(fieldSelector, value);
 			return value;
 		} else {
@@ -189,6 +194,18 @@ public class NATCallframe extends NATByRef implements ATObject {
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
 	 * ------------------------------------------ */
+	
+	/**
+	 * For call frames and base-level objects, select should dispatch to specific selection primitives
+	 * depending on whether or not the given selector denotes an assignment.
+	 */
+    public ATClosure meta_select(ATObject receiver, final ATSymbol selector) throws InterpreterException {
+		if (selector.isAssignmentSymbol()) {
+			return this.impl_selectMutator(receiver, selector.asAssignmentSymbol());
+		} else {
+			return this.impl_selectAccessor(receiver, selector);
+		}
+    }
 	
 	/**
 	 * This method is used in the evaluation of the code <tt>o.m</tt>.
