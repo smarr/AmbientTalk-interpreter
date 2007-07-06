@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
@@ -180,19 +181,28 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * advantage of this technique is that it permits a mirror to have a field 
 	 * referring to its principal.</p>
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
-		String jSelector = Reflection.upMetaFieldAccessSelector(atSelector);
+	public ATClosure meta_select(ATObject receiver, final ATSymbol atSelector) throws InterpreterException {
+		final String jSelector = Reflection.upMetaFieldAccessSelector(atSelector);
 		
 		try {
-			return Reflection.upFieldSelection(principal_, jSelector, atSelector);
+			final ATObject val = Reflection.upFieldSelection(principal_, jSelector, atSelector);
+			if (val.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+				return val.asClosure();
+			} else {
+				return new NativeClosure(this) {
+					public ATObject base_apply(ATTable args) throws InterpreterException {
+						return Reflection.upFieldSelection(principal_, jSelector, atSelector);
+					}
+				};
+			}
 		} catch (XSelectorNotFound e) {
 			e.catchOnlyIfSelectorEquals(atSelector);
 			try {
-				jSelector = Reflection.upMetaLevelSelector(atSelector);
+				String jMutatorSelector = Reflection.upMetaLevelSelector(atSelector);
 
 				return Reflection.upMethodSelection(
 								principal_, 
-								jSelector,
+								jMutatorSelector,
 								atSelector);
 			} catch (XSelectorNotFound e2) {
 				e2.catchOnlyIfSelectorEquals(atSelector);

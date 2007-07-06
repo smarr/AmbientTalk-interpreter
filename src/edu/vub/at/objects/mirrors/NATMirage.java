@@ -387,11 +387,11 @@ public class NATMirage extends NATObject {
 				).asBoolean();
 	}
 
-	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
+	public ATClosure meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
 		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("select"),
-				NATTable.atValue(new ATObject[] { receiver, selector }));
+				NATTable.atValue(new ATObject[] { receiver, selector })).asClosure();
 	}
 
 	public ATNil meta_addField(ATField field) throws InterpreterException {
@@ -412,11 +412,11 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
+	public ATClosure meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("doesNotUnderstand"),
-				NATTable.atValue(new ATObject[] { selector }));
+				NATTable.atValue(new ATObject[] { selector })).asClosure();
 	}
 
 

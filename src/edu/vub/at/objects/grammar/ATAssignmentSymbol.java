@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATSymbol.java created on 26-jul-2006 at 15:10:15
+ * ATAssignmentSymbol.java created on 6-jul-2007 at 8:32:42
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,33 +27,19 @@
  */
 package edu.vub.at.objects.grammar;
 
-import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATText;
-import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 
 /**
- * The public interface to a symbol reference AG element.
+ * Instances of this class represent 'assignment symbols', which are
+ * symbols ending in <tt>:=</tt>.
  * 
  * @author tvcutsem
  */
-public interface ATSymbol extends ATExpression {
+public interface ATAssignmentSymbol extends ATSymbol {
 
 	/**
-	 * Transform a symbol into a string.
-	 * Example: <code>`foo.text == "foo"</code>
-	 * @return the text of the symbol
+	 * Returns the field name being assigned by this assignment symbol.
+	 * For example, for <tt>foo:=</tt> the result is <tt>foo</tt>.
 	 */
-	public ATText base_getText() throws InterpreterException;
-	
-	/**
-	 * Returns whether or not the receiver denotes a symbol ending in <tt>:=</tt>.
-	 */
-	public boolean isAssignmentSymbol() throws InterpreterException;
-	
-	/**
-	 * Example: `(foo).asAssignmentSymbol => `foo:=
-	 * @return a symbol denoting the assignment selector for the receiver field name
-	 */
-	public AGAssignmentSymbol asAssignmentSymbol() throws InterpreterException;
+	public ATSymbol getFieldName();
 	
 }

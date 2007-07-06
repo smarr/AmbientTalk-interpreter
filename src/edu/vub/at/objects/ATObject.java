@@ -29,6 +29,7 @@ package edu.vub.at.objects;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalQuote;
 import edu.vub.at.exceptions.XIllegalUnquote;
@@ -37,6 +38,7 @@ import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.coercion.ATConversions;
+import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
@@ -201,7 +203,9 @@ public interface ATObject extends ATConversions {
      *  more general in AmbientTalk than in Smalltalk: it intercepts both failed
      *  method invocations as well as failed field selections. Hence, it can be used
      *  to model "virtual" fields. This shows in the interface: this operation
-     *  does not consume the actual arguments of a failed method invocation. These
+     *  does not consume the actual arguments of a failed method invocation. Moreover,
+     *  a closure should be returned which can subsequently be applied for failed invocations.
+     *  Failed selections can simply return this closure without application. Hence, arguments
      *  should be consumed by means of currying, e.g. by making <tt>doesNotUnderstand</tt>
      *  return a block which can then take the arguments table as its sole parameter.
      * </ul>
@@ -210,7 +214,7 @@ public interface ATObject extends ATConversions {
      * @return by default, this operation does not return a value, but raises an exception instead.
      * @throws edu.vub.at.exceptions.XSelectorNotFound the default reaction to a failed selection
      */
-    public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException;
+    public ATClosure meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException;
 
     /* -----------------------------
      * -- Object Passing protocol --
@@ -276,7 +280,7 @@ public interface ATObject extends ATConversions {
     
     /**
      * This meta-level operation reifies field or method selection. Hence, the
-     * base-level evaluation of <code>o.x</code> is interpreted at the meta-level as:
+     * base-level evaluation of <code>o.&x</code> is interpreted at the meta-level as:
      * <pre>(reflect: o).select(o, `x)</pre>
      * 
      * The selector lookup follows the same search rules as those for <tt>invoke</tt>.
@@ -289,16 +293,25 @@ public interface ATObject extends ATConversions {
      * the method was found. This ensures that the method retains its context information,
      * such as the lexical scope in which it was defined and the value of <tt>self</tt>, which
      * will be bound to the original receiver, i.e. the first argument of <tt>select</tt>.
+     * <p>
+     * If the selector matches a field, a zero-argument closure is returned which,
+	 * upon invocation, yields the field's value. This implements the uniform access
+	 * principle.
+	 * 
+	 * If the field is bound to a closure value already, the closure is not wrapped
+	 * itself, but rather directly returned as the value of <tt>select</tt>. This way,
+	 * fields containing closures and methods become indistinguishable for code using
+	 * <tt>select</tt>.
      *
      * @see #meta_doesNotUnderstand(ATSymbol) for what happens if the selector is not found.
      *
      * @param receiver the dynamic receiver of the selection. If the result of the selection is
      * a method, the closure wrapping the method will bind <tt>self</tt> to this object.
      * @param selector a symbol denoting the name of the field or method to select.
-     * @return if selector is bound to a field, the value of the field; otherwise if
+     * @return if selector is bound to a field, an accessor for the field; otherwise if
      * the selector is bound to a method, a closure wrapping the method.
      */
-    public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException;
+    public ATClosure meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException;
 
     /**
      * This meta-level operation reifies variable lookup. Hence, the base-level code
@@ -830,4 +843,44 @@ public interface ATObject extends ATConversions {
      * <tt>newInstance</tt> meta-level operation.
      */
     public ATObject base_init(ATObject[] initargs) throws InterpreterException;
+    
+    /* -----------------------------------------
+     * - Implementation-Level Object interface -
+     * ----------------------------------------- */
+    
+	/**
+	 * Implements slot access. This method is an implementation-level method (not part of the MOP).
+	 * @param receiver the dynamic receiver of the slot invocation.
+	 * @param selector a regular symbol denoting the slot accessor.
+	 * @param arguments the actual arguments to the slot invocation.
+	 * @return the result of applying the accessor.
+	 * @throws XArityMismatch if a field accessor is not invoked with exactly zero arguments.
+	 */
+	public ATObject impl_accessSlot(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException;
+	
+    /**
+     * Implements slot mutation. This method is an implementation-level method (not part of the MOP).
+     * @param receiver the dynamic receiver of the slot invocation.
+	 * @param selector an assignment symbol denoting which slot to invoke.
+	 * @param arguments the actual arguments to the slot invocation.
+	 * @return the result of applying the mutator.
+	 * @throws XArityMismatch if a field mutator is not invoked with exactly one argument.
+     */
+	public ATObject impl_mutateSlot(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException;
+	
+	/**
+	 * Implements slot accessor selection. This method is an implementation-level method (not part of the MOP).
+	 * @param receiver the dynamic receiver of the slot selection.
+	 * @param selector a regular symbol denoting the accessor to select.
+	 * @return a closure wrapping the selected slot.
+	 */
+	public ATClosure impl_selectAccessor(ATObject receiver, ATSymbol selector) throws InterpreterException;
+	
+	/**
+	 * Implements slot mutator selection. This method is an implementation-level method (not part of the MOP).
+	 * @param receiver the dynamic receiver of the slot selection.
+	 * @param selector an assignment symbol denoting the mutator to select.
+	 * @return a closure representing the mutator of a given slot.
+	 */
+	public ATClosure impl_selectMutator(ATObject receiver, ATAssignmentSymbol selector) throws InterpreterException;
 }

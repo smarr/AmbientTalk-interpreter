@@ -34,9 +34,11 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -178,6 +180,47 @@ public class NativeClosure extends NATClosure {
 		if (provided != required) {
 			throw new XArityMismatch(Evaluator._ANON_MTH_NAM_.toString(), required, provided);
 		}
+	}
+	
+	/**
+	 * A zero-argument (0-ary) native closure representing an accessor.
+	 */
+	public static abstract class Accessor extends NativeClosure {
+		/** for debugging/error messages only */
+		private final ATSymbol name_;
+		public Accessor(ATSymbol name, ATObject scope) {
+			super(scope);
+			name_ = name;
+		}
+		public ATObject base_apply(ATTable args) throws InterpreterException {
+			if (args != NATTable.EMPTY) {
+				throw new XArityMismatch("accessor for " + name_, 0, args.base_getLength().asNativeNumber().javaValue);
+			} else {
+				return access();
+			}
+		}
+		public abstract ATObject access() throws InterpreterException;
+	}
+	
+	/**
+	 * A one-argument (1-ary) native closure representing a mutator.
+	 */
+	public static abstract class Mutator extends NativeClosure {
+		/** for debugging/error messages only */
+		private final ATSymbol name_;
+		public Mutator(ATSymbol name, ATObject scope) {
+			super(scope);
+			name_ = name;
+		}
+		public ATObject base_apply(ATTable args) throws InterpreterException {
+			int len = args.base_getLength().asNativeNumber().javaValue;
+			if (len != 1) {
+				throw new XArityMismatch("mutator for " + name_, 1, len);
+			} else {
+				return mutate(args.base_at(NATNumber.ONE));
+			}
+		}
+		public abstract ATObject mutate(ATObject val) throws InterpreterException;
 	}
 	
 }

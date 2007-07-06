@@ -29,10 +29,10 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
-import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
 
@@ -44,7 +44,7 @@ import edu.vub.at.objects.natives.NATText;
  * 
  * @author smostinc
  */
-public class AGAssignmentSymbol extends AGSymbol{
+public class AGAssignmentSymbol extends AGSymbol implements ATAssignmentSymbol {
 
 	/**
 	 * @param name a string with a ':=' suffix
@@ -65,6 +65,10 @@ public class AGAssignmentSymbol extends AGSymbol{
 		super(txt.substring(0,txt.length()-2));
 	}
 
+	public boolean isAssignmentSymbol() {
+		return true;
+	}
+	
 	public AGAssignmentSymbol asAssignmentSymbol() {
 		return this;
 	}
@@ -95,7 +99,7 @@ public class AGAssignmentSymbol extends AGSymbol{
 	/**
 	 * @return the field name being assigned by this assignment symbol
 	 */
-	public AGSymbol getFieldName() {
+	public ATSymbol getFieldName() {
 		return AGSymbol.jAlloc(super.toString());
 	}
 	

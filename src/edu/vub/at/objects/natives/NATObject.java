@@ -35,6 +35,7 @@ import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -45,13 +46,13 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
-import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
@@ -235,6 +236,9 @@ public class NATObject extends NATCallframe implements ATObject {
 		this(Evaluator.getGlobalLexicalScope());
 	}
 	
+	/**
+	 * Construct a new AmbientTalk object directly tagged with the given type tags.
+	 */
 	public NATObject(ATTypeTag[] tags) {
 		this(Evaluator.getGlobalLexicalScope(), tags);
 	}
@@ -415,52 +419,62 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * ------------------------------ */
 	
 	/**
-	 * Invocations on an object ( <tt>o.m( args )</tt> ) are handled by looking up the requested
-	 * selector in the dynamic parent chain of the receiver. This dynamic lookup process
-	 * yields exactly the same result as a selection (e.g. <tt>o.m</tt>). The result
-	 * ought to be a closure (a method and its corresponding evaluation context), which
-	 * is applied to the provided arguments.
+	 * Implements slot (field or method) access.
 	 * 
-	 * The code for meta_invoke is actually equivalent to
-	 * <pre>return this.meta_select(receiver, selector).asClosure().meta_apply(arguments);</pre>
-	 * but has a specialized implementation for performance reasons (no unnecessary closure is created)
+	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
+	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
+	 * 
+	 * Slot access proceeds as follows:
+	 *  - if selector is bound to a method, the method is invoked.
+	 *  - if selector is bound to a field bound to a closure, the closure is invoked.
+	 *  - if selector is bound to a field not bound to a closure, the field is treated as a zero-
+	 *  arity closure which is immediately applied and returns the field value (this implements the uniform access principle).
+	 *  - otherwise the slot access is delegated to the parent object.
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
+	public ATObject impl_accessSlot(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		if (this.hasLocalMethod(selector)) {
 			// immediately execute the method in the context ctx where
 			//  ctx.scope = the implementing scope, being this object, under which an additional callframe will be inserted
 			//  ctx.self  = the late bound receiver, being the passed receiver
 			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver));
 		} else {
-			if (selector instanceof AGAssignmentSymbol) {
-				selector = ((AGAssignmentSymbol) selector).getFieldName();
-				
-				if(this.hasLocalField(selector)) {
-		        	int len = arguments.base_getLength().asNativeNumber().javaValue;
-		        	if(len != 1)
-		        		throw new XArityMismatch(selector.toString(), 1, len);
-		        	
-					this.setLocalField(selector, arguments.base_at(NATNumber.ONE));
-					return NATNil._INSTANCE_;
-				} 
+			if (this.hasLocalField(selector)) {
+				// reuse code of call frame to try and treat a field as an accessor
+				return super.impl_accessSlot(receiver, selector, arguments);
 			} else {
-				if (this.hasLocalField(selector)) {
-					ATObject fieldValue = this.getLocalField(selector);
-					
-					if(fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
-						return fieldValue.asClosure().base_apply(arguments);
-					} else { 
-						if(arguments == NATTable.EMPTY) {
-							return fieldValue;
-						} else {
-							throw new XArityMismatch(selector.toString(), 0, arguments.base_getLength().asNativeNumber().javaValue);
-						}
-					}
-				}
+				return base_getSuper().impl_accessSlot(receiver, selector, arguments);
 			}
-			
 		}
-		return base_getSuper().meta_invoke(receiver, selector, arguments);
+	}
+	
+	/**
+	 * Implements slot assignment. This method expects its selector to be an {@link AGAssignmentSymbol}
+	 * which either represents a method directly, or represents field assignment implicitly.
+	 * 
+	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
+	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
+	 * 
+	 * Slot mutation proceeds as follows:
+	 *  - if selector is bound to a method, the method is invoked.
+	 *  - if selector \ { := } is bound to a field, that field is assigned to the given value
+	 *  (this implements the uniform access principle).
+	 *  - otherwise, the slot mutation is carried out in the parent object.
+	 */
+	public ATObject impl_mutateSlot(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
+		if (this.hasLocalMethod(selector)) {
+			// immediately execute the method in the context ctx where
+			//  ctx.scope = the implementing scope, being this object, under which an additional callframe will be inserted
+			//  ctx.self  = the late bound receiver, being the passed receiver
+			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver));
+		} else {
+			try {
+				// try to treat a local field as a mutator
+				return super.impl_mutateSlot(receiver, selector, arguments);
+			} catch (XSelectorNotFound e) {
+				// if no field matching the selector exists, delegate to the parent
+				return base_getSuper().impl_mutateSlot(receiver, selector, arguments);
+			}
+		}
 	}
 	
 	/**
@@ -468,37 +482,36 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * either in the receiver object locally, or in one of its dynamic parents.
 	 */
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
-		if (this.hasLocalField(selector) || this.hasLocalMethod(selector))
+		if (this.hasLocalField(selector) || this.hasLocalMethod(selector)) {
 			return NATBoolean._TRUE_;
-		else
-			return base_getSuper().meta_respondsTo(selector);
+		} else {
+			if (selector.isAssignmentSymbol()) {
+				if (this.hasLocalField(selector.asAssignmentSymbol().getFieldName())) {
+					return NATBoolean._TRUE_;
+				}
+			}
+		}
+		return base_getSuper().meta_respondsTo(selector);
 	}
-
 
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
 	 * ------------------------------------------ */
 	
 	/**
-	 * meta_select is used to evaluate code of the form <tt>o.m</tt>.
+	 * Implements slot (field or method) accessor selection.
 	 * 
-	 * To select a slot from an object:
-	 *  - first, the list of fields of the current receiver ('this') is searched.
-	 *    If a matching field exists, its value is returned.
-	 *  - second, the list of methods of the current receiver is searched.
-	 *    If a matching method exists, it is returned, but wrapped in a closure.
-	 *    This wrapping is vital to ensure that the method is paired with the correct 'self'.
-	 *    This 'self' does not necessarily equal 'this'.
-	 *  - third, the search for the slot is carried out recursively in the dynamic parent.
-	 *    As such, slot selection traverses the dynamic parent chain up to a dynamic root.
-	 *    The dynamic root deals with an unbound slot by sending the 'doesNotUnderstand' message
-	 *    to the original receiver.
-	 *    
-	 * @param receiver the original receiver of the selection
-	 * @param selector the selector to look up
-	 * @return the value of the found field, or a closure wrapping a found method
+	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
+	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
+	 * 
+	 * Slot accessor retrieval proceeds as follows:
+	 *  - if selector is bound to a method, the method is wrapped in a closure and this closure is returned.
+	 *  - if selector is bound to a field bound to a closure, that closure is returned.
+	 *  - if selector is bound to a field not bound to a closure, a zero-arity closure is returned which
+	 *    upon invocation returns the field value (this implements the uniform access principle).
+	 *  - otherwise the slot accessor retrieval is delegated to the parent object.
 	 */
-	public ATObject meta_select(ATObject receiver, final ATSymbol selector) throws InterpreterException {
+	public ATClosure impl_selectAccessor(ATObject receiver, final ATSymbol selector) throws InterpreterException {
 		if (this.hasLocalMethod(selector)) {
 			// return a new closure (mth, ctx) where
 			//  mth = the method found in this object
@@ -507,39 +520,44 @@ public class NATObject extends NATCallframe implements ATObject {
 			//  ctx.super = the parent of the implementor
 			return new NATClosure(this.getLocalMethod(selector), this, receiver);
 		} else {
-			if (selector instanceof AGAssignmentSymbol) {
-				final ATSymbol origSelector = ((AGAssignmentSymbol) selector).getFieldName();
-				
-				if(this.hasLocalField(origSelector)) {
-		    		return new NativeClosure(this) {
-						public ATObject base_apply(ATTable arguments) throws InterpreterException {
-				        	int len = arguments.base_getLength().asNativeNumber().javaValue;
-				        	if(len != 1)
-				        		throw new XArityMismatch(selector.toString(), 1, len);
-				        	
-							setLocalField(origSelector, arguments.base_at(NATNumber.ONE));
-							return NATNil._INSTANCE_;
-						}
-		    		};
-				}
+			if (this.hasLocalField(selector)) {
+				return super.impl_selectAccessor(receiver, selector);
 			} else {
-				if(this.hasLocalField(selector)) {
-					ATObject fieldValue = this.getLocalField(selector);
-				
-					if(fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
-						return fieldValue;
-					} else {
-						return new NativeClosure(this) {
-							public ATObject base_apply(ATTable arguments) throws InterpreterException {
-								return getLocalField(selector);
-							}
-			    		};
-					}
-				}
+				return base_getSuper().impl_selectAccessor(receiver, selector);
 			}
 		}
-		
-		return base_getSuper().meta_select(receiver, selector);
+	}
+	
+	/**
+	 * Implements slot mutator retrieval. This method expects its selector to be an {@link AGAssignmentSymbol}
+	 * which either represents a method directly, or represents a field mutator implicitly.
+	 * 
+	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
+	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
+	 * 
+	 * Slot mutator retrieval proceeds as follows:
+	 *  - if selector is bound to a method, a closure wrapping that method is returned.
+	 *  - if selector \ { := } is bound to a field, a 1-arity closure is returned which
+	 *    upon invocation sets the field to the given value (this implements the uniform access principle).
+	 *  - otherwise, the slot mutator retrieval is delegated to the parent object.
+	 */
+	public ATClosure impl_selectMutator(ATObject receiver, final ATAssignmentSymbol selector) throws InterpreterException {
+		if (this.hasLocalMethod(selector)) {
+			// return a new closure (mth, ctx) where
+			//  mth = the method found in this object
+			//  ctx.scope = the implementing scope, being this object
+			//  ctx.self  = the late bound receiver, being the passed receiver
+			//  ctx.super = the parent of the implementor
+			return new NATClosure(this.getLocalMethod(selector), this, receiver);
+		} else {
+			try {
+				// try to wrap a local field in a mutator
+				return super.impl_selectMutator(receiver, selector);
+			} catch (XSelectorNotFound e) {
+				// if no field matching the selector exists, delegate to the parent
+				return base_getSuper().impl_selectMutator(receiver, selector);
+			}
+		}
 	}
 	
 	/**
@@ -601,7 +619,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 *    The dynamic root deals with an unbound field by throwing an error.
 	 * @param value the value to assign to the field
 	 * @param selector the field to assign
-	 *    
+	 * @deprecated use invocation with assignment symbols instead (uniform access)
 	 * @return NIL
 	 */
 	public ATNil meta_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws InterpreterException {

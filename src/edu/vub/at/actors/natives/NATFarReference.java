@@ -240,7 +240,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * @throws XSelectorNotFound to ensure proper semantics should the interpreter be
 	 * extended such that it allows extending a far reference in the future.
 	 */
-	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
+	public ATClosure meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		return super.meta_doesNotUnderstand(selector);
 	}
 
@@ -275,7 +275,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	/**
 	 * @throws XIllegalOperation - cannot select in objects hosted by another actor.
 	 */
-	public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
+	public ATClosure meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
 		throw new XIllegalOperation("Cannot select " + selector + " from far reference " + this);
 	}
 

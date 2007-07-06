@@ -35,6 +35,7 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
@@ -44,6 +45,7 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATBoolean;
@@ -213,10 +215,19 @@ public final class JavaClass extends NATObject implements ATTypeTag {
      * if it has methods corresponding to the selector, they are returned in a JavaMethod wrapper,
      * otherwise, the fields of its AT symbiont are checked.
      */
-    public ATObject meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-    	String jSelector = Reflection.upSelector(selector);
+    public ATClosure meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
+    	final String jSelector = Reflection.upSelector(selector);
     	try {
-   			return Symbiosis.readField(null, wrappedClass_, jSelector);
+   			ATObject val = Symbiosis.readField(null, wrappedClass_, jSelector);
+   			if (val.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+   				return val.asClosure();
+   			} else {
+   				return new NativeClosure.Accessor(selector, this) {
+   					public ATObject access() throws InterpreterException {
+   						return Symbiosis.readField(null, wrappedClass_, jSelector);
+   					}
+   				};
+   			}
     	} catch(XUndefinedSlot e) {
        	    JavaMethod choices = Symbiosis.getMethods(wrappedClass_, jSelector, true);
        	    if (choices != null) {

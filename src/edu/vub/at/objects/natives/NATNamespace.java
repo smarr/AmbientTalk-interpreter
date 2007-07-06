@@ -33,9 +33,12 @@ import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.parser.NATParser;
 
@@ -115,7 +118,7 @@ public final class NATNamespace extends NATObject {
 	 * For a namespace object, doesNotUnderstand triggers the querying of the local file system
 	 * to load files corresponding to the missing selector.
 	 */
-	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
+	public ATClosure meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		// first, convert the AmbientTalk name to a Java selector. Java selectors are always valid filenames because
 		// they do not contain special operator characters
 		String javaSelector = Reflection.upSelector(selector);
@@ -124,12 +127,15 @@ public final class NATNamespace extends NATObject {
 		File dir = new File(path_, javaSelector);
 		if (dir.exists() && dir.isDirectory()) {
              // create a new namespace object for this directory
-			NATNamespace childNS = new NATNamespace(name_ + "/" + javaSelector, dir);
+			final NATNamespace childNS = new NATNamespace(name_ + "/" + javaSelector, dir);
 
 			// bind the new child namespace to the selector
 			this.meta_defineField(selector, childNS);
-			return childNS;
-				
+			return new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) {
+					return childNS;
+				}
+			};
 		} else {
 			// try to see if a file with extension .at exists corresponding to the selector
 			File src = new File(path_, javaSelector + _AT_EXT_);
@@ -150,10 +156,15 @@ public final class NATNamespace extends NATObject {
 				    
 				    // parse and evaluate the code in the proper context and bind its result to the missing slot
 					ATAbstractGrammar source = NATParser.parse(src.getName(), code);
-					ATObject result = source.meta_eval(ctx);
-					this.meta_assignField(this, selector, result);
+					final ATObject result = source.meta_eval(ctx);
+					this.impl_mutateSlot(this, selector.asAssignmentSymbol(), NATTable.of(result));
+					//this.meta_assignField(this, selector, result);
 					
-					return result;
+					return new NativeClosure(this) {
+						public ATObject base_apply(ATTable args) {
+							return result;
+						}
+					};
 				} catch (IOException e) {
 					throw new XIOProblem(e);
 				}

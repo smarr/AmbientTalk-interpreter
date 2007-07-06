@@ -29,12 +29,14 @@ package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XClassNotFound;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.FieldMap;
@@ -129,15 +131,23 @@ public final class JavaPackage extends NATObject {
 	 * to load classes corresponding to the missing selector. Depending on the case of the
 	 * selector's first letter, the access is interpreted as a class or a package reference.
 	 */
-	public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
+	public ATClosure meta_doesNotUnderstand(final ATSymbol selector) throws InterpreterException {
 		// first, convert the AmbientTalk name to a Java selector.
 		String s = selector.base_getText().asNativeText().javaValue;
 		if (Character.isUpperCase(s.charAt(0))) {
 			// the field access is interpreted as a class reference
-			return base_class(selector);
+			return new NativeClosure.Accessor(selector, this) {
+				public ATObject access() throws InterpreterException {
+					return base_class(selector);
+				}
+			};
 		} else {
 			// the field access is interpreted as a package reference
-			return base_package(selector);
+			return new NativeClosure.Accessor(selector, this) {
+				public ATObject access() throws InterpreterException {
+					return base_package(selector);
+				}
+			};
 		}
 	}
 

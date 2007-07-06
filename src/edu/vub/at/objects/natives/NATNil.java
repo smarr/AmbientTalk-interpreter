@@ -27,10 +27,6 @@
  */
 package edu.vub.at.objects.natives;
 
-import java.io.InvalidObjectException;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
@@ -57,6 +53,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.grammar.ATAssignVariable;
+import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -68,11 +65,14 @@ import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
-import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 import edu.vub.at.util.logging.Logging;
+
+import java.io.InvalidObjectException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 /**
  * NATNil implements default semantics for all test and conversion methods.
@@ -137,6 +137,21 @@ public class NATNil implements ATExpression, ATNil, Serializable {
      * return a closure to be invoked with the appropriate arguments.
      */
     public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
+        // If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
+		if (selector.isAssignmentSymbol()) {
+			return this.impl_mutateSlot(receiver, selector.asAssignmentSymbol(), arguments);
+		} else {
+			return this.impl_accessSlot(receiver, selector, arguments);
+		}
+    }
+    
+	/**
+	 * The implementation of slot invocation in a native object proceeds as follows:
+	 *  - if selector is bound to a native Java method, that method is invoked.
+	 *  - if selector is bound to an "accessor" Java method, that method is invoked.
+	 *  - otherwise, <tt>doesNotUnderstand</tt> is invoked upon the original receiver of the invocation. 
+	 */
+	public ATObject impl_accessSlot(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
     	// Add base_ prefix
         String jSelector = Reflection.upBaseLevelSelector(selector);
         try {
@@ -145,45 +160,64 @@ public class NATNil implements ATExpression, ATNil, Serializable {
         } catch (XSelectorNotFound e) {
         	e.catchOnlyIfSelectorEquals(selector);
         	
-        	// If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
-        	if (selector instanceof AGAssignmentSymbol) {
-				selector = ((AGAssignmentSymbol)selector).getFieldName();
-				
-		    	jSelector = Reflection.upBaseFieldMutationSelector(selector);
-		    	
-		        // try to invoke a native base_setName method
-		        try {
-		        	int len = arguments.base_getLength().asNativeNumber().javaValue;
-		        	if(len != 1)
-		        		throw new XArityMismatch(selector.toString(), 1, len);
-		        	Reflection.upFieldAssignment(receiver, jSelector, selector, arguments.base_at(NATNumber.ONE));
-				} catch (XSelectorNotFound e2) {
-					e2.catchOnlyIfSelectorEquals(selector);
-					// if such a method does not exist, the field assignment has failed
-					throw new XUnassignableField(selector.base_getText().asNativeText().javaValue);
-				}
-				
-		        return NATNil._INSTANCE_;
-				
-			} else {
-				// try to read the corresponding field
-				jSelector = Reflection.upBaseFieldAccessSelector(selector);
+			// try to read the corresponding field
+			jSelector = Reflection.upBaseFieldAccessSelector(selector);
 
-				try {
-					return Reflection.upFieldSelection(this, jSelector, selector);
-				} catch (XSelectorNotFound e2) {
-					e2.catchOnlyIfSelectorEquals(selector);
-					return receiver.meta_doesNotUnderstand(selector).asClosure().base_apply(arguments);
+			try {
+				if (arguments != NATTable.EMPTY) {
+					throw new XArityMismatch(selector.toString(), 0, arguments.base_getLength().asNativeNumber().javaValue);
 				}
+				
+				return Reflection.upFieldSelection(this, jSelector, selector);
+			} catch (XSelectorNotFound e2) {
+				e2.catchOnlyIfSelectorEquals(selector);
+				return receiver.meta_doesNotUnderstand(selector).base_apply(arguments);
 			}
-		}
-    }
+        }
+	}
+	
+	/**
+	 * The implementation of slot mutation invocation in a native object proceeds as follows:
+	 *  - if selector is bound to a native Java method, that method is invoked.
+	 *  - if selector is bound to a "mutator" Java method, that method is invoked.
+	 *  - otherwise, <tt>doesNotUnderstand</tt> is invoked upon the original receiver of the invocation.
+	 */
+	public ATObject impl_mutateSlot(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
+    	// Add base_ prefix
+        String jSelector = Reflection.upBaseLevelSelector(selector);
+        try {
+        	// Attempt to invoke the method
+        	return Reflection.upInvocation(this /*receiver*/, jSelector, selector, arguments);
+        } catch (XSelectorNotFound e) {
+        	e.catchOnlyIfSelectorEquals(selector);
+        	
+			ATSymbol fieldSelector = selector.getFieldName();
+			
+	    	jSelector = Reflection.upBaseFieldMutationSelector(fieldSelector);
+	    	
+	        // try to invoke a native base_setName method
+	        try {
+	        	int len = arguments.base_getLength().asNativeNumber().javaValue;
+	        	if(len != 1)
+	        		throw new XArityMismatch(selector.toString(), 1, len);
+	        	
+	        	ATObject val = arguments.base_at(NATNumber.ONE);
+	        	Reflection.upFieldAssignment(receiver, jSelector, selector, val);
+	        	return val;
+			} catch (XSelectorNotFound e2) {
+				e2.catchOnlyIfSelectorEquals(selector);
+				// if such a method does not exist, the field assignment has failed
+				throw new XUnassignableField(selector.base_getText().asNativeText().javaValue);
+			}
+        }
+	}
 
     /**
 	 * An ambienttalk language value can respond to a message if it implements a
 	 * native Java method corresponding to the selector prefixed by 'base_'.
 	 */
     public ATBoolean meta_respondsTo(ATSymbol atSelector) throws InterpreterException {
+    	// TODO: assignment symbols?
         String jSelector = Reflection.upBaseLevelSelector(atSelector);
         return NATBoolean.atValue(Reflection.upRespondsTo(this, jSelector));
     }
@@ -191,7 +225,7 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     /**
      * By default, when a selection is not understood by a primitive object, an error is raised.
      */
-    public ATObject meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
+    public ATClosure meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
         throw new XSelectorNotFound(selector, this);
     }
     
@@ -209,53 +243,72 @@ public class NATNil implements ATExpression, ATNil, Serializable {
      *  base_getM which means m is represented as a readable field, or
      *  base_m which means m is represented as a method
      */
-    public ATObject meta_select(ATObject receiver, final ATSymbol selector)
-			throws InterpreterException {
+    public ATClosure meta_select(ATObject receiver, final ATSymbol selector) throws InterpreterException {
+		if (selector.isAssignmentSymbol()) {
+			return this.impl_selectMutator(receiver, selector.asAssignmentSymbol());
+		} else {
+			return this.impl_selectAccessor(receiver, selector);
+		}
+    }
+
+	/**
+	 * The implementation of slot accessor selection in a native object proceeds as follows:
+	 *  - if selector is bound to a native Java method, a closure wrapping that method is returned.
+	 *  - if selector is bound to an "accessor" Java method, a closure wrapping that method is returned.
+	 *  - otherwise, <tt>doesNotUnderstand</tt> is invoked upon the original receiver of the invocation.
+	 */
+	public ATClosure impl_selectAccessor(ATObject receiver, final ATSymbol selector) throws InterpreterException {
 		try {
 			final String methSelector = Reflection.upBaseLevelSelector(selector);
-			
 			return Reflection.upMethodSelection(this, methSelector, selector);
 		} catch (XSelectorNotFound e) {
 			e.catchOnlyIfSelectorEquals(selector);
-
-        	// If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
-        	if (selector instanceof AGAssignmentSymbol) {
-				final ATSymbol origSelector = ((AGAssignmentSymbol)selector).getFieldName();
-				
-		    	final String assignmentSelector = Reflection.upBaseFieldMutationSelector(selector);
-		    	
-		    	if(Reflection.upRespondsTo(this, assignmentSelector)) {
-		    		return new NativeClosure(this) {
-						public ATObject base_apply(ATTable arguments) throws InterpreterException {
-							try {
-					        	int len = arguments.base_getLength().asNativeNumber().javaValue;
-					        	if(len != 1)
-					        		throw new XArityMismatch(selector.toString(), 1, len);
-								// the fact that a field assignment exists does not make it assignable (the method may result in an error)   
-								Reflection.upFieldAssignment(scope_, assignmentSelector, origSelector, arguments.base_at(NATNumber.ONE));
-							} catch (XSelectorNotFound e2) {
-								e2.catchOnlyIfSelectorEquals(origSelector);
-								// if such a method does not exist, the field assignment has failed
-								throw new XUnassignableField(origSelector.base_getText().asNativeText().javaValue);
-							}
-							
-							return NATNil._INSTANCE_;
-						}
-		    		};
-        		}
-			} else {
-				final String fieldSelector = Reflection.upBaseFieldAccessSelector(selector);
-
-				if(Reflection.upRespondsTo(this, fieldSelector)) {
-					return new NativeClosure(this) {
-						public ATObject base_apply(ATTable arguments) throws InterpreterException {
-							return Reflection.upFieldSelection(scope_, fieldSelector, selector);
-						}
-					};
-				}
-			}
 			
-        	return receiver.meta_doesNotUnderstand(selector);
+			final String fieldSelector = Reflection.upBaseFieldAccessSelector(selector);
+
+			if (Reflection.upRespondsTo(this, fieldSelector)) {
+				return new NativeClosure.Accessor(selector,this) {
+					public ATObject access() throws InterpreterException {
+						return Reflection.upFieldSelection(scope_, fieldSelector, selector);
+					}
+				};
+			} else {
+				return receiver.meta_doesNotUnderstand(selector);
+			}
+		}
+	}
+	
+	/**
+	 * The implementation of slot mutation selection in a native object proceeds as follows:
+	 *  - if selector is bound to a native Java method, a closure wrapping that method is returned.
+	 *  - if selector is bound to a "mutator" Java method, a closure wrapping that method is returned.
+	 *  - otherwise, <tt>doesNotUnderstand</tt> is invoked upon the original receiver of the invocation.
+	 */
+	public ATClosure impl_selectMutator(ATObject receiver, final ATAssignmentSymbol selector) throws InterpreterException {
+		try {
+			final String methSelector = Reflection.upBaseLevelSelector(selector);
+			return Reflection.upMethodSelection(this, methSelector, selector);
+		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(selector);
+			
+	    	final String assignmentSelector = Reflection.upBaseFieldMutationSelector(selector.getFieldName());
+	    	
+	    	if (Reflection.upRespondsTo(this, assignmentSelector)) {
+	    		return new NativeClosure.Mutator(selector, this) {
+					public ATObject mutate(ATObject arg) throws InterpreterException {
+						try {
+							// the fact that a field assignment exists does not make it assignable (the method may result in an error)   
+							return Reflection.upFieldAssignment(scope_, assignmentSelector, selector, arg);
+						} catch (XSelectorNotFound e2) {
+							e2.catchOnlyIfSelectorEquals(selector);
+							// if such a method does not exist, the field assignment has failed
+							throw new XUnassignableField(selector.toString());
+						}
+					}
+	    		};
+    		} else {
+    			return receiver.meta_doesNotUnderstand(selector);
+    		}
 		}
 	}
 
@@ -395,6 +448,84 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     public ATObject meta_getLexicalParent() throws InterpreterException {
         return NATNil._INSTANCE_;
     }
+    
+	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
+		return NATBoolean.atValue(
+				this.getClass() == original.getClass());
+	}
+
+	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
+		return this.meta_isCloneOf(object);
+	}
+	
+    /* ---------------------------------
+     * -- Type Testing and Querying --
+     * --------------------------------- */
+	
+    /**
+     * Native objects implement the type test non-recursively: only the type tags
+     * returned by {@link this#meta_getTypeTags()} are tested against.
+     */
+    public ATBoolean meta_isTaggedAs(ATTypeTag type) throws InterpreterException {
+    	ATObject[] types = this.meta_getTypeTags().asNativeTable().elements_;
+    	for (int i = 0; i < types.length; i++) {
+			if (types[i].asTypeTag().base_isSubtypeOf(type).asNativeBoolean().javaValue) {
+				return NATBoolean._TRUE_;
+			}
+		}
+    	return NATBoolean._FALSE_;
+    }
+    
+    /**
+     * By default, a native object (and also nil) has no type tags.
+     */
+    public ATTable meta_getTypeTags() throws InterpreterException {
+    	return NATTable.EMPTY;
+    }
+	
+    /* -----------------------------
+     * -- Object Passing protocol --
+     * ----------------------------- */
+
+    /**
+     * This method allows objects to decide which object should be serialized in their
+     * stead when they are passed as argument in an asynchronous message send that
+     * crosses actor boundaries. By default, nil decides that it is safe to serialize
+     * the object itself. Special objects such as e.g. closures should override this
+     * method and return a far reference encoding instead.
+     */
+    public ATObject meta_pass() throws InterpreterException {
+    	return this;
+    }
+    
+    /**
+     * After deserialization, ensure that nil remains unique.
+     */
+    public ATObject meta_resolve() throws InterpreterException {
+    	return NATNil._INSTANCE_;
+    }
+	
+	/**
+	 * Delegate the responsibility of serialization to the AT/2 meta-level 
+	 */
+	public Object writeReplace() throws ObjectStreamException {
+		try {
+			return this.meta_pass();
+		} catch(InterpreterException e) {
+			throw new InvalidObjectException("Failed to pass object " + this + ": " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Delegate the responsibility of deserialization to the AT/2 meta-level 
+	 */
+	public Object readResolve() throws ObjectStreamException {
+		try {
+			return this.meta_resolve();
+		} catch(InterpreterException e) {
+			throw new SerializationException(e);
+		}
+	}
 
     /* ---------------------------------
       * -- Value Conversion Protocol   --
@@ -635,83 +766,5 @@ public class NATNil implements ATExpression, ATNil, Serializable {
     public ATObject base_init(ATObject[] initargs) throws InterpreterException {
     	return NATNil._INSTANCE_;
     }
-
-	public ATBoolean meta_isCloneOf(ATObject original) throws InterpreterException {
-		return NATBoolean.atValue(
-				this.getClass() == original.getClass());
-	}
-
-	public ATBoolean meta_isRelatedTo(ATObject object) throws InterpreterException {
-		return this.meta_isCloneOf(object);
-	}
 	
-    /* ---------------------------------
-     * -- Type Testing and Querying --
-     * --------------------------------- */
-	
-    /**
-     * Native objects implement the type test non-recursively: only the type tags
-     * returned by {@link this#meta_getTypeTags()} are tested against.
-     */
-    public ATBoolean meta_isTaggedAs(ATTypeTag type) throws InterpreterException {
-    	ATObject[] types = this.meta_getTypeTags().asNativeTable().elements_;
-    	for (int i = 0; i < types.length; i++) {
-			if (types[i].asTypeTag().base_isSubtypeOf(type).asNativeBoolean().javaValue) {
-				return NATBoolean._TRUE_;
-			}
-		}
-    	return NATBoolean._FALSE_;
-    }
-    
-    /**
-     * By default, a native object (and also nil) has no type tags.
-     */
-    public ATTable meta_getTypeTags() throws InterpreterException {
-    	return NATTable.EMPTY;
-    }
-	
-    /* -----------------------------
-     * -- Object Passing protocol --
-     * ----------------------------- */
-
-    /**
-     * This method allows objects to decide which object should be serialized in their
-     * stead when they are passed as argument in an asynchronous message send that
-     * crosses actor boundaries. By default, nil decides that it is safe to serialize
-     * the object itself. Special objects such as e.g. closures should override this
-     * method and return a far reference encoding instead.
-     */
-    public ATObject meta_pass() throws InterpreterException {
-    	return this;
-    }
-    
-    /**
-     * After deserialization, ensure that nil remains unique.
-     */
-    public ATObject meta_resolve() throws InterpreterException {
-    	return NATNil._INSTANCE_;
-    }
-	
-	/**
-	 * Delegate the responsibility of serialization to the AT/2 meta-level 
-	 */
-	public Object writeReplace() throws ObjectStreamException {
-		try {
-			return this.meta_pass();
-		} catch(InterpreterException e) {
-			throw new InvalidObjectException("Failed to pass object " + this + ": " + e.getMessage());
-		}
-	}
-    
-	/**
-	 * Delegate the responsibility of deserialization to the AT/2 meta-level 
-	 */
-	public Object readResolve() throws ObjectStreamException {
-		try {
-			return this.meta_resolve();
-		} catch(InterpreterException e) {
-			throw new SerializationException(e);
-		}
-	}
-
 }

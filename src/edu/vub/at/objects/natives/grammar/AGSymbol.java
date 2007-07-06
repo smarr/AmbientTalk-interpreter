@@ -56,6 +56,10 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		txt_ = txt;
 	}
 	
+	/**
+	 * Allocate and return a unique symbol object denoting the given
+	 * text string.
+	 */
 	public static AGSymbol jAlloc(String name) {
 		synchronized (_STRINGPOOL_) {
 			AGSymbol existing = (AGSymbol) _STRINGPOOL_.get(name);
@@ -67,6 +71,9 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 		}
 	}
 	
+	/**
+	 * Allocate and return a unique symbol denoting the given native text.
+	 */
 	public static final AGSymbol alloc(NATText txt) {
 		return jAlloc(txt.javaValue);
 	}
@@ -103,6 +110,10 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	
 	public ATSymbol asSymbol() {
 		return this;
+	}
+	
+	public boolean isAssignmentSymbol() {
+		return false;
 	}
 	
 	public AGAssignmentSymbol asAssignmentSymbol() {
