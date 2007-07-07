@@ -52,6 +52,7 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.natives.grammar.TestEval;
 
@@ -228,7 +229,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals(NATNil._INSTANCE_, result);
 			assertEquals(1, jTestObject.xtest);
 			// result := atTestObject.xtest
-			result = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("xtest"));
+			result = atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("xtest"), NATTable.EMPTY);
 			assertEquals(NATNumber.ONE, result);
 			
 			// atTestObject.identitytest(atTestObject) == atTestObject
@@ -251,11 +252,11 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals(txt + ytest, result.asNativeText().javaValue);
 			
 			// result := atTestClass.ytest; assert(result == ytest);
-			result = atTestClass.meta_select(atTestClass, AGSymbol.jAlloc("ytest"));
+			result = atTestClass.meta_invoke(atTestClass, AGSymbol.jAlloc("ytest"), NATTable.EMPTY);
 			assertEquals(ytest, result.asNativeText().javaValue);
 			
 			// atTestClass.ytest := "Hello, "; assert(ytest == "Hello, ")
-			result = atTestClass.meta_assignField(atTestClass, AGSymbol.jAlloc("ytest"), prefix);
+			result = atTestClass.meta_invoke(atTestClass, AGAssignmentSymbol.jAlloc("ytest:="), NATTable.of(prefix));
 			assertEquals(NATNil._INSTANCE_, result);
 			assertEquals(txt, ytest);
 		} catch (InterpreterException e) {
@@ -301,7 +302,8 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testIllegalAssignment() {
 		try {
-			atTestClass.meta_assignField(atTestClass, AGSymbol.jAlloc("TEST_OBJECT_INIT"), NATNumber.atValue(0));
+			atTestClass.meta_invoke(atTestClass,
+					AGAssignmentSymbol.jAlloc("TEST_OBJECT_INIT:="), NATTable.of(NATNumber.atValue(0)));
 			fail("Expected an illegal assignment exception");
 		} catch(XUnassignableField e) {
 			// expected exception: success
@@ -492,7 +494,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// (reflect: atTestObject).defineField("x", 1)
 			atTestObject.meta_defineField(AGSymbol.jAlloc("x"), NATNumber.ONE);
 			// assert(atTestObject.x == 1)
-			assertEquals(NATNumber.ONE, atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("x")));
+			assertEquals(NATNumber.ONE, atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("x"), NATTable.EMPTY));
 			
 			// (reflect: atTestObject).addMethod(<method:"foo",[x],{x}>)
 			ATMethod foo = evalAndReturn("def foo(x) { x }; foo").asClosure().base_method();
@@ -583,7 +585,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// def instance := atTestClass.new(1)
 			ATObject instance = atTestClass.meta_newInstance(NATTable.atValue(new ATObject[] { NATNumber.ONE }));
 			assertEquals(JavaObject.class, instance.getClass());
-			assertEquals(NATNumber.ONE, instance.meta_select(instance, AGSymbol.jAlloc("xtest")));
+			assertEquals(NATNumber.ONE, instance.meta_invoke(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY));
 			
 			Object realInstance = instance.asJavaObjectUnderSymbiosis().getWrappedObject();
 			assertEquals(SymbiosisTest.class, realInstance.getClass());

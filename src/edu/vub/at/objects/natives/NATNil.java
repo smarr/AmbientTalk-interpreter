@@ -298,10 +298,11 @@ public class NATNil implements ATExpression, ATNil, Serializable {
 	 */
     public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
         try {
-        	  return this.meta_invoke(this, selector, NATTable.EMPTY);
+        	return this.native_select(this, selector);
         } catch(XSelectorNotFound e) {
-        	  // transform selector not found in undefined variable access
-        	  throw new XUndefinedSlot("variable access", selector.base_text().asNativeText().javaValue);
+        	e.catchOnlyIfSelectorEquals(selector);
+        	// transform selector not found in undefined variable access
+        	throw new XUndefinedSlot("variable access", selector.base_text().asNativeText().javaValue);
         }
     }
 
@@ -320,7 +321,8 @@ public class NATNil implements ATExpression, ATNil, Serializable {
      * the lexical root, OBJLexicalRoot, which inherits this implementation.
      */
     public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
-        return this.meta_assignField(this, name, value);
+    	this.impl_mutateSlot(this, name.asAssignmentSymbol(), NATTable.of(value));
+    	return NATNil._INSTANCE_;
     }
 
     /** @deprecated */

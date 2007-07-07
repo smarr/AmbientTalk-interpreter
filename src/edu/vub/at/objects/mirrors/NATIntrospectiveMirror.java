@@ -31,6 +31,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -45,6 +46,7 @@ import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * <p>NATIntrospectiveMirror is a default mirror to represent an ambienttalk object 
@@ -227,13 +229,17 @@ public class NATIntrospectiveMirror extends NATByRef {
 		return NATNil._INSTANCE_;
 	}
 	
+	/**
+	 * Native objects do not have any fields. They represent all their fields using
+	 * accessor (and/or mutator) methods.
+	 */
     public ATField meta_grabField(ATSymbol fieldName) throws InterpreterException {
-    	throw new XSelectorNotFound(fieldName, this);
+    	throw new XUndefinedSlot("field grabbed", fieldName.toString());
     }
     
     public ATMethod meta_grabMethod(ATSymbol methodName) throws InterpreterException {
         try {
-        	    // try to find a meta_ method in the principal
+        	// try to find a meta_ method in the principal
 			return Reflection.downMetaLevelMethod(principal_, methodName);
 		} catch (XSelectorNotFound e) {
 			e.catchOnlyIfSelectorEquals(methodName);
@@ -271,15 +277,16 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * @param initargs - an ATObject[] containing as its first element the object that needs to be reflects upon
 	 * @return <b>another</b> (possibly new) mirror object 
 	 */
-	public ATObject meta_newInstance(ATTable init) throws XArityMismatch, XTypeMismatch {
-		ATObject[] initargs = init.asNativeTable().elements_;
+	public ATObject meta_newInstance(ATTable init) throws InterpreterException {
+		ATObject reflectee = NativeClosure.checkUnaryArguments(AGSymbol.jAlloc("init"), init);
+		return atValue(reflectee);
+		/*ATObject[] initargs = init.asNativeTable().elements_;
 		if(initargs.length != 1) {
 			ATObject reflectee = initargs[0];
 			return atValue(reflectee);
 		} else {
 			throw new XArityMismatch("init", 1, initargs.length);
-		}
-		
+		}*/
 	}
 	
 	/* ---------------------------------

@@ -135,7 +135,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"mirror.isCloneOf(object: { nil });",
 				NATBoolean._FALSE_);
 		evalAndCompareTo(
-				"mirror.getTypeTags();",
+				"mirror.typeTags;",
 				NATTable.EMPTY);
 		evalAndCompareTo(
 				"mirror.isTaggedAs(Mirror);",
@@ -230,8 +230,6 @@ public class MirrorTest extends AmbientTalkTest {
 				"  mirrors[i] := reflect: objects[i]; \n" +
 				"}; \n" +
 				"1.to: objects.length do: { | i | \n" +
-				"  (objects[i] == mirrors[i].getBase()) \n" +
-				"    .ifFalse: { at.unit.fail(\"down(up(\" + objects[i] + \")) != \" + objects[i]); }; \n" +
 				"  (objects[i] == mirrors[i].base) \n" +
 				"    .ifFalse: { at.unit.fail(\"down(up(\" + objects[i] + \")) != \" + objects[i]); } \n" +
 				"} \n");

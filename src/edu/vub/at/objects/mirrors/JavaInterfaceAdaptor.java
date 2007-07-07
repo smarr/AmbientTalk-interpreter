@@ -84,7 +84,7 @@ public class JavaInterfaceAdaptor {
 	 * @param jClass the class of the receiver object
 	 * @param natReceiver the receiver (a native AmbientTalk object)
 	 * @param jSelector the java-level selector identifying the method to invoke
-	 * @param atSelector TODO
+	 * @param atSelector the original AmbientTalk selector
 	 * @param jArguments parameters, normally AT objects
 	 * @return the return value of the reflectively invoked method
 	 */	

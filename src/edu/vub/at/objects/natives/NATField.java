@@ -49,6 +49,10 @@ public class NATField extends NATByRef implements ATField {
 	private final ATSymbol name_;
 	private final NATCallframe frame_;
 	
+	/**
+	 * Constructs a new native field object linked to the field of a base-level
+	 * AmbientTalk object or call frame
+	 */
 	public NATField(ATSymbol name, NATCallframe frame) {
 		name_ = name;
 		frame_ = frame;
@@ -68,7 +72,8 @@ public class NATField extends NATByRef implements ATField {
 	}
 
 	public ATNil base_writeField(ATObject newValue) throws InterpreterException {
-		return frame_.meta_assignField(frame_, name_, newValue);
+		frame_.setLocalField(name_, newValue);
+		return NATNil._INSTANCE_;
 	}
 	
 	public NATText meta_print() throws InterpreterException {

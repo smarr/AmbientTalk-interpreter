@@ -155,7 +155,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      */
     public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException {
         // fill in the receiver first
-        super.meta_assignField(self, _RECEIVER_, receiver);
+        super.impl_mutateSlot(self, _RECEIVER_.asAssignmentSymbol(), NATTable.of(receiver));
         return sender.meta_send(self.asAsyncMessage());
     }
     

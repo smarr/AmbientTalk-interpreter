@@ -68,7 +68,7 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 	public void testListing() {
 		try {
 			evalAndReturn("mirrorOn1.listMethods()").asTable();
-			evalAndCompareTo("mirrorOn1.listFields()", "[<native field:super of 1>]");
+			evalAndCompareTo("mirrorOn1.listFields()", "[]");
 			// when mirroring a mirror and querying its fields, the field 'base' should always be present
 			evalAndCompareTo("{ |exit| (reflect: mirrorOn1).listFields().each: { |field|" +
 					         "  if: (field.name == `base) then: { exit(`foundit) } } }.escape()", "foundit");

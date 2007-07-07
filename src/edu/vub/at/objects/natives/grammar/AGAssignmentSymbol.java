@@ -89,7 +89,7 @@ public class AGAssignmentSymbol extends AGSymbol implements ATAssignmentSymbol {
 	}
 
 	public ATObject meta_resolve() throws InterpreterException {
-		return AGAssignmentSymbol.jAlloc(super.toString());
+		return AGAssignmentSymbol.jAlloc(toString());
 	}
 
 	public String toString() {

@@ -4,6 +4,7 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.io.File;
@@ -133,7 +134,7 @@ public class NATNamespaceTest extends TestCase {
 			// create the namespace 'at' bound to the path /tmp/at
 			NATNamespace atNS = new NATNamespace("/at", at_);
 			// bind the name 'at' to the atNS namespace in the lobby
-			lobby.meta_assignField(lobby, AGSymbol.jAlloc("at"), atNS);
+			lobby.meta_invoke(lobby, AGAssignmentSymbol.jAlloc("at:="), NATTable.of(atNS));
 
 			// select '/.at.test'
 			ATObject test = atNS.impl_accessSlot(atNS, AGSymbol.jAlloc("test"), NATTable.EMPTY);

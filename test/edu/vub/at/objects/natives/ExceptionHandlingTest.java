@@ -115,9 +115,9 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 					"def defaultValue := 42;" +
 					"def pythonObjectMirror := \n" +
 					"  mirror: { \n" +
-					"    def select( receiver, symbol ) { \n" +
+					"    def invoke( receiver, symbol, args ) { \n" +
 					"      try: { \n" +
-					"        super^select( receiver, symbol ); \n" +
+					"        super^invoke( receiver, symbol, args ); \n" +
 					"      } catch: SelectorNotFound using: { | e | \n" +
 					"        super^defineField( symbol, defaultValue ); \n" +
 					"        defaultValue; \n" +

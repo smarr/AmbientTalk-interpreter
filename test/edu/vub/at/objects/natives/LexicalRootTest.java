@@ -93,7 +93,7 @@ public class LexicalRootTest extends AmbientTalkTest {
 		assertEquals(NATNumber.ZERO, host.meta_invoke(host, atTest, NATTable.EMPTY));
 		
 		// when assigning x in host, trait's x field should not be modified
-		host.meta_assignField(host, atX_, NATNumber.ONE);
+		host.meta_invoke(host, atX_.asAssignmentSymbol(), NATTable.of(NATNumber.ONE));
 		assertEquals(NATNumber.ZERO, trait_.impl_accessSlot(trait_, atX_, NATTable.EMPTY));
 		
 		// host's primitive methods should be left untouched, i.e.

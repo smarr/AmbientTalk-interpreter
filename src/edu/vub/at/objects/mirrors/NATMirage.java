@@ -45,6 +45,7 @@ import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
+import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -185,8 +186,25 @@ public class NATMirage extends NATObject {
 		return super.meta_grabMethod(selector);
 	}
 
+	/**
+	 * <tt>invoke</tt> deviates from the default super-calling behaviour because
+	 * the inherited <tt>invoke</tt> implementation from {@link NATCallframe}
+	 * performs a self-send to {@link this#impl_selectAccessor(ATObject, ATSymbol)}
+	 * or {@link this#impl_selectMutator(ATObject, ATAssignmentSymbol)}. However,
+	 * these methods are overridden in the mirage to transform the impl methods into
+	 * <tt>invoke</tt> methods, which causes an infinite loop.
+	 * To break the loop, the inherited implementation is duplicated here, and the
+	 * self-sends are replaced by static super-sends, such that the native implementation
+	 * of the impl methods can be reused.
+	 */
 	public ATObject magic_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
-		return super.meta_invoke(receiver, selector, arguments);
+		//return super.meta_invoke(receiver, selector, arguments);
+		// If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
+		if (selector.isAssignmentSymbol()) {
+			return super.impl_mutateSlot(receiver, selector.asAssignmentSymbol(), arguments);
+		} else {
+			return super.impl_accessSlot(receiver, selector, arguments);
+		}
 	}
 
 	public ATTable magic_listMethods() throws InterpreterException {
@@ -213,8 +231,24 @@ public class NATMirage extends NATObject {
 		return super.meta_respondsTo(selector);
 	}
 
+	/**
+	 * <tt>select</tt> deviates from the default super-calling behaviour because
+	 * the inherited <tt>select</tt> implementation from {@link NATCallframe}
+	 * performs a self-send to {@link this#impl_selectAccessor(ATObject, ATSymbol)}
+	 * or {@link this#impl_selectMutator(ATObject, ATAssignmentSymbol)}. However,
+	 * these methods are overridden in the mirage to transform the impl methods into
+	 * <tt>select</tt> methods, which causes an infinite loop.
+	 * To break the loop, the inherited implementation is duplicated here, and the
+	 * self-sends are replaced by static super-sends, such that the native implementation
+	 * of the impl methods can be reused.
+	 */
 	public ATObject magic_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
-		return super.meta_select(receiver, selector);
+		//return super.meta_select(receiver, selector);
+		if (selector.isAssignmentSymbol()) {
+			return super.impl_selectMutator(receiver, selector.asAssignmentSymbol());
+		} else {
+			return super.impl_selectAccessor(receiver, selector);
+		}
 	}
 
 	public ATNil magic_addField(ATField field) throws InterpreterException {
