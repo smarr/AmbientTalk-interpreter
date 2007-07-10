@@ -183,12 +183,12 @@ public class NATIntrospectiveMirror extends NATByRef {
 	public ATClosure native_select(ATObject receiver, final ATSymbol selector) throws InterpreterException {
 		try {
 			final String methSelector = Reflection.upMetaLevelSelector(selector);
-			return Reflection.upMethodSelection(this, methSelector, selector);
+			return Reflection.upMethodSelection(principal_, methSelector, selector);
 		} catch (XSelectorNotFound e) {
 			e.catchOnlyIfSelectorEquals(selector);
 			// Principal does not have a corresponding meta_level field nor
 			// method try for a base_level field or method of the mirror itself.
-			return super.native_select(receiver, selector); // FIXME receiver is not used in NATNil for lookup
+			return super.native_select(receiver, selector);
 		}		
 	}
 	

@@ -157,6 +157,10 @@ public class MirrorTest extends AmbientTalkTest {
 		evalAndCompareTo(
 				"def select := metaMeta.select(meta, `select)",
 				"<native closure:select>");
+		
+		// this test fails since a select on a mirror first tries to select with a meta prefix
+		// if this fails it performs the select using the nil implementation yet this one does not
+		// take the receiver into account.
 		evalAndCompareTo(
 				"def succeeded := select(false, `not)(); \n",
 				"true");
@@ -208,9 +212,9 @@ public class MirrorTest extends AmbientTalkTest {
 				"subject.thisBase := subject; \n" +
 				"subject.thisMeta := mirror;");
 		ATObject base = evalAndReturn(
-				"mirror.select(subject, `thisBase);");
+				"mirror.invoke(subject, `thisBase, []);");
 		ATObject meta = evalAndReturn(
-				"mirror.select(subject, `thisMeta);");
+				"mirror.invoke(subject, `thisMeta, []);");
 		
 		assertNotSame(base, meta);
 		assertEquals("<mirror on:"+ base.toString() + ">", meta.toString());

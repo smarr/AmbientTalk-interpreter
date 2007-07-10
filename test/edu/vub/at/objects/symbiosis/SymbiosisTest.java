@@ -305,7 +305,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			atTestClass.meta_invoke(atTestClass,
 					AGAssignmentSymbol.jAlloc("TEST_OBJECT_INIT:="), NATTable.of(NATNumber.atValue(0)));
 			fail("Expected an illegal assignment exception");
-		} catch(XUnassignableField e) { // TODO Discuss what exception should be expected here
+		} catch(XSelectorNotFound e) {
 			// expected exception: success
 		} catch(InterpreterException e) {
 			fail(e.getMessage());
