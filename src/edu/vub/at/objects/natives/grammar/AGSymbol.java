@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 import java.util.HashMap;
@@ -88,7 +89,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	 * @return the value bound to this symbol in the lexical environment
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return ctx.base_lexicalScope().meta_lookup(this);
+		return ctx.base_lexicalScope().impl_call(this, NATTable.EMPTY);
 	}
 
 	/**

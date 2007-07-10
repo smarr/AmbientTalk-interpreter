@@ -50,13 +50,13 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testDefField() throws InterpreterException {
         evalAndCompareTo("def x := 3", atThree_);
-        assertEquals(atThree_, ctx_.base_lexicalScope().meta_lookup(atX_));
+        assertEquals(atThree_, ctx_.base_lexicalScope().impl_call(atX_, NATTable.EMPTY));
 	}
 	
 	public void testDefFunction() throws InterpreterException {
         evalAndCompareTo("def x() { 3 }", "<closure:x>");
         try {
-        	  ATClosure clo = ctx_.base_lexicalScope().meta_lookup(atX_).asClosure();
+        	  ATClosure clo = ctx_.base_lexicalScope().impl_lookup(atX_).asClosure();
         	  assertEquals(atX_, clo.base_method().base_name());
         } catch(XSelectorNotFound e) {
         	  fail("broken definition:"+e.getMessage());
@@ -66,7 +66,7 @@ public class TestEval extends AmbientTalkTest {
 	public void testDefTable() throws InterpreterException {
         evalAndCompareTo("def x[3] { 1; 2; 3 }", "[3, 3, 3]");
         try {
-        	  ATObject tab = ctx_.base_lexicalScope().meta_lookup(atX_);
+        	  ATObject tab = ctx_.base_lexicalScope().impl_call(atX_, NATTable.EMPTY);
         	  assertEquals(atThree_, tab.asTable().base_length());
         	  assertEquals(atThree_, tab.asTable().base_at(NATNumber.ONE));
         } catch(XSelectorNotFound e) {
@@ -80,7 +80,7 @@ public class TestEval extends AmbientTalkTest {
 		ctx_.base_lexicalScope().meta_defineField(rcvnam, rcvr);
         evalAndCompareTo("def o.x() { self }", "<closure:x>");
         try {
-        	  ATClosure clo = rcvr.meta_lookup(atX_).asClosure();
+        	  ATClosure clo = rcvr.impl_lookup(atX_).asClosure();
         	  assertEquals(atX_, clo.base_method().base_name());
         	  assertEquals(rcvr, rcvr.meta_invoke(rcvr, atX_, NATTable.EMPTY));
         } catch(XSelectorNotFound e) {
@@ -107,7 +107,7 @@ public class TestEval extends AmbientTalkTest {
 		ctx_.base_lexicalScope().meta_defineField(atX_, NATNil._INSTANCE_);
 		
         evalAndCompareTo("x := 3", atThree_);
-        assertEquals(atThree_, ctx_.base_lexicalScope().meta_lookup(atX_));
+        assertEquals(atThree_, ctx_.base_lexicalScope().impl_call(atX_, NATTable.EMPTY));
 	}
 	
 	public void testAssignTable() throws InterpreterException {
@@ -135,8 +135,8 @@ public class TestEval extends AmbientTalkTest {
 		ctx_.base_lexicalScope().meta_defineField(atY_, atThree_);
 		
          evalAndCompareTo("[x, y] := [ y, x ]", "[3, 1]");
-         assertEquals(atThree_, ctx_.base_lexicalScope().meta_lookup(atX_));
-         assertEquals(NATNumber.ONE, ctx_.base_lexicalScope().meta_lookup(atY_));
+         assertEquals(atThree_, ctx_.base_lexicalScope().impl_call(atX_, NATTable.EMPTY));
+         assertEquals(NATNumber.ONE, ctx_.base_lexicalScope().impl_call(atY_, NATTable.EMPTY));
 	}
 	
 	// expressions
@@ -309,8 +309,8 @@ public class TestEval extends AmbientTalkTest {
 		// def [x, @y ] := [1, 2, 3, @[4, 5]
 		// => x = 1; y = [2, 3, 4, 5]
 		evalAndCompareTo("def [x, @y ] := [1, 2, 3, @[4, 5]]", "[1, 2, 3, 4, 5]");
-		assertEquals(NATNumber.ONE, ctx_.base_lexicalScope().meta_lookup(atX_));
-		assertEquals("[2, 3, 4, 5]", ctx_.base_lexicalScope().meta_lookup(atY_).meta_print().javaValue);
+		assertEquals(NATNumber.ONE, ctx_.base_lexicalScope().impl_call(atX_, NATTable.EMPTY));
+		assertEquals("[2, 3, 4, 5]", ctx_.base_lexicalScope().impl_call(atY_, NATTable.EMPTY).meta_print().javaValue);
 	}
 	
 	public void testNativeNoArgMethods() throws InterpreterException {
@@ -330,7 +330,7 @@ public class TestEval extends AmbientTalkTest {
 	public void testNativeAssignment() throws InterpreterException {
 		// (`o.m()).receiverExpression := `object
 		evalAndReturn("def x := `(o.m()); x.receiverExpression := `object");
-		assertEquals(AGSymbol.jAlloc("object"), ((ATMessageSend)ctx_.base_lexicalScope().meta_lookup(atX_)).base_receiverExpression());
+		assertEquals(AGSymbol.jAlloc("object"), ((ATMessageSend)ctx_.base_lexicalScope().impl_call(atX_, NATTable.EMPTY)).base_receiverExpression());
 	}
 	
 	public void testParameterlessApplication() throws InterpreterException {

@@ -314,34 +314,6 @@ public interface ATObject extends ATConversions {
     public ATClosure meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException;
 
     /**
-     * This meta-level operation reifies variable lookup. Hence, the base-level code
-     * <code>x</code> evaluated in the lexical scope <tt>lex</tt> is interpreted at
-     * the meta-evel as:
-     * <pre>(reflect: lex).lookup(`x)</pre>
-     * 
-     * Variable lookup first queries the local fields of this object, then the local
-     * method dictionary. If the selector is not found, the search continues in
-     * this object's <i>lexical parent</i>. Hence, variable lookup follows
-     * <b>lexical scoping rules</b>.
-     * <p>
-     * Similar to the behaviour of <tt>select</tt>, if the selector is bound to a
-     * method rather than a field, <tt>lookup</tt> returns a closure wrapping the method
-     * to preserve proper lexical scoping and the value of <tt>self</tt> for the found
-     * method.
-     * <p>
-     * Note that, unlike <tt>invoke</tt> and <tt>select</tt>, <tt>lookup</tt> does
-     * not give rise to the invocation of <tt>doesNotUnderstand</tt> if the selector
-     * was not found. The reason for this is that lexical lookup is a static process
-     * for which it makes less sense to provide dynamic interception facilities.
-     *
-     * @param selector a symbol denoting the name of the field or method to look up lexically.
-     * @return if selector is bound to a field, the value of the field; otherwise if selector
-     * is bound to a method, a closure wrapping the method.
-     * @throws XUndefinedSlot if the selector could not be found in the lexical scope of this object
-     */
-    public ATObject meta_lookup(ATSymbol selector) throws InterpreterException;
-
-    /**
      * This meta-level operation reifies field definition. Hence, the base-level
      * code <code>def x := v</code> evaluated in a lexical scope <tt>lex</tt>
      * is interpreted at the meta-level as:
@@ -379,6 +351,8 @@ public interface ATObject extends ATConversions {
      * @param value the value to assign to the variable.
      * @return nil
      * @throws XUnassignableField if the variable to assign to cannot be found.
+     * 
+     * @deprecated variable assignment should be done through call with an assignment symbol
      */
     public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException;
 
@@ -883,4 +857,79 @@ public interface ATObject extends ATConversions {
 	 * @return a closure representing the mutator of a given slot.
 	 */
 	public ATClosure impl_selectMutator(ATObject receiver, ATAssignmentSymbol selector) throws InterpreterException;
+	
+	
+    /**
+     * 
+     * Implements functions calls and lexical access to variables.
+     * 
+     * TODO rework comments
+     * 
+     * This implementation operation reifies variable lookup. Hence, the base-level code
+     * <code>x</code> evaluated in the lexical scope <tt>lex</tt> is interpreted at
+     * the meta-eval as:
+     * <pre>(reflect: lex).lookup(`x)</pre>
+     * 
+     * Variable lookup first queries the local fields of this object, then the local
+     * method dictionary. If the selector is not found, the search continues in
+     * this object's <i>lexical parent</i>. Hence, variable lookup follows
+     * <b>lexical scoping rules</b>.
+     * <p>
+     * Similar to the behaviour of <tt>select</tt>, if the selector is bound to a
+     * method rather than a field, <tt>lookup</tt> returns a closure wrapping the method
+     * to preserve proper lexical scoping and the value of <tt>self</tt> for the found
+     * method.
+     * <p>
+     * Note that, unlike <tt>invoke</tt> and <tt>select</tt>, <tt>lookup</tt> does
+     * not give rise to the invocation of <tt>doesNotUnderstand</tt> if the selector
+     * was not found. The reason for this is that lexical lookup is a static process
+     * for which it makes less sense to provide dynamic interception facilities.
+     *
+     * @param selector a symbol denoting the name of the field or method to look up lexically.
+     * @param arguments TODO
+     * @return if selector is bound to a field, the value of the field; otherwise if selector
+     * is bound to a method, a closure wrapping the method.
+     * @throws XUndefinedSlot if the selector could not be found in the lexical scope of this object
+     */
+    public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException;
+    
+    /**
+     * Implements the protocol to access lexical variables and methods. This operation (which is not exposed
+     * as part of the MOP) locates the lexically visible binding with the given selector and will return 
+     * the value of the slot.
+     * <p>
+     * When this object has a local slot corresponding to the selector:<ul>
+     * <li> and the slot contains a method or closure, it will be applied with the given arguments (within a context
+     *   where self is bound to this object)
+     * <li> and the slot contains a value and the argumentlist is empty, the value is returned
+     * <li> and the slot contains a value and the argumentlist is not empty, an arity mismatch is reported
+     * </ul>
+     * <p>
+     * When no local slot is found, lookup continues along the lexical parent chain. When the lexical chain is 
+     * completely traversed, a selector not found exception is reported.
+     */
+    public ATObject impl_accessVariable(ATSymbol selector, ATTable arguments) throws InterpreterException;
+    
+    /**
+     * Implements the protocol to assign lexical variables. This operation (which is not exposed as part of the MOP) 
+     * locates slots to assign corresponding to a specific assignment symbol (selector + ":=") and looks for: <ol>
+     * <li> a "setter" method with the specified assignment symbol (i.e. including the ":=") which can then be 
+     * invoked with the provided arguments.
+     * <li> a slot with a corresponding selector (i.e. without the ":=") which needs to be treated further.
+     * </ol>
+     * 
+     * If the slot is a method slot, an {@link XUnassignableSlot} exception is raised, otherwise the arity of the 
+     * arguments is verified (should be precisely 1) and the first argument is used as the new value of the slot.
+     * <p>
+     * When no local slot is found, lookup continues along the lexical parent chain. When the lexical chain is 
+     * completely traversed, a selector not found exception is reported.
+     */
+    public ATObject impl_mutateVariable(ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException;
+    
+    public ATClosure impl_lookup(ATSymbol selector) throws InterpreterException;
+
+    public ATClosure impl_lookupAccessor(ATSymbol selector) throws InterpreterException;
+
+    public ATClosure impl_lookupMutator(ATAssignmentSymbol selector) throws InterpreterException;
+
 }

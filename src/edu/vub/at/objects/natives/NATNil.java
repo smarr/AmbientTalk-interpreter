@@ -27,6 +27,10 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.io.InvalidObjectException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
@@ -37,7 +41,6 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -67,10 +70,6 @@ import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 import edu.vub.at.util.logging.Logging;
-
-import java.io.InvalidObjectException;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
 
 /**
  * NATNil implements default semantics for all test and conversion methods.
@@ -154,52 +153,6 @@ public class NATNil implements ATExpression, ATNil, Serializable {
 	 */
 	public ATObject impl_accessSlot(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		return this.native_invoke(receiver, selector, arguments);
-    	/*
-		// Add base_ prefix
-        String jSelector = Reflection.upBaseLevelSelector(selector);
-        try {
-        	// Attempt to invoke the method
-        	return Reflection.upInvocation(this /-receiver-/, jSelector, selector, arguments);
-        } catch (XSelectorNotFound e) {
-        	e.catchOnlyIfSelectorEquals(selector);
-        	
-<<<<<<< .mine
-        	// If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
-        	if (selector instanceof AGAssignmentSymbol) {
-				selector = ((AGAssignmentSymbol)selector).getFieldName();
-				
-		    	jSelector = Reflection.upBaseFieldMutationSelector(selector);
-		    	
-		        // try to invoke a native base_setName method
-		        try {
-		        	int len = arguments.base_length().asNativeNumber().javaValue;
-		        	if(len != 1)
-		        		throw new XArityMismatch(selector.toString(), 1, len);
-		        	Reflection.upFieldAssignment(receiver, jSelector, selector, arguments.base_at(NATNumber.ONE));
-				} catch (XSelectorNotFound e2) {
-					e2.catchOnlyIfSelectorEquals(selector);
-					// if such a method does not exist, the field assignment has failed
-					throw new XUnassignableField(selector.base_text().asNativeText().javaValue);
-				}
-				
-		        return NATNil._INSTANCE_;
-				
-			} else {
-				// try to read the corresponding field
-				jSelector = Reflection.upBaseFieldAccessSelector(selector);
-=======
-			// try to read the corresponding field
-			jSelector = Reflection.upBaseFieldAccessSelector(selector);
->>>>>>> .r599
-
-			try {
-				NativeClosure.checkNullaryArguments(selector, arguments);
-				return Reflection.upFieldSelection(this, jSelector, selector);
-			} catch (XSelectorNotFound e2) {
-				e2.catchOnlyIfSelectorEquals(selector);
-				return receiver.meta_doesNotUnderstand(selector).base_apply(arguments);
-			}
-        }*/
 	}
 	
 	/**
@@ -210,28 +163,6 @@ public class NATNil implements ATExpression, ATNil, Serializable {
 	 */
 	public ATObject impl_mutateSlot(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
 		return this.native_invoke(receiver, selector, arguments);
-		/*
-    	// Add base_ prefix
-        String jSelector = Reflection.upBaseLevelSelector(selector);
-        try {
-        	// Attempt to invoke the method
-        	return Reflection.upInvocation(this /-receiver-/, jSelector, selector, arguments);
-        } catch (XSelectorNotFound e) {
-        	e.catchOnlyIfSelectorEquals(selector);
-        	
-	    	jSelector = Reflection.upBaseFieldMutationSelector(selector.getFieldName());
-	    	
-	        // try to invoke a native base_setName method
-	        try {
-	        	ATObject val = NativeClosure.checkUnaryArguments(selector, arguments);
-	        	Reflection.upFieldAssignment(receiver, jSelector, selector, val);
-	        	return val;
-			} catch (XSelectorNotFound e2) {
-				e2.catchOnlyIfSelectorEquals(selector);
-				// if such a method does not exist, call doesNotUnderstand
-				return receiver.meta_doesNotUnderstand(selector).base_apply(arguments);
-			}
-        }*/
 	}
 
     /**
@@ -296,17 +227,31 @@ public class NATNil implements ATExpression, ATNil, Serializable {
 	 * In such cases a lookup is treated exactly like a selection, where the
 	 * 'original receiver' of the selection equals the primitive object.
 	 */
-    public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
-        try {
-        	return this.native_select(this, selector);
-        } catch(XSelectorNotFound e) {
-        	e.catchOnlyIfSelectorEquals(selector);
-        	// transform selector not found in undefined variable access
-        	throw new XUndefinedSlot("variable access", selector.base_text().asNativeText().javaValue);
-        }
-    }
+	public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
+		return this.native_call(selector, arguments);
+	}
 
-    public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
+    public ATObject impl_accessVariable(ATSymbol selector, ATTable arguments) throws InterpreterException {
+		return this.native_call(selector, arguments);
+	}
+
+	public ATObject impl_mutateVariable(ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
+		return this.native_call(selector, arguments);
+	}
+
+	public ATClosure impl_lookup(ATSymbol selector) throws InterpreterException {
+		return this.native_select(this, selector);
+	}
+
+	public ATClosure impl_lookupAccessor(ATSymbol selector) throws InterpreterException {
+		return this.native_select(this, selector);
+	}
+
+	public ATClosure impl_lookupMutator(ATAssignmentSymbol selector) throws InterpreterException {
+		return this.native_select(this, selector);
+	}
+
+	public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
         throw new XIllegalOperation("Cannot add fields to " + Evaluator.valueNameOf(this.getClass()));
     }
 
@@ -743,6 +688,25 @@ public class NATNil implements ATExpression, ATNil, Serializable {
         } catch (XSelectorNotFound e) {
         	e.catchOnlyIfSelectorEquals(selector);
         	return receiver.meta_doesNotUnderstand(selector).base_apply(arguments);
+        }
+    }
+    
+    /**
+     * Function call for native objects: invoke the equivalent method in Java where the equivalent
+     * method follows the naming conventions outlined in {@link Reflection#upBaseLevelSelector(ATSymbol)}.
+     * 
+     * Field access needs no specific code: a field is simply represented as accessor or mutator methods.
+     */
+    protected ATObject native_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
+    	// Add base_ prefix
+        String jSelector = Reflection.upBaseLevelSelector(selector);
+        try {
+         	// Attempt to invoke the method
+         	return Reflection.upInvocation(this /*receiver*/, jSelector, selector, arguments);
+        } catch(XSelectorNotFound e) {
+        	e.catchOnlyIfSelectorEquals(selector);
+        	// transform selector not found in undefined variable access
+        	throw new XUndefinedSlot("variable access", selector.base_text().asNativeText().javaValue);
         }
     }
     

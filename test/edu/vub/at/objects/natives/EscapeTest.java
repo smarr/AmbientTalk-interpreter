@@ -27,7 +27,7 @@ public class EscapeTest extends AmbientTalkTest {
 	}
 	
 	public void testDeepEscapeCase() {
-		evalAndCompareTo("{ |quit| def foo(q) { bar(q); 1 }; def bar(q) { q(41); 2 }; foo(quit) }.escape() + 1", "42");
+		evalAndCompareTo("{ |quit| def foo(q) { bar(&q); 1 }; def bar(q) { q(41); 2 }; foo(&quit) }.escape() + 1", "42");
 	}
 	
 	public void testNotInvokedCase() {
@@ -35,15 +35,15 @@ public class EscapeTest extends AmbientTalkTest {
 	}
 	
 	public void testFaultyCase() {
-		evalAndTestException("def temp := nil; { |quit| temp := quit }.escape(); temp(5)", XIllegalOperation.class);
+		evalAndTestException("def temp := nil; { |quit| temp := &quit }.escape(); temp(5)", XIllegalOperation.class);
 	}
 	
 	public void testFaultySelfEvalCase() {
-		evalAndTestException("({ |quit| quit }.escape())()", XIllegalOperation.class);
+		evalAndTestException("({ |quit| &quit }.escape())()", XIllegalOperation.class);
 	}
 	
 	public void testFaultyNestedCase() {
-		evalAndTestException("def temp := nil; { |quit| { |quit2| temp := quit2; quit() }.escape() }.escape(); temp()", XIllegalOperation.class);
+		evalAndTestException("def temp := nil; { |quit| { |quit2| temp := &quit2; quit() }.escape() }.escape(); temp()", XIllegalOperation.class);
 	}
 
 }

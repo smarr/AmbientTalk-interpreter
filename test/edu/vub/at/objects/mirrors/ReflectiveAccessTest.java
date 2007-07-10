@@ -116,7 +116,7 @@ public class ReflectiveAccessTest extends AmbientTalkTestCase {
 	 * Initializes the lexical root for the purpose of this test.
 	 */
 	protected void setUp() throws Exception {
-		lexicalRoot = new NATObject(OBJLexicalRoot._INSTANCE_);
+		lexicalRoot = new NATObject(OBJLexicalRoot._INSTANCE_); 
 		lexicalRoot.meta_defineField(AGSymbol.jAlloc("success"), success);
 		lexicalRoot.meta_defineField(AGSymbol.jAlloc("fail"), fail);
 		lexicalRoot.meta_defineField(AGSymbol.jAlloc("echo:"), echo_);

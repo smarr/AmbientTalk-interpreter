@@ -71,6 +71,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
 
+import sun.tools.tree.ThisExpression;
+
 /**
  * Native implementation of a default ambienttalk object.
  * Although a native AmbientTalk object is implemented as a subtype of callframes,
@@ -558,38 +560,57 @@ public class NATObject extends NATCallframe implements ATObject {
 				return base_super().impl_selectMutator(receiver, selector);
 			}
 		}
+	}	
+		
+	public ATObject impl_accessVariable(ATSymbol selector, ATTable arguments) throws InterpreterException {
+		if(this.hasLocalMethod(selector)) {
+			// apply the method with a context ctx where 
+			//  ctx.scope = the implementing scope, being this object
+			//  ctx.self  = the receiver, being in this case again the implementor
+			return this.getLocalMethod(selector).base_applyInScope(arguments, new NATContext(this, this));
+		} else {
+			return super.impl_accessVariable(selector, arguments);
+		}
 	}
 	
-	/**
-	 * This method corresponds to code of the form ( x ) within the scope of this 
-	 * object. It searches for the requested selector among the methods and fields 
-	 * of the object and its dynamic parents.
-	 * 
-	 * Overridden from NATCallframe to take methods into account as well.
-	 * 
-	 * This method is used to evaluate code of the form <tt>selector</tt> within the scope
-	 * of this object. An object resolves such a lookup request as follows:
-	 *  - If a field corresponding to the selector exists locally, the field's value is returned.
-	 *  - If a method corresponding to the selector exists locally, the method is wrapped
-	 *    using the current object itself as implementor AND as 'self'.
-	 *    The reason for setting the closure's 'self' to the implementor is because a lookup can only
-	 *    be initiated by the object itself or a lexically nested one. Lexical nesting, however, has
-	 *    nothing to do with dynamic delegation, and it would be wrong to bind 'self' to a nested object
-	 *    which need not be a dynamic child of the implementor.
-	 *    
-	 *  - Otherwise, the search continues recursively in the object's lexical parent.
-	 */
-	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
-		if (this.hasLocalField(selector)) {
-			return this.getLocalField(selector);
-		} else if (this.hasLocalMethod(selector)) {
+	public ATObject impl_mutateVariable(ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
+		if(this.hasLocalMethod(selector)) {
+			// apply the method with a context ctx where 
+			//  ctx.scope = the implementing scope, being this object
+			//  ctx.self  = the receiver, being in this case again the implementor
+			return this.getLocalMethod(selector).base_applyInScope(arguments, new NATContext(this, this));
+		} else {
+			return super.impl_mutateVariable(selector, arguments);
+		}
+	}
+	
+	public ATClosure impl_lookupMutator(ATAssignmentSymbol selector) throws InterpreterException {
+		if (this.hasLocalMethod(selector)) {
 			// return a new closure (mth, ctx) where
 			//  mth = the method found in this object
 			//  ctx.scope = the implementing scope, being this object
-			//  ctx.self  = the receiver, being in this case again the implementor
-			return new NATClosure(this.getLocalMethod(selector),this, this);
+			//  ctx.self  = the late bound receiver, being the passed receiver
+			//  ctx.super = the parent of the implementor
+			return new NATClosure(this.getLocalMethod(selector), this, this);
 		} else {
-			return lexicalParent_.meta_lookup(selector);
+			// try to wrap a local field in a mutator
+			// the super implementation will delegate to the lexical parent is necessary
+			return super.impl_lookupMutator(selector);
+		}
+	}
+	
+	public ATClosure impl_lookupAccessor(ATSymbol selector) throws InterpreterException {
+		if (this.hasLocalMethod(selector)) {
+			// return a new closure (mth, ctx) where
+			//  mth = the method found in this object
+			//  ctx.scope = the implementing scope, being this object
+			//  ctx.self  = the late bound receiver, being the passed receiver
+			//  ctx.super = the parent of the implementor
+			return new NATClosure(this.getLocalMethod(selector), this, this);
+		} else {
+			// try to wrap a local field in an accessor
+			// the super implementation will delegate to the lexical parent is necessary
+			return super.impl_lookupAccessor(selector);
 		}
 	}
 	

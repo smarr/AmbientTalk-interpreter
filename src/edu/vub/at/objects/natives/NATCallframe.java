@@ -254,11 +254,77 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 * returned. If it does not, the search continues recursively in the call frame's
 	 * lexical parent.
 	 */
-	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
-		if (this.hasLocalField(selector)) {
-			return this.getLocalField(selector);
+	public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
+		if (selector.isAssignmentSymbol()) {
+			return this.impl_mutateVariable(selector.asAssignmentSymbol(), arguments);
 		} else {
-			return lexicalParent_.meta_lookup(selector);
+			return this.impl_accessVariable(selector, arguments);
+		}
+	}
+	
+	public ATObject impl_mutateVariable(ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
+		ATSymbol fieldSelector = selector.getFieldName();
+		if (this.hasLocalField(fieldSelector)) {
+			ATObject value = NativeClosure.checkUnaryArguments(selector, arguments);
+			this.setLocalField(fieldSelector, value);
+			return value;
+		} else {
+			return lexicalParent_.impl_mutateVariable(selector, arguments);
+		}
+	}
+	
+	public ATObject impl_accessVariable(ATSymbol selector, ATTable arguments) throws InterpreterException {
+		if (this.hasLocalField(selector)) {
+			ATObject fieldValue = this.getLocalField(selector);
+			
+			if (fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+				return fieldValue.asClosure().base_apply(arguments);
+			} else {
+				NativeClosure.checkNullaryArguments(selector, arguments);
+				return fieldValue;
+			}
+		} else {
+			return lexicalParent_.impl_accessVariable(selector, arguments);
+		}
+	}
+
+	public ATClosure impl_lookup(ATSymbol selector) throws InterpreterException {
+		if (selector.isAssignmentSymbol()) {
+			return this.impl_lookupMutator(selector.asAssignmentSymbol());
+		} else {
+			return this.impl_lookupAccessor(selector);
+		}	}
+
+	public ATClosure impl_lookupAccessor(final ATSymbol selector) throws InterpreterException {
+		if(this.hasLocalField(selector)) {
+			ATObject fieldValue = this.getLocalField(selector);
+
+			if(fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+				return fieldValue.asClosure();
+			} else {
+				return new NativeClosure.Accessor(selector, this) {
+					public ATObject access() throws InterpreterException {
+						return getLocalField(selector);
+					}
+				};
+			}
+		} else {
+			return this.lexicalParent_.impl_lookupAccessor(selector);
+		}
+	}
+
+	public ATClosure impl_lookupMutator(ATAssignmentSymbol selector) throws InterpreterException {
+		if(this.hasLocalField(selector)) {
+			final ATSymbol fieldSelector = selector.getFieldName();
+
+			return new NativeClosure.Mutator(selector, this) {
+				public ATObject mutate(ATObject arg) throws InterpreterException {
+					setLocalField(fieldSelector, arg);
+					return arg;
+				}
+			};
+		} else {
+			return this.lexicalParent_.impl_lookupAccessor(selector);
 		}
 	}
 
@@ -409,7 +475,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 * 'super' and not 'self.super', which could lead to infinite loops.
 	 */
 	public ATObject base_super() throws InterpreterException {
-		return this.meta_lookup(NATObject._SUPER_NAME_);
+		return this.impl_call(NATObject._SUPER_NAME_, NATTable.EMPTY);
 	};
 	
 	public ATObject meta_lexicalParent() throws InterpreterException {

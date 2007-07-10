@@ -307,12 +307,12 @@ public final class JavaObject extends NATObject implements ATObject {
      * A variable lookup is resolved by first checking whether the Java object has a field with
      * a matching name. If not, the symbiotic AmbientTalk object is checked.
      */
-    public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
+    public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
         try {
         	String jSelector = Reflection.upSelector(selector);
       	    return Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
         } catch(XUndefinedSlot e) {
-        	return super.meta_lookup(selector);  
+        	return super.impl_call(selector, arguments);  
         }
     }
     

@@ -249,7 +249,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 				"def raise: exception catch: typetag do: closure { \n" +
 				"  try: {" +
 				"    raise: exception;" +
-				"  } catch: typetag using: closure; \n" +
+				"  } catch: typetag using: &closure; \n" +
 				"}",
 				ctx_);
 	}

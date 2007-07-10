@@ -116,12 +116,12 @@ public class InvocationTest extends ReflectiveAccessTest {
 	public void testBaseInvocation() {
 		try {
 			evaluateInput(
-					"true.ifTrue: success;" +
-					"true.ifFalse: fail;" +
-					"true.ifTrue: success ifFalse: fail;" +
-					"false.ifTrue: fail;" +
-					"false.ifFalse: success;" +
-					"false.ifTrue: fail ifFalse: success",
+					"true.ifTrue: &success;" +
+					"true.ifFalse: &fail;" +
+					"true.ifTrue: &success ifFalse: &fail;" +
+					"false.ifTrue: &fail;" +
+					"false.ifFalse: &success;" +
+					"false.ifTrue: &fail ifFalse: &success",
 					new NATContext(lexicalRoot, lexicalRoot));
 		} catch (InterpreterException e) {
 			e.printStackTrace();

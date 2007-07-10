@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGApplication.java created on 26-jul-2006 at 16:13:31
+ * AGApplication.java created on 10-jul-2007 at 10:13:31
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -34,57 +34,35 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATApplication;
 import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
- * The native implementation of an application AG element.
+ * The native implementation of a lexical lookup AG element.
  * 
- * @author tvc
+ * @author smostinc
  */
-public final class AGApplication extends AGExpression implements ATApplication {
+public final class AGLookup extends AGExpression /* implements ATLookup */ {
 
-	private final ATExpression funExp_;
-	private final ATTable arguments_;
+	private final ATSymbol funName_;
 	
-	public AGApplication(ATExpression fun, ATTable arg) {
-		funExp_ = fun;
-		arguments_ = arg;
+	public AGLookup(ATSymbol fun) {
+		funName_ = fun;
 	}
 	
-	public ATExpression base_function() { return funExp_; }
-
-	public ATTable base_arguments() { return arguments_; }
+	public ATExpression base_functionName() { return funName_; }
 
 	/**
-	 * To evaluate a function application, evaluate the receiver expression to a function, then evaluate the arguments
-	 * to the function application eagerly and apply the function.
+	 * To evaluate a lexical lookup, the function name is sought for in the lexical scope.
 	 * 
-	 * AGAPL(fun,arg).eval(ctx) = fun.eval(ctx).apply(map eval(ctx) over arg)
+	 * AGLKU(nam).eval(ctx) = ctx.lex.lookup(nam)
 	 * 
-	 * @return the return value of the applied function.
+	 * @return a closure containing the requested function.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATClosure clo;
-		
-		if(funExp_.isSymbol()) { // TODO unnecessary wrappping
-			clo = ctx.base_lexicalScope().impl_lookup(funExp_.asSymbol());
-		} else {
-			clo = funExp_.meta_eval(ctx).asClosure();
-		}
-		NATTable args = Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx);
-		ATObject result = null;
-		InvocationStack stack = InvocationStack.getInvocationStack();
-		try {
-			stack.functionCalled(this, clo, args);
-			result = clo.base_apply(args);
-		} finally {
-			stack.funcallReturned(result);
-		}
-		return result;
-		//return clo.base_apply(Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx));
+		return ctx.base_lexicalScope().impl_lookup(funName_.asSymbol());
 	}
 
 	/**
@@ -93,12 +71,11 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	 * AGAPL(sel,arg).quote(ctx) = AGAPL(sel.quote(ctx), arg.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGApplication(funExp_.meta_quote(ctx).asExpression(),
-				                arguments_.meta_quote(ctx).asTable());
+		return new AGLookup(funName_.meta_quote(ctx).asSymbol());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue(funExp_.meta_print().javaValue + Evaluator.printAsList(arguments_).javaValue);
+		return NATText.atValue("&" + funName_.meta_print().javaValue);
 	}
 
 }

@@ -211,10 +211,6 @@ public class NATMirage extends NATObject {
 		return super.meta_listMethods();
 	}
 
-	public ATObject magic_lookup(ATSymbol selector) throws InterpreterException {
-		return super.meta_lookup(selector);
-	}
-
 	public ATObject magic_newInstance(ATTable initargs) throws InterpreterException {
 		return super.meta_newInstance(initargs);
 	}
@@ -384,13 +380,6 @@ public class NATMirage extends NATObject {
 				AGSymbol.jAlloc("listMethods"),
 				NATTable.EMPTY
 				).asTable();
-	}
-
-	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
-		return mirror_.meta_invoke(
-				mirror_,
-				AGSymbol.jAlloc("lookup"),
-				NATTable.atValue(new ATObject[] { selector }));
 	}
 
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {

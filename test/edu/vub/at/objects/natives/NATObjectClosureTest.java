@@ -31,6 +31,7 @@ import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
@@ -92,7 +93,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			
 			// SUPER-tests
 			// Is the current value of super consistent with our expectations
-			assertEquals(super_, ctx.base_lexicalScope().meta_lookup(NATObject._SUPER_NAME_));
+			assertEquals(super_, ctx.base_lexicalScope().impl_call(NATObject._SUPER_NAME_, NATTable.EMPTY));
 
 			return this;
 		}
@@ -203,7 +204,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 				"    }; \n" +
 				
 				// return the first class closure 
-				"    nestedClosure; \n" +
+				"    &nestedClosure; \n" +
 				"  }; \n" +
 				"}; \n" +
 				"def child := extend: parent with: { \n" +
@@ -270,7 +271,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 				"  }; \n" +
 				"}; \n" +
 				"outerChild.inner.test(); \n",
-				XUndefinedSlot.class);		
+				XSelectorNotFound.class);		
 	}
 	
 	/**

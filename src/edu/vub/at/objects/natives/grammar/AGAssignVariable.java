@@ -65,7 +65,7 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject val = valueExp_.meta_eval(ctx);
-		ctx.base_lexicalScope().meta_assignVariable(variableName_, val);
+		ctx.base_lexicalScope().meta_assignVariable(variableName_, val); // TODO
 		return val;
 	}
 

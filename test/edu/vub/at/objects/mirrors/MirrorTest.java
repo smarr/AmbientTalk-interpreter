@@ -50,6 +50,7 @@ public class MirrorTest extends AmbientTalkTest {
 		super.setUp();
 		
 		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("Mirror"), NativeTypeTags._MIRROR_);
+		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("Closure"), NativeTypeTags._CLOSURE_);
 		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("context"), ctx_);
 		
 		
@@ -246,13 +247,14 @@ public class MirrorTest extends AmbientTalkTest {
 		evalAndReturn(
 				"def basicClosure := { raise: (object: { def [ message, stackTrace ] := [ nil, nil ] }) }; \n" +
 				"def extendedMirroredClosure := \n" +
-				"  object: { super := basicClosure } \n" +
-				"    mirroredBy: (mirror: { nil }); \n" +
+				"  object: { super := &basicClosure } \n" +
+				"    taggedAs: [ Closure ] \n" +
+				"    mirroredBy: (mirror: { nil }); \n"  +
 				"def intercessiveMirror := \n" +
-				"  reflect: extendedMirroredClosure");
+				"  reflect: &extendedMirroredClosure");
 		
 		evalAndTestException(
-				"intercessiveMirror.base.super.apply([]); \n",
+				"intercessiveMirror.base.&super.apply([]); \n",
 				XAmbienttalk.class);
 
 //		Can no longer set the mirror of a mirage the final 1-1 mapping is now stricly enforced

@@ -257,7 +257,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			
 			// atTestClass.ytest := "Hello, "; assert(ytest == "Hello, ")
 			result = atTestClass.meta_invoke(atTestClass, AGAssignmentSymbol.jAlloc("ytest:="), NATTable.of(prefix));
-			assertEquals(NATNil._INSTANCE_, result);
+			assertEquals(prefix, result);
 			assertEquals(txt, ytest);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -305,7 +305,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			atTestClass.meta_invoke(atTestClass,
 					AGAssignmentSymbol.jAlloc("TEST_OBJECT_INIT:="), NATTable.of(NATNumber.atValue(0)));
 			fail("Expected an illegal assignment exception");
-		} catch(XUnassignableField e) {
+		} catch(XUnassignableField e) { // TODO Discuss what exception should be expected here
 			// expected exception: success
 		} catch(InterpreterException e) {
 			fail(e.getMessage());
@@ -497,7 +497,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals(NATNumber.ONE, atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("x"), NATTable.EMPTY));
 			
 			// (reflect: atTestObject).addMethod(<method:"foo",[x],{x}>)
-			ATMethod foo = evalAndReturn("def foo(x) { x }; foo").asClosure().base_method();
+			ATMethod foo = evalAndReturn("def foo(x) { x }; &foo").asClosure().base_method();
 			atTestObject.meta_addMethod(foo);
 			// assert(atTestObject.foo(0) == 0)
 			assertEquals(NATNumber.ZERO, atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("foo"),
@@ -521,7 +521,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			}
 			try {
 				// def atTestObject.gettertest() { nil }
-				ATMethod getter = evalAndReturn("def gettertest() { nil }; gettertest").asClosure().base_method();
+				ATMethod getter = evalAndReturn("def gettertest() { nil }; &gettertest").asClosure().base_method();
 				atTestObject.meta_addMethod(getter);
 				fail("expected a duplicate slot exception");
 			} catch (XDuplicateSlot e) {
@@ -546,7 +546,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals(NATNumber.ONE, atTestObject.impl_accessSlot(atTestObject, AGSymbol.jAlloc("z"), NATTable.EMPTY));
 			
 			// (reflect: atTestClass).addMethod(<method:"get",[],{self.xtest}>)
-			ATMethod get = evalAndReturn("def get() { self.xtest }; get").asClosure().base_method();
+			ATMethod get = evalAndReturn("def get() { self.xtest }; &get").asClosure().base_method();
 			atTestClass.meta_addMethod(get);
 			// assert(atTestObject.xtest == atTestObject.get())
 			assertEquals(atTestObject.impl_accessSlot(atTestObject, AGSymbol.jAlloc("xtest"), NATTable.EMPTY),
@@ -685,7 +685,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testCustomInstanceCreation() {
 		try {
 			// def orignew := atTestClass.new; def atTestClass.new(x,y) { def o := orignew(x); def o.ytest := y; o }
-			ATClosure newClo = evalAndReturn("def new(x,y) { def o := orignew(x); def o.ytest := y; o }; new").asClosure();
+			ATClosure newClo = evalAndReturn("def new(x,y) { def o := orignew(x); def o.ytest := y; o }; &new").asClosure();
 			atTestClass.meta_defineField(AGSymbol.jAlloc("orignew"), atTestClass.meta_select(atTestClass, AGSymbol.jAlloc("new")));
 			atTestClass.meta_addMethod(newClo.base_method());
 			

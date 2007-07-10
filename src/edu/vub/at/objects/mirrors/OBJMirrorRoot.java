@@ -287,10 +287,6 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 		return base_base().magic_listMethods();
 	}
 
-	public ATObject base_lookup(ATSymbol selector) throws InterpreterException {
-		return base_base().magic_lookup(selector);
-	}
-
 	public ATObject base_newInstance(ATTable initargs) throws InterpreterException {
 		return base_base().magic_newInstance(initargs);
 	}

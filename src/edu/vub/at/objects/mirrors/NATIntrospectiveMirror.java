@@ -188,7 +188,7 @@ public class NATIntrospectiveMirror extends NATByRef {
 			e.catchOnlyIfSelectorEquals(selector);
 			// Principal does not have a corresponding meta_level field nor
 			// method try for a base_level field or method of the mirror itself.
-			return super.native_select(receiver, selector);
+			return super.native_select(receiver, selector); // FIXME receiver is not used in NATNil for lookup
 		}		
 	}
 	

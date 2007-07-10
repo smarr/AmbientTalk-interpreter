@@ -69,9 +69,9 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 		try {
 			evalAndReturn("mirrorOn1.listMethods()").asTable();
 			evalAndCompareTo("mirrorOn1.listFields()", "[]");
-			// when mirroring a mirror and querying its fields, the field 'base' should always be present
-			evalAndCompareTo("{ |exit| (reflect: mirrorOn1).listFields().each: { |field|" +
-					         "  if: (field.name == `base) then: { exit(`foundit) } } }.escape()", "foundit");
+			// when mirroring a mirror and querying its methods, the accessor method 'base' should always be present
+			evalAndCompareTo("{ |exit| (reflect: mirrorOn1).listMethods().each: { | method |" +
+					         "  if: (method.name == `base) then: { exit(`foundit) } } }.escape()", "foundit");
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}

@@ -336,12 +336,12 @@ public final class JavaClass extends NATObject implements ATTypeTag {
      * field with a matching name. If so, that field's contents are returned. If not, the AT symbiont's
      * fields are checked.
      */
-    public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
+    public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
         try {
         	String jSelector = Reflection.upSelector(selector);
       	    return Symbiosis.readField(null, wrappedClass_, jSelector);
         } catch(XUndefinedSlot e) {
-        	return super.meta_lookup(selector);  
+        	return super.impl_call(selector, arguments);  
         }
     }
     

@@ -285,7 +285,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	/**
 	 * @throws XIllegalOperation - cannot lookup in objects hosted by another actor.
 	 */
-	public ATObject meta_lookup(ATSymbol selector) throws InterpreterException {
+	public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
 		throw new XIllegalOperation("Cannot lookup " + selector + " from far reference " + this);
 	}
 
