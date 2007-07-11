@@ -28,6 +28,7 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 
 
 /**

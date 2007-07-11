@@ -125,7 +125,7 @@ public final class JavaObject extends NATObject implements ATObject {
 	 * wrapped Java object's class.
 	 */
 	private JavaObject(Object wrappedObject) {
-		super(JavaClass.wrapperFor(wrappedObject.getClass()), NATObject._SHARES_A_);
+		super(JavaClass.wrapperFor(wrappedObject.getClass()), JavaClass.wrapperFor(wrappedObject.getClass()), NATObject._SHARES_A_);
 		wrappedObject_ = wrappedObject;
 		
 		// initialize the Java symbiotic object's type tags
@@ -255,6 +255,7 @@ public final class JavaObject extends NATObject implements ATObject {
 	public ATClosure impl_selectAccessor(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
 		final String jSelector = Reflection.upSelector(atSelector);
 		try {
+			boolean hasField = Symbiosis.hasField(wrappedObject_.getClass(), jSelector, false);
 			ATObject val = Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
 			if (val.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
 				return val.asClosure();
@@ -302,21 +303,93 @@ public final class JavaObject extends NATObject implements ATObject {
 			}
 		}
 	}
-    
-    /**
-     * A variable lookup is resolved by first checking whether the Java object has a field with
-     * a matching name. If not, the symbiotic AmbientTalk object is checked.
-     */
-    public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
+	
+    public ATObject impl_accessVariable(ATSymbol selector, ATTable arguments) throws InterpreterException {
+		String jSelector = Reflection.upSelector(selector);
         try {
-        	String jSelector = Reflection.upSelector(selector);
-      	    return Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
-        } catch(XUndefinedSlot e) {
-        	return super.impl_call(selector, arguments);  
-        }
-    }
-    
-    /**
+        	// first try to invoke a method with the given name
+			return Symbiosis.symbioticInvocation(
+					this, wrappedObject_, wrappedObject_.getClass(), jSelector,
+					arguments.asNativeTable().elements_);
+		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(selector);
+			// next, try field access
+			if (Symbiosis.hasField(wrappedObject_.getClass(), jSelector, false)) {
+				NativeClosure.checkNullaryArguments(selector, arguments);
+				return Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
+			} else {
+                // if no method or field matches, look in the AmbientTalk symbiont
+				return super.impl_accessVariable(selector, arguments);
+			}
+		}
+	}
+
+	public ATClosure impl_lookupAccessor(ATSymbol atSelector) throws InterpreterException {
+		final String jSelector = Reflection.upSelector(atSelector);
+		try {
+			ATObject val = Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
+			if (val.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+				return val.asClosure();
+			} else {
+				return new NativeClosure.Accessor(atSelector, this) {
+					public ATObject access() throws InterpreterException {
+						return Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
+					}
+				};
+			}
+		} catch(XUndefinedSlot e) {
+			JavaMethod choices = Symbiosis.getMethods(wrappedObject_.getClass(), jSelector, false);
+			if (choices != null) {
+				return new JavaClosure(this, choices);
+			} else {
+				return super.impl_lookupAccessor(atSelector);
+			}
+		}
+	}
+
+	public ATClosure impl_lookupMutator(ATAssignmentSymbol atSelector) throws InterpreterException {
+		final String jFieldSelector = Reflection.upSelector(atSelector.getFieldName());
+		if (Symbiosis.hasField(wrappedObject_.getClass(), jFieldSelector, false)) {
+			return new NativeClosure.Mutator(atSelector, this) {
+				public ATObject mutate(ATObject val) throws InterpreterException {
+					Symbiosis.writeField(wrappedObject_, wrappedObject_.getClass(), jFieldSelector, val);
+					return val;
+				}
+			};
+		} else {
+			String jMethodSelector = Reflection.upSelector(atSelector);
+			JavaMethod choices = Symbiosis.getMethods(wrappedObject_.getClass(), jMethodSelector, false);
+			if (choices != null) {
+				return new JavaClosure(this, choices);
+			} else {
+				return super.impl_lookupMutator(atSelector);
+			}
+		}
+	}
+
+	public ATObject impl_mutateVariable(ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
+		String jSelector = Reflection.upSelector(selector);
+        try {
+        	// first try to invoke a method with the given name
+			return Symbiosis.symbioticInvocation(
+					this, wrappedObject_, wrappedObject_.getClass(), jSelector,
+					arguments.asNativeTable().elements_);
+		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(selector);
+			// next, try field assignment
+			jSelector = Reflection.upSelector(selector.getFieldName());
+			if (Symbiosis.hasField(wrappedObject_.getClass(), jSelector, false)) {
+				ATObject val = NativeClosure.checkUnaryArguments(selector, arguments);
+				Symbiosis.writeField(wrappedObject_, wrappedObject_.getClass(), jSelector, val);
+				return val;
+			} else {
+                // if no method or field matches, look in the AmbientTalk symbiont
+				return super.impl_mutateVariable(selector, arguments);
+			}
+		}
+	}
+
+	/**
      * Fields can be defined within a symbiotic Java object. They are added
      * to its AmbientTalk symbiont, but only if they do not clash with already
      * existing field names.

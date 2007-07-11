@@ -71,7 +71,7 @@ public interface ATText extends ATExpression {
 	 * Usage example:
 	 * <code>"ambienttalk".find: "[aeiou]" do: { |vowel| buff << vowel; nil }</code> returns <code>buff = "aiea"</code>
 	 * 
-	 * @param regexpr a text representing the regular expression to be found in the text.
+	 * @param regexp a text representing the regular expression to be found in the text.
 	 * @param consumer the closure code that is applied each time the regular expression is matched in the text.
 	 * @return nil
 	 * @throws XIllegalArgument if regular expression's syntax is invalid. 
@@ -86,7 +86,7 @@ public interface ATText extends ATExpression {
 	 * Usage example:
 	 * <code>"ambienttalk".replace: "[aeiou]" by: { |vowel| vowel.toUpperCase() }</code> returns <code>AmbIEnttAlk</code>
 	 * 
-	 * @param regexpr a text representing the regular expression to be found in the text.
+	 * @param regexp a text representing the regular expression to be found in the text.
 	 * @param transformer the closure code that is applied each time the regular expression matches.
 	 * @return {@link ATText} replacing those elements of the table that match the regexpr pattern with the value resulting of the evaluation of the transformer closure.
 	 * @throws XIllegalArgument if regular expression's syntax is invalid. 

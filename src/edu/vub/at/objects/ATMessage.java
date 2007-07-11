@@ -28,6 +28,7 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**

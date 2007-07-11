@@ -28,6 +28,8 @@
 
 package edu.vub.at;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import edu.vub.at.actors.natives.SerializationTest;
 import edu.vub.at.objects.mirrors.CoercionTest;
 import edu.vub.at.objects.mirrors.InvocationTest;
@@ -43,14 +45,12 @@ import edu.vub.at.objects.natives.NATNamespaceTest;
 import edu.vub.at.objects.natives.NATObjectClosureTest;
 import edu.vub.at.objects.natives.NATObjectTest;
 import edu.vub.at.objects.natives.PrimitivesTest;
-import edu.vub.at.objects.natives.TypeTagTest;
 import edu.vub.at.objects.natives.TestFieldMap;
+import edu.vub.at.objects.natives.TypeTagTest;
+import edu.vub.at.objects.natives.UniformAccessTest;
 import edu.vub.at.objects.natives.grammar.TestEval;
 import edu.vub.at.objects.natives.grammar.TestParameterBinding;
 import edu.vub.at.objects.symbiosis.SymbiosisTest;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 /**
  * @author tvcutsem
@@ -86,6 +86,7 @@ public class InterpreterTests {
 		suite.addTestSuite(TestParameterBinding.class);
 		suite.addTestSuite(SerializationTest.class);
 		suite.addTestSuite(TypeTagTest.class);
+		suite.addTestSuite(UniformAccessTest.class);
 		//$JUnit-END$
 		return suite;
 	}

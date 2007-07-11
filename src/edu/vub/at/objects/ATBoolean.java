@@ -44,11 +44,11 @@ public interface ATBoolean extends ATObject {
 	 * Usage:
 	 * <code>booleanCondition.ifTrue: { code }</code>
 	 *  
-	 * @param a closure containing the code to execute if the boolean is true.
+	 * @param consequent a closure containing the code to execute if the boolean is true.
 	 * @return the result of evaluating the closure or nil.
 	 * @throws InterpreterException if raised in the evaluation of the closure. 
 	 */
-	public ATObject base_ifTrue_(ATClosure clo) throws InterpreterException;
+	public ATObject base_ifTrue_(ATClosure consequent) throws InterpreterException;
 	
 	/**
 	 * Returns an {@link ATObject} representing the result of evaluating the code to execute
@@ -57,11 +57,11 @@ public interface ATBoolean extends ATObject {
 	 * Usage:
 	 * <code>booleanCondition.ifFalse: { code } </code>
 	 *  
-	 * @param a closure containing the code to execute if the boolean is false.
+	 * @param alternative a closure containing the code to execute if the boolean is false.
 	 * @return the result of evaluating the closure or nil.
 	 * @throws InterpreterException if raised in the evaluation of the closure. 
 	 */
-	public ATObject base_ifFalse_(ATClosure alt) throws InterpreterException;
+	public ATObject base_ifFalse_(ATClosure alternative) throws InterpreterException;
 	
 	/**
 	 * Returns an {@link ATObject} representing the result of evaluating either the code to execute
@@ -75,7 +75,7 @@ public interface ATBoolean extends ATObject {
 	 * @return the result of the consequent or alternative closure. 
 	 * @throws InterpreterException if raised in the evaluation of the consequent or alternative closure. 
 	 */	
-	public ATObject base_ifTrue_ifFalse_(ATClosure cons, ATClosure alt) throws InterpreterException;
+	public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws InterpreterException;
 	
 	/**
 	 * Returns false if the receiver is false or the result of the evaluation of the other

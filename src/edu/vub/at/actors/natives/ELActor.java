@@ -299,7 +299,7 @@ public class ELActor extends EventLoop {
 	 * The main entry point for any asynchronous messages sent to this actor
 	 * by external sources.
 	 * @param sender address of the sending actor, used to notify when the receiver has gone offline.
-	 * @param msg the asynchronous AmbientTalk base-level message to enqueue
+	 * @param serializedMessage the asynchronous AmbientTalk base-level message to enqueue
 	 */
 	public void event_remoteAccept(final Address sender, final Packet serializedMessage) {
 		receive(new Event("remoteAccept("+serializedMessage+")") {
@@ -360,7 +360,7 @@ public class ELActor extends EventLoop {
 	 * invocations from the Java world to the AmbientTalk world.
 	 * 
 	 * @param principal the AmbientTalk object owned by this actor on which to invoke the method
-	 * @param meth the Java method that was symbiotically invoked on the principal
+	 * @param method the Java method that was symbiotically invoked on the principal
 	 * @param args the arguments to the Java method call, already converted into AmbientTalk values
 	 */
 	public void event_symbioticInvocation(final ATObject principal, final Method method, final ATObject[] args) {
@@ -433,10 +433,10 @@ public class ELActor extends EventLoop {
 	 * another remote VM, the actor is asked to compare the incoming publication against
 	 * a subscription that it had announced previously.
 	 * 
-	 * @param requiredType serialized form of the type attached to the actor's subscription
+	 * @param requiredTypePkt serialized form of the type attached to the actor's subscription
 	 * @param myHandler the closure specified as a handler for the actor's subscription
-	 * @param discoveredType serialized form of the type attached to the new publication
-	 * @param remoteService serialized form of the reference to the remote discovered service
+	 * @param discoveredTypePkt serialized form of the type attached to the new publication
+	 * @param remoteServicePkt serialized form of the reference to the remote discovered service
 	 */
 	public void event_serviceJoined(final Packet requiredTypePkt, final ATFarReference myHandler,
 			                        final Packet discoveredTypePkt, final Packet remoteServicePkt) {

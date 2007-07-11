@@ -192,6 +192,19 @@ public class NATIntrospectiveMirror extends NATByRef {
 		}		
 	}
 	
+	protected ATObject native_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
+		try {
+			final String methSelector = Reflection.upMetaLevelSelector(selector);
+        	// Attempt to invoke the method
+        	return Reflection.upInvocation(principal_ /*implementor and self*/, methSelector, selector, arguments);
+		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(selector);
+			// Principal does not have a corresponding meta_level field nor
+			// method try for a base_level field or method of the mirror itself.
+			return super.native_call(selector, arguments);
+		}
+	}
+	
     /**
      * A mirror responds to a message m if and only if:
      *  - either its principal has a method named meta_m
@@ -274,11 +287,11 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * This method allows re-initialise a mirror object. However, since the link from a 
 	 * mirror to its base object is immutable, this results in contacting the mirror
 	 * factory, to create a (new) mirror for the requested object.
-	 * @param initargs - an ATObject[] containing as its first element the object that needs to be reflects upon
+	 * @param initargs  an ATObject[] containing as its first element the object that needs to be reflects upon
 	 * @return <b>another</b> (possibly new) mirror object 
 	 */
-	public ATObject meta_newInstance(ATTable init) throws InterpreterException {
-		ATObject reflectee = NativeClosure.checkUnaryArguments(AGSymbol.jAlloc("init"), init);
+	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
+		ATObject reflectee = NativeClosure.checkUnaryArguments(AGSymbol.jAlloc("init"), initargs);
 		return atValue(reflectee);
 		/*ATObject[] initargs = init.asNativeTable().elements_;
 		if(initargs.length != 1) {

@@ -915,7 +915,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @param parent the dynamic parent object of the newly created object.
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
 	 * @param types a table of types with which to type the newly created object.
-	 * @param the mirror object of the newly created mirage object.
+	 * @param mirror the mirror object of the newly created mirage object.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
 	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)

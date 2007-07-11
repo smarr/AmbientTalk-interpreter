@@ -313,34 +313,4 @@ public class TestEval extends AmbientTalkTest {
 		assertEquals("[2, 3, 4, 5]", ctx_.base_lexicalScope().impl_call(atY_, NATTable.EMPTY).meta_print().javaValue);
 	}
 	
-	public void testNativeNoArgMethods() throws InterpreterException {
-		// (-1).abs -> (-1).abs() -> 1
-		// [1, 2, 3].length -> [1, 2, 3].length() -> 3
-		evalAndCompareTo("(-1).abs", NATNumber.ONE);
-		evalAndCompareTo("[1, 2, 3].length", atThree_);
-	}
-	
-	public void testNativeSelection() throws InterpreterException {
-		// ((-1).&abs)() -> 1
-		// ([1, 2, 3].&length)() -> 3
-		evalAndCompareTo("((-1).&abs)()", NATNumber.ONE);
-		evalAndCompareTo("([1, 2, 3].&length)()", atThree_);
-	}
-	
-	public void testNativeAssignment() throws InterpreterException {
-		// (`o.m()).receiverExpression := `object
-		evalAndReturn("def x := `(o.m()); x.receiverExpression := `object");
-		assertEquals(AGSymbol.jAlloc("object"), ((ATMessageSend)ctx_.base_lexicalScope().impl_call(atX_, NATTable.EMPTY)).base_receiverExpression());
-	}
-	
-	public void testParameterlessApplication() throws InterpreterException {
-		// def x := object: { def y() { 3 } }
-		NATObject x = new NATObject(ctx_.base_self());
-		NATMethod y = new NATMethod(atY_, NATTable.EMPTY, new AGBegin(NATTable.atValue(new ATObject[] { atThree_ })));
-		x.meta_addMethod(y);
-		ctx_.base_lexicalScope().meta_defineField(atX_, x);
-
-		assertEquals(evalAndReturn("x.y"), atThree_);
-	}
-	
 }

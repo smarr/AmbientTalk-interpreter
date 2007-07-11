@@ -60,7 +60,7 @@ public final class NativeMethod extends NATByRef implements ATMethod {
 	/**
 	 * Construct a new wrapper object from a Java method.
 	 * @param javaMethod the java method to be wrapped.
-	 * @param isMeta signifies whether or not the wrapped method signifies an AmbientTalk meta-level method
+	 * @param name the original name of the method as an AmbientTalk symbol
 	 */
 	public NativeMethod(Method javaMethod, ATSymbol name) {
 		javaMethod_ = javaMethod;

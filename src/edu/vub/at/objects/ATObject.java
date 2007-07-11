@@ -918,7 +918,7 @@ public interface ATObject extends ATConversions {
      * <li> a slot with a corresponding selector (i.e. without the ":=") which needs to be treated further.
      * </ol>
      * 
-     * If the slot is a method slot, an {@link XUnassignableSlot} exception is raised, otherwise the arity of the 
+     * If the slot is a method slot, an {@link XUnassignableField} exception is raised, otherwise the arity of the 
      * arguments is verified (should be precisely 1) and the first argument is used as the new value of the slot.
      * <p>
      * When no local slot is found, lookup continues along the lexical parent chain. When the lexical chain is 

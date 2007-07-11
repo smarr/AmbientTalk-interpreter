@@ -142,7 +142,7 @@ public interface ATTable extends ATExpression {
 	 * @return {@link ATNumber} representing the index of the first element for which the given closure evaluates to true. Otherwise, nil. 
 	 * @throws InterpreterException if raised inside the code closure.
 	 */
-	public ATObject base_find_(ATClosure clo) throws InterpreterException;
+	public ATObject base_find_(ATClosure code) throws InterpreterException;
 
 	/**
 	 * Returns true if and only if there exists an element e in the table for which
@@ -180,7 +180,7 @@ public interface ATTable extends ATExpression {
 	 * 
 	 * @param start a number representing the lower limit of the range.
 	 * @param stop a number representing the upper limit of the range.
-	 * @retun an ATTable resulting of the selection.
+	 * @return an ATTable resulting of the selection.
 	 */
 	public ATTable base_select(ATNumber start, ATNumber stop) throws InterpreterException;
 	

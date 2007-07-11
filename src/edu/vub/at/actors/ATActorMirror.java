@@ -107,8 +107,8 @@ public interface ATActorMirror extends ATObject {
 	 * 
 	 * Installs a new meta-object protocol into this actor.
 	 * 
-	 * @param code meta-level code that overrides an actor's MOP methods
-	 * @return an the previously installed meta-object protocol
+	 * @param protocol meta-level code that overrides an actor's MOP methods
+	 * @return the previously installed meta-object protocol
 	 */
 	public ATObject base_install_(ATActorMirror protocol) throws InterpreterException;
 	
