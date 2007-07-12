@@ -125,7 +125,7 @@ public final class JavaObject extends NATObject implements ATObject {
 	 * wrapped Java object's class.
 	 */
 	private JavaObject(Object wrappedObject) {
-		super(JavaClass.wrapperFor(wrappedObject.getClass()), JavaClass.wrapperFor(wrappedObject.getClass()), NATObject._SHARES_A_);
+		super(JavaClass.wrapperFor(wrappedObject.getClass()), NATObject._SHARES_A_);
 		wrappedObject_ = wrappedObject;
 		
 		// initialize the Java symbiotic object's type tags
