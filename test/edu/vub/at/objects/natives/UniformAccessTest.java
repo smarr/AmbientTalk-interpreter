@@ -2,6 +2,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -95,7 +96,7 @@ public class UniformAccessTest extends AmbientTalkTest {
 	
 	/**
 	 * Tests the uniform selection of both fields and methods from native data types. The
-	 * selection is uniform in the sens that both return closure which can subsequently be
+	 * selection is uniform in the sense that both return closures which can subsequently be
 	 * applied. 
 	 * 
 	 * When selecting a field, the resulting closure is in fact an implictly created accessor
@@ -137,7 +138,7 @@ public class UniformAccessTest extends AmbientTalkTest {
 		evalAndCompareTo("abs()", NATNumber.ONE);
 		evalAndCompareTo("len()", atThree_);
 		
-		// lookup gives up to date info, not stale one recorded at lookup
+		// lookup gives up to date info, not stale one recorded at lookup time
 		// first we create an accessor for the receiver exp of an invocation
 		evalAndReturn("def x := `(o.m()); \n" +
 				      "def receiver := withScope: x do: { &receiverExpression }");
@@ -252,11 +253,11 @@ public class UniformAccessTest extends AmbientTalkTest {
 				"<java closure:size>");
 		evalAndCompareTo(
 				"def selElementCount := jVector.&elementCount", 
-				"<native closure:nativelambda>");
+				"<native closure:elementCount>");
 		evalAndCompareTo(
 				"def lexElementCount := \n" +
 				  "withScope: jVector do: { &elementCount }", 
-				"<native closure:nativelambda>");
+				"<native closure:elementCount>");
 		
 		evalAndReturn("jVector.add( [4, 8, 15, 16, 23, 42] )");
 		
@@ -270,4 +271,60 @@ public class UniformAccessTest extends AmbientTalkTest {
 		evalAndCompareTo("lexElementCount",   NATNumber.ONE);
 		evalAndCompareTo("lexElementCount()", NATNumber.ONE);	
 	}
+	
+	/**
+	 * Tests whether abstraction can be made over the accessor or a slot,
+	 * independent of whether a slot is implemened as a field or as a pair
+	 * of methods.
+	 */
+	public void testMutatorSelection() {
+		evalAndReturn("def v; def pair := object: {" +
+				"def x := 1;" +
+				"def y() {v};" +
+				"def y:=(v2) { v := v2; v } }");
+		
+		// test mutator for field x
+		evalAndCompareTo("def xmutator := pair.&x:=", "<native closure:x:=>");
+		evalAndCompareTo("xmutator(2)", "2");
+		evalAndTestException("xmutator()", XArityMismatch.class);
+		evalAndCompareTo("pair.x", "2");
+		
+		// test mutator for virtual field y
+		evalAndCompareTo("def ymutator := pair.&y:=", "<closure:y:=>");
+		evalAndCompareTo("ymutator(2)", "2");
+		evalAndTestException("ymutator()", XArityMismatch.class);
+		evalAndCompareTo("pair.y", "2");
+	}
+	
+	/**
+	 * Tests whether abstraction can be made over the accessor and mutator
+	 * of a slot at the meta-level, independent of whether a slot is implemened
+	 * as a field or as a pair of methods.
+	 */
+	public void testUniformAccessViaMirrors() {
+		evalAndReturn("def rre := 42; def cplx := object: {" +
+				"def clofield := { 5 };" +
+				"def im := 1;" +
+				"def re() { rre };" +
+				"def re:=(v) { rre := v; rre+2 }" +
+				"}");
+		evalAndReturn("def cplxm := reflect: cplx");
+		
+		// test whether selection on mirrors can abstract over fields or methods
+		// or fields containing closures
+		evalAndCompareTo("cplxm.select(cplx, `im)", "<native closure:im>");
+		evalAndCompareTo("cplxm.select(cplx, `re)", "<closure:re>");
+		evalAndCompareTo("cplxm.select(cplx, `im:=)", "<native closure:im:=>");
+		evalAndCompareTo("cplxm.select(cplx, `re:=)", "<closure:re:=>");
+		evalAndCompareTo("cplxm.select(cplx, `clofield)", "<closure:lambda>");
+		
+		// test whether explicit invocation on mirrors can abstract over fields
+		// or methods or fields containing closures
+		evalAndCompareTo("cplxm.invoke(cplx, `im, [])", "1");
+		evalAndCompareTo("cplxm.invoke(cplx, `re, [])", "42");
+		evalAndCompareTo("cplxm.invoke(cplx, `im:=, [4])", "4");
+		evalAndCompareTo("cplxm.invoke(cplx, `re:=,[3])", "5");
+		evalAndCompareTo("cplxm.invoke(cplx, `clofield, [])", "5");
+	}
+	
 }

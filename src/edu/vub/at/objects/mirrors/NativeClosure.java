@@ -212,6 +212,10 @@ public class NativeClosure extends NATClosure {
 			}
 		}
 		public abstract ATObject access() throws InterpreterException;
+		
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("<native closure:"+name_+">");
+		}
 	}
 	
 	/**
@@ -233,6 +237,10 @@ public class NativeClosure extends NATClosure {
 			}
 		}
 		public abstract ATObject mutate(ATObject val) throws InterpreterException;
+		
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("<native closure:"+name_+">");
+		}
 	}
 	
 }

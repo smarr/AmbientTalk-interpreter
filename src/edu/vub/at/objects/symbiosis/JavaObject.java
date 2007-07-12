@@ -255,7 +255,6 @@ public final class JavaObject extends NATObject implements ATObject {
 	public ATClosure impl_selectAccessor(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
 		final String jSelector = Reflection.upSelector(atSelector);
 		try {
-			boolean hasField = Symbiosis.hasField(wrappedObject_.getClass(), jSelector, false);
 			ATObject val = Symbiosis.readField(wrappedObject_, wrappedObject_.getClass(), jSelector);
 			if (val.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
 				return val.asClosure();
