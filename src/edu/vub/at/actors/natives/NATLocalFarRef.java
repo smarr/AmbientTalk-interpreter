@@ -33,7 +33,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATTable;
 
 /**
@@ -56,7 +56,7 @@ public class NATLocalFarRef extends NATFarReference {
 
 	protected ATObject transmit(ATAsyncMessage passedMessage) throws InterpreterException {
 		farObjectHost_.event_localAccept(this, new Packet(passedMessage.toString(), passedMessage));
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	/**

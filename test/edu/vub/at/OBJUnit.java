@@ -34,8 +34,10 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATContext;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
+import edu.vub.at.objects.natives.NativeATObject;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.NATParser;
@@ -49,7 +51,7 @@ import junit.framework.Assert;
  *
  * @author smostinc
  */
-public class OBJUnit extends NATNil {
+public class OBJUnit extends NATByCopy {
 		
 	/**
 	 * Default instance : used in general to store in the at dictionary. New 
@@ -63,30 +65,30 @@ public class OBJUnit extends NATNil {
 	
 	private OBJUnit() { }
 	
-	public NATNil base_echo_(ATObject message) throws InterpreterException {
+	public NativeATObject base_echo_(ATObject message) throws InterpreterException {
 		System.out.println(message.meta_print().javaValue);
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	};
 	
 	
-	public NATNil base_fail()  {
+	public NativeATObject base_fail()  {
 		Assert.fail();
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	};
 	
-	public NATNil base_fail_(NATText description)  {
+	public NativeATObject base_fail_(NATText description)  {
 		Assert.fail(description.javaValue);
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	};
 		
 	
-	public NATNil base_success() {
-		return NATNil._INSTANCE_;
+	public NativeATObject base_success() {
+		return OBJNil._INSTANCE_;
 	};
 	
-	public NATNil base_assert_equals_(ATObject expected, ATObject actual) {
+	public NativeATObject base_assert_equals_(ATObject expected, ATObject actual) {
 		Assert.assertEquals(expected, actual);
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	public ATObject meta_evaluate(ATText source) {
@@ -101,15 +103,15 @@ public class OBJUnit extends NATNil {
 		return null;
 	}
 	
-	public NATNil base_assert_evaluatesTo(ATText source, ATObject expected) {
+	public NativeATObject base_assert_evaluatesTo(ATText source, ATObject expected) {
 		ATObject actual = meta_evaluate(source);
 		if(actual != null) {
 			this.base_assert_equals_(expected, actual);
 		} 
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
-	public NATNil base_assert_printsTo(ATText source, ATObject expected) {
+	public NativeATObject base_assert_printsTo(ATText source, ATObject expected) {
 		ATObject actual = meta_evaluate(source);
 		try {
 			if(actual != null) {
@@ -118,7 +120,7 @@ public class OBJUnit extends NATNil {
 		} catch (InterpreterException e) {
 			Assert.fail("Value cannot be represented in a textual format : " + e);
 		} 
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	/**
 	 * The unittest: primitive, implemented as base-level code.
@@ -151,6 +153,11 @@ public class OBJUnit extends NATNil {
 		extension.initializeWithCode(code);
 		return extension;
 	}
+
+	public NATText meta_print() throws InterpreterException {
+		return NATText.atValue("objunit");
+	}
+
 }
 
 

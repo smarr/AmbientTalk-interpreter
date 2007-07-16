@@ -122,7 +122,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 					continue;
 				} else {
 					// return nil
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			} else {
 				// cond is a user-defined boolean, do a recursive send
@@ -175,7 +175,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 				} else {
 					ATObject val;
 					if (args.base_isEmpty().asNativeBoolean().javaValue) {
-						val = NATNil._INSTANCE_; 
+						val = OBJNil._INSTANCE_; 
 					} else {
 						val = get(args, 1);
 					}

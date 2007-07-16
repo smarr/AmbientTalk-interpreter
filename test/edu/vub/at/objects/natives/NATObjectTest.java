@@ -52,7 +52,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				new NativeClosure(clone) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Cloning is not properly defined under the isCloneOf test.");
-						return NATNil._INSTANCE_;
+						return OBJNil._INSTANCE_;
 					}					
 				});
 			
@@ -76,7 +76,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				new NativeClosure(clone) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Adding fields to a clone should disrupt the isCloneOf test when comparing the original to the extended object.");
-						return NATNil._INSTANCE_;
+						return OBJNil._INSTANCE_;
 					}					
 				});
 		
@@ -84,7 +84,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				new NativeClosure(original) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Adding fields to a clone should NOT disrupt the isCloneOf test when comparing the extended object to the original.");
-						return NATNil._INSTANCE_;
+						return OBJNil._INSTANCE_;
 					}					
 				});
 		
@@ -92,7 +92,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				new NativeClosure(original) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Extensions should not return true to the isCloneOf test.");
-						return NATNil._INSTANCE_;
+						return OBJNil._INSTANCE_;
 					}					
 				});
 		
@@ -100,7 +100,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				new NativeClosure(clone) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Extensions should not return true to the isCloneOf test.");
-						return NATNil._INSTANCE_;
+						return OBJNil._INSTANCE_;
 					}					
 				});
 		

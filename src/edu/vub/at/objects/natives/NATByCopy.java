@@ -36,7 +36,7 @@ import edu.vub.at.objects.ATObject;
  *
  * @author tvcutsem
  */
-public abstract class NATByCopy extends NATNil {
+public abstract class NATByCopy extends NativeATObject {
 
     /**
      * When a by-copy object is asked which object to serialize in its stead,

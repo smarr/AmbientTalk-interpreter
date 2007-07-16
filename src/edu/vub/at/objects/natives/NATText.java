@@ -150,7 +150,7 @@ public final class NATText extends AGExpression implements ATText {
 			 while (m.find()) {
 				 consumer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(m.group()) }));
 			 }
-			 return NATNil._INSTANCE_;
+			 return OBJNil._INSTANCE_;
 		}
 		
 		public ATText base_replace_by_(ATText regexp, ATClosure transformer) throws InterpreterException {

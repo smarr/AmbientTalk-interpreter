@@ -192,7 +192,9 @@ public final class Reflection {
 	 * methods to specify the prefix of the method to be found
 	 */
 	public static final ATMethod downMethod(ATObject natObject, String jSelector, ATSymbol origName) throws InterpreterException {
-		return new NativeMethod(JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, jSelector, origName), origName);
+		return new NativeMethod(JavaInterfaceAdaptor.getNativeATMethod(natObject.getClass(), natObject, jSelector, origName),
+				                origName,
+				                natObject);
 	}
 	
 	public static final ATMethod downBaseLevelMethod(ATObject natObject, ATSymbol atSelector) throws InterpreterException {
@@ -311,9 +313,9 @@ public final class Reflection {
 	 *  => upSelection(aNATTable, "at")
 	 *  => either NATTable must have a method base_at, which is then wrapped
 	 */
-	public static final NativeClosure upMethodSelection(ATObject atOrigRcvr, String jSelector, ATSymbol origSelector) throws InterpreterException {
+	public static final NativeMethod upMethodSelection(ATObject atOrigRcvr, String jSelector, ATSymbol origSelector) throws InterpreterException {
 		Method m = JavaInterfaceAdaptor.getNativeATMethod(atOrigRcvr.getClass(), atOrigRcvr, jSelector, origSelector);
-		return new NativeClosure(atOrigRcvr, new NativeMethod(m, origSelector));
+		return new NativeMethod(m, origSelector, atOrigRcvr);
 	}
 	
 	/**
@@ -370,7 +372,7 @@ public final class Reflection {
 		for (int i = 0; i < allBaseMethods.length; i++) {
 			Method m = allBaseMethods[i];
 			String nam = m.getName();
-			allATBaseMethods.add(new NativeMethod(m, downBaseLevelSelector(nam)));
+			allATBaseMethods.add(new NativeMethod(m, downBaseLevelSelector(nam), atObj));
 		}
 		return (ATMethod[]) allATBaseMethods.toArray(new ATMethod[allATBaseMethods.size()]);
 	}
@@ -386,7 +388,7 @@ public final class Reflection {
 		for (int i = 0; i < allMetaMethods.length; i++) {
 			Method m = allMetaMethods[i];
 			String nam = m.getName();
-			allATMetaMethods.add(new NativeMethod(m, downMetaLevelSelector(nam)));
+			allATMetaMethods.add(new NativeMethod(m, downMetaLevelSelector(nam), natObj));
 		}
 		return (ATMethod[]) allATMetaMethods.toArray(new ATMethod[allATMetaMethods.size()]);
 	}

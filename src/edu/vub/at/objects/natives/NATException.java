@@ -66,8 +66,8 @@ public class NATException extends NATByCopy {
 		return NATText.atValue(out.toString());
 	}
 	
-	public NATNil base_stackTrace__opeql_(NATText newTrace) throws InterpreterException {
-		return NATNil._INSTANCE_;
+	public NativeATObject base_stackTrace__opeql_(NATText newTrace) throws InterpreterException {
+		return OBJNil._INSTANCE_;
 	}
 	
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {

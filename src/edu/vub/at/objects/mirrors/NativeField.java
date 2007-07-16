@@ -30,13 +30,12 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATField;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByRef;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -91,11 +90,11 @@ public class NativeField extends NATByRef implements ATField {
 		return JavaInterfaceAdaptor.invokeNativeATMethod(accessor_, host_, NATTable.EMPTY.elements_);
 	}
 
-	public ATNil base_writeField(ATObject newValue) throws InterpreterException {
+	public ATObject base_writeField(ATObject newValue) throws InterpreterException {
 		// certain fields may not have setters
 		if (mutator_ != null) {
 			JavaInterfaceAdaptor.invokeNativeATMethod(accessor_, host_, new ATObject[] { newValue });
-			return NATNil._INSTANCE_;
+			return OBJNil._INSTANCE_;
 		} else {
 			throw new XIllegalOperation("Field " + name_ + " cannot be set.");
 		}

@@ -36,7 +36,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -106,7 +106,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"<mirror on:" + subject.toString() + ">");
 		evalAndCompareTo(
 				"mirror.base.super;",
-				NATNil._INSTANCE_);
+				OBJNil._INSTANCE_);
 		
 		/*evalAndCompareTo( => bad unit test: order of field names is undefined
 				"mirror.listFields();",
@@ -251,14 +251,14 @@ public class MirrorTest extends AmbientTalkTest {
 		evalAndReturn(
 				"def basicClosure := { raise: (object: { def [ message, stackTrace ] := [ nil, nil ] }) }; \n" +
 				"def extendedMirroredClosure := \n" +
-				"  object: { super := &basicClosure } \n" +
+				"  object: { super := basicClosure } \n" +
 				"    taggedAs: [ Closure ] \n" +
 				"    mirroredBy: (mirror: { nil }); \n"  +
 				"def intercessiveMirror := \n" +
-				"  reflect: &extendedMirroredClosure");
+				"  reflect: extendedMirroredClosure");
 		
 		evalAndTestException(
-				"intercessiveMirror.base.&super.apply([]); \n",
+				"intercessiveMirror.base.super.apply([]); \n",
 				XAmbienttalk.class);
 
 //		Can no longer set the mirror of a mirage the final 1-1 mapping is now stricly enforced

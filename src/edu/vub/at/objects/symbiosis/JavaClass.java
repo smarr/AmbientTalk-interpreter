@@ -30,12 +30,10 @@ package edu.vub.at.objects.symbiosis;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
-import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATBoolean;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
@@ -44,18 +42,14 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
-import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.IdentityHashMap;
@@ -179,288 +173,6 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 		return ((other instanceof JavaClass) &&
 				(wrappedClass_.equals(((JavaClass) other).wrappedClass_)));
 	}
-	
-    /* ------------------------------------------------------
-     * - Symbiotic implementation of the ATObject interface -
-     * ------------------------------------------------------ */
-    
-	/**
-	 * Implements symbiotic slot (field or method) access.
-	 * 
-	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
-	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
-	 * <p>
-     * When a method is invoked upon a symbiotic Java class object, an underlying static Java method
-     * with the same name as the AmbientTalk selector is invoked. Its arguments are converted
-     * into their Java equivalents. Conversely, the result of the method invocation is converted
-     * into an AmbientTalk object. If no such method exists, a method is searched for in the
-     * symbiotic AmbientTalk part.
-	 * <p>
-	 * Slot access proceeds as follows:
-	 *  - if selector is bound to a static Java method, the method is invoked.
-	 *  - if selector is bound to a static Java field, the field is treated as a nullary closure (UAP).
-	 *  - otherwise the slot access is performed on the AmbientTalk symbiont.
-	 * @see NATObject#impl_accessSlot(ATObject, ATSymbol, ATTable)
-	 */
-	public ATObject impl_accessSlot(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
-		String jSelector = Reflection.upSelector(atSelector);
-        try {
-        	// first try to invoke a method with the given name
-			return Symbiosis.symbioticInvocation(
-					this, null, wrappedClass_, jSelector, arguments.asNativeTable().elements_);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(atSelector);
-			// next, try field access
-			if (Symbiosis.hasField(wrappedClass_, jSelector, true)) {
-				NativeClosure.checkNullaryArguments(atSelector, arguments);
-				return Symbiosis.readField(null, wrappedClass_, jSelector);
-			} else {
-                // if no method or field matches, look in the AmbientTalk symbiont
-				return super.impl_accessSlot(receiver, atSelector, arguments);
-			}
-		}
-	}
-	
-	/**
-	 * Implements slot assignment. This method expects its selector to be an {@link AGAssignmentSymbol}
-	 * which either represents a method directly, or represents field assignment implicitly.
-	 * 
-	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
-	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
-	 * 
-	 * Slot mutation proceeds as follows:
-	 *  - if selector is bound to a static Java method, the method is invoked.
-	 *  - if selector \ { := } is bound to a static Java field, that field is assigned to the given value
-	 *  (this implements the uniform access principle).
-	 *  - otherwise, the slot mutation is carried out in the parent object.
-	 */
-	public ATObject impl_mutateSlot(ATObject receiver, ATAssignmentSymbol atSelector, ATTable arguments) throws InterpreterException {
-		String jSelector = Reflection.upSelector(atSelector);
-        try {
-        	// first try to invoke a method with the given name
-			return Symbiosis.symbioticInvocation(
-					this, null, wrappedClass_, jSelector,
-					arguments.asNativeTable().elements_);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(atSelector);
-			// next, try field assignment
-			jSelector = Reflection.upSelector(atSelector.getFieldName());
-			if (Symbiosis.hasField(wrappedClass_, jSelector, true)) {
-				ATObject val = NativeClosure.checkUnaryArguments(atSelector, arguments);
-				Symbiosis.writeField(null, wrappedClass_, jSelector, val);
-				return val;
-			} else {
-                // if no method or field matches, look in the AmbientTalk symbiont
-				return super.impl_mutateSlot(receiver, atSelector, arguments);
-			}
-		}
-	}
-    
-    
-    
-    /**
-     * A symbiotic Java class object responds to all of the public static selectors of its Java class
-     * plus all of the per-instance selectors added to its AmbientTalk symbiont.
-     */
-    public ATBoolean meta_respondsTo(ATSymbol atSelector) throws InterpreterException {
-    	String jSelector = Reflection.upSelector(atSelector);
-    	if (Symbiosis.hasMethod(wrappedClass_, jSelector, true) ||
-    	    Symbiosis.hasField(wrappedClass_, jSelector, true)) {
-    		return NATBoolean._TRUE_;
-    	} else {
-    		return super.meta_respondsTo(atSelector);
-    	}
-    }
-    
-    /**
-     * When a slot (field or method) is selected from a symbiotic Java class object, the
-     * selection proceeds as follows:
-     *  - if the selector matches a static Java method, a closure wrapping that method is returned.
-     *  - if the selector matches a static Java field, a nullary closure wrapping the field access
-     *    is returned (UAP)
-     *  - otherwise, the selector is looked up in the AmbientTalk symbiont.
-     */
-	public ATClosure impl_selectAccessor(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
-		final String jSelector = Reflection.upSelector(atSelector);
-		try {
-			ATObject val = Symbiosis.readField(null, wrappedClass_, jSelector);
-			if (val.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
-				return val.asClosure();
-			} else {
-				return new NativeClosure.Accessor(atSelector, this) {
-					public ATObject access() throws InterpreterException {
-						return Symbiosis.readField(null, wrappedClass_, jSelector);
-					}
-				};
-			}
-		} catch(XUndefinedSlot e) {
-			JavaMethod choices = Symbiosis.getMethods(wrappedClass_, jSelector, true);
-			if (choices != null) {
-				return new JavaClosure(this, choices);
-			} else {
-				return super.impl_selectAccessor(receiver, atSelector);
-			}
-		}
-	}
-	
-    /**
-     * When a slot (field or method) is selected from a symbiotic Java class object, the
-     * selection proceeds as follows:
-     *  - if the selector matches a static Java method, a closure wrapping that method is returned.
-     *  - if the selector matches a static Java field, a unary closure wrapping the field mutation
-     *    is returned (UAP)
-     *  - otherwise, the selector is looked up in the AmbientTalk symbiont.
-     */
-	public ATClosure impl_selectMutator(ATObject receiver, ATAssignmentSymbol atSelector) throws InterpreterException {
-		final String jFieldSelector = Reflection.upSelector(atSelector.getFieldName());
-		if (Symbiosis.hasField(wrappedClass_, jFieldSelector, true)) {
-			return new NativeClosure.Mutator(atSelector, this) {
-				public ATObject mutate(ATObject val) throws InterpreterException {
-					Symbiosis.writeField(null, wrappedClass_, jFieldSelector, val);
-					return val;
-				}
-			};
-		} else {
-			String jMethodSelector = Reflection.upSelector(atSelector);
-			JavaMethod choices = Symbiosis.getMethods(wrappedClass_, jMethodSelector, true);
-			if (choices != null) {
-				return new JavaClosure(this, choices);
-			} else {
-				return super.impl_selectMutator(receiver, atSelector);
-			}
-		}
-	}
-    
-	/**
-	 * Implements symbiotic slot (field or method) access.
-	 * 
-	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
-	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
-	 * <p>
-     * When a method is invoked upon a symbiotic Java class object, an underlying static Java method
-     * with the same name as the AmbientTalk selector is invoked. Its arguments are converted
-     * into their Java equivalents. Conversely, the result of the method invocation is converted
-     * into an AmbientTalk object. If no such method exists, a method is searched for in the
-     * symbiotic AmbientTalk part.
-	 * <p>
-	 * Slot access proceeds as follows:
-	 *  - if selector is bound to a static Java method, the method is invoked.
-	 *  - if selector is bound to a static Java field, the field is treated as a nullary closure (UAP).
-	 *  - otherwise the slot access is performed on the AmbientTalk symbiont.
-	 * @see NATObject#impl_accessSlot(ATObject, ATSymbol, ATTable)
-	 */
-	public ATObject impl_accessVariable(ATSymbol atSelector, ATTable arguments) throws InterpreterException {
-		String jSelector = Reflection.upSelector(atSelector);
-        try {
-        	// first try to invoke a method with the given name
-			return Symbiosis.symbioticInvocation(
-					this, null, wrappedClass_, jSelector, arguments.asNativeTable().elements_);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(atSelector);
-			// next, try field access
-			if (Symbiosis.hasField(wrappedClass_, jSelector, true)) {
-				NativeClosure.checkNullaryArguments(atSelector, arguments);
-				return Symbiosis.readField(null, wrappedClass_, jSelector);
-			} else {
-                // if no method or field matches, look in the AmbientTalk symbiont
-				return super.impl_accessVariable(atSelector, arguments);
-			}
-		}
-	}
-	
-	/**
-	 * Implements slot assignment. This method expects its selector to be an {@link AGAssignmentSymbol}
-	 * which either represents a method directly, or represents field assignment implicitly.
-	 * 
-	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
-	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
-	 * 
-	 * Slot mutation proceeds as follows:
-	 *  - if selector is bound to a static Java method, the method is invoked.
-	 *  - if selector \ { := } is bound to a static Java field, that field is assigned to the given value
-	 *  (this implements the uniform access principle).
-	 *  - otherwise, the slot mutation is carried out in the parent object.
-	 */
-	public ATObject impl_mutateVariable(ATAssignmentSymbol atSelector, ATTable arguments) throws InterpreterException {
-		String jSelector = Reflection.upSelector(atSelector);
-        try {
-        	// first try to invoke a method with the given name
-			return Symbiosis.symbioticInvocation(
-					this, null, wrappedClass_, jSelector,
-					arguments.asNativeTable().elements_);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(atSelector);
-			// next, try field assignment
-			jSelector = Reflection.upSelector(atSelector.getFieldName());
-			if (Symbiosis.hasField(wrappedClass_, jSelector, true)) {
-				ATObject val = NativeClosure.checkUnaryArguments(atSelector, arguments);
-				Symbiosis.writeField(null, wrappedClass_, jSelector, val);
-				return val;
-			} else {
-                // if no method or field matches, look in the AmbientTalk symbiont
-				return super.impl_mutateVariable(atSelector, arguments);
-			}
-		}
-	}
-    
-    /**
-     * When a slot (field or method) is selected from a symbiotic Java class object, the
-     * selection proceeds as follows:
-     *  - if the selector matches a static Java method, a closure wrapping that method is returned.
-     *  - if the selector matches a static Java field, a nullary closure wrapping the field access
-     *    is returned (UAP)
-     *  - otherwise, the selector is looked up in the AmbientTalk symbiont.
-     */
-	public ATClosure impl_lookupAccessor(ATSymbol atSelector) throws InterpreterException {
-		final String jSelector = Reflection.upSelector(atSelector);
-		try {
-			ATObject val = Symbiosis.readField(null, wrappedClass_, jSelector);
-			if (val.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
-				return val.asClosure();
-			} else {
-				return new NativeClosure.Accessor(atSelector, this) {
-					public ATObject access() throws InterpreterException {
-						return Symbiosis.readField(null, wrappedClass_, jSelector);
-					}
-				};
-			}
-		} catch(XUndefinedSlot e) {
-			JavaMethod choices = Symbiosis.getMethods(wrappedClass_, jSelector, true);
-			if (choices != null) {
-				return new JavaClosure(this, choices);
-			} else {
-				return super.impl_lookupAccessor(atSelector);
-			}
-		}
-	}
-	
-    /**
-     * When a slot (field or method) is selected from a symbiotic Java class object, the
-     * selection proceeds as follows:
-     *  - if the selector matches a static Java method, a closure wrapping that method is returned.
-     *  - if the selector matches a static Java field, a unary closure wrapping the field mutation
-     *    is returned (UAP)
-     *  - otherwise, the selector is looked up in the AmbientTalk symbiont.
-     */
-	public ATClosure impl_lookupMutator(ATAssignmentSymbol atSelector) throws InterpreterException {
-		final String jFieldSelector = Reflection.upSelector(atSelector.getFieldName());
-		if (Symbiosis.hasField(wrappedClass_, jFieldSelector, true)) {
-			return new NativeClosure.Mutator(atSelector, this) {
-				public ATObject mutate(ATObject val) throws InterpreterException {
-					Symbiosis.writeField(null, wrappedClass_, jFieldSelector, val);
-					return val;
-				}
-			};
-		} else {
-			String jMethodSelector = Reflection.upSelector(atSelector);
-			JavaMethod choices = Symbiosis.getMethods(wrappedClass_, jMethodSelector, true);
-			if (choices != null) {
-				return new JavaClosure(this, choices);
-			} else {
-				return super.impl_lookupMutator(atSelector);
-			}
-		}
-	}
         
     /**
      * Fields can be defined within a symbiotic Java class object. They are added
@@ -473,37 +185,6 @@ public final class JavaClass extends NATObject implements ATTypeTag {
         } else {
     	    return super.meta_defineField(name, value);
         }
-    }
-    
-    /**
-     * Variables can be assigned within a symbiotic Java class object if that class object
-     * has a mutable static field with a matching name. Variable assignment is first
-     * resolved in the Java object and afterwards in the AT symbiont.
-     */
-    public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
-        try {
-        	String jSelector = Reflection.upSelector(name);
-        	Symbiosis.writeField(null, wrappedClass_, jSelector, value);
-        	return NATNil._INSTANCE_;
-		} catch (XUnassignableField e) {
-			return super.meta_assignVariable(name, value);
-		}
-    }
-    
-    /**
-     * Fields can be assigned within a symbiotic Java class object if that class
-     * has a mutable field with a matching name. Field assignment is first resolved
-     * in the Java object and afterwards in the AT symbiont.
-     * @deprecated now use invoke
-     */
-    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-        try {
-     	    String jSelector = Reflection.upSelector(name);
-    	    Symbiosis.writeField(null, wrappedClass_, jSelector, value);
-    	    return NATNil._INSTANCE_;	
-		} catch (XUnassignableField e) {
-			return super.meta_assignField(receiver, name, value);
-		}
     }
     
 	/**
@@ -619,11 +300,11 @@ public final class JavaClass extends NATObject implements ATTypeTag {
      * are wrappers for all interfaces extended by this Java interface type
      */
 	public ATTable base_superTypes() throws InterpreterException {
-		return super.impl_accessSlot(this, _PTS_NAME_, NATTable.EMPTY).asTable();
+		return super.impl_invokeAccessor(this, _PTS_NAME_, NATTable.EMPTY).asTable();
 	}
 
 	public ATSymbol base_typeName() throws InterpreterException {
-		return super.impl_accessSlot(this, _TNM_NAME_, NATTable.EMPTY).asSymbol();
+		return super.impl_invokeAccessor(this, _TNM_NAME_, NATTable.EMPTY).asSymbol();
 	}
 
 	/**
@@ -638,6 +319,54 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 			return NATBoolean.atValue(otherClass.wrappedClass_.isAssignableFrom(wrappedClass_));
 		} else {
 			return NATBoolean._FALSE_;
+		}
+	}
+	
+	// IMPLEMENTATION INTERFACE
+	
+    /**
+     * A symbiotic Java class object has all of the public static fields
+     * of its Java class plus all of the fields defined in the AT symbiont.
+     */
+	protected boolean hasLocalField(ATSymbol atSelector) throws InterpreterException {
+		return Symbiosis.hasField(wrappedClass_, Reflection.upSelector(atSelector), true) ||
+			   super.hasLocalField(atSelector);
+	}
+
+	/**
+     * A symbiotic Java class object has all of the public static methods
+     * of its Java class plus all of the methods defined in the AT symbiont.
+     */
+	protected boolean hasLocalMethod(ATSymbol atSelector) throws InterpreterException {
+		return Symbiosis.hasMethod(wrappedClass_, Reflection.upSelector(atSelector), true) ||
+		       super.hasLocalMethod(atSelector);
+	}
+	
+	protected ATObject getLocalField(ATSymbol selector) throws InterpreterException {
+		try {
+			return Symbiosis.readField(null, wrappedClass_, Reflection.upSelector(selector));
+		} catch(XUndefinedSlot e) {
+			return super.getLocalField(selector);
+		}
+	}
+	
+	protected ATMethod getLocalMethod(ATSymbol methodName) throws InterpreterException {
+        JavaMethod choices = Symbiosis.getMethods(wrappedClass_, Reflection.upSelector(methodName), true);
+        if (choices != null) {
+        	return choices;
+        } else {
+        	return super.getLocalMethod(methodName);
+        }
+	}
+	
+	protected void setLocalField(ATSymbol selector, ATObject value) throws InterpreterException {
+		try {
+			Symbiosis.writeField(null, wrappedClass_, Reflection.upSelector(selector), value);
+		} catch(XUndefinedSlot e) {
+			super.setLocalField(selector, value);
+		} catch(XUnassignableField e) {
+			// field may have been final, in which case there 'is no such field'
+			super.setLocalField(selector, value);
 		}
 	}
 	

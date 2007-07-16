@@ -142,7 +142,7 @@ public final class NATNamespace extends NATObject {
 			if (src.exists() && src.isFile()) {
 			
                  // bind the missing slot to nil to prevent calling this dNU recursively when evaluating the code in the file
-				this.meta_defineField(selector, NATNil._INSTANCE_);
+				this.meta_defineField(selector, OBJNil._INSTANCE_);
 				
 	             // create a new file scope object for this file
 				NATObject fileScope = createFileScopeFor(this);
@@ -157,7 +157,7 @@ public final class NATNamespace extends NATObject {
 				    // parse and evaluate the code in the proper context and bind its result to the missing slot
 					ATAbstractGrammar source = NATParser.parse(src.getName(), code);
 					final ATObject result = source.meta_eval(ctx);
-					this.impl_mutateSlot(this, selector.asAssignmentSymbol(), NATTable.of(result));
+					this.impl_invokeMutator(this, selector.asAssignmentSymbol(), NATTable.of(result));
 					//this.meta_assignField(this, selector, result);
 					
 					return new NativeClosure(this) {

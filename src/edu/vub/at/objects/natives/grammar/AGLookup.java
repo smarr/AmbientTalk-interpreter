@@ -27,16 +27,11 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.eval.Evaluator;
-import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.grammar.ATLookup;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -44,15 +39,16 @@ import edu.vub.at.objects.natives.NATText;
  * 
  * @author smostinc
  */
-public final class AGLookup extends AGExpression /* implements ATLookup */ {
+public final class AGLookup extends AGExpression implements ATLookup {
 
-	private final ATSymbol funName_;
+	private final ATSymbol selector_;
 	
+	/** construct a new lookup AG element */
 	public AGLookup(ATSymbol fun) {
-		funName_ = fun;
+		selector_ = fun;
 	}
 	
-	public ATExpression base_functionName() { return funName_; }
+	public ATSymbol base_selector() { return selector_; }
 
 	/**
 	 * To evaluate a lexical lookup, the function name is sought for in the lexical scope.
@@ -62,20 +58,20 @@ public final class AGLookup extends AGExpression /* implements ATLookup */ {
 	 * @return a closure containing the requested function.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return ctx.base_lexicalScope().impl_lookup(funName_.asSymbol());
+		return ctx.base_lexicalScope().impl_lookup(selector_);
 	}
 
 	/**
-	 * Quoting an application results in a new quoted application.
+	 * Quoting a lookup results in a new quoted lookup.
 	 * 
 	 * AGAPL(sel,arg).quote(ctx) = AGAPL(sel.quote(ctx), arg.quote(ctx))
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
-		return new AGLookup(funName_.meta_quote(ctx).asSymbol());
+		return new AGLookup(selector_.meta_quote(ctx).asSymbol());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("&" + funName_.meta_print().javaValue);
+		return NATText.atValue("&" + selector_.meta_print().javaValue);
 	}
 
 }

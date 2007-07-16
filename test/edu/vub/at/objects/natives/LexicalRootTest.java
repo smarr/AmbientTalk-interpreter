@@ -25,7 +25,7 @@ public class LexicalRootTest extends AmbientTalkTest {
 	//private OBJLexicalRoot root_ = (OBJLexicalRoot) OBJLexicalRoot.getGlobalLexicalScope().lexicalParent_;
 	
 	public void testLexicalRootFields() {
-		evalAndCompareTo("nil", NATNil._INSTANCE_);
+		evalAndCompareTo("nil", OBJNil._INSTANCE_);
 		evalAndCompareTo("true", NATBoolean._TRUE_);
 		evalAndCompareTo("false", NATBoolean._FALSE_);
 		evalAndCompareTo("/", Evaluator.getLobbyNamespace());
@@ -49,8 +49,8 @@ public class LexicalRootTest extends AmbientTalkTest {
 	public void setUp() throws Exception {
 		super.setUp();
 		NATObject parent = new NATObject();
-		parent.meta_addMethod(new NATMethod(atN_, NATTable.EMPTY, new AGBegin(NATTable.of(NATNil._INSTANCE_))));
-		parent.meta_addMethod(new NATMethod(atM_, NATTable.EMPTY, new AGBegin(NATTable.of(NATNil._INSTANCE_))));
+		parent.meta_addMethod(new NATMethod(atN_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_))));
+		parent.meta_addMethod(new NATMethod(atM_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_))));
 		trait_ = new NATObject(parent, Evaluator.getGlobalLexicalScope(), NATObject._IS_A_);
 		trait_.meta_defineField(atX_, NATNumber.ZERO);
 		trait_.meta_addMethod(new NATMethod(atM_,
@@ -94,7 +94,7 @@ public class LexicalRootTest extends AmbientTalkTest {
 		
 		// when assigning x in host, trait's x field should not be modified
 		host.meta_invoke(host, atX_.asAssignmentSymbol(), NATTable.of(NATNumber.ONE));
-		assertEquals(NATNumber.ZERO, trait_.impl_accessSlot(trait_, atX_, NATTable.EMPTY));
+		assertEquals(NATNumber.ZERO, trait_.impl_invokeAccessor(trait_, atX_, NATTable.EMPTY));
 		
 		// host's primitive methods should be left untouched, i.e.
 		// host != trait and host == host

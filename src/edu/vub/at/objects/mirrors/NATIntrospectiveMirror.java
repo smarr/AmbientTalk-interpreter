@@ -28,22 +28,14 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.exceptions.XUndefinedSlot;
-import edu.vub.at.objects.ATBoolean;
-import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByRef;
-import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -116,139 +108,10 @@ public class NATIntrospectiveMirror extends NATByRef {
 		return principal_;
 	}
 	
-	/* ------------------------------
-	 * -- Message Sending Protocol --
-	 * ------------------------------ */
-	
-	/**
-	 * <p>The effect of invoking methods on a mirror (through meta_invoke) consists of
-	 * checking whether the requested functionality is provided as a meta-operation
-	 * by the principal that is wrapped by this mirror. This implies the requested 
-	 * selector is sought for at the java-level, albeit prefixed with 'meta_'.</p>
-	 *  
-	 * <p>Because an explicit AmbientTalk method invocation must be converted into an 
-	 * implicit Java method invocation, the invocation must be deified ('upped').
-	 * To uphold stratification of the mirror architecture, the result of this 
-	 * operation should be a mirror on the result of the Java method invocation.</p>
-	 * 
-	 * <p>Note that only when the principal does not have a matching meta_level method
-	 * the mirror itself will be tested for a corresponding base_level method (e.g. 
-	 * used for operators such as ==). In the latter case, stratification is not 
-	 * enforced. This is due to the fact that these operations are not active at the
-	 * mirror level, they are base-level operations which happen to be applied on a 
-	 * mirror. An added advantage of this technique is that it permits a mirror to 
-	 * give out a reference to its principal.</p>
-	 */
-	public ATObject native_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
-    	// Add meta_ prefix
-        String jSelector = Reflection.upMetaLevelSelector(atSelector);
-        try {
-        	// Attempt to invoke the method
-        	return Reflection.upInvocation(principal_ /*implementor and self*/, jSelector, atSelector, arguments);
-        } catch (XSelectorNotFound e) {
-        	e.catchOnlyIfSelectorEquals(atSelector);
-			// Principal does not have a corresponding meta_level method
-			// try for a base_level method of the mirror itself.
-			return super.native_invoke(receiver, atSelector, arguments);
-        }
-	}
-	
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
 	 * ------------------------------------------ */
 
-	/**
-	 * <p>The effect of selecting fields or methods on a mirror (through meta_select) 
-	 * consists of checking whether the requested selector matches a field of the 
-	 * principal wrapped by this mirror. If this is the case, the principal's 
-	 * ('meta_get' + selector) method will be invoked. Else the selector might 
-	 * identify one of the principal's meta-operations. If this is the case, then
-	 * an AmbientTalk representation of the Java method ('meta_' + selector) will 
-	 * be returned. </p>
-	 *  
-	 * <p>Because an explicit AmbientTalk method invocation must be converted into 
-	 * an implicit Java method invocation, the invocation must be deified ('upped').
-	 * To uphold stratification of the mirror architecture, the result of this 
-	 * operation should be a mirror on the result of the Java method invocation.</p>
-	 * 
-	 * <p>Note that only when the principal does not have a matching meta_level field 
-	 * or method the mirror itself will be tested for a corresponding base_level 
-	 * behaviour (e.g. for its base field or for operators such as ==). In the 
-	 * latter case, stratification is not enforced. This is due to the fact that 
-	 * the said fields and methods are not meta-level behaviour, rather they are 
-	 * base-level operations which happen to be applicable on a mirror. An added 
-	 * advantage of this technique is that it permits a mirror to have a field 
-	 * referring to its principal.</p>
-	 */
-	public ATClosure native_select(ATObject receiver, final ATSymbol selector) throws InterpreterException {
-		try {
-			final String methSelector = Reflection.upMetaLevelSelector(selector);
-			return Reflection.upMethodSelection(principal_, methSelector, selector);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(selector);
-			// Principal does not have a corresponding meta_level field nor
-			// method try for a base_level field or method of the mirror itself.
-			return super.native_select(receiver, selector);
-		}		
-	}
-	
-	protected ATObject native_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
-		try {
-			final String methSelector = Reflection.upMetaLevelSelector(selector);
-        	// Attempt to invoke the method
-        	return Reflection.upInvocation(principal_ /*implementor and self*/, methSelector, selector, arguments);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(selector);
-			// Principal does not have a corresponding meta_level field nor
-			// method try for a base_level field or method of the mirror itself.
-			return super.native_call(selector, arguments);
-		}
-	}
-	
-    /**
-     * A mirror responds to a message m if and only if:
-     *  - either its principal has a method named meta_m
-     *  - or the mirror itself implements a method named base_m
-     */
-    public ATBoolean meta_respondsTo(ATSymbol atSelector) throws InterpreterException {
-        String jSelector = Reflection.upMetaLevelSelector(atSelector);
-        if (Reflection.upRespondsTo(principal_, jSelector)) {
-          return NATBoolean._TRUE_;
-        } else {
-          return super.meta_respondsTo(atSelector);
-        }
-    }
-	
-	/**
-	 * The effect of assigning a field on a mirror can be twofold. Either a meta_field
-	 * of the reflectee is altered (in this case, the passed value must be a mirror to
-	 * uphold stratification). Otherwise it is possible that a base field of the mirror
-	 * itself is changed.
-	 * 
-	 * @deprecated use invocation instead (UAP)
-	 */
-	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-		/*String jSelector = Reflection.upMetaFieldMutationSelector(name);
-		try{
-			Reflection.upFieldAssignment(principal_, jSelector, name, value);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(name);
-			// Principal does not have a corresponding meta_level method
-			// OR the passed value is not a mirror object
-			// try for a base_level method of the mirror itself.
-			return super.meta_assignField(receiver, name, value);
-		}	*/		
-		
-		return NATNil._INSTANCE_;
-	}
-	
-	/**
-	 * Native objects do not have any fields. They represent all their fields using
-	 * accessor (and/or mutator) methods.
-	 */
-    public ATField meta_grabField(ATSymbol fieldName) throws InterpreterException {
-    	throw new XUndefinedSlot("field grabbed", fieldName.toString());
-    }
     
     public ATMethod meta_grabMethod(ATSymbol methodName) throws InterpreterException {
         try {
@@ -259,14 +122,6 @@ public class NATIntrospectiveMirror extends NATByRef {
 			// try to find a base_ method in the mirror
 			return super.meta_grabMethod(methodName);
 		}
-    }
-    
-	/**
-	 * Listing the fields of a mirror returns an empty table, as native implementation
-	 * objects no longer have any fields, they are subsumed in methods.
-	 */
-	public ATTable meta_listFields() throws InterpreterException {
-		return NATTable.EMPTY;
     }
 
 	/**
@@ -334,5 +189,28 @@ public class NATIntrospectiveMirror extends NATByRef {
 		else
 			return this;
 	}*/
+
+	/**
+	 * For mirrors, first try to find a <tt>meta_</tt> method in the principal.
+	 * If this fails, try to find a <tt>base_</tt> method in the introspective mirror itself.
+	 */
+	protected boolean hasLocalMethod(ATSymbol atSelector) throws InterpreterException {
+        return Reflection.upRespondsTo(principal_, Reflection.upMetaLevelSelector(atSelector)) ||
+               super.hasLocalMethod(atSelector);
+	}
+	
+	/**
+	 * For mirrors, first try to find a <tt>meta_</tt> method in the principal.
+	 * If this fails, try to find a <tt>base_</tt> method in the introspective mirror itself.
+	 */
+	protected ATMethod getLocalMethod(ATSymbol selector) throws InterpreterException {
+		try {
+			String methSelector = Reflection.upMetaLevelSelector(selector);
+			return Reflection.upMethodSelection(principal_, methSelector, selector);
+		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(selector);
+			return super.getLocalMethod(selector);
+		}
+	}
 
 }

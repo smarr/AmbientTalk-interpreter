@@ -40,7 +40,7 @@ import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATClosureMethod;
 import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -272,7 +272,7 @@ public final class Import {
 
 		if (conflicts == null) {
 			// no conflicts found
-			return NATNil._INSTANCE_;
+			return OBJNil._INSTANCE_;
 		} else {
 			throw new XImportConflict((ATSymbol[]) conflicts.toArray(new ATSymbol[conflicts.size()]));
 		}

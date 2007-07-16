@@ -46,7 +46,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATCallframe;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -96,7 +96,7 @@ public class NATMirage extends NATObject {
 	
 	public NATMirage(ATObject dynamicParent, ATObject lexParent, boolean parentType, ATTypeTag[] types) {
 		super(dynamicParent, lexParent, parentType, types);
-		mirror_ = NATNil._INSTANCE_; // set to nil while not initialized
+		mirror_ = OBJNil._INSTANCE_; // set to nil while not initialized
 	}
 	
 	/**
@@ -128,7 +128,7 @@ public class NATMirage extends NATObject {
 			         byte flags,
 			         ATTypeTag[] types) throws InterpreterException {
 		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types);
-		mirror_ = NATNil._INSTANCE_;
+		mirror_ = OBJNil._INSTANCE_;
 	}
 	
 	public NATMirage asMirage() throws XTypeMismatch {
@@ -170,10 +170,6 @@ public class NATMirage extends NATObject {
 		return super.meta_addMethod(method);
 	}
 
-	public ATNil magic_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws InterpreterException {
-		return super.meta_assignField(receiver, selector, value);
-	}
-
 	public ATObject magic_clone() throws InterpreterException {
 		return super.meta_clone();
 	}
@@ -201,9 +197,9 @@ public class NATMirage extends NATObject {
 		//return super.meta_invoke(receiver, selector, arguments);
 		// If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
 		if (selector.isAssignmentSymbol()) {
-			return super.impl_mutateSlot(receiver, selector.asAssignmentSymbol(), arguments);
+			return super.impl_invokeMutator(receiver, selector.asAssignmentSymbol(), arguments);
 		} else {
-			return super.impl_accessSlot(receiver, selector, arguments);
+			return super.impl_invokeAccessor(receiver, selector, arguments);
 		}
 	}
 
@@ -252,11 +248,6 @@ public class NATMirage extends NATObject {
 	}
 
 
-	public ATNil magic_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
-		return super.meta_assignVariable(name, value);
-	}
-
-
 	public ATObject magic_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		return super.meta_doesNotUnderstand(selector);
 	}
@@ -290,8 +281,8 @@ public class NATMirage extends NATObject {
 		return super.meta_isExtensionOfParent();
 	}
 
-	public ATObject magic_lexicalParent() throws InterpreterException {
-		return super.meta_lexicalParent();
+	public ATObject magic_invokeField(ATObject rcv, ATSymbol sym) throws InterpreterException {
+		return super.meta_invokeField(rcv, sym);
 	}
 	
 	public ATObject magic_pass() throws InterpreterException {
@@ -331,17 +322,7 @@ public class NATMirage extends NATObject {
 				NATTable.atValue(new ATObject[] { method })
 				);
 			
-		return NATNil._INSTANCE_;
-	}
-
-	public ATNil meta_assignField(ATObject receiver, ATSymbol selector, ATObject value) throws InterpreterException {
-		mirror_.meta_invoke(
-				mirror_,
-				AGSymbol.jAlloc("assignField"),
-				NATTable.atValue(new ATObject[] { receiver, selector, value })
-				);
-			
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 
 	public ATObject meta_clone() throws InterpreterException {
@@ -356,7 +337,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.jAlloc("defineField"),
 				NATTable.atValue(new ATObject[] { name, value }));
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException {
@@ -423,15 +404,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.jAlloc("addField"),
 				NATTable.atValue(new ATObject[] { field }));
-		return NATNil._INSTANCE_;
-	}
-
-	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
-		mirror_.meta_invoke(
-				mirror_,
-				AGSymbol.jAlloc("assignVariable"),
-				NATTable.atValue(new ATObject[] { name, value }));
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 
 
@@ -464,7 +437,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.jAlloc("send"),
 				NATTable.atValue(new ATObject[] { message }));
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 
 
@@ -490,11 +463,11 @@ public class NATMirage extends NATObject {
 				NATTable.EMPTY).asBoolean();
 	}
 
-	public ATObject meta_lexicalParent() throws InterpreterException {
+	public ATObject meta_invokeField(ATObject rcv, ATSymbol sym) throws InterpreterException {
 		return mirror_.meta_invoke(
 				mirror_,
-				AGSymbol.jAlloc("lexicalParent"),
-				NATTable.EMPTY);
+				AGSymbol.jAlloc("invokeField"),
+				NATTable.atValue(new ATObject[] { rcv, sym }));
 	}
 	
     public ATObject meta_pass() throws InterpreterException {
@@ -534,7 +507,7 @@ public class NATMirage extends NATObject {
 	}
 
 	/** implementation-level method is mapped onto regular MOP method */
-	public ATObject impl_accessSlot(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
+	public ATObject impl_invokeAccessor(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("invoke"),
@@ -542,7 +515,7 @@ public class NATMirage extends NATObject {
 	}
 
 	/** implementation-level method is mapped onto regular MOP method */
-	public ATObject impl_mutateSlot(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
+	public ATObject impl_invokeMutator(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
 		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("invoke"),
@@ -564,5 +537,7 @@ public class NATMirage extends NATObject {
 				AGSymbol.jAlloc("select"),
 				NATTable.atValue(new ATObject[] { receiver, selector })).asClosure();
 	}
+	
+	
 	
 }

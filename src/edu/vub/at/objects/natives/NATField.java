@@ -31,7 +31,6 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATField;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
@@ -71,9 +70,9 @@ public class NATField extends NATByRef implements ATField {
 		}
 	}
 
-	public ATNil base_writeField(ATObject newValue) throws InterpreterException {
+	public ATObject base_writeField(ATObject newValue) throws InterpreterException {
 		frame_.setLocalField(name_, newValue);
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	public NATText meta_print() throws InterpreterException {

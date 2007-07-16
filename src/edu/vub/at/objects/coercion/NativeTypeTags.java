@@ -69,6 +69,10 @@ public final class NativeTypeTags {
 //deftype MethodInvocation <: Message;
 	public final static NATTypeTag _METHODINV_ = NATTypeTag.atValue("MethodInvocation", _MESSAGE_);
 
+//deftype FieldSelection <: Message;
+    public final static NATTypeTag _FIELDSEL_ = NATTypeTag.atValue("FieldSelection", _MESSAGE_);
+
+	
 //deftype Delegation <: Message;
 	public final static NATTypeTag _DELEGATION_ = NATTypeTag.atValue("Delegation", _MESSAGE_);
 	

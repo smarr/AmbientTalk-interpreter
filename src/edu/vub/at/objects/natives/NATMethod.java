@@ -30,6 +30,7 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.eval.PartialBinder;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -38,6 +39,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
+import edu.vub.at.objects.symbiosis.JavaClosure;
 import edu.vub.at.util.logging.Logging;
 
 /**
@@ -85,6 +87,10 @@ public class NATMethod extends NATByCopy implements ATMethod {
 		parameterBindingFunction_ = parameterBindingFunction;
 	}
 
+	public ATClosure base_wrap(ATObject lexicalScope, ATObject dynamicReceiver) throws InterpreterException {
+		return new NATClosure(this, lexicalScope, dynamicReceiver);
+	}
+	
 	public ATSymbol base_name() {
 		return name_;
 	}

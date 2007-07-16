@@ -47,7 +47,7 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATFraction;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -165,12 +165,12 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// -- CLASS OBJECTS --
 			assertEquals(jTestClass, Symbiosis.ambientTalkToJava(atTestClass, Class.class));
 			// -- nil => NULL if converting to Java --
-			assertEquals(null, Symbiosis.ambientTalkToJava(NATNil._INSTANCE_, Runnable.class));
+			assertEquals(null, Symbiosis.ambientTalkToJava(OBJNil._INSTANCE_, Runnable.class));
 			// -- nil => nil if remaining within AT --
-			assertEquals(NATNil._INSTANCE_, Symbiosis.ambientTalkToJava(NATNil._INSTANCE_, ATObject.class));
+			assertEquals(OBJNil._INSTANCE_, Symbiosis.ambientTalkToJava(OBJNil._INSTANCE_, ATObject.class));
 			// beware with types such as java.lang.Object that match both Java and AT types!
 			// if the ATObject can be assigned to the Java type, the ATObject will be kept
-			assertEquals(NATNil._INSTANCE_, Symbiosis.ambientTalkToJava(NATNil._INSTANCE_, Object.class));
+			assertEquals(OBJNil._INSTANCE_, Symbiosis.ambientTalkToJava(OBJNil._INSTANCE_, Object.class));
 			// -- INTERFACE TYPES AND NAT CLASSES --
 			assertTrue(Symbiosis.ambientTalkToJava(new NATObject(), Runnable.class) instanceof Runnable);
 			try {
@@ -202,7 +202,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// -- CLASS OBJECTS --
 			assertEquals(atTestClass, Symbiosis.javaToAmbientTalk(jTestClass));
 			// -- nil => NULL --
-			assertEquals(NATNil._INSTANCE_, Symbiosis.javaToAmbientTalk(null));
+			assertEquals(OBJNil._INSTANCE_, Symbiosis.javaToAmbientTalk(null));
 			// -- INTERFACE TYPES AND NAT CLASSES --
 			ATObject orig = new NATObject();
 			Object proxy = Symbiosis.ambientTalkToJava(orig, Runnable.class);
@@ -226,7 +226,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			
 			// result := atTestObject.settertest(1); assert(result == nil); assert(atTestObject.xtest == 1)
 			result = atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("settertest"), NATTable.atValue(new ATObject[] { NATNumber.ONE }));
-			assertEquals(NATNil._INSTANCE_, result);
+			assertEquals(OBJNil._INSTANCE_, result);
 			assertEquals(1, jTestObject.xtest);
 			// result := atTestObject.xtest
 			result = atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("xtest"), NATTable.EMPTY);
@@ -269,7 +269,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testFaultyArity() {
 		try {
-			atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("gettertest"), NATTable.atValue(new ATObject[] { NATNil._INSTANCE_ }));
+			atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("gettertest"), NATTable.atValue(new ATObject[] { OBJNil._INSTANCE_ }));
 			fail("Expected an arity mismatch exception");
 		} catch(XArityMismatch e) {
 			// expected exception: success
@@ -320,7 +320,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			ATObject result = atTestObject.meta_invoke(atTestObject,
 													AGSymbol.jAlloc("overloadedvararg"),
 													NATTable.atValue(new ATObject[] { NATNumber.ZERO, NATNumber.ONE }));
-			assertEquals(NATNil._INSTANCE_, result);
+			assertEquals(OBJNil._INSTANCE_, result);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -475,12 +475,12 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// the dynamic parent of atTestObject is atTestClass
 			assertEquals(atTestClass, atTestObject.base_super());
 			// the dynamic parent of atTestClass is nil
-			assertEquals(NATNil._INSTANCE_, atTestClass.base_super());
+			assertEquals(OBJNil._INSTANCE_, atTestClass.base_super());
 			
 			// the lexical parent of atTestObject is the lexical root
-			assertEquals(Evaluator.getGlobalLexicalScope(), atTestObject.meta_lexicalParent());
+			assertEquals(Evaluator.getGlobalLexicalScope(), atTestObject.impl_lexicalParent());
 			// the lexical parent of atTestClass is the lexical root
-			assertEquals(Evaluator.getGlobalLexicalScope(), atTestClass.meta_lexicalParent());
+			assertEquals(Evaluator.getGlobalLexicalScope(), atTestClass.impl_lexicalParent());
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -541,15 +541,15 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// (reflect: atTestClass).defineField("z", 1)
 			atTestClass.meta_defineField(AGSymbol.jAlloc("z"), NATNumber.ONE);
 			// assert(atTestClass.z == 1)
-			assertEquals(NATNumber.ONE, atTestClass.impl_accessSlot(atTestClass, AGSymbol.jAlloc("z"), NATTable.EMPTY));
+			assertEquals(NATNumber.ONE, atTestClass.impl_invokeAccessor(atTestClass, AGSymbol.jAlloc("z"), NATTable.EMPTY));
 			// assert(aTestObject.z == 1) -> delegation to class
-			assertEquals(NATNumber.ONE, atTestObject.impl_accessSlot(atTestObject, AGSymbol.jAlloc("z"), NATTable.EMPTY));
+			assertEquals(NATNumber.ONE, atTestObject.impl_invokeAccessor(atTestObject, AGSymbol.jAlloc("z"), NATTable.EMPTY));
 			
 			// (reflect: atTestClass).addMethod(<method:"get",[],{self.xtest}>)
 			ATMethod get = evalAndReturn("def get() { self.xtest }; &get").asClosure().base_method();
 			atTestClass.meta_addMethod(get);
 			// assert(atTestObject.xtest == atTestObject.get())
-			assertEquals(atTestObject.impl_accessSlot(atTestObject, AGSymbol.jAlloc("xtest"), NATTable.EMPTY),
+			assertEquals(atTestObject.impl_invokeAccessor(atTestObject, AGSymbol.jAlloc("xtest"), NATTable.EMPTY),
 					     atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("get"), NATTable.EMPTY));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -665,9 +665,9 @@ public class SymbiosisTest extends AmbientTalkTest {
 			ATObject instance = atTestObject.meta_newInstance(
 					NATTable.atValue(new ATObject[] { NATNumber.atValue(55) }));
 			
-			assertEquals(55, instance.impl_accessSlot(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);
+			assertEquals(55, instance.impl_invokeAccessor(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);
 			assertEquals(atTestClass, instance.base_super());
-			assertEquals(jTestObject.xtest, atTestObject.impl_accessSlot(atTestObject,
+			assertEquals(jTestObject.xtest, atTestObject.impl_invokeAccessor(atTestObject,
 					AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -693,8 +693,8 @@ public class SymbiosisTest extends AmbientTalkTest {
 			ATObject instance = atTestClass.meta_invoke(atTestClass, AGSymbol.jAlloc("new"),
 					NATTable.atValue(new ATObject[] { NATNumber.atValue(10), NATNumber.atValue(11) }));
 			
-			assertEquals(10, instance.impl_accessSlot(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);
-			assertEquals(11, instance.impl_accessSlot(instance, AGSymbol.jAlloc("ytest"), NATTable.EMPTY).asNativeNumber().javaValue);
+			assertEquals(10, instance.impl_invokeAccessor(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);
+			assertEquals(11, instance.impl_invokeAccessor(instance, AGSymbol.jAlloc("ytest"), NATTable.EMPTY).asNativeNumber().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -706,13 +706,13 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 * Tests whether jlobby.java.lang.Object results in the proper loading of that class
 	 */
 	public void testJLobbyPackageLoading() throws InterpreterException {
-		ATObject jpkg = jLobby_.impl_accessSlot(jLobby_, AGSymbol.jAlloc("java"), NATTable.EMPTY);
+		ATObject jpkg = jLobby_.impl_invokeAccessor(jLobby_, AGSymbol.jAlloc("java"), NATTable.EMPTY);
 		assertEquals(JavaPackage.class, jpkg.getClass());
 		assertTrue(jLobby_.meta_respondsTo(AGSymbol.jAlloc("java")).asNativeBoolean().javaValue);
-		ATObject jlpkg = jpkg.impl_accessSlot(jpkg, AGSymbol.jAlloc("lang"), NATTable.EMPTY);
+		ATObject jlpkg = jpkg.impl_invokeAccessor(jpkg, AGSymbol.jAlloc("lang"), NATTable.EMPTY);
 		assertEquals(JavaPackage.class, jlpkg.getClass());
 		assertTrue(jpkg.meta_respondsTo(AGSymbol.jAlloc("lang")).asNativeBoolean().javaValue);
-		ATObject jObject = jlpkg.impl_accessSlot(jlpkg, AGSymbol.jAlloc("Object"), NATTable.EMPTY);
+		ATObject jObject = jlpkg.impl_invokeAccessor(jlpkg, AGSymbol.jAlloc("Object"), NATTable.EMPTY);
 		assertEquals(JavaClass.class, jObject.getClass());
 		assertTrue(jlpkg.meta_respondsTo(AGSymbol.jAlloc("Object")).asNativeBoolean().javaValue);
 	}
@@ -738,7 +738,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testJLobbyNonexistentClassLoading() throws InterpreterException {
 		try {
-			jLobby_.impl_accessSlot(jLobby_, AGSymbol.jAlloc("Foo"), NATTable.EMPTY);
+			jLobby_.impl_invokeAccessor(jLobby_, AGSymbol.jAlloc("Foo"), NATTable.EMPTY);
 			fail("expected a class not found exception");
 		} catch (XClassNotFound e) {
 			// success: expected exception
@@ -750,7 +750,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testJLobbyExplicitPackageLoading() throws InterpreterException {
 		// def fooPkg := jLobby.foo;
-		ATObject fooPkg = jLobby_.impl_accessSlot(jLobby_, AGSymbol.jAlloc("foo"), NATTable.EMPTY);
+		ATObject fooPkg = jLobby_.impl_invokeAccessor(jLobby_, AGSymbol.jAlloc("foo"), NATTable.EMPTY);
 		// def BarPkg := foo.package(`Bar);
 		ATObject BarPkg = fooPkg.meta_invoke(fooPkg,
 										   AGSymbol.jAlloc("package"),

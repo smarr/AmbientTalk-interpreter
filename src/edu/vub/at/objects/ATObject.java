@@ -43,8 +43,9 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
 import edu.vub.at.objects.natives.NATCallframe;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NativeATObject;
 import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
@@ -66,10 +67,10 @@ import edu.vub.at.objects.symbiosis.JavaObject;
  * that (almost) fully implement this interface. The principal implementors are:
  * 
  * <ul>
- *   <li>{@link NATNil}: provides a default implementation for all <i>native</i> data types.
+ *   <li>{@link NativeATObject}: provides a default implementation for all <i>native</i> data types.
  *   For example, native methods, closures, abstract grammar nodes, booleans, numbers, etc.
  *   are all represented as AmbientTalk objects with 'native' behaviour.
- *   <li>{@link NATCallframe}: overrides most of the default behaviour of {@link NATNil} to
+ *   <li>{@link NATCallframe}: overrides most of the default behaviour of {@link NativeATObject} to
  *   implement the behaviour of call frames, also known as <i>activation records</i>. In
  *   AmbientTalk, call frames are the objects that together define the runtime stack.
  *   They are objects with support for fields but without support for actual methods.
@@ -331,55 +332,6 @@ public interface ATObject extends ATConversions {
      */
     public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException;
 
-    /**
-     * This meta-level operation reifies variable assignment. Hence, the base-level
-     * code <code>x := v</code> evaluated in a lexical scope <tt>lex</tt>
-     * is interpreted at the meta-level as:
-     * <pre>(reflect: lex).assignVariable(`x, v)</pre>
-     * 
-     * When <tt>assignVariable</tt> is invoked on an object's mirror, the variable
-     * to assign is looked up according to rules similar to those defined by <tt>lookup</tt>.
-     * First, the object's local fields are checked. If the selector is not found there,
-     * the fields of the <i>lexical parent</i> of the object are searched recursively.
-     * Hence, variable assignment follows <b>lexical scoping rules</b>.
-     * Note that local methods are always disregarded: methods are not assignable.
-     * <p>
-     * When the lookup is successful, the value bound to the found field is assigned
-     * to the given value.
-     *
-     * @param name a symbol representing the name of the variable to assign.
-     * @param value the value to assign to the variable.
-     * @return nil
-     * @throws XUnassignableField if the variable to assign to cannot be found.
-     * 
-     * @deprecated variable assignment should be done through call with an assignment symbol
-     */
-    public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException;
-
-    /**
-     * This meta-level operation reifies field assignment. Hence, the base-level
-     * code <code>o.x := v</code> is interpreted at the meta-level as:
-     * <pre>(reflect: o).assignField(`x, v)</pre>
-     * 
-     * When <tt>assignField</tt> is invoked on an object's mirror, the field
-     * to assign is looked up according to rules similar to those defined by
-     * <tt>invoke</tt> and <tt>select</tt>. First, the object's local fields
-     * are checked. If the selector is not found there, the fields of its
-     * <i>dynamic parent</i> are searched recursively. Note that local methods
-     * are always disregarded: methods are not assignable.
-     * <p>
-     * When the lookup is successful, the value bound to the found field is assigned
-     * to the given value.
-     *
-     * @param name a symbol representing the name of the field to assign.
-     * @param value the value to assign to the field.
-     * @return nil
-     * @throws XUnassignableField if the field to assign to cannot be found.
-     * 
-     * @deprecated field assignment should be done through invoke with an assignment symbol
-     */
-    public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException;
-
     /* -----------------------------------------
       * -- Cloning and instantiation protocol --
       * ---------------------------------------- */
@@ -602,20 +554,6 @@ public interface ATObject extends ATConversions {
      */
     public ATBoolean meta_isExtensionOfParent() throws InterpreterException;
 
-    /* ---------------------
-     * -- Mirror Fields   --
-     * --------------------- */
-    
-    /**
-     * The <tt>lexicalParent</tt> field of a mirror denotes the lexical parent
-     * pointer of the mirror's base object. The lexical parent is the enclosing
-     * <i>lexical scope</i> in which the object was defined.
-     * 
-     * @return the object denoting this mirror's base object's lexically
-     * enclosing scope.
-     */
-    public ATObject meta_lexicalParent() throws InterpreterException;
-
     /* ------------------------------------------
       * -- Abstract Grammar evaluation protocol --
       * ------------------------------------------ */
@@ -822,7 +760,18 @@ public interface ATObject extends ATConversions {
      * - Implementation-Level Object interface -
      * ----------------------------------------- */
     
+    /**
+     * The <tt>lexicalParent</tt> field of a mirror denotes the lexical parent
+     * pointer of the mirror's base object. The lexical parent is the enclosing
+     * <i>lexical scope</i> in which the object was defined.
+     * 
+     * @return the object denoting this mirror's base object's lexically
+     * enclosing scope.
+     */
+    public ATObject impl_lexicalParent() throws InterpreterException;
+    
 	/**
+	 * Interprets <code>o.x()</code> or <code>o.m(arg)</code>.
 	 * Implements slot access. This method is an implementation-level method (not part of the MOP).
 	 * @param receiver the dynamic receiver of the slot invocation.
 	 * @param selector a regular symbol denoting the slot accessor.
@@ -830,9 +779,10 @@ public interface ATObject extends ATConversions {
 	 * @return the result of applying the accessor.
 	 * @throws XArityMismatch if a field accessor is not invoked with exactly zero arguments.
 	 */
-	public ATObject impl_accessSlot(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException;
+	public ATObject impl_invokeAccessor(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException;
 	
     /**
+     * Interprets <code>o.x := v</code>.
      * Implements slot mutation. This method is an implementation-level method (not part of the MOP).
      * @param receiver the dynamic receiver of the slot invocation.
 	 * @param selector an assignment symbol denoting which slot to invoke.
@@ -840,9 +790,10 @@ public interface ATObject extends ATConversions {
 	 * @return the result of applying the mutator.
 	 * @throws XArityMismatch if a field mutator is not invoked with exactly one argument.
      */
-	public ATObject impl_mutateSlot(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException;
+	public ATObject impl_invokeMutator(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException;
 	
 	/**
+	 * Interprets <code>o.&m</code>.
 	 * Implements slot accessor selection. This method is an implementation-level method (not part of the MOP).
 	 * @param receiver the dynamic receiver of the slot selection.
 	 * @param selector a regular symbol denoting the accessor to select.
@@ -851,6 +802,7 @@ public interface ATObject extends ATConversions {
 	public ATClosure impl_selectAccessor(ATObject receiver, ATSymbol selector) throws InterpreterException;
 	
 	/**
+	 * Interprets <code>o.&m:=</code>.
 	 * Implements slot mutator selection. This method is an implementation-level method (not part of the MOP).
 	 * @param receiver the dynamic receiver of the slot selection.
 	 * @param selector an assignment symbol denoting the mutator to select.
@@ -860,7 +812,7 @@ public interface ATObject extends ATConversions {
 	
 	
     /**
-     * 
+     * Interprets <code>x := v</code> (equivalent to <code>x:=(v)</code>) or <code>f(v)</code>.
      * Implements functions calls and lexical access to variables.
      * 
      * TODO rework comments
@@ -894,6 +846,7 @@ public interface ATObject extends ATConversions {
     public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException;
     
     /**
+     * Interprets <code>f(v)</code>.
      * Implements the protocol to access lexical variables and methods. This operation (which is not exposed
      * as part of the MOP) locates the lexically visible binding with the given selector and will return 
      * the value of the slot.
@@ -908,9 +861,10 @@ public interface ATObject extends ATConversions {
      * When no local slot is found, lookup continues along the lexical parent chain. When the lexical chain is 
      * completely traversed, a selector not found exception is reported.
      */
-    public ATObject impl_accessVariable(ATSymbol selector, ATTable arguments) throws InterpreterException;
+    public ATObject impl_callAccessor(ATSymbol selector, ATTable arguments) throws InterpreterException;
     
     /**
+     * Interprets <code>x := v</code>.
      * Implements the protocol to assign lexical variables. This operation (which is not exposed as part of the MOP) 
      * locates slots to assign corresponding to a specific assignment symbol (selector + ":=") and looks for: <ol>
      * <li> a "setter" method with the specified assignment symbol (i.e. including the ":=") which can then be 
@@ -924,12 +878,47 @@ public interface ATObject extends ATConversions {
      * When no local slot is found, lookup continues along the lexical parent chain. When the lexical chain is 
      * completely traversed, a selector not found exception is reported.
      */
-    public ATObject impl_mutateVariable(ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException;
+    public ATObject impl_callMutator(ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException;
     
+    /**
+     * Interprets <code>x</code>.
+     * @param selector
+     * @return
+     * @throws InterpreterException
+     */
+    public ATObject impl_callField(ATSymbol selector) throws InterpreterException;
+    
+    /**
+     * Interprets <code>&x</code> or <code>&x:=</code>.
+     * @param selector
+     * @return
+     * @throws InterpreterException
+     */
     public ATClosure impl_lookup(ATSymbol selector) throws InterpreterException;
 
+    /**
+     * Interprets <code>&x</code>.
+     * @param selector
+     * @return
+     * @throws InterpreterException
+     */
     public ATClosure impl_lookupAccessor(ATSymbol selector) throws InterpreterException;
 
+    /**
+     * Interprets <code>&x:=</code>.
+     * @param selector
+     * @return
+     * @throws InterpreterException
+     */
     public ATClosure impl_lookupMutator(ATAssignmentSymbol selector) throws InterpreterException;
-
+    
+    /**
+     * Interprets <code>o.x</code>.
+     * @param receiver
+     * @param selector
+     * @return
+     * @throws InterpreterException
+     */
+    public ATObject meta_invokeField(ATObject receiver, ATSymbol selector) throws InterpreterException;
+    
 }

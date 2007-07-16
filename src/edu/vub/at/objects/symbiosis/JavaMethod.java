@@ -31,6 +31,7 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -131,6 +132,10 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 		} else {
 			return false;
 		}
+	}
+
+	public ATClosure base_wrap(ATObject lexicalScope, ATObject dynamicReceiver) {
+		return new JavaClosure(lexicalScope, this);
 	}
 	
 }

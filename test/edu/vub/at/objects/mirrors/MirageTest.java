@@ -32,7 +32,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -185,7 +185,7 @@ public class MirageTest extends AmbientTalkTest {
 			StringBuffer output;
 			
 			public BufferedEcho() {
-				super(NATNil._INSTANCE_);
+				super(OBJNil._INSTANCE_);
 				initialize();
 			}
 			

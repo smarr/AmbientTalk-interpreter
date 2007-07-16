@@ -44,6 +44,18 @@ import edu.vub.at.objects.grammar.ATSymbol;
 public interface ATMethod extends ATObject {
 
 	/**
+	 * Wrap the receiver method into a closure which packs together the code (method) and the scope (context)
+	 * in which the code should be evaluated.
+	 * 
+	 * @param lexicalScope the lexical scope in which the method was created. During method invocation,
+	 * lexical lookup should proceed along this scope.
+	 * @param dynamicReceiver the dynamic receiver (value of <tt>self</tt>) at the time the method is
+	 * selected from an object.
+	 * @return a closure wrapping this method.
+	 */
+	public ATClosure base_wrap(ATObject lexicalScope, ATObject dynamicReceiver) throws InterpreterException;
+	
+	/**
 	 * Applies the method to the given arguments in the given context.
 	 * The context is usually supplied by a closure and is necessary in order to
 	 * pair a method with its current receiver (its 'self').

@@ -6,11 +6,11 @@ def removableFieldsMirror :=
     def removeField( symbol ) {
       removedField := symbol;
     };
-    def select( receiver, symbol ) {
+    def invokeField( receiver, symbol ) {
       if: (symbol == removedField) then: {
         raise: doesNotUnderstandX.new(symbol , self);
       } else: {
-        super.select( receiver, symbol );
+        super.invokeField( receiver, symbol );
       }
     }
   };

@@ -90,8 +90,8 @@ public final class InvocationStack implements Cloneable, Serializable {
 		invocationStack_ = initstack;
 	}
 	
-	public void methodInvoked(ATExpression methodInvocation, ATObject receiver, ATMessage message) throws InterpreterException {
-		invocationStack_.push(new InvocationFrame(methodInvocation, receiver, message.base_arguments()));
+	public void methodInvoked(ATExpression methodInvocation, ATObject receiver, ATTable args) throws InterpreterException {
+		invocationStack_.push(new InvocationFrame(methodInvocation, receiver, args));
 	}
 	
 	public void functionCalled(ATExpression funCall, ATClosure fun, ATTable evaluatedArgs) {

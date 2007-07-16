@@ -97,7 +97,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		}
 
 		public ATObject base_ifFalse_(ATClosure clo) throws InterpreterException {
-			return NATNil._INSTANCE_;
+			return OBJNil._INSTANCE_;
 		}
 		
 		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws InterpreterException {
@@ -133,7 +133,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		// base interface for false
 		
 		public ATObject base_ifTrue_(ATClosure clo) throws InterpreterException {
-			return NATNil._INSTANCE_;
+			return OBJNil._INSTANCE_;
 		}
 
 		public ATObject base_ifFalse_(ATClosure clo) throws InterpreterException {

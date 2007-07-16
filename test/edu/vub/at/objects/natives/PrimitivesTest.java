@@ -38,7 +38,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			TXTambienttalk_.base_find_do_(NATText.atValue("[aeiou]"), new NativeClosure(null) {
 				public ATObject base_apply(ATTable arguments) throws InterpreterException {
 					buff.append(arguments.base_at(NATNumber.ONE).asNativeText().javaValue);
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			});
 			assertEquals(buff.toString(), "aiea");
@@ -158,7 +158,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			NATNumber.atValue(3).base_doTimes_(new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					buff.append(getNbr(args, 1));
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			});
 			assertEquals("123", buff.toString());
@@ -168,7 +168,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			NATNumber.atValue(3).base_to_do_(NATNumber.atValue(5), new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					buff2.append(getNbr(args, 1));
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			});
 			assertEquals("34", buff2.toString());
@@ -178,7 +178,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			NATNumber.atValue(50).base_to_step_do_(NATNumber.atValue(0), NATNumber.atValue(10), new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					buff3.append(getNbr(args, 1));
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			});
 			assertEquals("5040302010", buff3.toString());
@@ -269,7 +269,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 
 			// find: ablock
 			evalAndCompareTo("[`a, `b, `c].find: { |e| e == `b }", "2");
-			evalAndCompareTo("[`a, `b, `c].find: { |e| e == `d }", NATNil._INSTANCE_);
+			evalAndCompareTo("[`a, `b, `c].find: { |e| e == `d }", OBJNil._INSTANCE_);
 			
 			// vowels.implode() => "zeiou"
 			assertEquals("zeiou", vowels.base_implode().asNativeText().javaValue);
@@ -300,7 +300,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			}));
 			
 			// (0 < 1).ifFalse: { 0 } => nil
-			assertEquals(NATNil._INSTANCE_, NATNumber.ZERO.base__opltx_(NATNumber.ONE).base_ifFalse_(new NativeClosure(null) {
+			assertEquals(OBJNil._INSTANCE_, NATNumber.ZERO.base__opltx_(NATNumber.ONE).base_ifFalse_(new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) {
 					return NATNumber.ZERO;
 				}

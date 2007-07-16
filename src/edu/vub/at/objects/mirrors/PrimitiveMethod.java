@@ -35,7 +35,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
@@ -81,7 +81,7 @@ public class PrimitiveMethod extends NATMethod {
 			return this;
 		}
 		
-		public ATTable base_statements() { return NATTable.of(NATNil._INSTANCE_); }
+		public ATTable base_statements() { return NATTable.of(OBJNil._INSTANCE_); }
 		
 		public NATText meta_print() throws InterpreterException {
 			return NATText.atValue("<primitive body>");
@@ -105,7 +105,7 @@ public class PrimitiveMethod extends NATMethod {
 	public PrimitiveMethod(ATSymbol name, ATTable formals) {
 		super(name, formals, new PrimitiveBody() {
 			public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-				return NATNil._INSTANCE_;
+				return OBJNil._INSTANCE_;
 			}
 		});
 	}

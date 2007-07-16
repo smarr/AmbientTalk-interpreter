@@ -3,6 +3,7 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -48,15 +49,13 @@ public class UniformAccessTest extends AmbientTalkTest {
 	 * scope of a given scope object. This is used to test the semantics of call and 
 	 * lookup in particularly in combination with native and symbiotic objects. 
 	 */
-	private final ATClosure atWithScope_Do_ = new NativeClosure(NATNil._INSTANCE_) {
+	private final ATClosure atWithScope_Do_ = new NativeClosure(OBJNil._INSTANCE_) {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			ATObject closureScope = arguments.base_at(NATNumber.ONE);
 			ATClosure literalClosure = arguments.base_at(NATNumber.atValue(2)).asClosure();
 			
-			return new NATClosure(
-					literalClosure.base_method(), 
-					new NATContext(closureScope, literalClosure.base_context().base_self()))
-			.base_apply(NATTable.EMPTY);
+			return literalClosure.base_method().base_wrap(closureScope, literalClosure.base_context().base_self())
+			  .base_apply(NATTable.EMPTY);
 		}
 	};
 		
@@ -146,6 +145,17 @@ public class UniformAccessTest extends AmbientTalkTest {
 		evalAndReturn("x.receiverExpression := `object");
 		// finally assert that the new value is correctly reported
 		evalAndCompareTo("receiver()", AGSymbol.jAlloc("object"));
+	}
+	
+	/**
+	 * Tests lexical field mutator access.
+	 */
+	public void testLexicalMutatorAccess() throws InterpreterException {
+		evalAndReturn("def testobj := object: { def x := 5; def m() { nil }; def c := { 5 } }");
+		evalAndCompareTo("withScope: testobj do: { &x:= }", "<native closure:x:=>");
+		// there is no implicit mutator for nullary methods
+		evalAndTestException("withScope: testobj do: { &m:= }", XUnassignableField.class);
+		evalAndCompareTo("withScope: testobj do: { &c:= }", "<native closure:c:=>");
 	}
 	
 	/**
@@ -261,14 +271,14 @@ public class UniformAccessTest extends AmbientTalkTest {
 		
 		evalAndReturn("jVector.add( [4, 8, 15, 16, 23, 42] )");
 		
-		evalAndCompareTo("selSize",   NATNumber.ONE);
+		evalAndCompareTo("selSize",   "<java closure:size>");
 		evalAndCompareTo("selSize()", NATNumber.ONE);
-		evalAndCompareTo("lexSize",   NATNumber.ONE);
+		evalAndCompareTo("lexSize",   "<java closure:size>");
 		evalAndCompareTo("lexSize()", NATNumber.ONE);
 
-		evalAndCompareTo("selElementCount",   NATNumber.ONE);
+		evalAndCompareTo("selElementCount",   "<native closure:elementCount>");
 		evalAndCompareTo("selElementCount()", NATNumber.ONE);
-		evalAndCompareTo("lexElementCount",   NATNumber.ONE);
+		evalAndCompareTo("lexElementCount",   "<native closure:elementCount>");
 		evalAndCompareTo("lexElementCount()", NATNumber.ONE);	
 	}
 	
@@ -316,7 +326,7 @@ public class UniformAccessTest extends AmbientTalkTest {
 		evalAndCompareTo("cplxm.select(cplx, `re)", "<closure:re>");
 		evalAndCompareTo("cplxm.select(cplx, `im:=)", "<native closure:im:=>");
 		evalAndCompareTo("cplxm.select(cplx, `re:=)", "<closure:re:=>");
-		evalAndCompareTo("cplxm.select(cplx, `clofield)", "<closure:lambda>");
+		evalAndCompareTo("cplxm.select(cplx, `clofield)", "<native closure:clofield>");
 		
 		// test whether explicit invocation on mirrors can abstract over fields
 		// or methods or fields containing closures
@@ -324,7 +334,8 @@ public class UniformAccessTest extends AmbientTalkTest {
 		evalAndCompareTo("cplxm.invoke(cplx, `re, [])", "42");
 		evalAndCompareTo("cplxm.invoke(cplx, `im:=, [4])", "4");
 		evalAndCompareTo("cplxm.invoke(cplx, `re:=,[3])", "5");
-		evalAndCompareTo("cplxm.invoke(cplx, `clofield, [])", "5");
+		evalAndCompareTo("cplxm.invoke(cplx, `clofield, [])", "5"); // cplx.clofield() = 5
+		evalAndCompareTo("cplxm.invokeField(cplx, `clofield)", "<closure:lambda>"); // cplx.clofield = <lambda>
 	}
 	
 }

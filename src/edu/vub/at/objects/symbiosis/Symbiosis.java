@@ -44,7 +44,7 @@ import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATException;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
@@ -484,7 +484,7 @@ public final class Symbiosis {
 	public static final ATObject javaToAmbientTalk(Object jObj) throws InterpreterException {
 		// -- NULL => NIL --
 	    if (jObj == null) {
-		  return NATNil._INSTANCE_;
+		  return OBJNil._INSTANCE_;
 		// -- AmbientTalk implementation-level objects --
 	    } else if (jObj instanceof ATObject) {
 			return (ATObject) jObj;
@@ -577,7 +577,7 @@ public final class Symbiosis {
 		} else if (targetType == Class.class) {
 			return atObj.asJavaClassUnderSymbiosis().getWrappedClass();
 	    // -- nil => NULL --
-		} else if (atObj == NATNil._INSTANCE_) {
+		} else if (atObj == OBJNil._INSTANCE_) {
 			return null;
 		// -- INTERFACE TYPES AND NAT CLASSES --
 		} else {

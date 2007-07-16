@@ -35,7 +35,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -48,11 +48,11 @@ import edu.vub.at.objects.natives.NATTable;
 public class TestParameterBinding extends AmbientTalkTest {
 
 	private void ensureBound(ATSymbol var, ATObject value) throws InterpreterException {
-		assertEquals(value, bindScope_.impl_accessSlot(bindScope_, var, NATTable.EMPTY));
+		assertEquals(value, bindScope_.impl_invokeAccessor(bindScope_, var, NATTable.EMPTY));
 	}
 	
 	private void ensureBoundToTable(ATSymbol var, ATObject[] expected) throws InterpreterException {
-		NATTable val = bindScope_.impl_accessSlot(bindScope_, var, NATTable.EMPTY).asNativeTable();
+		NATTable val = bindScope_.impl_invokeAccessor(bindScope_, var, NATTable.EMPTY).asNativeTable();
 		ATObject[] values = val.elements_;
 		assertEquals(expected.length, values.length);
 		for (int i = 0; i < values.length; i++) {
@@ -67,7 +67,7 @@ public class TestParameterBinding extends AmbientTalkTest {
 	private NATMethod makeTestMethod(String nam, NATTable pars) {
 		try {
 			return new NATMethod(AGSymbol.jAlloc(nam), pars,
-				new AGBegin(NATTable.atValue(new ATObject[] { NATNil._INSTANCE_ })));
+				new AGBegin(NATTable.atValue(new ATObject[] { OBJNil._INSTANCE_ })));
 		} catch (InterpreterException e) {
 			fail("unexpected exception while creating test fixture: " + e.getMessage());
 			return null;
@@ -312,7 +312,7 @@ public class TestParameterBinding extends AmbientTalkTest {
 		try {
 		    new NATMethod(AGSymbol.jAlloc("fun8"),
 				NATTable.atValue(new ATObject[] { new AGAssignVariable(at_x, NATNumber.ZERO), at_a }),
-				new AGBegin(NATTable.atValue(new ATObject[] { NATNil._INSTANCE_ })));
+				new AGBegin(NATTable.atValue(new ATObject[] { OBJNil._INSTANCE_ })));
 		    fail("Expected XIllegalParameter exception");
 		} catch(XIllegalParameter e) { }
 	}
@@ -326,7 +326,7 @@ public class TestParameterBinding extends AmbientTalkTest {
 		try {
 		    new NATMethod(AGSymbol.jAlloc("fun9"),
 				NATTable.atValue(new ATObject[] { new AGSplice(at_rest), at_a }),
-				new AGBegin(NATTable.atValue(new ATObject[] { NATNil._INSTANCE_ })));
+				new AGBegin(NATTable.atValue(new ATObject[] { OBJNil._INSTANCE_ })));
 		    fail("Expected XIllegalParameter exception");
 		} catch(XIllegalParameter e) { }
 	}
@@ -340,7 +340,7 @@ public class TestParameterBinding extends AmbientTalkTest {
 		try {
 		    new NATMethod(AGSymbol.jAlloc("fun10"),
 				NATTable.atValue(new ATObject[] { new AGSplice(at_rest), new AGAssignVariable(at_x, NATNumber.ZERO) }),
-				new AGBegin(NATTable.atValue(new ATObject[] { NATNil._INSTANCE_ })));
+				new AGBegin(NATTable.atValue(new ATObject[] { OBJNil._INSTANCE_ })));
 		    fail("Expected XIllegalParameter exception");
 		} catch(XIllegalParameter e) { }
 	}

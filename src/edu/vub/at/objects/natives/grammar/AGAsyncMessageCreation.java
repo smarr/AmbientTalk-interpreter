@@ -32,6 +32,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATAsyncMessageCreation;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
@@ -43,7 +44,7 @@ import edu.vub.at.objects.natives.OBJLexicalRoot;
  * @author tvcutsem
  * @author smostinc
  */
-public class AGAsyncMessageCreation extends AGMessageCreation {
+public class AGAsyncMessageCreation extends AGMessageCreation implements ATAsyncMessageCreation {
 
 	public AGAsyncMessageCreation(ATSymbol selector, ATTable arguments, ATExpression annotations) {
 		super(selector, arguments, annotations);

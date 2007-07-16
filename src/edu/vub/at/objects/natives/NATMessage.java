@@ -121,16 +121,16 @@ public abstract class NATMessage extends NATObject implements ATMessage {
     }
 	
 	public ATSymbol base_selector() throws InterpreterException {
-		return super.impl_accessSlot(this, _SELECTOR_, NATTable.EMPTY).asSymbol();
+		return super.impl_invokeAccessor(this, _SELECTOR_, NATTable.EMPTY).asSymbol();
 	}
 
 	public ATTable base_arguments() throws InterpreterException {
-		return super.impl_accessSlot(this, _ARGUMENTS_, NATTable.EMPTY).asTable();
+		return super.impl_invokeAccessor(this, _ARGUMENTS_, NATTable.EMPTY).asTable();
 	}
 	
 	public ATNil base_arguments__opeql_(ATTable arguments) throws InterpreterException {
-		super.impl_mutateSlot(this, _ARGUMENTS_.asAssignmentSymbol(), NATTable.of(arguments));
-		return NATNil._INSTANCE_;
+		super.impl_invokeMutator(this, _ARGUMENTS_.asAssignmentSymbol(), NATTable.of(arguments));
+		return OBJNil._INSTANCE_;
 	}
 	
 	/**

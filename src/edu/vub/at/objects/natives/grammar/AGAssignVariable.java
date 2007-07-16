@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
+import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -65,10 +67,16 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 	 * @return the value assigned to the variable
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATObject val = valueExp_.meta_eval(ctx);
-		return ctx.base_lexicalScope().impl_mutateVariable(
-				variableName_.asAssignmentSymbol(),
-				NATTable.of(val));
+		NATTable arg = NATTable.of(valueExp_.meta_eval(ctx));
+		ATObject result = null;
+		InvocationStack stack = InvocationStack.getInvocationStack();
+		try {
+			stack.functionCalled(this, null, arg);
+			result = ctx.base_lexicalScope().impl_callMutator(variableName_.asAssignmentSymbol(), arg);
+		} finally {
+			stack.funcallReturned(result);
+		}
+		return result;
 	}
 
 	/**

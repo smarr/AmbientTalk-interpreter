@@ -83,7 +83,7 @@ public class XAmbienttalk extends InterpreterException {
 	
 	public String getMessage() {
 		try {
-			return customException_.impl_accessSlot(customException_, _MESSAGE_SYM_,NATTable.EMPTY).asNativeText().javaValue;
+			return customException_.impl_invokeAccessor(customException_, _MESSAGE_SYM_,NATTable.EMPTY).asNativeText().javaValue;
 		} catch (InterpreterException e) {
 			return "Custom exception (cannot print: "+e.getMessage()+")";
 		}

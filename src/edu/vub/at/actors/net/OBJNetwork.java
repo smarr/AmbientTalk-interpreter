@@ -32,7 +32,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATByCopy;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -60,7 +60,7 @@ public final class OBJNetwork extends NATByCopy {
 	 */
 	public ATNil base_online() {
 		ELVirtualMachine.currentVM().event_goOnline();
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 
 	/**
@@ -70,7 +70,7 @@ public final class OBJNetwork extends NATByCopy {
 	 */
 	public ATNil base_offline() {
 		ELVirtualMachine.currentVM().event_goOffline();
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	/**

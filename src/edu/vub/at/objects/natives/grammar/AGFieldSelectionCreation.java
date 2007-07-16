@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGMethodInvocationCreation.java created on 26-jul-2006 at 16:18:10
+ * AGFieldSelectionCreation.java created on 26-jul-2006 at 16:18:10
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -27,48 +27,62 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.grammar.ATMethodInvocationCreation;
+import edu.vub.at.objects.grammar.ATFieldSelectionCreation;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATMethodInvocation;
+import edu.vub.at.objects.natives.NATFieldSelection;
+import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * @author tvcutsem
  *
- * The native implementation of a first-class message creation AG element.
+ * The native implementation of a first-class field creation AG element.
  */
-public final class AGMethodInvocationCreation extends AGMessageCreation
-      										  implements ATMethodInvocationCreation {
+public final class AGFieldSelectionCreation extends AGMessageCreation
+      										  implements ATFieldSelectionCreation {
 	
-	public AGMethodInvocationCreation(ATSymbol sel, ATTable args, ATExpression annotations) {
-		super(sel, args, annotations);
+	/** create a field selection based on a message creation AG element */
+	public AGFieldSelectionCreation(ATSymbol sel, ATExpression annotations) {
+		super(sel, NATTable.EMPTY, annotations);
 	}
 
 	/**
-	 * To evaluate a first-class synchronous message creation AG element, transform the selector
-	 * and evaluated arguments into a first-class MethodInvocation.
+	 * To evaluate a first-class field selection creation AG element, transform the selector
+	 * and evaluated arguments into a first-class FieldSelection.
 	 * It is important to note that the arguments are all eagerly evaluated.
 	 * 
-	 * AGMSG(sel,arg,ann).eval(ctx) = NATMSG(sel, map eval(ctx) over arg, map eval(ctx) over ann)
+	 * AGFSL(sel,ann).eval(ctx) = NATFS(sel, map eval(ctx) over ann)
 	 * 
-	 * @return a first-class method invocation
+	 * @return a first-class field selection object
 	 */
 	public ATMessage createMessage(ATContext ctx, ATSymbol selector, ATTable evaluatedArgs, ATTable annotations) throws InterpreterException {
-		return new NATMethodInvocation(selector,
-				                       evaluatedArgs,
-				                       annotations);
+		return new NATFieldSelection(selector,
+				                     annotations);
 	}
 	
 
 	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs, ATExpression quotedAnnotations) {
-		return new AGMethodInvocationCreation(quotedSel, quotedArgs, quotedAnnotations);
+		return new AGFieldSelectionCreation(quotedSel, quotedAnnotations);
 	}
 	
 	protected String getMessageToken() { return "."; }
+	
+	public NATText meta_print() throws InterpreterException {
+		if (base_annotations() == NATTable.EMPTY) {
+			return NATText.atValue(this.getMessageToken() +
+		               base_selector().meta_print().javaValue);
+		} else {
+			return NATText.atValue(this.getMessageToken() +
+		               base_selector().meta_print().javaValue +
+		               "@" + base_annotations().meta_print().javaValue);
+		}
+	}
 
 }

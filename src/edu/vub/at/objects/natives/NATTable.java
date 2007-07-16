@@ -77,7 +77,7 @@ public final class NATTable extends AGExpression implements ATTable {
 	public static final NATTable ofSize(int size) {
 		ATObject[] array = new ATObject[size];
 		for (int i = 0; i < size; i++) {
-			array[i] = NATNil._INSTANCE_;
+			array[i] = OBJNil._INSTANCE_;
 		}
 		return atValue(array);
 	}
@@ -188,7 +188,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		for (int i = 0; i < elements_.length; i++) {
 			clo.base_apply(atValue(new ATObject[] { elements_[i] }));
 		}
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 
 	public ATTable base_map_(ATClosure clo) throws InterpreterException {
@@ -225,7 +225,7 @@ public final class NATTable extends AGExpression implements ATTable {
 				return NATNumber.atValue(i+1);
 			}
 		}
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	public ATBoolean base_contains(ATObject obj) throws InterpreterException {
@@ -265,7 +265,7 @@ public final class NATTable extends AGExpression implements ATTable {
 		first.base_to_do_(last, new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
 			    selection.add(base_at(args.base_at(NATNumber.ONE).asNumber()));
-			    return NATNil._INSTANCE_;
+			    return OBJNil._INSTANCE_;
 			}
 		});
 		return NATTable.atValue((ATObject[]) selection.toArray(new ATObject[selection.size()]));

@@ -67,24 +67,32 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	 * @return the return value of the applied function.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATClosure clo;
-		
-		if(funExp_.isSymbol()) { // TODO unnecessary wrappping
-			clo = ctx.base_lexicalScope().impl_lookup(funExp_.asSymbol());
+		// calls of the form f(x) are transformed into ctx.lex.call(`f, [x])
+		if(funExp_.isSymbol()) {
+			NATTable args = Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx);
+			ATObject result = null;
+			InvocationStack stack = InvocationStack.getInvocationStack();
+			try {
+				stack.functionCalled(this, null, args);
+				result = ctx.base_lexicalScope().impl_callAccessor(funExp_.asSymbol(), args);
+			} finally {
+				stack.funcallReturned(result);
+			}
+			return result;
+		// calls of the form (expr)(x) are transformed into expr.eval(ctx).apply([x])
 		} else {
-			clo = funExp_.meta_eval(ctx).asClosure();
+			ATClosure clo = funExp_.meta_eval(ctx).asClosure();
+			NATTable args = Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx);
+			ATObject result = null;
+			InvocationStack stack = InvocationStack.getInvocationStack();
+			try {
+				stack.functionCalled(this, clo, args);
+				result = clo.base_apply(args);
+			} finally {
+				stack.funcallReturned(result);
+			}
+			return result;
 		}
-		NATTable args = Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx);
-		ATObject result = null;
-		InvocationStack stack = InvocationStack.getInvocationStack();
-		try {
-			stack.functionCalled(this, clo, args);
-			result = clo.base_apply(args);
-		} finally {
-			stack.funcallReturned(result);
-		}
-		return result;
-		//return clo.base_apply(Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx));
 	}
 
 	/**

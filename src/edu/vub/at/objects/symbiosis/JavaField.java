@@ -30,14 +30,13 @@ package edu.vub.at.objects.symbiosis;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATField;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATByRef;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -67,9 +66,9 @@ public final class JavaField extends NATByRef implements ATField {
 		return Symbiosis.readField(host_, field_);
 	}
 
-	public ATNil base_writeField(ATObject newValue) throws InterpreterException {
+	public ATObject base_writeField(ATObject newValue) throws InterpreterException {
 		Symbiosis.writeField(host_, field_, newValue);
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 
 	public NATText meta_print() throws InterpreterException {

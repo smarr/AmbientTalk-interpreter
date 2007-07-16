@@ -37,6 +37,8 @@ import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.actors.net.OBJNetwork;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XUnassignableField;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -46,10 +48,12 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.at.objects.grammar.ATAssignmentSymbol;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
 import edu.vub.at.parser.NATParser;
@@ -69,7 +73,7 @@ import edu.vub.at.parser.NATParser;
  * such as <tt>lookup</tt> and <tt>assignField</tt>.
  * <p>
  * Like any class whose instances represent native AmbientTalk objects, this class is a subclass
- * of {@link NATNil}. This means that this class can use the typical protocol of native objects
+ * of {@link NativeATObject}. This means that this class can use the typical protocol of native objects
  * to implement base-level AmbientTalk methods as Java methods whose name is prefixed with
  * <tt>base_</tt>.
  * <p>
@@ -93,6 +97,45 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * Constructor made private for singleton design pattern
 	 */
 	private OBJLexicalRoot() { }
+	
+	/**
+	 * The lexical root has a special lexical parent object which ends the recursion
+	 * along the lexical lookup chain. These methods cannot be implemented
+	 * directly in this class because this class still implements useful
+	 * <tt>base_</tt> Java methods which have to be invoked by means of the
+	 * implementations defined in {@link NativeATObject}.
+	 */
+	private final NativeATObject lexicalSentinel_ = new NATByCopy() {
+		// METHODS THAT END THE LEXICAL LOOKUP CHAIN
+		
+		public ATObject impl_callAccessor(ATSymbol selector, ATTable arguments) throws InterpreterException {
+			throw new XUndefinedSlot("variable access", selector.toString());
+		}
+
+		public ATObject impl_callMutator(ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
+			throw new XUnassignableField(selector.toString());
+		}	
+		
+		public ATObject impl_callField(ATSymbol selector) throws InterpreterException {
+			throw new XUndefinedSlot("variable access", selector.toString());
+		}
+		
+		public ATClosure impl_lookupAccessor(final ATSymbol selector) throws InterpreterException {
+			throw new XUndefinedSlot("accessor", selector.toString());
+		}
+
+		public ATClosure impl_lookupMutator(ATAssignmentSymbol selector) throws InterpreterException {
+			throw new XUnassignableField(selector.toString());
+		}
+
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("lexicalrootsentinel");
+		}
+	};
+	
+	public ATObject impl_lexicalParent() {
+		return lexicalSentinel_;
+	}
 	
 	/* -----------------------
 	 * -- Primitive Methods --
@@ -190,7 +233,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * the empty, dynamic parent of all AmbientTalk objects. 
 	 */
 	public ATNil base_nil() {
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	/**
@@ -651,7 +694,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	public ATObject base_object_(ATClosure code) throws InterpreterException {
 		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
-				NATNil._INSTANCE_,
+				OBJNil._INSTANCE_,
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				NATTable.EMPTY,
 				base_defaultMirror());
@@ -956,7 +999,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	public ATObject base_object_taggedAs_(ATClosure code, ATTable types) throws InterpreterException {
 		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
-				NATNil._INSTANCE_,
+				OBJNil._INSTANCE_,
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				types,
 				base_defaultMirror());
@@ -1067,7 +1110,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	public ATObject base_object_mirroredBy_(ATClosure code, ATObject mirror) throws InterpreterException {
 		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
-				NATNil._INSTANCE_,
+				OBJNil._INSTANCE_,
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				NATTable.EMPTY,
 				mirror);
@@ -1101,7 +1144,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	public ATObject base_object_taggedAs_mirroredBy_(ATClosure code, ATTable types, ATObject mirror) throws InterpreterException {
 		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
-				NATNil._INSTANCE_,
+				OBJNil._INSTANCE_,
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				types,
 				mirror);
@@ -1201,7 +1244,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_clone_(ATObject original) throws InterpreterException {
 		if (original.meta_isTaggedAs(NativeTypeTags._MIRROR_).asNativeBoolean().javaValue) {
-		    return base_reflect_(base_clone_(original.impl_accessSlot(original, OBJMirrorRoot._BASE_NAME_, NATTable.EMPTY)));
+		    return base_reflect_(base_clone_(original.impl_invokeAccessor(original, OBJMirrorRoot._BASE_NAME_, NATTable.EMPTY)));
 		} else {
 			return original.meta_clone();
 		}
@@ -1219,7 +1262,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	 public ATNil base_takeOffline_ (ATObject object) throws InterpreterException{
 		ELActor.currentActor().takeOffline(object);
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	 }
 	
 	/* -------------------
@@ -1485,6 +1528,10 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject meta_resolve() throws InterpreterException {
 		return OBJLexicalRoot._INSTANCE_;
+	}
+
+	public NATText meta_print() throws InterpreterException {
+		return NATText.atValue("lexroot");
 	}
     
 }

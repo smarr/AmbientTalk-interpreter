@@ -52,7 +52,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByCopy;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -452,18 +452,18 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			this.meta_defineField(_HANDLER_, handler);
 			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					NATFarReference reference = scope_.impl_accessSlot(scope_, _REFERENCE_, NATTable.EMPTY).asNativeFarReference();
+					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_, NATTable.EMPTY).asNativeFarReference();
 					if(reference instanceof NATRemoteFarRef) {
 						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
-						ATObject handler = scope_.impl_accessSlot(scope_, _HANDLER_, NATTable.EMPTY);
+						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_, NATTable.EMPTY);
 						remote.removeDisconnectionListener(handler);
 					}
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<disconnection subscription:"+ this.impl_accessSlot(this, _REFERENCE_,NATTable.EMPTY)+">");
+			return NATText.atValue("<disconnection subscription:"+ this.impl_invokeAccessor(this, _REFERENCE_,NATTable.EMPTY)+">");
 		}
 	}
 	
@@ -476,18 +476,18 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			this.meta_defineField(_HANDLER_, handler);
 			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					NATFarReference reference = scope_.impl_accessSlot(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
+					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
 					if(reference instanceof NATRemoteFarRef) {
 						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
-						ATObject handler = scope_.impl_accessSlot(scope_, _HANDLER_,NATTable.EMPTY);
+						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_,NATTable.EMPTY);
 						remote.removeReconnectionListener(handler);
 					}
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<reconnection subscription:"+ this.impl_accessSlot(this, _REFERENCE_,NATTable.EMPTY)+">");
+			return NATText.atValue("<reconnection subscription:"+ this.impl_invokeAccessor(this, _REFERENCE_,NATTable.EMPTY)+">");
 		}
 	}
 	
@@ -500,18 +500,18 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			this.meta_defineField(_HANDLER_, handler);
 			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
-					NATFarReference reference = scope_.impl_accessSlot(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
+					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
 					if(reference instanceof NATRemoteFarRef) {
 						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
-						ATObject handler = scope_.impl_accessSlot(scope_, _HANDLER_,NATTable.EMPTY);
+						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_,NATTable.EMPTY);
 						remote.removeTakenOfflineListener(handler);
 					}
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<expired subscription:"+ this.impl_accessSlot(this, _REFERENCE_,NATTable.EMPTY)+">");
+			return NATText.atValue("<expired subscription:"+ this.impl_invokeAccessor(this, _REFERENCE_,NATTable.EMPTY)+">");
 		}
 	}
 	

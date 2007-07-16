@@ -109,7 +109,8 @@ public abstract class PartialBinder implements Serializable {
 	public static final void assignArgsToParams(PartialBinder residual, ATContext context, ATTable arguments) throws InterpreterException {
 		residual.bind(arguments.asNativeTable().elements_, context, new BindClosure() {
 			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws InterpreterException {
-				scope.meta_assignVariable(param, arg);
+				scope.impl_call(param.asAssignmentSymbol(), NATTable.of(arg));
+				// scope.meta_assignVariable(param, arg);
 			}
 		});
 	}

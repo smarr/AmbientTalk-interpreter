@@ -48,7 +48,7 @@ import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -119,7 +119,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 */
 	public static NATLocalFarRef createEmptyActor(ELVirtualMachine host, ATActorMirror actorMirror) throws InterpreterException {
 		Packet noParams = new Packet(NATTable.EMPTY);
-		Packet noinitcode = new Packet(new NATMethod(Evaluator._ANON_MTH_NAM_, NATTable.EMPTY, new AGBegin(NATTable.of(NATNil._INSTANCE_))));
+		Packet noinitcode = new Packet(new NATMethod(Evaluator._ANON_MTH_NAM_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_))));
 		return createActor(host, noParams, noinitcode, actorMirror);
 	}
 	
@@ -138,7 +138,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
      * ------------------------------------------ */
 
 	public ATAsyncMessage base_createMessage(ATSymbol selector, ATTable arguments, ATTable types) throws InterpreterException {
-		return new NATAsyncMessage(NATNil._INSTANCE_, selector, arguments, types);
+		return new NATAsyncMessage(OBJNil._INSTANCE_, selector, arguments, types);
 	}
 	
 	public ATObject base_createMirror(ATObject reflectee) throws InterpreterException {
@@ -165,12 +165,12 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					discoveryActor.event_cancelPublication(pub);
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<publication:"+impl_accessSlot(this, _TOPIC_, NATTable.EMPTY)+">");
+			return NATText.atValue("<publication:"+impl_invokeAccessor(this, _TOPIC_, NATTable.EMPTY)+">");
 		}
 	}
 	
@@ -194,12 +194,12 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					discoveryActor.event_cancelSubscription(sub);
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
-			return NATText.atValue("<subscription:"+impl_accessSlot(this, _TOPIC_, NATTable.EMPTY)+">");
+			return NATText.atValue("<subscription:"+impl_invokeAccessor(this, _TOPIC_, NATTable.EMPTY)+">");
 		}
 	}
 	
@@ -265,7 +265,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	
 	public ATObject meta_receive(ATAsyncMessage msg) throws InterpreterException {
 		ELActor.currentActor().event_acceptSelfSend(msg);
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {

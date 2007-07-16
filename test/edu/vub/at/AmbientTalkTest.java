@@ -9,7 +9,7 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATContext;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.NATParser;
@@ -59,7 +59,7 @@ public abstract class AmbientTalkTest extends TestCase {
 	    }
 	    catch (IOException e) {
 	       fail(e.getMessage());
-	       return NATNil._INSTANCE_;
+	       return OBJNil._INSTANCE_;
 	    }
 		
 		/*try {

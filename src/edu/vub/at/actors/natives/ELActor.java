@@ -51,7 +51,7 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATContext;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
@@ -88,7 +88,7 @@ public class ELActor extends EventLoop {
 	    	Logging.Actor_LOG.warn("Creating a default actor for thread " + Thread.currentThread());
 	    	try {
 				ELVirtualMachine host = new ELVirtualMachine(
-				  NATNil._INSTANCE_,
+				  OBJNil._INSTANCE_,
 				  new SharedActorField[] { },
 				  ELVirtualMachine._DEFAULT_GROUP_NAME_);
 				return NATActorMirror.createEmptyActor(host, new NATActorMirror(host)).getFarHost();

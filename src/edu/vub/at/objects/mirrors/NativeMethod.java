@@ -30,6 +30,7 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -56,17 +57,24 @@ public final class NativeMethod extends NATByRef implements ATMethod {
 
 	private final Method javaMethod_;
 	private final ATSymbol name_;
+	// native object from which the java method was selected
+	private final ATObject nativeReceiver_;
 	
 	/**
 	 * Construct a new wrapper object from a Java method.
 	 * @param javaMethod the java method to be wrapped.
 	 * @param name the original name of the method as an AmbientTalk symbol
 	 */
-	public NativeMethod(Method javaMethod, ATSymbol name) {
+	public NativeMethod(Method javaMethod, ATSymbol name, ATObject jReceiver) {
 		javaMethod_ = javaMethod;
 		name_ = name;
+		nativeReceiver_ = jReceiver;
 	}
 
+	public ATClosure base_wrap(ATObject lexicalScope, ATObject dynamicReceiver) throws InterpreterException {
+		return new NativeClosure(lexicalScope, this);
+	}
+	
 	/**
 	 * The name of a wrapped Java method is the name of the Java method, converted to an
 	 * AmbientTalk selector name.
@@ -94,8 +102,8 @@ public final class NativeMethod extends NATByRef implements ATMethod {
 	}
 	
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-		return JavaInterfaceAdaptor.invokeNativeATMethod(javaMethod_, ctx.base_lexicalScope(),
-						                                arguments.asNativeTable().elements_);
+		return JavaInterfaceAdaptor.invokeNativeATMethod(javaMethod_, nativeReceiver_,
+						                                 arguments.asNativeTable().elements_);
 	}
 	
 	public ATObject base_applyInScope(ATTable arguments, ATContext ctx) throws InterpreterException {

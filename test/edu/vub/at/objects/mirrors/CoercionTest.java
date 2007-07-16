@@ -37,7 +37,7 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -75,7 +75,7 @@ public class CoercionTest extends TestCase {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					ATTable apply_args = get(args, 1).asTable();
 					assertEquals(42, getNbr(apply_args, 1));
-					return NATNil._INSTANCE_;
+					return OBJNil._INSTANCE_;
 				}
 			});
 			customClosure_.meta_defineField(AGSymbol.jAlloc("method"), new NATMethod(AGSymbol.jAlloc("foo"), NATTable.EMPTY, new AGBegin(NATTable.EMPTY)));

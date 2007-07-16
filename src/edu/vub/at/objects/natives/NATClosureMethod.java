@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -57,6 +58,7 @@ public final class NATClosureMethod extends NATByRef implements ATMethod {
 	private final ATObject lexicalScope_;
 	private final ATMethod method_;
 	
+	/** construct a new closure method */
 	public NATClosureMethod(ATObject scope, ATMethod method) throws InterpreterException {
 		lexicalScope_ = scope;
 		method_ = method;
@@ -109,6 +111,13 @@ public final class NATClosureMethod extends NATByRef implements ATMethod {
 
 	public ATTable base_parameters() throws InterpreterException {
 		return method_.base_parameters();
+	}
+	
+	/**
+	 * When wrapping a closure method, return a closure that is bound to the given lexical scope.
+	 */
+	public ATClosure base_wrap(ATObject lexicalScope, ATObject dynamicReceiver) throws InterpreterException {
+		return method_.base_wrap(lexicalScope_, dynamicReceiver);
 	}
 	
 	public NATText meta_print() throws InterpreterException {

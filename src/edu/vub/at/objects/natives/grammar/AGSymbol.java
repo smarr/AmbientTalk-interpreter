@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
@@ -89,7 +90,7 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	 * @return the value bound to this symbol in the lexical environment
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		return ctx.base_lexicalScope().impl_call(this, NATTable.EMPTY);
+		return ctx.base_lexicalScope().impl_callField(this);
 	}
 
 	/**

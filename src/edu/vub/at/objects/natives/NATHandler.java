@@ -72,5 +72,7 @@ public class NATHandler extends NATByRef implements ATHandler {
 		return this;
 	}
 
-	// TODO(exception handling) meta_pass on a handler
+	public NATText meta_print() throws InterpreterException {
+		return NATText.atValue("<handler for:"+filter_.toString()+">");
+	}
 }

@@ -115,6 +115,9 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 					"def defaultValue := 42;" +
 					"def pythonObjectMirror := \n" +
 					"  mirror: { \n" +
+					"    def invokeField(receiver, symbol) {" +
+					"      self.invoke(receiver,symbol,[])" +
+					"    };" +
 					"    def invoke( receiver, symbol, args ) { \n" +
 					"      try: { \n" +
 					"        super^invoke( receiver, symbol, args ); \n" +
@@ -249,7 +252,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 				"def raise: exception catch: typetag do: closure { \n" +
 				"  try: {" +
 				"    raise: exception;" +
-				"  } catch: typetag using: &closure; \n" +
+				"  } catch: typetag using: closure; \n" +
 				"}",
 				ctx_);
 	}

@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * NATDelegation.java created on 29-jan-2007 at 16:24:59
+ * NATFieldSelection.java created on 31-jul-2006 at 12:40:42
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATFieldSelection;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
@@ -36,31 +37,27 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.LinkedList;
 import java.util.Vector;
 
 /**
- * Instances of the class NATMethodInvocation represent first-class method invocations.
- * They encapsulate a selector and arguments and may be turned into an actual invocation by invoking meta_sendTo.
+ * Instances of this class represent first-class field selections.
+ * They encapsulate a selector and may be turned into an actual field access by invoking meta_sendTo.
  * This method provides the invocation with a receiver to apply itself to.
  * 
  * @author tvcutsem
  */
-public final class NATDelegation extends NATMessage implements ATMethodInvocation {
+public final class NATFieldSelection extends NATMessage implements ATFieldSelection {
 
-	private final static AGSymbol _DELEGATOR_ = AGSymbol.jAlloc("delegator");
-	
-	public NATDelegation(ATObject delegator, ATSymbol sel, ATTable arg, ATTable annotations) throws InterpreterException {
-		super(sel, arg, annotations, NativeTypeTags._DELEGATION_);
-		super.meta_defineField(_DELEGATOR_, delegator);
+	public NATFieldSelection(ATSymbol sel, ATTable annotations) throws InterpreterException {
+		super(sel, NATTable.EMPTY, annotations, NativeTypeTags._FIELDSEL_);
 	}
 	
     /**
      * Copy constructor.
      */
-    private NATDelegation(FieldMap map,
+    private NATFieldSelection(FieldMap map,
             Vector state,
             LinkedList originalCustomFields,
             MethodDictionary methodDict,
@@ -72,18 +69,16 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
     }
 
 	/**
-	 * To evaluate a delegating message send, invoke the method corresponding to the encapsulated
-	 * selector with the encapsulated arguments. During execution of the method, 'self' should be
-	 * bound to the object that initiated the delegating method invocation.
+	 * To evaluate a field selection, invoke a field accessor method on the receiver.
 	 * 
 	 * @return the return value of the invoked method.
 	 */
 	public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException {
-		return receiver.meta_invoke(super.impl_invokeAccessor(self, _DELEGATOR_, NATTable.EMPTY), self.base_selector(), self.base_arguments());
+		return receiver.meta_invokeField(receiver, self.base_selector());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<delegation:"+base_selector()+Evaluator.printAsList(base_arguments()).javaValue+">");
+		return NATText.atValue("<field selection:"+base_selector().toString()+">");
 	}
 	
 	protected NATObject createClone(FieldMap map,
@@ -94,7 +89,7 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 			ATObject lexicalParent,
 			byte flags,
 			ATTypeTag[] types) throws InterpreterException {
-		return new NATDelegation(map,
+		return new NATFieldSelection(map,
 				state,
 				originalCustomFields,
 				methodDict,

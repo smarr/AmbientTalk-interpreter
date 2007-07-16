@@ -17,7 +17,7 @@ import edu.vub.at.objects.grammar.ATMessageSend;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -94,7 +94,7 @@ public class TestEval extends AmbientTalkTest {
 		ctx_.base_lexicalScope().meta_defineField(rcvnam, rcvr);
         evalAndCompareTo("def o2.x := 3", atThree_);
         try {
-        	  assertEquals(atThree_, rcvr.impl_accessSlot(rcvr, atX_, NATTable.EMPTY));
+        	  assertEquals(atThree_, rcvr.impl_invokeAccessor(rcvr, atX_, NATTable.EMPTY));
         } catch(XUndefinedSlot e) {
         	  fail("broken external field definition:"+e.getMessage());
         }
@@ -104,7 +104,7 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testAssignVariable() throws InterpreterException {
 		// def x := nil
-		ctx_.base_lexicalScope().meta_defineField(atX_, NATNil._INSTANCE_);
+		ctx_.base_lexicalScope().meta_defineField(atX_, OBJNil._INSTANCE_);
 		
         evalAndCompareTo("x := 3", atThree_);
         assertEquals(atThree_, ctx_.base_lexicalScope().impl_call(atX_, NATTable.EMPTY));
@@ -112,7 +112,7 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testAssignTable() throws InterpreterException {
 		// def x[2] { nil }
-		ATTable table = NATTable.atValue(new ATObject[] { NATNil._INSTANCE_, NATNil._INSTANCE_ });
+		ATTable table = NATTable.atValue(new ATObject[] { OBJNil._INSTANCE_, OBJNil._INSTANCE_ });
 		ctx_.base_lexicalScope().meta_defineField(atX_, table);
 		
         evalAndCompareTo("x[1] := 3", atThree_);
@@ -126,7 +126,7 @@ public class TestEval extends AmbientTalkTest {
 		ctx_.base_lexicalScope().meta_defineField(atX_, x);
 		
          evalAndCompareTo("x.y := 3", atThree_);
-         assertEquals(atThree_, x.impl_accessSlot(x, atY_, NATTable.EMPTY));
+         assertEquals(atThree_, x.impl_invokeAccessor(x, atY_, NATTable.EMPTY));
 	}
 	
 	public void testMultiAssignment() throws InterpreterException {
@@ -201,7 +201,7 @@ public class TestEval extends AmbientTalkTest {
 		assertEquals(atM_, asyncMsg.base_selector());
 		assertEquals(atThree_, asyncMsg.base_arguments().base_at(NATNumber.ONE));
 		assertTrue(asyncMsg instanceof ATAsyncMessage);
-		assertEquals(NATNil._INSTANCE_, ((ATAsyncMessage) asyncMsg).base_receiver());	
+		assertEquals(OBJNil._INSTANCE_, ((ATAsyncMessage) asyncMsg).base_receiver());	
 	}
 	
 	public void testMethodApplication() throws InterpreterException {
@@ -256,7 +256,7 @@ public class TestEval extends AmbientTalkTest {
 	public void testQuotation() throws InterpreterException {
 		evalAndCompareTo("`3", atThree_);
 		evalAndCompareTo("`x", atX_);
-		evalAndCompareTo("`(o.x)", "o.x()");
+		evalAndCompareTo("`(o.x)", "o.x");
 		evalAndCompareTo("`(o.&x)", "o.&x");
 		evalAndCompareTo("`{def x := 3}", "def x := 3");
 		evalAndCompareTo("`{def x := `3}", "def x := `(3)");

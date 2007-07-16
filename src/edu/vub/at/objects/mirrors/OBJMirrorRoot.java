@@ -42,7 +42,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -115,7 +115,7 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 		
 		NATMirage newBase = initargs[0].asMirage();
 		// check whether the passed base field does not have a mirror assigned to it yet
-		if (newBase.getMirror() == NATNil._INSTANCE_) {
+		if (newBase.getMirror() == OBJNil._INSTANCE_) {
 			base_ = newBase;
 			return newBase;
 		} else {
@@ -227,14 +227,6 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 		return base_base().magic_addMethod(method);
 	}
 
-	public ATNil base_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-		return base_base().magic_assignField(receiver, name, value);
-	}
-
-	public ATNil base_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
-		return base_base().magic_assignVariable(name, value);
-	}
-
 	public ATNil base_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		return base_base().magic_defineField(name, value);
 	}
@@ -251,8 +243,8 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 		return base_base().magic_isExtensionOfParent();
 	}
 
-	public ATObject base_lexicalParent() throws InterpreterException {
-		return base_base().magic_lexicalParent();
+	public ATObject base_invokeField(ATObject rcv, ATSymbol sym) throws InterpreterException {
+		return base_base().magic_invokeField(rcv, sym);
 	}
 
 	public ATField base_grabField(ATSymbol fieldName) throws InterpreterException {

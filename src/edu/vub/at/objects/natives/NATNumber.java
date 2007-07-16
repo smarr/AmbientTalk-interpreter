@@ -103,7 +103,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 		for (int i = 1; i <= javaValue; i++) {
 			code.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(i) }));
 		}
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	/**
@@ -134,7 +134,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 				code.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(i) }));
 			}
 		}
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	/**

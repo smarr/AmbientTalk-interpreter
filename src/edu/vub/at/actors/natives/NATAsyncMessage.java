@@ -128,7 +128,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 	}
     
     public ATObject base_receiver() throws InterpreterException {
-    	return super.impl_accessSlot(this, _RECEIVER_, NATTable.EMPTY);
+    	return super.impl_invokeAccessor(this, _RECEIVER_, NATTable.EMPTY);
     }
     
     /**
@@ -155,7 +155,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      */
     public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException {
         // fill in the receiver first
-        super.impl_mutateSlot(self, _RECEIVER_.asAssignmentSymbol(), NATTable.of(receiver));
+        super.impl_invokeMutator(self, _RECEIVER_.asAssignmentSymbol(), NATTable.of(receiver));
         return sender.meta_send(self.asAsyncMessage());
     }
     

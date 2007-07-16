@@ -33,7 +33,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.util.logging.Logging;
 
 /**
@@ -58,7 +58,7 @@ public class NATRemoteFarRef extends NATFarReference {
 	
 	protected ATObject transmit(ATAsyncMessage message) throws InterpreterException {
 		sendLoop_.event_transmit(message);
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {

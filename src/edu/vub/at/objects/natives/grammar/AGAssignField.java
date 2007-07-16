@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
@@ -73,8 +74,16 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		ATObject receiver = rcvExp_.meta_eval(ctx);
-		ATObject val = valueExp_.meta_eval(ctx);
-		return receiver.impl_mutateSlot(receiver, fieldName_.asAssignmentSymbol(), NATTable.of(val));
+		NATTable arg = NATTable.of(valueExp_.meta_eval(ctx));
+		ATObject result = null;
+		InvocationStack stack = InvocationStack.getInvocationStack();
+		try {
+			stack.methodInvoked(this, receiver, arg);
+			result = receiver.impl_invokeMutator(receiver, fieldName_.asAssignmentSymbol(), arg);
+		} finally {
+			stack.methodReturned(result);
+		}
+		return result;
 	}
 
 	/**

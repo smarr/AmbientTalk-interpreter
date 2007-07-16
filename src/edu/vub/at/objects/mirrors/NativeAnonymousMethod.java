@@ -30,6 +30,7 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalApplication;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
@@ -38,6 +39,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByRef;
+import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
@@ -79,6 +81,10 @@ public class NativeAnonymousMethod extends NATByRef implements ATMethod {
 		return base_apply(arguments, ctx);
 	}
 
+	public ATClosure base_wrap(ATObject lexicalScope, ATObject dynamicReceiver) throws InterpreterException {
+		return new NATClosure(this, lexicalScope, dynamicReceiver);
+	}
+	
 	public ATSymbol base_name() { return Evaluator._ANON_MTH_NAM_; }
 
 	public ATTable base_parameters() { return Evaluator._ANON_MTH_ARGS_; }

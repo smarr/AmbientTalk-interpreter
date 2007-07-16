@@ -61,9 +61,9 @@ public interface ATField extends ATObject {
 	 * Sets the value of the field if possible.
 	 * 
 	 * @param newValue the value the field should hold.
-	 * @return nil.
+	 * @return by default, the new value
 	 * @throws InterpreterException if the field cannot be modified.
 	 */
-	public ATNil base_writeField(ATObject newValue) throws InterpreterException;
+	public ATObject base_writeField(ATObject newValue) throws InterpreterException;
 
 }

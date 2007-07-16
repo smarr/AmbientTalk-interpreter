@@ -301,32 +301,6 @@ public final class Evaluator {
 	}
 	
 	/**
-	 * Bind all of the given parameters as newly defined slots in the given scope to the given arguments.
-	 * The scope is defined as the lexical scope of the given context.
-	 * @deprecated use partial evalation using {@link PartialBinder#bind(ATObject[], ATContext, edu.vub.at.eval.PartialBinder.BindClosure)} instead.
-	 */
-	public static final void defineParamsForArgs(String funnam, ATContext context, ATTable parameters, ATTable arguments) throws InterpreterException {
-		bindArguments(funnam, context, parameters, arguments, new BindClosure() {
-			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws InterpreterException {
-				scope.meta_defineField(param, arg);
-			}
-		});
-	}
-	
-	/**
-	 * Assign all of the formal parameter names in the scope object to the given arguments
-	 * The scope is defined as the lexical scope of the given context.
-	 * @deprecated use partial evalation using {@link PartialBinder#bind(ATObject[], ATContext, edu.vub.at.eval.PartialBinder.BindClosure)} instead.
-	 */
-	public static final void assignArgsToParams(String funnam, ATContext context, ATTable parameters, ATTable arguments) throws InterpreterException {
-		bindArguments(funnam, context, parameters, arguments, new BindClosure() {
-			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws InterpreterException {
-				scope.meta_assignVariable(param, arg);
-			}
-		});
-	}
-	
-	/**
 	 * Given a formal parameter list, this auxiliary method returns a new table
 	 * consisting of the values of the bindings of the mandatory parameters of
 	 * formals within the context ctx.

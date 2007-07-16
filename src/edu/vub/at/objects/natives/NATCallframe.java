@@ -33,16 +33,12 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATBoolean;
-import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.coercion.NativeTypeTags;
-import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.mirrors.NativeClosure;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -100,233 +96,10 @@ public class NATCallframe extends NATByRef implements ATObject {
 		lexicalParent_ = lexicalParent;
 		customFields_ = customFields;
 	}
-
-	/* ------------------------------
-	 * -- Message Sending Protocol --
-	 * ------------------------------ */
-	
-	/**
-	 * For call frames and base-level objects, invoke should dispatch to specific invocation primitives
-	 * depending on whether or not the given selector denotes an assignment.
-	 */
-    public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
-        // If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
-		if (selector.isAssignmentSymbol()) {
-			return this.impl_mutateSlot(receiver, selector.asAssignmentSymbol(), arguments);
-		} else {
-			return this.impl_accessSlot(receiver, selector, arguments);
-		}
-    }
-	
-    /**
-	 * Normally, call frames are not used in receiverful method invocation expressions.
-	 * That is, normally, the content of call frames is accessed via the {@link this#meta_lookup(ATSymbol)} operation.
-	 * 
-	 * Invocation on call frames is much more ad hoc than on real objects.
-	 * A call frame responds to an invocation by looking up the selector in its own fields (without delegating!)
-	 * and by applying a potential closure bound to that field.
-	 * 
-	 * If the field is not bound to a closure, the field itself is treated as a zero-argument closure
-	 * (implementing the UAP).
-	 * 
-	 * The 'receiver' argument should always equal 'this' because call frames do not delegate!
-	 */
-	public ATObject impl_accessSlot(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
-		// assert(this == receiver)
-		ATObject fieldValue = this.getLocalField(selector);
-		
-		if (fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
-			return fieldValue.asClosure().base_apply(arguments);
-		} else {
-			NativeClosure.checkNullaryArguments(selector, arguments);
-			return fieldValue;
-		}
-	}
-	
-	/**
-	 * Invoking a mutator method on a call frame means the call frame requires a field
-	 * corresponding to the assignment symbol \ {:=}. The field is then assigned, regardless
-	 * of its value (i.e. if it's a closure, the closure is not in itself treated as a mutator).
-	 * @throws XSelectorNotFound if a suitable field mutator cannot be found 
-	 */
-	public ATObject impl_mutateSlot(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
-		ATSymbol fieldSelector = selector.getFieldName();
-		if (this.hasLocalField(fieldSelector)) {
-			ATObject value = NativeClosure.checkUnaryArguments(selector, arguments);
-			this.setLocalField(fieldSelector, value);
-			return value;
-		} else {
-			throw new XSelectorNotFound(selector, receiver);
-		}
-	}
-	
-	/**
-	 * respondsTo is a mechanism to ask any object o whether it would respond to the
-	 * selection o.selector. A call frame implements respondsTo by checking whether
-	 * it contains a public field corresponding to the selector.
-	 * 
-	 * A call frame does not delegate to other objects to check
-	 * whether it can respond to a certain selector.
-	 */
-	public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
-		if (this.hasLocalField(selector)) {
-			return NATBoolean._TRUE_;
-		} else {
-			if (selector.isAssignmentSymbol()) {
-				return NATBoolean.atValue(this.hasLocalField(selector.asAssignmentSymbol().getFieldName()));
-			} else {
-				return NATBoolean._FALSE_;
-			}
-		}
-	}
-
-	/**
-	 * By default, when a selection is not understood by an AmbientTalk object or call frame, an error is raised.
-	 * 
-	 * Warning: this method overrides its parent method which has the exact same implementation.
-	 * This is done for purposes of clarity, by making NATCallframe implement all ATObject methods directly,
-	 * even if NATNil already provides a suitable implementation for these.
-	 */
-	public ATClosure meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
-		throw new XSelectorNotFound(selector, this);
-	}
 	
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --
 	 * ------------------------------------------ */
-	
-	/**
-	 * For call frames and base-level objects, select should dispatch to specific selection primitives
-	 * depending on whether or not the given selector denotes an assignment.
-	 */
-    public ATClosure meta_select(ATObject receiver, final ATSymbol selector) throws InterpreterException {
-		if (selector.isAssignmentSymbol()) {
-			return this.impl_selectMutator(receiver, selector.asAssignmentSymbol());
-		} else {
-			return this.impl_selectAccessor(receiver, selector);
-		}
-    }
-	
-	/**
-	 * This method is used in the evaluation of the code <tt>o.m</tt>.
-	 * When o is a call frame, the call frame is searched for a field 'm'.
-	 * If it is not found, a call frame does not delegate to any dynamic parent, and yields an error.
-	 * @throws XSelectorNotFound if the selector does not correspond to a local field name
-	 */
-	public ATClosure impl_selectAccessor(ATObject receiver, final ATSymbol selector) throws InterpreterException {
-		ATObject fieldValue = this.getLocalField(selector);
-
-		if(fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
-			return fieldValue.asClosure();
-		} else {
-			return new NativeClosure.Accessor(selector, this) {
-				public ATObject access() throws InterpreterException {
-					return getLocalField(selector);
-				}
-			};
-		}
-	}
-	
-	/**
-	 * A mutator can be only be selected from a call frame if the frame contains a field corresponding
-	 * to the assignment symbol.
-	 * @throws XSelectorNotFound if no field matching the assignment symbol can be found in the frame
-	 */
-	public ATClosure impl_selectMutator(ATObject receiver, final ATAssignmentSymbol selector) throws InterpreterException {
-		final ATSymbol fieldSelector = selector.getFieldName();
-
-		if (this.hasLocalField(fieldSelector)) {
-			return new NativeClosure.Mutator(selector, this) {
-				public ATObject mutate(ATObject arg) throws InterpreterException {
-					setLocalField(fieldSelector, arg);
-					return arg;
-				}
-			};
-		} else {
-			throw new XSelectorNotFound(selector, this);
-		}
-	}
-	
-	/**
-	 * This method is used to evaluate code of the form <tt>selector</tt> within the scope
-	 * of this call frame. A call frame resolves such a lookup request by checking whether
-	 * a field corresponding to the selector exists locally. If it does, the result is
-	 * returned. If it does not, the search continues recursively in the call frame's
-	 * lexical parent.
-	 */
-	public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
-		if (selector.isAssignmentSymbol()) {
-			return this.impl_mutateVariable(selector.asAssignmentSymbol(), arguments);
-		} else {
-			return this.impl_accessVariable(selector, arguments);
-		}
-	}
-	
-	public ATObject impl_mutateVariable(ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
-		ATSymbol fieldSelector = selector.getFieldName();
-		if (this.hasLocalField(fieldSelector)) {
-			ATObject value = NativeClosure.checkUnaryArguments(selector, arguments);
-			this.setLocalField(fieldSelector, value);
-			return value;
-		} else {
-			return lexicalParent_.impl_mutateVariable(selector, arguments);
-		}
-	}
-	
-	public ATObject impl_accessVariable(ATSymbol selector, ATTable arguments) throws InterpreterException {
-		if (this.hasLocalField(selector)) {
-			ATObject fieldValue = this.getLocalField(selector);
-			
-			if (fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
-				return fieldValue.asClosure().base_apply(arguments);
-			} else {
-				NativeClosure.checkNullaryArguments(selector, arguments);
-				return fieldValue;
-			}
-		} else {
-			return lexicalParent_.impl_accessVariable(selector, arguments);
-		}
-	}
-
-	public ATClosure impl_lookup(ATSymbol selector) throws InterpreterException {
-		if (selector.isAssignmentSymbol()) {
-			return this.impl_lookupMutator(selector.asAssignmentSymbol());
-		} else {
-			return this.impl_lookupAccessor(selector);
-		}	}
-
-	public ATClosure impl_lookupAccessor(final ATSymbol selector) throws InterpreterException {
-		if(this.hasLocalField(selector)) {
-			ATObject fieldValue = this.getLocalField(selector);
-
-			if(fieldValue.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
-				return fieldValue.asClosure();
-			} else {
-				return new NativeClosure.Accessor(selector, this) {
-					public ATObject access() throws InterpreterException {
-						return getLocalField(selector);
-					}
-				};
-			}
-		} else {
-			return this.lexicalParent_.impl_lookupAccessor(selector);
-		}
-	}
-
-	public ATClosure impl_lookupMutator(ATAssignmentSymbol selector) throws InterpreterException {
-		if(this.hasLocalField(selector)) {
-			final ATSymbol fieldSelector = selector.getFieldName();
-
-			return new NativeClosure.Mutator(selector, this) {
-				public ATObject mutate(ATObject arg) throws InterpreterException {
-					setLocalField(fieldSelector, arg);
-					return arg;
-				}
-			};
-		} else {
-			return this.lexicalParent_.impl_lookupAccessor(selector);
-		}
-	}
 
 	/**
 	 * A field can be added to either a call frame or an object.
@@ -346,34 +119,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 			// field now defined, add its value to the state vector
 			stateVector_.add(value);
 		}
-		return NATNil._INSTANCE_;
-	}
-	
-	/**
-	 * A field can be assigned in either a call frame or an object.
-	 * In both cases, if the field exists locally, it is set to the new value.
-	 * If it does not exist locally, the assignment is performed on the lexical parent.
-	 */
-	public ATNil meta_assignVariable(ATSymbol name, ATObject value) throws InterpreterException {
-		if (this.setLocalField(name, value)) {
-			// field found and set locally
-			return NATNil._INSTANCE_;
-		} else {
-			// The lexical parent chain is followed for assignments. This implies
-			// that assignments on dynamic parents are disallowed.
-			return lexicalParent_.meta_assignVariable(name, value);
-		}
-	}
-	
-	/**
-	 * Assigning a call frame's field externally is possible and is treated
-	 * as if it were a variable assignment. Hence, if <tt>o</tt> is a call frame,
-	 * then <tt>o.m := x</tt> follows the same evaluation semantics as those of
-	 * <tt>m := x</tt> when performed in the scope of <tt>o</tt>.
-	 * @deprecated use invocation instead (UAP)
-	 */
-	public ATNil meta_assignField(ATObject receiver, ATSymbol name, ATObject value) throws InterpreterException {
-		return this.meta_assignVariable(name, value);
+		return OBJNil._INSTANCE_;
 	}
 
 	/* ------------------------------------
@@ -413,7 +159,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 			// append the custom field object
 			customFields_.add(field);
 		}
-		return NATNil._INSTANCE_;
+		return OBJNil._INSTANCE_;
 	}
 	
 	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
@@ -478,7 +224,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 		return this.impl_call(NATObject._SUPER_NAME_, NATTable.EMPTY);
 	};
 	
-	public ATObject meta_lexicalParent() throws InterpreterException {
+	public ATObject impl_lexicalParent() throws InterpreterException {
 		return lexicalParent_;
 	}
 
@@ -571,27 +317,40 @@ public class NATCallframe extends NATByRef implements ATObject {
 		}
 	}
 	
-	
-	
 	/**
 	 * Set a given field if it exists.
-	 * @return whether the field existed (and the assignment has been performed)
 	 */
-	protected boolean setLocalField(ATSymbol selector, ATObject value) throws InterpreterException {
+	protected void setLocalField(ATSymbol selector, ATObject value) throws InterpreterException {
 		int index = variableMap_.get(selector);
 		if(index != -1) {
 			// field exists, modify the state vector
 			stateVector_.set(index, value);
-			return true;
+			// ok
 		} else {
 			ATField fld = getLocalCustomField(selector);
 			if (fld != null) {
 				fld.base_writeField(value);
-				return true;
+				// ok
 			} else {
-				return false;
+				// fail
+				throw new XSelectorNotFound(selector, this);
 			}
 		}
 	}
+
+	/**
+	 * A call frame has no methods.
+	 */
+	protected boolean hasLocalMethod(ATSymbol atSelector) throws InterpreterException {
+        return false;
+	}
+	
+	/**
+	 * A call frame has no methods.
+	 */
+	protected ATMethod getLocalMethod(ATSymbol selector) throws InterpreterException {
+		throw new XSelectorNotFound(selector, this);
+	}
+
 	
 }

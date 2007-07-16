@@ -125,7 +125,7 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 					return type.base_isSubtypeOf(supertype);
 				}
 			});
-			return NATBoolean.atValue(found != NATNil._INSTANCE_);
+			return NATBoolean.atValue(found != OBJNil._INSTANCE_);
 		}
 	}
 	

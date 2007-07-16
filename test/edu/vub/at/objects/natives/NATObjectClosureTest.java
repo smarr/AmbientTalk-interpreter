@@ -61,7 +61,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 	 * invocation from the java level, rather than by executing ambienttalk code directly.
 	 * It is to be instantiated with the expected values and then passed into a method.
 	 */
-	private class AGScopeTest extends NATNil implements ATStatement {
+	private class AGScopeTest extends NATByCopy implements ATStatement {
 		
 		private ATObject scope_;
 		private ATObject self_;
@@ -78,11 +78,11 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			// Is the current callframe lexically connected to the expected scope
 			ATObject lexEnv = ctx.base_lexicalScope();
 			while (lexEnv != scope_) {
-				if(lexEnv == NATNil._INSTANCE_) {
+				if(lexEnv == OBJNil._INSTANCE_) {
 					fail("Lexical scope not found");
 					break;
 				}
-				lexEnv = lexEnv.meta_lexicalParent();
+				lexEnv = lexEnv.impl_lexicalParent();
 			}
 			
 			// SELF-tests
@@ -107,6 +107,10 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 					name, 
 					NATTable.EMPTY, 
 					new AGBegin(NATTable.atValue(new ATObject[] { this })));
+		}
+
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("scopetest");
 		}
 	
 	}
@@ -271,13 +275,13 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 				"  }; \n" +
 				"}; \n" +
 				"outerChild.inner.test(); \n",
-				XSelectorNotFound.class);		
+				XUndefinedSlot.class);		
 	}
 	
 	/**
 	 * AmbientTalk introduces first class delegation using the ^ symbol. This feature ensures
 	 * that the self of a message is late bound. This test illustrates the late binding of self
-	 * for delegated invocations, as opposed to oridinary invocations.
+	 * for delegated invocations, as opposed to ordinary invocations.
 	 */
 	public void testDelegatedMethodScope() {
 		evalAndReturn(
