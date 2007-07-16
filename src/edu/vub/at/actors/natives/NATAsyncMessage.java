@@ -128,7 +128,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 	}
     
     public ATObject base_receiver() throws InterpreterException {
-    	return super.impl_invokeAccessor(this, _RECEIVER_, NATTable.EMPTY);
+    	return super.meta_invokeField(this, _RECEIVER_);
     }
     
     /**

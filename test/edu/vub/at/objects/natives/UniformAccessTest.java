@@ -1,13 +1,16 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.NativeClosure;
+import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.grammar.AGMessageSend;
 import edu.vub.at.objects.natives.grammar.AGMethodInvocationCreation;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -307,6 +310,61 @@ public class UniformAccessTest extends AmbientTalkTest {
 	}
 	
 	/**
+	 * Tests how invocation, calling, lookup and select interact with
+	 * fields, methods and fields bound to closures. Primarly, the uniform
+	 * access principle is demonstrated by its ability to abstract over whether
+	 * a field is implemented as a genuine field or as a set of methods.
+	 */
+	public void testUniformAccessPrinciple() {
+		evalAndReturn(
+				"def o := object: {" +
+				"  def c := { 1 };" +
+				"  def x := 2;" +
+				"  def m() { 3 };" +
+				"  def m:=(v) { 4 }" +
+				"}");
+		
+		// dynamic uniform access
+		evalAndCompareTo("o.x", NATNumber.atValue(2));
+		evalAndCompareTo("o.m", atThree_); // for methods: o.m == o.m()
+		evalAndCompareTo("o.x()", NATNumber.atValue(2));
+		evalAndCompareTo("o.m()", atThree_);
+		evalAndCompareTo("o.c", "<closure:lambda>"); // for closures: o.c != o.c()
+		evalAndCompareTo("o.c()", NATNumber.ONE);
+		
+		evalAndCompareTo("o.x := 2", "2"); // assigns the field
+		evalAndCompareTo("o.m := 0", "4"); // invokes the mutator
+		evalAndCompareTo("o.c := { 1 }", "<closure:lambda>"); // assigns the field
+		
+		evalAndCompareTo("o.&x", "<native closure:x>"); // for fields: & returns accessor
+		evalAndCompareTo("o.&m", "<closure:m>"); // for methods: & returns method closure
+		evalAndCompareTo("o.&c", "<native closure:c>"); // for closures: & returns accessor
+		evalAndCompareTo("o.&x:=", "<native closure:x:=>"); // for fields: & returns mutator
+		evalAndCompareTo("o.&m:=", "<closure:m:=>"); // for methods: & returns method closure
+		evalAndCompareTo("o.&c:=", "<native closure:c:=>"); // for closures: & returns mutator
+		
+		// lexical uniform access
+		evalAndCompareTo("withScope: o do: { x }", "2");
+		evalAndCompareTo("withScope: o do: { m }", "3"); // for methods: m == m()
+		evalAndCompareTo("withScope: o do: { x() }", "2");
+		evalAndCompareTo("withScope: o do: { m() }", "3");
+		evalAndCompareTo("withScope: o do: { c }", "<closure:lambda>"); // for closures: c != c()
+		evalAndCompareTo("withScope: o do: { c() }", "1");
+		
+		evalAndCompareTo("withScope: o do: { x := 2 }", "2"); // assigns the field
+		evalAndCompareTo("withScope: o do: { m := 0 }", "4"); // invokes the mutator
+		evalAndCompareTo("withScope: o do: { c := { 1 } }", "<closure:lambda>"); // assigns the field
+		
+		evalAndCompareTo("withScope: o do: { &x }", "<native closure:x>"); // for fields: & returns accessor
+		evalAndCompareTo("withScope: o do: { &m }", "<closure:m>"); // for methods: & returns method closure
+		evalAndCompareTo("withScope: o do: { &c }", "<native closure:c>"); // for closures: & returns accessor
+		evalAndCompareTo("withScope: o do: { &x:= }", "<native closure:x:=>"); // for fields: & returns mutator
+		evalAndCompareTo("withScope: o do: { &m:= }", "<closure:m:=>"); // for methods: & returns method closure
+		evalAndCompareTo("withScope: o do: { &c:= }", "<native closure:c:=>"); // for closures: & returns mutator
+		
+	}
+
+	/**
 	 * Tests whether abstraction can be made over the accessor and mutator
 	 * of a slot at the meta-level, independent of whether a slot is implemened
 	 * as a field or as a pair of methods.
@@ -336,6 +394,37 @@ public class UniformAccessTest extends AmbientTalkTest {
 		evalAndCompareTo("cplxm.invoke(cplx, `re:=,[3])", "5");
 		evalAndCompareTo("cplxm.invoke(cplx, `clofield, [])", "5"); // cplx.clofield() = 5
 		evalAndCompareTo("cplxm.invokeField(cplx, `clofield)", "<closure:lambda>"); // cplx.clofield = <lambda>
+	}
+	
+	/**
+	 * This test is written following a bug report where the following happened:
+	 * <code>
+	 * def clo() { 5 }
+	 * &clo<-apply([])@FutureMessage
+	 * </code>
+	 * 
+	 * The interpreter complained that "apply" cound not be found in "5". Hence,
+	 * it applied the closure 'too early' and sent apply to the return value of the
+	 * closure instead.
+	 * 
+	 * The cause: the future message annotation caused the actual message
+	 * being sent to be a real AmbientTalk object that was coerced into an
+	 * {@link ATAsyncMessage}. However, the
+	 * {@link Reflection#downInvocation(ATObject, java.lang.reflect.Method, ATObject[])}
+	 * method failed to recognize a nullary method invocation as a field access
+	 * and hence treated 'msg.receiver' as 'msg.receiver()'. Since 'receiver'
+	 * was bound to a closure, the closure was automatically applied, rather
+	 * than simply being returned.
+	 */
+	public void testCoercedFieldAccess() throws InterpreterException {
+		// construct a coerced asynchronous message
+		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("AsyncMsg"), NativeTypeTags._ASYNCMSG_);
+		ATAsyncMessage msg = evalAndReturn("object: { def receiver := { 5 } } taggedAs: [AsyncMsg]").asAsyncMessage();
+		// rcv should be { 5 }, not 5
+		ATObject rcv = msg.base_receiver();
+		assertFalse(rcv.meta_isTaggedAs(NativeTypeTags._NUMBER_).asNativeBoolean().javaValue);
+		assertTrue(rcv.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue);
+		assertEquals(NATNumber.atValue(5), rcv.asClosure().base_apply(NATTable.EMPTY));
 	}
 	
 }
