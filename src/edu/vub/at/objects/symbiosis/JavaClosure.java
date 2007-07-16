@@ -108,7 +108,7 @@ public final class JavaClosure extends NATClosure implements ATJavaClosure {
 		if (matches.length > 0) {
 			return new JavaClosure(scope_, new JavaMethod(matches));
 		} else {
-			throw new XSymbiosisFailure(scope_, choices[0].getName(), types);
+			throw new XSymbiosisFailure(scope_, choices[0], types);
 		}
 	}
 	

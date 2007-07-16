@@ -34,6 +34,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.Reflection;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -84,10 +85,25 @@ public class XSymbiosisFailure extends InterpreterException {
 	 * @param selector the name of the invoked overloaded method
 	 * @param atArgs the actual arguments to the overloaded invocation
 	 */
-	public XSymbiosisFailure(Object symbiont, String selector, ATObject[] atArgs) throws InterpreterException {
+	public XSymbiosisFailure(Object symbiont, Method method, ATObject[] atArgs) throws InterpreterException {
 		StringBuffer buff = new StringBuffer("Overloaded Java invocation has no matches:\n");
-		buff.append(symbiont + "." + Reflection.downSelector(selector) + Evaluator.printElements(atArgs, "(",",",")").javaValue);
+		if (symbiont == null) {
+			symbiont = method.getDeclaringClass().getName();
+		}
+		buff.append(symbiont + "." + Reflection.downSelector(method.getName()) + Evaluator.printElements(atArgs, "(",",",")").javaValue);
 		message_ = buff.toString();
+	}
+	
+	/**
+	 * Reports that an overloaded method could not be resolved to a unique implementation
+	 * because there are no matches on arity.
+	 * @param symbiont the Java object upon which the overloaded symbiotic invocation failed.
+	 * @param selector the name of the invoked overloaded method
+	 * @param numArgs the number of actual arguments to the overloaded invocation
+	 */
+	public XSymbiosisFailure(Method method, int numArgs) throws InterpreterException {
+		message_ = "Wrong number of arguments supplied for "
+			+ method.getName() + ", given: " + numArgs;
 	}
 	
 	/**

@@ -140,6 +140,11 @@ public final class Symbiosis {
 				Object[] actuals = null;
 				Class[] params;
 				LinkedList matchingMethods = new LinkedList();
+				// this boolean keeps track of whether or not failure to resolve the overloaded
+				// method is solely because of an arity mismatch, not because of a type mismatch
+				
+				boolean failedDueToArityOnly = true;
+				
 				for (int i = 0; i < methods.length; i++) {
 					params = methods[i].getParameterTypes();
 					// is the method a varargs method?
@@ -154,6 +159,7 @@ public final class Symbiosis {
 							matchingMethods.addFirst(methods[i]);
 						} catch(XTypeMismatch e) {
 							// types don't match
+							failedDueToArityOnly = false;
 						}
 					} else {
 				      // arity does not match
@@ -162,8 +168,15 @@ public final class Symbiosis {
 				
 				switch (matchingMethods.size()) {
 				    case 0: {
-					    // no methods left: overloading resolution failed
-					    throw new XSymbiosisFailure(symbiont, selector, atArgs);
+					    // no methods left: overloading resolution failed...
+				    	if (failedDueToArityOnly) {
+				    		// ... because of an arity mismatch
+				    		throw new XSymbiosisFailure(methods[0], atArgs.length);
+				    	} else {
+				    		// ... because the types could not be resolved
+				    		throw new XSymbiosisFailure(symbiont, methods[0], atArgs);
+				    	}
+					    
 				    }
 				    case 1: {
 				    	// just one method left, invoke it
