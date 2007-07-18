@@ -90,7 +90,7 @@ public final class Coercer implements InvocationHandler {
 		} else if (type.isInterface()) {
 			// note that the proxy implements both the required type
 			// and the Symbiotic object marker interface to identify it as a wrapper
-			return Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(),
+			return Proxy.newProxyInstance(type.getClassLoader(),
 					                      new Class[] { type, SymbioticATObjectMarker.class },
 					                      new Coercer(object));
 		} else {
