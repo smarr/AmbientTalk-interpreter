@@ -72,7 +72,7 @@ import java.util.Vector;
 public class SymbiosisTest extends AmbientTalkTest {
 	
 	public static void main(String[] args) {
-		junit.swingui.TestRunner.run(TestEval.class);
+		junit.swingui.TestRunner.run(SymbiosisTest.class);
 		/*Test test= new SymbiosisTest() {
 		        public void runTest() throws Exception {
 		        	  testBugfixOverloadedConstructor();

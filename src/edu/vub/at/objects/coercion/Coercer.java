@@ -63,12 +63,12 @@ import java.lang.reflect.Proxy;
  */
 public final class Coercer implements InvocationHandler {
 	
-	private final NATObject principal_;
+	private final ATObject principal_;
 	
 	// we have to remember which thread owned the principal
 	private final Thread wrappingThread_;
 	
-	private Coercer(NATObject principal) {
+	private Coercer(ATObject principal) {
 		principal_ = principal;
 		wrappingThread_ = Thread.currentThread();
 	}
@@ -87,12 +87,12 @@ public final class Coercer implements InvocationHandler {
 	public static final Object coerce(ATObject object, Class type) throws XTypeMismatch {
 		if (type.isInstance(object)) { // object instanceof type
 			return object; // no need to coerce
-		} else if (object.isAmbientTalkObject() && type.isInterface()) {
+		} else if (type.isInterface()) {
 			// note that the proxy implements both the required type
 			// and the Symbiotic object marker interface to identify it as a wrapper
 			return Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(),
 					                      new Class[] { type, SymbioticATObjectMarker.class },
-					                      new Coercer(object.asAmbientTalkObject()));
+					                      new Coercer(object));
 		} else {
 			throw new XTypeMismatch(type, object);
 		}
