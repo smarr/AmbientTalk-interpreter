@@ -43,10 +43,9 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.OBJMirrorRoot;
 import edu.vub.at.objects.natives.NATCallframe;
-import edu.vub.at.objects.natives.NativeATObject;
 import edu.vub.at.objects.natives.NATObject;
-import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.NativeATObject;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 
@@ -142,16 +141,25 @@ public interface ATObject extends ATConversions {
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException;
    
     /**
-     * This meta-level operation reifies the act of synchronous message sending
-     * (better known as "method invocation").
+     * This meta-level operation reifies synchronous message sending ("method invocation").
      * Hence, the meta-level equivalent
      * of the base-level code <code>o.m()</code> is:
      * <pre>(reflect: o).invoke(o,`m,[])</pre>.
      * 
      * Method invocation comprises selector lookup and the application of the value
      * bound to the selector. Selector lookup first queries an object's local
-     * fields, then the method dictionary. If the selector is not found, the
-     * search continues in the objects <i>dynamic parent</i>.
+     * fields, then the method dictionary:
+     * <ul>
+     *  <li>If the selector ends with <tt>:=</tt> and matches a field, the field
+     *  is assigned if a unary argument list is specified (i.e. the field is treated
+     *  as a mutator method).
+     *  <li>Otherwise, if the selector is bound to a field containing
+     * a closure, that closure is applied to the given arguments.
+     *  <li>If the field is not bound to a closure, the field value is returned provided no arguments were
+     * specified (i.e. the field is treated like an accessor method).
+     *  <li>If the selector is bound to a method, the method is applied.
+     *  <li>If the selector is not found, the search continues in the objects <i>dynamic parent</i>.
+     * </ul>
      * <p>
      * Note also that the first argument to <tt>invoke</tt> denotes the
      * so-called "receiver" of the invocation. It is this object to which
@@ -162,12 +170,37 @@ public interface ATObject extends ATConversions {
      *
      * @param receiver the object to which <tt>self</tt> is bound during execution
      * of the method
-     * @param selector a symbol denoting the name of the method to be invoked
+     * @param selector a symbol denoting the name of the method, accessor or mutator to be invoked
      * @param arguments the table of actual arguments to be passed to the method
      * @return by default, the object returned from the invoked method
      */
     public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException;
 
+    /**
+     * This meta-level operation reifies "field selection".
+     * In other words, the base-level code
+     * <code>o.m</code>
+     * is interpreted at the meta-level as:
+     * <code>(reflect: o).invokeField(`m)
+     * 
+     * This meta-level operation is nearly identical to {@link #meta_invoke(ATObject, ATSymbol, ATTable)} with one
+     * important difference. When the selector is bound to a field storing a closure, this meta-level operation
+     * does <b>not</b> auto-apply the closure, but returns the closure instead.
+     * 
+     * For all other cases, the following equality holds:
+     * <code>o.m == o.m()</code>
+     * or, at the meta-level:
+     * <code>(reflect: o).invokeField(o, `m) == (reflect: o).invoke(o, `m, [])</code>
+     * 
+     * This effectively means that for client objects, it should not matter whether
+     * a property is implemented as a field or as a pair of accessor/mutator methods.
+     * 
+     * @param receiver the base-level object from which the 'field' should be selected.
+     * @param selector a symbol denoting the name of the method, accessor or mutator to be invoked
+     * @return the value of a field, or the return value of a nullary method.
+     */
+    public ATObject meta_invokeField(ATObject receiver, ATSymbol selector) throws InterpreterException;
+    
     /**
      * This meta-level method is used to determine whether an object has a
      * field or method corresponding to the given selector, without actually invoking
@@ -177,7 +210,7 @@ public interface ATObject extends ATConversions {
      * not only the object's own fields and methods are searched, but also those of
      * its dynamic parents).
      * 
-     * @param selector a symbol denoting the name of a field or method
+     * @param selector a symbol denoting the name of a field (accessor or mutator) or method
      * @return a boolean denoting whether the object responds to <tt>o.selector</tt>
      */
     public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException;
@@ -280,13 +313,13 @@ public interface ATObject extends ATConversions {
      * ------------------------------------------ */
     
     /**
-     * This meta-level operation reifies field or method selection. Hence, the
+     * This meta-level operation reifies first-class field or method selection. Hence, the
      * base-level evaluation of <code>o.&x</code> is interpreted at the meta-level as:
      * <pre>(reflect: o).select(o, `x)</pre>
      * 
      * The selector lookup follows the same search rules as those for <tt>invoke</tt>.
-     * That is: first an object's local fields are searched, then the local method dictionary,
-     * and then the object's <i>dynamic parent</i>.
+     * That is: first an object's local fields and method dictionary are searched,
+     * and only then the object's <i>dynamic parent</i>.
      * <p>
      * The <tt>select</tt> operation can be used to both select fields or methods from
      * an object. When the selector is bound to a method, the return value of
@@ -295,21 +328,19 @@ public interface ATObject extends ATConversions {
      * such as the lexical scope in which it was defined and the value of <tt>self</tt>, which
      * will be bound to the original receiver, i.e. the first argument of <tt>select</tt>.
      * <p>
-     * If the selector matches a field, a zero-argument closure is returned which,
-	 * upon invocation, yields the field's value. This implements the uniform access
-	 * principle.
-	 * 
-	 * If the field is bound to a closure value already, the closure is not wrapped
-	 * itself, but rather directly returned as the value of <tt>select</tt>. This way,
-	 * fields containing closures and methods become indistinguishable for code using
-	 * <tt>select</tt>.
+     * If the selector matches a field, an accessor is returned. If the selector ends with
+     * <tt>:=</tt>, a mutator is returned instead. An accessor is a nullary closure which upon
+     * application yields the field's value. A mutator is a unary closure which upon
+     * application assigns the field to the specified value.
+	 * Even for fields already bound to a closure, selecting the field returns an accessor
+	 * closure, not the bound closure itself.
      *
      * @see #meta_doesNotUnderstand(ATSymbol) for what happens if the selector is not found.
      *
      * @param receiver the dynamic receiver of the selection. If the result of the selection is
      * a method, the closure wrapping the method will bind <tt>self</tt> to this object.
      * @param selector a symbol denoting the name of the field or method to select.
-     * @return if selector is bound to a field, an accessor for the field; otherwise if
+     * @return if selector is bound to a field, an accessor or mutator for the field; otherwise if
      * the selector is bound to a method, a closure wrapping the method.
      */
     public ATClosure meta_select(ATObject receiver, ATSymbol selector) throws InterpreterException;
@@ -797,7 +828,7 @@ public interface ATObject extends ATConversions {
 	 * Implements slot accessor selection. This method is an implementation-level method (not part of the MOP).
 	 * @param receiver the dynamic receiver of the slot selection.
 	 * @param selector a regular symbol denoting the accessor to select.
-	 * @return a closure wrapping the selected slot.
+	 * @return a closure wrapping the selected method or an accessor for a field.
 	 */
 	public ATClosure impl_selectAccessor(ATObject receiver, ATSymbol selector) throws InterpreterException;
 	
@@ -814,34 +845,27 @@ public interface ATObject extends ATConversions {
     /**
      * Interprets <code>x := v</code> (equivalent to <code>x:=(v)</code>) or <code>f(v)</code>.
      * Implements functions calls and lexical access to variables.
-     * 
-     * TODO rework comments
-     * 
-     * This implementation operation reifies variable lookup. Hence, the base-level code
-     * <code>x</code> evaluated in the lexical scope <tt>lex</tt> is interpreted at
-     * the meta-eval as:
-     * <pre>(reflect: lex).lookup(`x)</pre>
-     * 
+     * This method is an implementation-level method (not part of the MOP).
+
      * Variable lookup first queries the local fields of this object, then the local
      * method dictionary. If the selector is not found, the search continues in
      * this object's <i>lexical parent</i>. Hence, variable lookup follows
      * <b>lexical scoping rules</b>.
      * <p>
-     * Similar to the behaviour of <tt>select</tt>, if the selector is bound to a
-     * method rather than a field, <tt>lookup</tt> returns a closure wrapping the method
-     * to preserve proper lexical scoping and the value of <tt>self</tt> for the found
-     * method.
+     * Similar to the behaviour of <tt>invoke</tt>, if the selector is bound to a
+     * field rather than a method, <tt>call</tt> treats the field as an accessor
+     * or mutator method (depending on the selector).
      * <p>
-     * Note that, unlike <tt>invoke</tt> and <tt>select</tt>, <tt>lookup</tt> does
+     * Note that, unlike <tt>invoke</tt> and <tt>select</tt>, <tt>call</tt> does
      * not give rise to the invocation of <tt>doesNotUnderstand</tt> if the selector
      * was not found. The reason for this is that lexical lookup is a static process
      * for which it makes less sense to provide dynamic interception facilities.
      *
      * @param selector a symbol denoting the name of the field or method to look up lexically.
-     * @param arguments TODO
+     * @param arguments the arguments to the lexically scoped function call.
      * @return if selector is bound to a field, the value of the field; otherwise if selector
-     * is bound to a method, a closure wrapping the method.
-     * @throws XUndefinedSlot if the selector could not be found in the lexical scope of this object
+     * is bound to a method, the return value of the method.
+     * @throws XUndefinedSlot if the selector could not be found in the lexical scope of this object.
      */
     public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException;
     
@@ -851,25 +875,28 @@ public interface ATObject extends ATConversions {
      * as part of the MOP) locates the lexically visible binding with the given selector and will return 
      * the value of the slot.
      * <p>
-     * When this object has a local slot corresponding to the selector:<ul>
+     * When this object has a local slot corresponding to the selector:
+     * <ul>
      * <li> and the slot contains a method or closure, it will be applied with the given arguments (within a context
      *   where self is bound to this object)
      * <li> and the slot contains a value and the argumentlist is empty, the value is returned
-     * <li> and the slot contains a value and the argumentlist is not empty, an arity mismatch is reported
+     * <li> and the slot contains a value and the argumentlist is not empty, an arity mismatch exception is raised
      * </ul>
      * <p>
      * When no local slot is found, lookup continues along the lexical parent chain. When the lexical chain is 
-     * completely traversed, a selector not found exception is reported.
+     * completely traversed, an undefined slot exception is raised.
      */
     public ATObject impl_callAccessor(ATSymbol selector, ATTable arguments) throws InterpreterException;
     
     /**
-     * Interprets <code>x := v</code>.
+     * Interprets <code>x := v</code> (which is equivalent to <code>x:=(v)</code>.
      * Implements the protocol to assign lexical variables. This operation (which is not exposed as part of the MOP) 
-     * locates slots to assign corresponding to a specific assignment symbol (selector + ":=") and looks for: <ol>
-     * <li> a "setter" method with the specified assignment symbol (i.e. including the ":=") which can then be 
+     * locates slots to assign corresponding to a specific assignment symbol (selector + ":=") and looks for:
+     * <ol>
+     * <li> a mutator method with the specified assignment symbol (i.e. including the ":=") which can then be 
      * invoked with the provided arguments.
-     * <li> a slot with a corresponding selector (i.e. without the ":=") which needs to be treated further.
+     * <li> a field with a corresponding selector (i.e. without the ":=") which is then treated as if it were
+     * a unary mutator method.
      * </ol>
      * 
      * If the slot is a method slot, an {@link XUnassignableField} exception is raised, otherwise the arity of the 
@@ -882,43 +909,48 @@ public interface ATObject extends ATConversions {
     
     /**
      * Interprets <code>x</code>.
-     * @param selector
-     * @return
-     * @throws InterpreterException
+     * This method is an implementation-level method (not part of the MOP).
+     * 
+     * This method is equivalent to {@link #impl_call(ATSymbol, ATTable)} where
+     * the arguments equal <tt>[]</tt>, except for one case: when the selector
+     * resolves to a field containing a closure, the closure is not auto-applied
+     * with zero arguments, but is instead returned. For all other purposes,
+     * evaluating <tt>m</tt> is equivalent to evaluating <tt>m()</tt> such that
+     * fields and nullary methods can be uniformly accessed.
+     * 
+     * @param selector the name of a lexically visible field or method.
+     * @return the value of a field or the return value of an accessor method.
      */
     public ATObject impl_callField(ATSymbol selector) throws InterpreterException;
     
     /**
      * Interprets <code>&x</code> or <code>&x:=</code>.
-     * @param selector
-     * @return
-     * @throws InterpreterException
+     * This method is an implementation-level method (not part of the MOP).
+     * 
+     * This operation is the lexical counterpart of {@link #meta_select(ATObject, ATSymbol)}.
+     * @param selector the name of a lexically visible field or method.
+     * @return a closure wrapping a method, or an accessor or mutator linked to a lexically visible field.
      */
     public ATClosure impl_lookup(ATSymbol selector) throws InterpreterException;
 
     /**
      * Interprets <code>&x</code>.
-     * @param selector
-     * @return
-     * @throws InterpreterException
+     * This method is an implementation-level method (not part of the MOP).
+     * 
+     * @param selector the name of a lexically visible field or method.
+     * @return a closure wrapping a method, or an accessor linked to a lexically visible field.
      */
     public ATClosure impl_lookupAccessor(ATSymbol selector) throws InterpreterException;
 
     /**
      * Interprets <code>&x:=</code>.
-     * @param selector
-     * @return
-     * @throws InterpreterException
+     * This method is an implementation-level method (not part of the MOP).
+     * 
+     * If the selector minus <tt>:=</tt> is bound to a field, the field is assigned
+     * i
+     * @param selector the name of a lexically visible method or of a field (whose name does not have the <tt>:=</tt> prefix).
+     * @return a closure wrapping a method, or a mutator linked to a lexically visible field.
      */
     public ATClosure impl_lookupMutator(ATAssignmentSymbol selector) throws InterpreterException;
-    
-    /**
-     * Interprets <code>o.x</code>.
-     * @param receiver
-     * @param selector
-     * @return
-     * @throws InterpreterException
-     */
-    public ATObject meta_invokeField(ATObject receiver, ATSymbol selector) throws InterpreterException;
     
 }
