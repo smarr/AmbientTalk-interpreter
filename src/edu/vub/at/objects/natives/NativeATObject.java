@@ -63,7 +63,6 @@ import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
-import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
@@ -117,6 +116,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 	/**
 	 * An ambienttalk object can respond to a message if a corresponding field or method exists
 	 * either in the receiver object locally, or in one of its dynamic parents.
+	 * Fields also implicitly define a mutator whose name has the form <tt>field:=</tt>.
 	 */
 	public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {
 		if (this.hasLocalField(selector) || this.hasLocalMethod(selector)) {
@@ -382,7 +382,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     }
 
     public ATHandler asHandler() throws InterpreterException {
-    	    throw new XTypeMismatch(ATHandler.class, this);
+    	throw new XTypeMismatch(ATHandler.class, this);
     }
 
     public ATTypeTag asTypeTag() throws InterpreterException {
@@ -478,7 +478,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     }
 
     public JavaObject asJavaObjectUnderSymbiosis() throws XTypeMismatch {
-    	    throw new XTypeMismatch(JavaObject.class, this);
+    	throw new XTypeMismatch(JavaObject.class, this);
     }
     
     public JavaClass asJavaClassUnderSymbiosis() throws XTypeMismatch {
@@ -502,19 +502,19 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
      * Java method invocations of equals are transformed into
      * AmbientTalk '==' method invocations.
      */
-	public boolean equals(Object other) {
-		try {
-			if (other instanceof ATObject) {
-				return this.base__opeql__opeql_((ATObject) other).asNativeBoolean().javaValue;
-			} else if (other instanceof SymbioticATObjectMarker) {
-				return this.base__opeql__opeql_(
-						((SymbioticATObjectMarker) other)._returnNativeAmbientTalkObject()).asNativeBoolean().javaValue;
-			}
-		} catch (InterpreterException e) {
-			Logging.Actor_LOG.warn("Error during equality testing:", e);
-		}
-		return false; 
-	}
+    public boolean equals(Object other) {
+    	try {
+    		if (other instanceof ATObject) {
+    			return this.base__opeql__opeql_((ATObject) other).asNativeBoolean().javaValue;
+    		} else if (other instanceof SymbioticATObjectMarker) {
+    			return this.base__opeql__opeql_(
+    					((SymbioticATObjectMarker) other)._returnNativeAmbientTalkObject()).asNativeBoolean().javaValue;
+    		}
+    	} catch (InterpreterException e) {
+    		Logging.Actor_LOG.warn("Error during equality testing:", e);
+    	}
+    	return false; 
+    }
     
 	/**
 	 * By default, two AmbientTalk objects are equal if they are the
@@ -534,11 +534,10 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     }
     
 	/**
-	 * This method is used to evaluate code of the form <tt>selector</tt> within the scope
-	 * of this object. A call frame resolves such a lookup request by checking whether
-	 * a field corresponding to the selector exists locally. If it does, the result is
-	 * returned. If it does not, the search continues recursively in the call frame's
-	 * lexical parent.
+	 * This method is used to evaluate code of the form <tt>selector(args)</tt>
+	 * or <tt>selector := arg</tt> within the scope of this object.
+	 * 
+	 * It dispatches to other implementation-level methods based on the selector.
 	 */
 	public ATObject impl_call(ATSymbol selector, ATTable arguments) throws InterpreterException {
 		if (selector.isAssignmentSymbol()) {
@@ -549,25 +548,14 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 	}
 
     /**
-	 * A lookup can only be issued at the base level by writing
-	 * <tt>selector</tt> inside the scope of a particular object. For
-	 * primitive language values, this should not happen as no AmbientTalk code
-	 * can be possibly nested within native code. However, using
-	 * meta-programming a primitive object could be installed as the lexical
-	 * parent of an AmbientTalk object.
+	 * Implements the interpretation of <tt>f(arg)</tt> inside the scope of a
+	 * particular object.
 	 * 
-	 * One particular case where this method will often be called is when a
-	 * lookup reaches the lexical root, OBJLexicalRoot, which inherits this
-	 * implementation.
-	 * 
-	 * In such cases a lookup is treated exactly like a selection, where the
-	 * 'original receiver' of the selection equals the primitive object.
-	 * 
-	 * 
-	 * An object resolves accessor call requests by checking whether
-	 * a field corresponding to the selector exists locally. If it does, the result is
-	 * returned. If it does not, the search continues recursively in the object's
-	 * lexical parent.
+	 * - if f is bound to a local method, the method is applied
+	 * - if f is bound to a field:
+	 *   - if the field contains a closure, the closure is applied
+	 *   - otherwise, the field is treated as a nullary closure and 'applied'
+	 * - otherwise, the search for the selector continues in the lexical parent
 	 */
 	public ATObject impl_callAccessor(ATSymbol selector, ATTable arguments) throws InterpreterException {
 		if(this.hasLocalMethod(selector)) {
@@ -591,12 +579,13 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		}
 	}
 
-	/**
-	 * This method is used to evaluate code of the form <tt>selector := v</tt> within the scope
-	 * of this object. An object resolves such a lookup request by checking whether
-	 * a field corresponding to the selector exists locally. If it does, the field is assigned.
-	 * If it does not, the search continues recursively in the call frame's
-	 * lexical parent.
+    /**
+	 * Implements the interpretation of <tt>x := arg</tt> inside the scope of a
+	 * particular object.
+	 * 
+	 * - if x:= is bound to a local method, the method is applied
+	 * - if x is bound to a field, the field is assigned if exactly one argument is given
+	 * - otherwise, the search for the selector continues in the lexical parent
 	 */
 	public ATObject impl_callMutator(ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
 		if(this.hasLocalMethod(selector)) {
@@ -616,6 +605,15 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		}
 	}	
 	
+    /**
+	 * Implements the interpretation of <tt>x</tt> inside the scope of a
+	 * particular object.
+	 * 
+	 * - if x is bound to a local method, the method is applied to <tt>[]</tt>
+	 * - if x is bound to a field, the field's value is returned (even if it
+	 *   contains a closure)
+	 * - otherwise, the search for the selector continues in the lexical parent
+	 */
 	public ATObject impl_callField(ATSymbol selector) throws InterpreterException {
 		// if selector is bound to a method, treat 'm' as 'm()'
 		if(this.hasLocalMethod(selector)) {
@@ -635,7 +633,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 	}
 	
 	/**
-	 * invoke should dispatch to specific invocation primitives
+	 * This method dispatches to specific invocation primitives
 	 * depending on whether or not the given selector denotes an assignment.
 	 */
     public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
@@ -647,29 +645,14 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		}
     }
     
-	/**
-	 * Implements slot (field or method) access.
+    /**
+	 * Implements the interpretation of <tt>o.m(arg)</tt>.
 	 * 
-	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
-	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
-	 * 
-	 * Slot access proceeds as follows:
-	 *  - if selector is bound to a method, the method is invoked.
-	 *  - if selector is bound to a field bound to a closure, the closure is invoked.
-	 *  - if selector is bound to a field not bound to a closure, the field is treated as a zero-
-	 *  arity closure which is immediately applied and returns the field value (this implements the uniform access principle).
-	 *  - otherwise the slot access is delegated to the parent object.
-	 *  
-	 * Comments from call frame:
-	 * Normally, call frames are not used in receiverful method invocation expressions.
-	 * That is, normally, the content of call frames is accessed via the {@link this#meta_lookup(ATSymbol)} operation.
-	 * 
-	 * Invocation on call frames is much more ad hoc than on real objects.
-	 * A call frame responds to an invocation by looking up the selector in its own fields (without delegating!)
-	 * and by applying a potential closure bound to that field.
-	 * 
-	 * If the field is not bound to a closure, the field itself is treated as a zero-argument closure
-	 * (implementing the UAP).
+	 * - if m is bound to a local method of o, the method is applied
+	 * - if m is bound to a field of o:
+	 *   - if the field contains a closure, the closure is applied
+	 *   - otherwise, the field is treated as a nullary closure and 'applied'
+	 * - otherwise, the search for the selector continues in the dynamic parent
 	 */
 	public ATObject impl_invokeAccessor(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
 		if (this.hasLocalMethod(selector)) {
@@ -693,42 +676,13 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		}
 	}
 	
-	/**
-	 * Implements slot assignment. This method expects its selector to be an {@link AGAssignmentSymbol}
-	 * which either represents a method directly, or represents field assignment implicitly.
+    /**
+	 * Implements the interpretation of <tt>o.x := arg</tt>.
 	 * 
-	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
-	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
-	 * 
-	 * Slot mutation proceeds as follows:
-	 *  - if selector is bound to a method, the method is invoked.
-	 *  - if selector \ { := } is bound to a field, that field is assigned to the given value
-	 *  (this implements the uniform access principle).
-	 *  - otherwise, the slot mutation is carried out in the parent object.
-	 *  
-	 *  
-	 * For native objects:
-     * The default behaviour of 'invoke' for primitive non-object ambienttalk language values is
-     * to check whether the requested functionality is provided by a native Java method
-     * with the same selector, but prefixed with <tt>base_</tt>.
-     * 
-     * Because an explicit AmbientTalk method invocation must be converted into an implicit
-     * Java method invocation, the invocation must be deified ('upped'). The result of the
-     * upped invocation is a Java object, which must subsequently be 'downed' again.
-     * 
-     * According to the uniform access principle, access to fields (both for reading and mutating)
-     * is handled by the invoke operation. A field is represented simply by a Java accessor
-     * and/or mutator method. Mutator methods end in '__opeql_' which is the equivalent of ':='
-     * at the Java level.
-     *
-     * If no method to invoke is found, doesNotUnderstand is invoked which should
-     * return a closure to be invoked with the appropriate arguments.
-     * 
-     * comments from call frame:
-	 * Invoking a mutator method on a call frame means the call frame requires a field
-	 * corresponding to the assignment symbol \ {:=}. The field is then assigned, regardless
-	 * of its value (i.e. if it's a closure, the closure is not in itself treated as a mutator).
-	 * @throws XSelectorNotFound if a suitable field mutator cannot be found 
+	 * - if x:= is bound to a local method of o, the method is applied to the arguments.
+	 * - if x is bound to a field of o, the field is treated as a unary mutator method
+	 *   that assigns the field and 'applied' to the given arguments.
+	 * - otherwise, the search for the selector continues in the dynamic parent
 	 */
 	public ATObject impl_invokeMutator(ATObject receiver, ATAssignmentSymbol selector, ATTable arguments) throws InterpreterException {
 		if (this.hasLocalMethod(selector)) {
@@ -750,6 +704,14 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		}
 	}
 
+    /**
+	 * Implements the interpretation of <tt>o.x</tt>.
+	 * 
+	 * - if x is bound to a local method of o, the method is applied to <tt>[]</tt>
+	 * - if x is bound to a field of o, the field's value is returned (even if it
+	 *   contains a closure).
+	 * - otherwise, the search for the selector continues in the dynamic parent
+	 */
 	public ATObject meta_invokeField(ATObject receiver, ATSymbol selector) throws InterpreterException {
 		// if selector is bound to a method, treat 'o.m' as 'o.m()'
 		if (this.hasLocalMethod(selector)) {
@@ -767,6 +729,10 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		}
 	}
 	
+    /**
+	 * This operation dispatches to more specific implementation-level methods depending
+	 * on the type of the selector.
+	 */
 	public ATClosure impl_lookup(ATSymbol selector) throws InterpreterException {
 		if (selector.isAssignmentSymbol()) {
 			return this.impl_lookupMutator(selector.asAssignmentSymbol());
@@ -775,6 +741,14 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		}
 	}
 	
+    /**
+	 * Implements the interpretation of <tt>&f</tt> in the scope of this object.
+	 * 
+	 * - if f is bound to a local method, a closure wrapping the method is returned
+	 * - if f is bound to a field of o, an accessor closure is returned which yields
+	 * the field's value upon application.
+	 * - otherwise, the search for the selector continues in the lexical parent
+	 */
 	public ATClosure impl_lookupAccessor(final ATSymbol selector) throws InterpreterException {
 		if (this.hasLocalMethod(selector)) {
 			// return a new closure (mth, ctx) where
@@ -798,6 +772,14 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		}
 	}
 
+    /**
+	 * Implements the interpretation of <tt>&f:=</tt> in the scope of this object.
+	 * 
+	 * - if f:= is bound to a local method, a closure wrapping the method is returned
+	 * - if f is bound to a field of o, a mutator closure is returned which assigns
+	 * the field upon application.
+	 * - otherwise, the search for the selector continues in the lexical parent
+	 */
 	public ATClosure impl_lookupMutator(ATAssignmentSymbol selector) throws InterpreterException {
 		if (this.hasLocalMethod(selector)) {
 			// return a new closure (mth, ctx) where
@@ -835,18 +817,13 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		}
     }
     
-	/**
-	 * Implements slot (field or method) accessor selection.
+    /**
+	 * Implements the interpretation of <tt>o.&m</tt>.
 	 * 
-	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
-	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
-	 * 
-	 * Slot accessor retrieval proceeds as follows:
-	 *  - if selector is bound to a method, the method is wrapped in a closure and this closure is returned.
-	 *  - if selector is bound to a field bound to a closure, that closure is returned.
-	 *  - if selector is bound to a field not bound to a closure, a zero-arity closure is returned which
-	 *    upon invocation returns the field value (this implements the uniform access principle).
-	 *  - otherwise the slot accessor retrieval is delegated to the parent object.
+	 * - if m is bound to a local method, a closure wrapping the method is returned
+	 * - if m is bound to a field of o, an accessor closure is returned which yields
+	 * the field's value upon application.
+	 * - otherwise, the search for the selector continues in the dynamic parent
 	 */
     public ATClosure impl_selectAccessor(ATObject receiver, final ATSymbol selector) throws InterpreterException {
     	if (this.hasLocalMethod(selector)) {
@@ -870,18 +847,13 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     	}
     }
 
-	/**
-	 * Implements slot mutator retrieval. This method expects its selector to be an {@link AGAssignmentSymbol}
-	 * which either represents a method directly, or represents a field mutator implicitly.
+    /**
+	 * Implements the interpretation of <tt>o.&m:=</tt>.
 	 * 
-	 * This method is an implementation-level method that needs to be supported by any AmbientTalk object,
-	 * although it is not part of the metaobject protocol. Therefore it has no meta_ but an impl_ prefix.
-	 * 
-	 * Slot mutator retrieval proceeds as follows:
-	 *  - if selector is bound to a method, a closure wrapping that method is returned.
-	 *  - if selector \ { := } is bound to a field, a 1-arity closure is returned which
-	 *    upon invocation sets the field to the given value (this implements the uniform access principle).
-	 *  - otherwise, the slot mutator retrieval is delegated to the parent object.
+	 * - if m:= is bound to a local method, a closure wrapping the method is returned
+	 * - if m is bound to a field of o, a mutator closure is returned which assigns
+	 * the field upon application.
+	 * - otherwise, the search for the selector continues in the dynamic parent
 	 */
     public ATClosure impl_selectMutator(ATObject receiver, final ATAssignmentSymbol selector) throws InterpreterException {
     	if (this.hasLocalMethod(selector)) {

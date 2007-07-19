@@ -34,7 +34,6 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.mirrors.Reflection;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.symbiosis.Symbiosis;
 import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 
