@@ -56,7 +56,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  *   - applying a nativelambda directly (without going through this NativeClosure)
  *     results in an error
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public class NativeAnonymousMethod extends NATByRef implements ATMethod {
 		

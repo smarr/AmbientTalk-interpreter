@@ -47,6 +47,7 @@ public class NATHandler extends NATByRef implements ATHandler {
 	private final ATTypeTag filter_;
 	private final ATClosure handler_;
 	
+	/** construct a new exception handler */
 	public NATHandler(ATTypeTag filter, ATClosure handler) {
 		this.filter_ = filter;
 		this.handler_ = handler;

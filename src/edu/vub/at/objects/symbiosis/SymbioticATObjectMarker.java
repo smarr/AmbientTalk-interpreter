@@ -49,6 +49,6 @@ public interface SymbioticATObjectMarker extends Serializable {
 	/**
 	 * Coercers implement writeReplace such that their principal is serialized as them instead.
 	 */
-	public Object writeReplace() throws ObjectStreamException;
+	//public Object writeReplace() throws ObjectStreamException;
 	
 }

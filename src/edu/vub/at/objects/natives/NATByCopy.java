@@ -29,10 +29,15 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
  * This class is the abstract superclass of all AT/2 object types which should
  * be passed by copy when passed as a parameter between actors.
+ * 
+ * All subclasses of this class should override {@link #meta_typeTags()} to
+ * include the type {@link NativeTypeTags#_ISOLATE_} to mark that these objects
+ * are passed by-copy.
  *
  * @author tvcutsem
  */

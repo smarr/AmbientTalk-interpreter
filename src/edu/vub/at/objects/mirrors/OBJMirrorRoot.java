@@ -37,15 +37,18 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.util.logging.Logging;
+
+import java.io.IOException;
 
 /**
  * OBJMirrorRoot denotes the root node of the intercessive mirrors delegation hierarchy.
@@ -74,8 +77,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
  * Hence, 'mirrors' are simply objects with the same interface as this mirrorroot object: they should be
  * able to respond to all meta_* messages and have a 'base' field.
  * 
- * @author smostinc
- * @author tvcutsem
+ * @author tvcutsem, smostinc
  */
 public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 	
@@ -84,6 +86,15 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 	
 	// the native read-only 'base' field of the mirror root
 	private NATMirage base_;
+	
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+		try {
+			in.defaultReadObject();
+		} catch(IOException e) {
+			Logging.Actor_LOG.fatal("Failed to reconstruct an OBJMirrorRoot", e);
+			throw e;
+		}
+	}
 	
 	/**
 	 * Constructor used to initialize the initial mirror root prototype.
@@ -142,7 +153,7 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 	 * The mirror root is cloned but the base field is only shallow-copied, i.e. it is shared
 	 * between the clones! Normally, mirrors are instantiated rather than cloned when assigned
 	 * to a new object, such that this new base field will be re-assigned to another mirage
-	 * (in OBJMirrorRoot's primitive 'init' method.
+	 * (in OBJMirrorRoot's primitive 'init' method).
 	 */
 	public ATObject meta_clone() throws InterpreterException {
 		return new OBJMirrorRoot(base_);

@@ -87,6 +87,7 @@ public class InterpreterTests {
 		suite.addTestSuite(SerializationTest.class);
 		suite.addTestSuite(TypeTagTest.class);
 		suite.addTestSuite(UniformAccessTest.class);
+		suite.addTestSuite(CoercionTest.class);
 		//$JUnit-END$
 		return suite;
 	}

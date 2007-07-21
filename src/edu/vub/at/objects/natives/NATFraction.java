@@ -79,7 +79,7 @@ public final class NATFraction extends NATNumeric implements ATFraction {
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._FRACTION_);
+    	return NATTable.of(NativeTypeTags._FRACTION_, NativeTypeTags._ISOLATE_);
     }
 	
 	// contract with NATNumeric

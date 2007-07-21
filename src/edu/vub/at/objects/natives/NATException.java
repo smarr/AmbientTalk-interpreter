@@ -34,6 +34,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.Reflection;
 
 /**
@@ -85,7 +86,7 @@ public class NATException extends NATByCopy {
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(wrappedException_.getType());
+    	return NATTable.of(wrappedException_.getType(), NativeTypeTags._ISOLATE_);
     }
     
     public NATText meta_print() throws InterpreterException {

@@ -79,7 +79,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._BOOLEAN_);
+    	return NATTable.of(NativeTypeTags._BOOLEAN_, NativeTypeTags._ISOLATE_);
     }
 	
 	public static class NATTrue extends NATBoolean {

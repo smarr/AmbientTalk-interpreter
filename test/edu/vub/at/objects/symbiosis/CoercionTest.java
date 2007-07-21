@@ -3,8 +3,6 @@
  */
 package edu.vub.at.objects.symbiosis;
 
-import java.awt.event.ActionListener;
-
 import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
@@ -65,11 +63,11 @@ public class CoercionTest extends AmbientTalkTest {
 		ATObject listener = evalAndReturn(
 			"def result := `error;" +
 			"def listener := object: { \n" +
-			"  def actionPerformed(event) { result := `ok; }; \n" +
+			"  def run() { result := `ok; }; \n" +
 			"}; \n");
 				
-		ActionListener coercedListener = (ActionListener)Coercer.coerce(listener, ActionListener.class);
-		coercedListener.actionPerformed(null);
+		Runnable coercedListener = (Runnable)Coercer.coerce(listener, Runnable.class);
+		coercedListener.run();
 		
 		ATObject result = evalAndReturn("result");
 		assertEquals(AGSymbol.jAlloc("ok"), result);

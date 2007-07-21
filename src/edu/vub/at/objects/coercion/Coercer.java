@@ -37,6 +37,8 @@ import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.symbiosis.Symbiosis;
 import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -60,12 +62,12 @@ import java.lang.reflect.Proxy;
  * 
  * @author tvcutsem
  */
-public final class Coercer implements InvocationHandler {
+public final class Coercer implements InvocationHandler, Serializable {
 	
 	private final ATObject principal_;
 	
 	// we have to remember which thread owned the principal
-	private final Thread wrappingThread_;
+	private transient Thread wrappingThread_;
 	
 	private Coercer(ATObject principal) {
 		principal_ = principal;
@@ -89,7 +91,7 @@ public final class Coercer implements InvocationHandler {
 		} else if (type.isInterface()) {
 			// note that the proxy implements both the required type
 			// and the Symbiotic object marker interface to identify it as a wrapper
-			return Proxy.newProxyInstance(type.getClassLoader(),
+			return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
 					                      new Class[] { type, SymbioticATObjectMarker.class },
 					                      new Coercer(object));
 		} else {
@@ -157,4 +159,12 @@ public final class Coercer implements InvocationHandler {
 		}
 	}
 	
+	/**
+	 * Upon deserialization, re-assign the thread to the actor deserializing this coercer
+	 */
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+		in.defaultReadObject();
+		wrappingThread_ = Thread.currentThread();
+	}
+		
 }

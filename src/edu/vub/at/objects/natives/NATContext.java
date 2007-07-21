@@ -72,7 +72,7 @@ public class NATContext extends NATByCopy implements ATContext {
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._CONTEXT_);
+    	return NATTable.of(NativeTypeTags._CONTEXT_, NativeTypeTags._ISOLATE_);
     }
     
 	public ATObject meta_clone() throws InterpreterException {

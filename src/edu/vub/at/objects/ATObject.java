@@ -181,7 +181,7 @@ public interface ATObject extends ATConversions {
      * In other words, the base-level code
      * <code>o.m</code>
      * is interpreted at the meta-level as:
-     * <code>(reflect: o).invokeField(`m)
+     * <code>(reflect: o).invokeField(o, `m)</code>
      * 
      * This meta-level operation is nearly identical to {@link #meta_invoke(ATObject, ATSymbol, ATTable)} with one
      * important difference. When the selector is bound to a field storing a closure, this meta-level operation

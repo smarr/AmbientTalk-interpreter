@@ -102,7 +102,6 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	    types_ = new ATTypeTag[size + 1];
 	    if (size>0) System.arraycopy(types, 0, types_, 0, size);
 	    types_[size] = NativeTypeTags._FARREF_;
-	    	
 		objectId_ = objectId;
 		connected_ = true;
 		owner_ = owner;	

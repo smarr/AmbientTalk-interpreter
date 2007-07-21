@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATObject;
@@ -41,20 +42,20 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * these fields directly in every object, we choose to only make people pay when they
  * choose to reify them. 
  * 
- * @author smostinc
+ * @author smostinc, tvcutsem
  */
 public class NATField extends NATByRef implements ATField {
 
 	private final ATSymbol name_;
-	private final NATCallframe frame_;
+	private final ATObject host_;
 	
 	/**
 	 * Constructs a new native field object linked to the field of a base-level
-	 * AmbientTalk object or call frame
+	 * AmbientTalk object
 	 */
-	public NATField(ATSymbol name, NATCallframe frame) {
+	public NATField(ATSymbol name, ATObject host) {
 		name_ = name;
-		frame_ = frame;
+		host_ = host;
 	}
 
 	public ATSymbol base_name() {
@@ -63,16 +64,16 @@ public class NATField extends NATByRef implements ATField {
 
 	public ATObject base_readField() throws InterpreterException {
 		try {
-			return frame_.getLocalField(name_);
-		} catch (InterpreterException e) {
+			return host_.meta_invokeField(host_, name_);
+		} catch (XSelectorNotFound e) {
+			e.catchOnlyIfSelectorEquals(name_);
 			// Since the field was selected from the receiver, it should always be found
 			throw new XIllegalOperation("Incorrectly initialised field accessed", e);
 		}
 	}
 
 	public ATObject base_writeField(ATObject newValue) throws InterpreterException {
-		frame_.setLocalField(name_, newValue);
-		return OBJNil._INSTANCE_;
+		return host_.meta_invoke(host_, name_.asAssignmentSymbol(), NATTable.of(newValue));
 	}
 	
 	public NATText meta_print() throws InterpreterException {

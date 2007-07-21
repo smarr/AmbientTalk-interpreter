@@ -128,7 +128,7 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._METHOD_DEFINITION_);
+    	return NATTable.of(NativeTypeTags._METHOD_DEFINITION_, NativeTypeTags._ISOLATE_);
     }
 
 }

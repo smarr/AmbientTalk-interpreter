@@ -60,8 +60,10 @@ import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 import edu.vub.at.util.logging.Logging;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -122,8 +124,15 @@ public class NATObject extends NATCallframe implements ATObject {
 			if (!arguments.base_length().equals(NATNumber.ONE)) {
 				throw new XArityMismatch("==", 1, arguments.base_length().asNativeNumber().javaValue);
 			}
-			// primitive implementation uses pointer equality (as dictated by NATNil)
-			return NATBoolean.atValue(ctx.base_lexicalScope() == arguments.base_at(NATNumber.ONE));
+			
+			ATObject comparand = arguments.base_at(NATNumber.ONE);
+			// when comparing against a coercer, skip the coercer
+			if (comparand instanceof SymbioticATObjectMarker) {
+				comparand = ((SymbioticATObjectMarker) comparand)._returnNativeAmbientTalkObject();
+			}
+			
+			// primitive implementation uses pointer equality (as dictated by NativeATObject)
+			return NATBoolean.atValue(ctx.base_lexicalScope() == comparand);
 		}
 	};
 	/** def new(@initargs) { nil } */
@@ -666,6 +675,20 @@ public class NATObject extends NATCallframe implements ATObject {
     		return super.meta_resolve();
     	}
     }
+    
+    /**
+     * This Java serialization hook is overridden merely to provide clearer error messages
+     * in the case of a failing deserialization.
+     */
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+		try {
+			in.defaultReadObject();
+		} catch(ArrayStoreException e) {
+			Logging.Actor_LOG.fatal("Failed to deserialize instance of " + this.getClass(), e);
+			throw new IOException("Object deserialized as wrong type: " + e.getMessage()
+					+ ". Did you forget to make a type tag object an isolate?");
+		}
+	}
     
     /* ---------------------------------------
 	 * -- Conversion and Testing Protocol   --

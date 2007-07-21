@@ -84,7 +84,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._NUMBER_);
+    	return NATTable.of(NativeTypeTags._NUMBER_, NativeTypeTags._ISOLATE_);
     }
 	
 	// contract with NATNumeric

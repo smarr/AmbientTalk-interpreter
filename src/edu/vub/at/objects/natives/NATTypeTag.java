@@ -40,6 +40,10 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 /**
  * The native implementation of AmbientTalk type tag objects.
  *
+ * In principle, care should be taken that all objects implementing the
+ * type tag interface are isolates, because type tags are usually attributed
+ * to messages which are isolates themselves.
+ *
  * @author tvcutsem
  */
 public class NATTypeTag extends NATByCopy implements ATTypeTag {
@@ -156,7 +160,7 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._TYPETAG_);
+    	return NATTable.of(NativeTypeTags._TYPETAG_, NativeTypeTags._ISOLATE_);
     }
 	
 	/**

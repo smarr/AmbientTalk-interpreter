@@ -39,7 +39,6 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
-import edu.vub.at.objects.symbiosis.JavaClosure;
 import edu.vub.at.util.logging.Logging;
 
 /**
@@ -58,6 +57,7 @@ public class NATMethod extends NATByCopy implements ATMethod {
 	// partial function denoting a parameter binding algorithm specialized for this method's parameter list
 	private final PartialBinder parameterBindingFunction_;
 	
+	/** construct a new method. This method may raise an exception if the parameter list is illegal. */
 	public NATMethod(ATSymbol name, ATTable parameters, ATBegin body) throws InterpreterException {
 		name_ 		= name;
 		parameters_ = parameters;
@@ -154,7 +154,7 @@ public class NATMethod extends NATByCopy implements ATMethod {
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._METHOD_);
+    	return NATTable.of(NativeTypeTags._METHOD_, NativeTypeTags._ISOLATE_);
     }
 
 }

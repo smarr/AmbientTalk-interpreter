@@ -68,6 +68,7 @@ import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 import edu.vub.at.util.logging.Logging;
 
+import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;

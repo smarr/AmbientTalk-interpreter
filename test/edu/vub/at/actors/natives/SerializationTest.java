@@ -99,10 +99,9 @@ public class SerializationTest extends AmbientTalkTest {
 	}
 	
 	/**
-	 * Tests whether a coercer correctly implements writeReplace to return
-	 * the principal to serialize, instead of the coercer itself. Hence,
-	 * upon deserialization, we expect an object that is no longer wrapped
-	 * by a coercer.
+	 * Tests whether a coercer is correctly serialized such that upon
+	 * deserialization it still holds that the deserialized value is an instance
+	 * of the given Java type.
 	 */
 	public void testCoercerSerialization() throws InterpreterException {
 		NATObject isolate = new NATObject(new ATTypeTag[] { NativeTypeTags._ISOLATE_, NativeTypeTags._TABLE_ });
@@ -110,8 +109,8 @@ public class SerializationTest extends AmbientTalkTest {
 		assertTrue(coercer instanceof SymbioticATObjectMarker);
 		Packet p = new Packet("test", coercer);
 		ATObject obj = p.unpack();
-		assertEquals(NATObject.class, obj.getClass());
-		assertFalse(obj instanceof SymbioticATObjectMarker);
+		assertTrue(obj instanceof ATTable);
+		assertTrue(obj instanceof SymbioticATObjectMarker);
 		assertFalse(obj == isolate);
 	}
 	

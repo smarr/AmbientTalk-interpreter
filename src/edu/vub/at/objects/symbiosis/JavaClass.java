@@ -54,6 +54,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.IdentityHashMap;
 
+import java.io.IOException;
 import java.lang.ref.SoftReference;
 
 /**
@@ -138,7 +139,7 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 	 */
 	private JavaClass(Class wrappedClass) {
 		super(wrappedClass.isInterface() ?
-			  new ATTypeTag[] { NativeTypeTags._TYPETAG_ } :
+			  new ATTypeTag[] { NativeTypeTags._TYPETAG_, NativeTypeTags._ISOLATE_ } :
 			  NATObject._NO_TYPETAGS_);
 		wrappedClass_ = wrappedClass;
 		

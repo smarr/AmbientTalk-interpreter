@@ -43,7 +43,7 @@ public abstract class AGExpression extends NATAbstractGrammar implements ATExpre
 	public ATExpression asExpression() { return this; }
 
     public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._EXPRESSION_);
+    	return NATTable.of(NativeTypeTags._EXPRESSION_, NativeTypeTags._ISOLATE_);
     }
 	
 }

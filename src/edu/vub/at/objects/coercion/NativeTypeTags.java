@@ -85,8 +85,8 @@ public final class NativeTypeTags {
 //deftype ActorMirror;
 	public final static NATTypeTag _ACTORMIRROR_ = NATTypeTag.atValue("ActorMirror");
 	
-//deftype TypeTag <: Isolate;;
-	public final static NATTypeTag _TYPETAG_ = NATTypeTag.atValue("TypeTag", _ISOLATE_);
+//deftype TypeTag;
+	public final static NATTypeTag _TYPETAG_ = NATTypeTag.atValue("TypeTag");
 	
 //deftype FarReference;
 	public final static NATTypeTag _FARREF_ = NATTypeTag.atValue("FarReference");	
