@@ -69,9 +69,9 @@ public final class Coercer implements InvocationHandler, Serializable {
 	// we have to remember which thread owned the principal
 	private transient Thread wrappingThread_;
 	
-	private Coercer(ATObject principal) {
+	private Coercer(ATObject principal, Thread owningThread) {
 		principal_ = principal;
-		wrappingThread_ = Thread.currentThread();
+		wrappingThread_ = owningThread;
 	}
 	
 	public String toString() {
@@ -79,13 +79,34 @@ public final class Coercer implements InvocationHandler, Serializable {
 	}
 	
 	/**
-	 * Try to coerce the given AmbientTalk object into the given Java type.
+	 * Try to coerce the given AmbientTalk object into the given Java type. This variant implicitly assumes that
+	 * the coercion is performed by the thread owning the object, which is the case when coercing arguments to a
+	 * Java method call or when passing an AmbientTalk object as a result.
+	 * 
 	 * @param object the AmbientTalk object to coerce
 	 * @param type the class object representing the target type
 	 * @return a Java object <tt>o</tt> for which it holds that <tt>type.isInstance(o)</tt>
 	 * @throws XTypeMismatch if the coercion fails
 	 */
 	public static final Object coerce(ATObject object, Class type) throws XTypeMismatch {
+		return coerce(object, type, Thread.currentThread());
+	}
+
+	/**
+	 * Try to coerce the given AmbientTalk object into the given Java type, while explicitly providing the thread
+	 * which is the owning actor for the object. 
+	 * <p>
+	 * This variant of coerce is provided explicitly to allow coercion to occur from a Java thread which is not the 
+	 * owning actor of the object. This occurs when the coercion is performed explicitly on the return value of an 
+	 * evaluation, after the latter has been finalized. 
+	 *  
+	 * @param object the AmbientTalk object to coerce
+	 * @param type the class object representing the target type
+	 * @param owningThread the owning Actor
+	 * @return a Java object <tt>o</tt> for which it holds that <tt>type.isInstance(o)</tt>
+	 * @throws XTypeMismatch if the coercion fails
+	 */
+	public static final Object coerce(ATObject object, Class type, Thread owningThread) throws XTypeMismatch {
 		if (type.isInstance(object)) { // object instanceof type
 			return object; // no need to coerce
 		} else if (type.isInterface()) {
@@ -93,12 +114,12 @@ public final class Coercer implements InvocationHandler, Serializable {
 			// and the Symbiotic object marker interface to identify it as a wrapper
 			return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
 					                      new Class[] { type, SymbioticATObjectMarker.class },
-					                      new Coercer(object));
+					                      new Coercer(object, owningThread));
 		} else {
 			throw new XTypeMismatch(type, object);
 		}
 	}
-
+	
 	public Object invoke(Object receiver, final Method method, Object[] arguments) throws Throwable {
 		Class methodImplementor = method.getDeclaringClass();
 		// handle toString, hashCode and equals in a dedicated fashion
