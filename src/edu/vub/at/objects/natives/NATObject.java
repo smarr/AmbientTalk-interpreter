@@ -119,7 +119,10 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	/** def ==(comparand) { nil } */
 	private static final PrimitiveMethod _PRIM_EQL_ = new PrimitiveMethod(
+
 			_EQL_NAME_, NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("comparand")})) {
+      private static final long serialVersionUID = -4475956316807558583L;
+      
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			if (!arguments.base_length().equals(NATNumber.ONE)) {
 				throw new XArityMismatch("==", 1, arguments.base_length().asNativeNumber().javaValue);
@@ -138,6 +141,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	/** def new(@initargs) { nil } */
 	private static final PrimitiveMethod _PRIM_NEW_ = new PrimitiveMethod(
 			_NEW_NAME_, NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("initargs")) })) {
+        private static final long serialVersionUID = -5475956316807558583L;
+
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			return ctx.base_lexicalScope().base_new(arguments.asNativeTable().elements_);
 		}
@@ -145,6 +150,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	/** def init(@initargs) { nil } */
 	private static final PrimitiveMethod _PRIM_INI_ = new PrimitiveMethod(
 			_INI_NAME_, NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("initargs")) })) {
+	    private static final long serialVersionUID = -6475956316807558583L;
+
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			return ctx.base_lexicalScope().asAmbientTalkObject().prim_init(ctx.base_self(), arguments.asNativeTable().elements_);
 		}

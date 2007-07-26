@@ -57,9 +57,11 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 	private final static AGSymbol _ARGUMENTS_ = AGSymbol.jAlloc("arguments");
 	
 	/** def sendTo(receiver, sender) { nil } */
-	private static final PrimitiveMethod _PRIM_SND_ = new PrimitiveMethod(
+	private static final PrimitiveMethod _PRIM_SND_ = new PrimitiveMethod(        
 			AGSymbol.jAlloc("sendTo"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("receiver"), AGSymbol.jAlloc("sender") })) {
-		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+      private static final long serialVersionUID = -3475956316807558583L;
+
+      public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			int arity = arguments.base_length().asNativeNumber().javaValue;
 			if (arity != 2) {
 				throw new XArityMismatch("sendTo", 2, arity);

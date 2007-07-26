@@ -64,6 +64,7 @@ public class OBJNil extends NATByCopy implements ATNil {
 	 */
 	private final NativeATObject dynamicSentinel_ = new NATByCopy() {
 
+      private static final long serialVersionUID = -1307795172754062220L;
 		// METHODS THAT END THE DYNAMIC DELEGATION CHAIN
 		
 		public ATBoolean meta_respondsTo(ATSymbol selector) throws InterpreterException {

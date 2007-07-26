@@ -120,6 +120,9 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 	/** def isSubtypeOf(type) { nil } */
 	private static final PrimitiveMethod _PRIM_STP_ = new PrimitiveMethod(
 			AGSymbol.jAlloc("isSubtypeOf"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("type")})) {
+      
+	    private static final long serialVersionUID = -6864350539143194204L;
+
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			if (!arguments.base_length().equals(NATNumber.ONE)) {
 				throw new XArityMismatch("isSubtypeOf", 1, arguments.base_length().asNativeNumber().javaValue);

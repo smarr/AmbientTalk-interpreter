@@ -104,6 +104,8 @@ public class PrimitiveMethod extends NATMethod {
 	 */
 	public PrimitiveMethod(ATSymbol name, ATTable formals) {
 		super(name, formals, new PrimitiveBody() {
+            private static final long serialVersionUID = -2177230227968386983L;
+
 			public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 				return OBJNil._INSTANCE_;
 			}

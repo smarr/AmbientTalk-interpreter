@@ -96,6 +96,8 @@ public abstract class PartialBinder implements Serializable {
 	 */
 	public static final void defineParamsForArgs(PartialBinder residual, ATContext context, ATTable arguments) throws InterpreterException {
 		residual.bind(arguments.asNativeTable().elements_, context, new BindClosure() {
+          private static final long serialVersionUID = -2475956316807558569L;
+
 			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws InterpreterException {
 				scope.meta_defineField(param, arg);
 			}
@@ -108,6 +110,8 @@ public abstract class PartialBinder implements Serializable {
 	 */
 	public static final void assignArgsToParams(PartialBinder residual, ATContext context, ATTable arguments) throws InterpreterException {
 		residual.bind(arguments.asNativeTable().elements_, context, new BindClosure() {
+		    private static final long serialVersionUID = -247595631680755870L;
+
 			public void bindParamToArg(ATObject scope, ATSymbol param, ATObject arg) throws InterpreterException {
 				scope.impl_call(param.asAssignmentSymbol(), NATTable.of(arg));
 				// scope.meta_assignVariable(param, arg);
@@ -226,6 +230,8 @@ public abstract class PartialBinder implements Serializable {
 	 */
 	private static final PartialBinder makeZeroArity(final String funnam) {
 		return new PartialBinder() {
+		    private static final long serialVersionUID = -2475956316807558574L;
+
 			protected void bind(ATObject[] arguments, ATContext inContext, BindClosure binder) throws InterpreterException {
 				if (arguments == NATTable.EMPTY.elements_)
 					return; // no need to bind any arguments
@@ -240,6 +246,8 @@ public abstract class PartialBinder implements Serializable {
 	 */
 	private static final PartialBinder makeMandatory(final String funnam, final ATObject[] formals) {
 		return new PartialBinder() {
+          private static final long serialVersionUID = -2475956316807558583L;
+
 			protected void bind(ATObject[] args, ATContext inContext, BindClosure binder) throws InterpreterException {
 				int numMandatoryArguments = formals.length;
 				// perform arity check: number of arguments must match number of parameters exactly
@@ -265,6 +273,8 @@ public abstract class PartialBinder implements Serializable {
 	private static final PartialBinder makeMandatoryOptional(final String funnam, final ATObject[] formals,
 															 final int numMandatory, final int numOptional) {
 		return new PartialBinder() {
+		    private static final long serialVersionUID = -2475956316807558593L;
+
 			protected void bind(ATObject[] args, ATContext inContext, BindClosure binder) throws InterpreterException {
 				// perform arity check: number of arguments must at least equal number of mandatory arguments
 				// and must not be greater than the total number of mandatory and optional arguments
@@ -302,6 +312,8 @@ public abstract class PartialBinder implements Serializable {
 	 */
 	private static final PartialBinder makeOptional(final String funnam, final ATObject[] formals) {
 		return new PartialBinder() {
+		    private static final long serialVersionUID = -2475956316807558603L;
+
 			protected void bind(ATObject[] args, ATContext inContext, BindClosure binder) throws InterpreterException {
 				int numOptional = formals.length;
 				
@@ -333,6 +345,8 @@ public abstract class PartialBinder implements Serializable {
 	 */
 	private static final PartialBinder makeVariableArity(final String funnam, final ATSymbol formal) {
 		return new PartialBinder() {
+		    private static final long serialVersionUID = -2475956316807558103L;
+
 			protected void bind(ATObject[] args, ATContext inContext, BindClosure binder) throws InterpreterException {
 				// no arity check needed
 				
@@ -347,6 +361,8 @@ public abstract class PartialBinder implements Serializable {
 	 */
 	private static final PartialBinder makeMandatoryVariable(final String funnam, final ATObject[] formals) {
 		return new PartialBinder() {
+		    private static final long serialVersionUID = -2475956316807558203L;
+
 			protected void bind(ATObject[] args, ATContext inContext, BindClosure binder) throws InterpreterException {
 				int numMandatoryArguments = formals.length - 1;
 				// perform arity check: number of arguments must be at least the number of mandatory arguments
@@ -380,6 +396,8 @@ public abstract class PartialBinder implements Serializable {
 	 */
 	private static final PartialBinder makeOptionalVariable(final String funnam, final ATObject[] formals) {
 		return new PartialBinder() {
+          private static final long serialVersionUID = -2475956316807558403L;
+
 			protected void bind(ATObject[] args, ATContext inContext, BindClosure binder) throws InterpreterException {
 				int numOptional = formals.length - 1;
 				
@@ -423,6 +441,8 @@ public abstract class PartialBinder implements Serializable {
 	private static final PartialBinder makeGeneric(final String funnam, final ATObject[] formals,
 												   final int numMandatory, final int numOptional) {
 		return new PartialBinder() {
+		    private static final long serialVersionUID = -2475956316807559003L;
+
 			protected void bind(ATObject[] args, ATContext inContext, BindClosure binder) throws InterpreterException {
 				// perform arity check: number of arguments must at least equal number of mandatory arguments
 				if (args.length < numMandatory) {

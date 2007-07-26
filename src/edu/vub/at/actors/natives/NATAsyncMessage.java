@@ -66,6 +66,9 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 	/** def process(bhv) { nil } */
 	private static final PrimitiveMethod _PRIM_PRO_ = new PrimitiveMethod(
 			AGSymbol.jAlloc("process"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("bhv")})) {
+      
+	    private static final long serialVersionUID = -1307795172754072220L;
+
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 			int arity = arguments.base_length().asNativeNumber().javaValue;
 			if (arity != 1) {
