@@ -34,9 +34,9 @@ import edu.vub.at.objects.grammar.ATSymbol;
 /**
  * ATMethods are the AmbientTalk's representation of methods as named functions. These
  * functions do not close over an environment allowing for them to be shared between 
- * different clones. The environment is to be supplied during lookup (which wraps an 
- * ATMethod into {@link ATClosure}). As a consequence, it is not possible to
- * get hold of an ATMethod at the base-level (since lookup implies wrapping).
+ * different clones. The environment is to be supplied during lookup (which wraps a
+ * method into a {@link ATClosure}). As a consequence, it is not possible to
+ * get hold of a method at the base-level (since lookup implies wrapping).
  * 
  * @author smostinc
  * @author tvcutsem

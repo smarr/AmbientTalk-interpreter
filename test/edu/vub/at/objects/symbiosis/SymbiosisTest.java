@@ -774,12 +774,13 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 * Currently, the test is commented out because we cannot cast constructors of Java methods
 	 * (selecting new returns a native closure, not a javaclosure which we can cast)
 	 */
-	/* public void testBugfixOverloadedConstructor() throws InterpreterException {
+	public void testBugfixOverloadedConstructor() throws InterpreterException {
 		// def jStringBuffer := jLobby.java.lang.StringBuffer;
 		ATObject jStringBuffer = JavaClass.wrapperFor(StringBuffer.class);
-		// jStringBuffer.new(10)
-		jStringBuffer.meta_invoke(jStringBuffer, AGSymbol.jAlloc("new"), NATTable.atValue(new ATObject[] { NATNumber.atValue(10) }));
-	} */
+		// jStringBuffer.new(10);
+		jStringBuffer.meta_invoke(jStringBuffer, AGSymbol.jAlloc("new"),
+				                  NATTable.atValue(new ATObject[] { NATNumber.atValue(10) }));
+	}
 	
 	/**
 	 * Tests whether Java interface types are correctly treated as AT/2 types.
