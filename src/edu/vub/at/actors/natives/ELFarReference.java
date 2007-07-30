@@ -378,12 +378,14 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	 * @return a blocking future the ELActor thread can wait on.
 	 */
 	private BlockingFuture setRetractingFuture() {
-		outboxFuture_ = new BlockingFuture();
+		// first assign future to a local variable to avoid race conditions on writing to the outboxFuture_ variable!
+		final BlockingFuture future = new BlockingFuture();
+		outboxFuture_ = future;
 		
 		// the reception of a new interrupt may awaken a sleeping ELFarReference 
 		// thread, so we interrupt them, forcing them to reevaluate their conditions
 		processor_.interrupt();
-		return outboxFuture_;
+		return future;
 	}
 
 	protected void finalize() throws Throwable{
