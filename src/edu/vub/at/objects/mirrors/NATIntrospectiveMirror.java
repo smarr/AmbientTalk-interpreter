@@ -30,11 +30,13 @@ package edu.vub.at.objects.mirrors;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -106,6 +108,15 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 */
 	public ATObject base_base() {
 		return principal_;
+	}
+	
+	public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
+		if (other instanceof NATIntrospectiveMirror) {
+			NATIntrospectiveMirror mirror = (NATIntrospectiveMirror) other;
+			return principal_.base__opeql__opeql_(mirror.principal_);
+		} else {
+			return NATBoolean._FALSE_;
+		}
 	}
 	
 	/* ------------------------------------------
