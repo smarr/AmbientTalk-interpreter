@@ -33,7 +33,6 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATImport;
 import edu.vub.at.objects.natives.NATTable;
@@ -54,9 +53,9 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 
 	private final ATExpression importedObjectExp_;
 
-	private final ATTable aliasDeclarations_;
+	private final ATExpression aliasDeclarations_;
 	
-	private final ATTable excludesDeclarations_;
+	private final ATExpression excludesDeclarations_;
 	
 	/**
 	 * For efficiency purposes, the table form of the alias mapping is preprocessed
@@ -71,7 +70,7 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 	private HashSet excludedSymbols_; // contains ATSymbols
 	
 	/** create a new import statement. The alias and excludes declaration tables may still contain quoted expressions */
-	public AGImport(ATExpression importedObjectExp, ATTable aliasDeclarations, ATTable excludesDeclarations) {
+	public AGImport(ATExpression importedObjectExp, ATExpression aliasDeclarations, ATExpression excludesDeclarations) {
 		importedObjectExp_ = importedObjectExp;
 		aliasDeclarations_ = aliasDeclarations;
 		excludesDeclarations_ = excludesDeclarations;
@@ -79,11 +78,11 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 		// unquotes which need to be evaluated to symbols first
 	}
 	
-	public ATTable base_aliasedSymbols() throws InterpreterException {
+	public ATExpression base_aliasedSymbols() throws InterpreterException {
 		return aliasDeclarations_;
 	}
 
-	public ATTable base_excludedSymbols() throws InterpreterException {
+	public ATExpression base_excludedSymbols() throws InterpreterException {
 		return excludesDeclarations_;
 	}
 
@@ -98,8 +97,8 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		if (aliasedSymbols_ == null) {
-			aliasedSymbols_ = Import.preprocessAliases(aliasDeclarations_);
-			excludedSymbols_ = Import.preprocessExcludes(excludesDeclarations_);	
+			aliasedSymbols_ = Import.preprocessAliases(aliasDeclarations_.asTable());
+			excludedSymbols_ = Import.preprocessExcludes(excludesDeclarations_.asTable());	
 		}
 		return Import.performImport(importedObjectExp_.meta_eval(ctx), ctx, aliasedSymbols_, excludedSymbols_);
 	}
@@ -111,26 +110,36 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGImport(importedObjectExp_.meta_quote(ctx).asExpression(),
-							aliasDeclarations_.meta_quote(ctx).asTable(),
-							excludesDeclarations_.meta_quote(ctx).asTable());
+							aliasDeclarations_.meta_quote(ctx).asExpression(),
+							excludesDeclarations_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
 		StringBuffer expression = new StringBuffer("import " + importedObjectExp_.meta_print().javaValue);
 		if (aliasDeclarations_ != NATTable.EMPTY) {
 			expression.append(" alias ");
-			ATObject[] aliases = aliasDeclarations_.asNativeTable().elements_;
-			// append first alias
-			printAliasBinding(expression, aliases[0].asNativeTable());
-			for (int i = 1; i < aliases.length; i++) {
-				// append rest of the aliases
-				expression.append(",");
-				printAliasBinding(expression, aliases[i].asNativeTable());
+			if (aliasDeclarations_.isTable()) {
+				ATObject[] aliases = aliasDeclarations_.asNativeTable().elements_;
+				// append first alias
+				printAliasBinding(expression, aliases[0].asNativeTable());
+				for (int i = 1; i < aliases.length; i++) {
+					// append rest of the aliases
+					expression.append(",");
+					printAliasBinding(expression, aliases[i].asNativeTable());
+				}
+			} else {
+				// list of aliases is a quatation
+				expression.append(aliasDeclarations_.meta_print().javaValue);
 			}
 		}
 		if (excludesDeclarations_ != NATTable.EMPTY) {
 			expression.append(" exclude ");
-			expression.append(Evaluator.printElements(excludesDeclarations_.asNativeTable().elements_, "", ",", "").javaValue);
+			if (excludesDeclarations_.isTable()) {
+				expression.append(Evaluator.printElements(excludesDeclarations_.asNativeTable().elements_, "", ",", "").javaValue);
+			} else {
+				// list of excluded symbols is a quotation
+				expression.append(excludesDeclarations_.meta_print().javaValue);
+			}
 		}
 		
 		return NATText.atValue(expression.toString());

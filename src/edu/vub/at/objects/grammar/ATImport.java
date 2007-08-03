@@ -28,7 +28,6 @@
 package edu.vub.at.objects.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATTable;
 
 /**
  * The public interface to a native AST component of the form
@@ -55,12 +54,12 @@ public interface ATImport extends ATStatement {
 	 * Example: <code>`{ import o alias foo := bar }.statements[1].aliasedSymbols == `[[foo, bar]]</code>
 	 * @return a table of pairs (tables of size two) of symbols that defines the mapping of symbols to alias.
 	 */
-	public ATTable base_aliasedSymbols() throws InterpreterException;
+	public ATExpression base_aliasedSymbols() throws InterpreterException;
 	
 	/**
 	 * Example: <code>`{ import o exclude a, b }.statements[1].excludedSymbols == `[a,b]</code>
 	 * @return a table of symbols that represent the symbols to be excluded from the imported object.
 	 */
-	public ATTable base_excludedSymbols() throws InterpreterException;
+	public ATExpression base_excludedSymbols() throws InterpreterException;
 
 }
