@@ -62,20 +62,21 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 	 * For efficiency purposes, the table form of the alias mapping is preprocessed
 	 * into a hashtable format.
 	 */
-	private final Hashtable aliasedSymbols_; // maps ATSymbols to ATSymbols
+	private Hashtable aliasedSymbols_; // maps ATSymbols to ATSymbols
 	
 	/**
 	 * For efficiency purposes, the table form of the excluded symbols is preprocessed
 	 * into a hashset format.
 	 */
-	private final HashSet excludedSymbols_; // contains ATSymbols
+	private HashSet excludedSymbols_; // contains ATSymbols
 	
-	public AGImport(ATExpression importedObjectExp, ATTable aliasDeclarations, ATTable excludesDeclarations) throws InterpreterException {
+	/** create a new import statement. The alias and excludes declaration tables may still contain quoted expressions */
+	public AGImport(ATExpression importedObjectExp, ATTable aliasDeclarations, ATTable excludesDeclarations) {
 		importedObjectExp_ = importedObjectExp;
 		aliasDeclarations_ = aliasDeclarations;
 		excludesDeclarations_ = excludesDeclarations;
-		aliasedSymbols_ = Import.preprocessAliases(aliasDeclarations_);
-		excludedSymbols_ = Import.preprocessExcludes(excludesDeclarations_);
+		// cannot already preprocess the import statement here, as it may contain
+		// unquotes which need to be evaluated to symbols first
 	}
 	
 	public ATTable base_aliasedSymbols() throws InterpreterException {
@@ -96,6 +97,10 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 	 *   NIL
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
+		if (aliasedSymbols_ == null) {
+			aliasedSymbols_ = Import.preprocessAliases(aliasDeclarations_);
+			excludedSymbols_ = Import.preprocessExcludes(excludesDeclarations_);	
+		}
 		return Import.performImport(importedObjectExp_.meta_eval(ctx), ctx, aliasedSymbols_, excludedSymbols_);
 	}
 
