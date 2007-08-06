@@ -65,10 +65,8 @@ import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
-import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 import edu.vub.at.util.logging.Logging;
 
-import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -507,14 +505,15 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     	try {
     		if (other instanceof ATObject) {
     			return this.base__opeql__opeql_((ATObject) other).asNativeBoolean().javaValue;
-    		} else if (other instanceof SymbioticATObjectMarker) {
-    			return this.base__opeql__opeql_(
-    					((SymbioticATObjectMarker) other)._returnNativeAmbientTalkObject()).asNativeBoolean().javaValue;
     		}
     	} catch (InterpreterException e) {
     		Logging.Actor_LOG.warn("Error during equality testing:", e);
     	}
     	return false; 
+    }
+    
+    public ATBoolean impl_identityEquals(ATObject other) throws InterpreterException {
+    	return NATBoolean.atValue(other == this);
     }
     
 	/**

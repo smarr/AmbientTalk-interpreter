@@ -953,4 +953,14 @@ public interface ATObject extends ATConversions {
      */
     public ATClosure impl_lookupMutator(ATAssignmentSymbol selector) throws InterpreterException;
     
+    /**
+     * This is a callback method used in AmbientTalk's native equality protocol.
+     * When evaluating <tt>o1 == o2</tt> in AmbientTalk, <tt>o1</tt>'s <tt>==</tt>
+     * method will invoke <tt>o2.identityEquals(o1)</tt>.
+     * 
+     * The native implementation can make use of Java's <tt>==</tt> operator where
+     * appropriate.
+     */
+    public ATBoolean impl_identityEquals(ATObject other) throws InterpreterException;
+    
 }

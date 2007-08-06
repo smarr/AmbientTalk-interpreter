@@ -60,7 +60,6 @@ import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 import edu.vub.at.util.logging.Logging;
 
 import java.io.IOException;
@@ -129,13 +128,10 @@ public class NATObject extends NATCallframe implements ATObject {
 			}
 			
 			ATObject comparand = arguments.base_at(NATNumber.ONE);
-			// when comparing against a coercer, skip the coercer
-			if (comparand instanceof SymbioticATObjectMarker) {
-				comparand = ((SymbioticATObjectMarker) comparand)._returnNativeAmbientTalkObject();
-			}
 			
-			// primitive implementation uses pointer equality (as dictated by NativeATObject)
-			return NATBoolean.atValue(ctx.base_lexicalScope() == comparand);
+			// make other object perform the actual pointer equality
+			// if comparand is a proxy, it can delegate this request to its principal
+			return comparand.impl_identityEquals(ctx.base_lexicalScope());
 		}
 	};
 	/** def new(@initargs) { nil } */

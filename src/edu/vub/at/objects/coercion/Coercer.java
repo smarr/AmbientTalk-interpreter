@@ -35,7 +35,6 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.symbiosis.Symbiosis;
-import edu.vub.at.objects.symbiosis.SymbioticATObjectMarker;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -83,6 +82,9 @@ public final class Coercer implements InvocationHandler, Serializable {
 	 * the coercion is performed by the thread owning the object, which is the case when coercing arguments to a
 	 * Java method call or when passing an AmbientTalk object as a result.
 	 * 
+	 * Note that the returned coercer object is also an instance of {@link ATObject} and
+	 * in the AmbientTalk world the coercer will behave as its coerced AT object.
+	 * 
 	 * @param object the AmbientTalk object to coerce
 	 * @param type the class object representing the target type
 	 * @return a Java object <tt>o</tt> for which it holds that <tt>type.isInstance(o)</tt>
@@ -113,7 +115,7 @@ public final class Coercer implements InvocationHandler, Serializable {
 			// note that the proxy implements both the required type
 			// and the Symbiotic object marker interface to identify it as a wrapper
 			return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-					                      new Class[] { type, SymbioticATObjectMarker.class },
+					                      new Class[] { type, ATObject.class },
 					                      new Coercer(object, owningThread));
 		} else {
 			throw new XTypeMismatch(type, object);
@@ -123,18 +125,14 @@ public final class Coercer implements InvocationHandler, Serializable {
 	public Object invoke(Object receiver, final Method method, Object[] arguments) throws Throwable {
 		Class methodImplementor = method.getDeclaringClass();
 		// handle toString, hashCode and equals in a dedicated fashion
-		// similarly, handle AT conversion methods by simply forwarding them to the native AT object
-		if (methodImplementor == Object.class || methodImplementor == ATConversions.class) {
+		// similarly, handle any native AT methods by simply forwarding them to the native AT object
+		if (methodImplementor == Object.class || methodImplementor == ATObject.class) {
 			// invoke these methods on the principal rather than on the proxy
 			try {
 				return method.invoke(principal_, arguments);
 			} catch (InvocationTargetException e) {
 				throw e.getTargetException();
 			}
-		// intercept access to the wrapped object for Java->AT value conversion
-		// or for serialization purposes
-		} else if (method.getDeclaringClass() == SymbioticATObjectMarker.class) {
-			return principal_;
 		} else {
 			
 			final ATObject[] symbioticArgs;

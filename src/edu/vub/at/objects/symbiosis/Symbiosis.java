@@ -486,7 +486,6 @@ public final class Symbiosis {
 	 * T[] array = Table(array.length)
 	 * InterpreterException e = NATException(e)
 	 * Exception e = NATException(XJavaException(e))
-	 * SymbioticATObj o = o.wrappedATObject
 	 * Class c = JavaClass(c)
 	 * Object o = JavaObject(o)
 	 * </pre>
@@ -499,6 +498,7 @@ public final class Symbiosis {
 	    if (jObj == null) {
 		  return OBJNil._INSTANCE_;
 		// -- AmbientTalk implementation-level objects --
+		// -- This also includes COERCED objects! (i.e. symbiotic objects) --
 	    } else if (jObj instanceof ATObject) {
 			return (ATObject) jObj;
 	    // -- PRIMITIVE TYPE => NUMERIC, TXT --
@@ -520,9 +520,6 @@ public final class Symbiosis {
 			return ((InterpreterException)jObj).getAmbientTalkRepresentation();
 		} else if (jObj instanceof Exception) {
 			return new NATException(new XJavaException((Exception) jObj));
-		// -- Symbiotic AmbientTalk object => AmbientTalk object --
-		} else if (jObj instanceof SymbioticATObjectMarker) {
-			return ((SymbioticATObjectMarker) jObj)._returnNativeAmbientTalkObject();
 		// -- java.lang.Class => Symbiotic Class --
 		} else if (jObj instanceof Class) {
 			return JavaClass.wrapperFor((Class) jObj);
@@ -571,6 +568,8 @@ public final class Symbiosis {
         // -- IMPLEMENTATION-LEVEL OBJECTS --
         if (targetType.isInstance(atObj)) {
 			// target type is a subtype of ATObject, return the implementation-level object itself
+        	// also, it may be that atObj is actually a coerced AT object, so it may
+        	// directly match a target Java interface
 			return atObj;
 		// -- STRINGS --
 		} else if (targetType == String.class) {
