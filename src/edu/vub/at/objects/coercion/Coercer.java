@@ -112,11 +112,23 @@ public final class Coercer implements InvocationHandler, Serializable {
 		if (type.isInstance(object)) { // object instanceof type
 			return object; // no need to coerce
 		} else if (type.isInterface()) {
+			
+			// see which class loader is required to load the interface
+			
+			// first try this thread's context class loader
+			ClassLoader loader = Thread.currentThread().getContextClassLoader();
+			try {
+				Class.forName(type.getName(), false, loader);
+			} catch(ClassNotFoundException e) {
+				// if that fails, try the class loader that created the interface type
+				loader = type.getClassLoader();
+			}
+			
 			// note that the proxy implements both the required type
 			// and the Symbiotic object marker interface to identify it as a wrapper
-			return Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-					                      new Class[] { type, ATObject.class },
-					                      new Coercer(object, owningThread));
+			return Proxy.newProxyInstance(loader,
+                    new Class[] { type, ATObject.class },
+                    new Coercer(object, owningThread));	
 		} else {
 			throw new XTypeMismatch(type, object);
 		}
