@@ -123,9 +123,9 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		
 		if (!connected_) {
 			try {
-
-				owner_.event_acceptSelfSend(new NATAsyncMessage(
-						listener, Evaluator._APPLY_, NATTable.atValue(new ATObject[] { NATTable.EMPTY }), NATTable.EMPTY));
+				// listener<-apply([])
+				owner_.event_acceptSelfSend(listener, new NATAsyncMessage(
+						Evaluator._APPLY_, NATTable.of(NATTable.EMPTY), NATTable.EMPTY));
 			} catch (InterpreterException e) {
 				Logging.RemoteRef_LOG.error(
 						"error invoking when:disconnected: listener", e);
@@ -212,10 +212,11 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
      * ------------------------------ */
 
 	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
-		return this.transmit(message);
+		// the far reference itself is the receiver of the asynchronous message
+		return this.transmit(this, message);
 	}
 	
-	protected abstract ATObject transmit(ATAsyncMessage passedMessage) throws InterpreterException;
+	protected abstract ATObject transmit(ATObject receiver, ATAsyncMessage passedMessage) throws InterpreterException;
 
 	/**
 	 * The only operation that is allowed to be synchronously invoked on far references is '=='
@@ -432,10 +433,9 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
     private void triggerListener(ATObject listener, String type) {
 		try {
 			// listener<-apply([ [] ])
-			owner_.event_acceptSelfSend(
-					new NATAsyncMessage(listener,
-							            Evaluator._APPLY_,
-							            NATTable.atValue(new ATObject[] { NATTable.EMPTY }),
+			owner_.event_acceptSelfSend(listener,
+					new NATAsyncMessage(Evaluator._APPLY_,
+							            NATTable.of(NATTable.EMPTY),
 							            NATTable.EMPTY));
 		} catch (InterpreterException e) {
 			Logging.RemoteRef_LOG.error("error invoking " + type +" listener", e);

@@ -196,16 +196,20 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	 * that schedules this transmission event. This ensures
 	 * that the serialization of the message happens in the correct thread.
 	 * 
-	 * @see {@link ELFarReference#event_transmit(ATAsyncMessage)}
+	 * @see {@link ELFarReference#event_transmit(ATObject, ATAsyncMessage)}
 	 * @author smostinc
 	 */
 	private class TransmissionEvent extends Event {
 		public final Packet serializedMessage_;
 		
 		// Called by ELActor
-		public TransmissionEvent(ATAsyncMessage msg) throws XIOProblem {
-			super("transmit("+msg+")");
-			serializedMessage_ = new Packet(msg.toString(), msg);
+		
+		/**
+		 * @param pair a pair of [ATObject receiver, ATAsyncMessage message]
+		 */
+		public TransmissionEvent(ATTable pair) throws XIOProblem {
+			super("transmit("+pair+")");
+			serializedMessage_ = new Packet(pair.toString(), pair);
 		}
 		
 		/**
@@ -240,9 +244,9 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	/**
 	 * Inserts an AmbientTalk message into this far reference's outbox.
 	 */
-	public void event_transmit(final ATAsyncMessage msg) throws XIOProblem {
+	public void event_transmit(ATObject receiver, final ATAsyncMessage msg) throws XIOProblem {
 		// the message will still be serialized in the actor's thread
-		receive(new TransmissionEvent(msg));
+		receive(new TransmissionEvent(NATTable.of(receiver, msg)));
 		
 		// the reception of a new event may awaken a sleeping ELFarReference thread, 
 		// so we interrupt the processor, forcing it to reevaluate its conditions

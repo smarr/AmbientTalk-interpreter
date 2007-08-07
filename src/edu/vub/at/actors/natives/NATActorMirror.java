@@ -138,7 +138,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
      * ------------------------------------------ */
 
 	public ATAsyncMessage base_createMessage(ATSymbol selector, ATTable arguments, ATTable types) throws InterpreterException {
-		return new NATAsyncMessage(OBJNil._INSTANCE_, selector, arguments, types);
+		return new NATAsyncMessage(selector, arguments, types);
 	}
 	
 	public ATObject base_createMirror(ATObject reflectee) throws InterpreterException {
@@ -254,17 +254,18 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 *  - if rcv is a local reference, schedule accept(msg) in my incoming event queue
 	 *  - if rcv is a far reference, schedule msg in far reference's outbox
 	 */
-	public ATObject meta_send(ATAsyncMessage msg) throws InterpreterException {
-		ATObject rcv = msg.base_receiver();
-		if (rcv.isFarReference()) {
-			return rcv.meta_receive(msg);
+	public ATObject meta_send(ATObject receiver, ATAsyncMessage msg) throws InterpreterException {
+		if (receiver.isFarReference()) {
+			return receiver.meta_receive(msg);
 		} else {
-			return this.meta_receive(msg);
+			//return this.meta_receive(msg);
+			ELActor.currentActor().event_acceptSelfSend(receiver, msg);
+			return OBJNil._INSTANCE_;
 		}
 	}
 	
 	public ATObject meta_receive(ATAsyncMessage msg) throws InterpreterException {
-		ELActor.currentActor().event_acceptSelfSend(msg);
+		ELActor.currentActor().event_acceptSelfSend(this, msg);
 		return OBJNil._INSTANCE_;
 	}
 	
@@ -278,11 +279,9 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 * base-level 'send' operation dispatches to its meta-level 'send' operation. In effect,
 	 * the semantics of an object sending an async message are the same as those of an actor
 	 * sending an async message directly.
-	 * 
-	 * TODO(discuss) is this the desirable semantics for the base-level hook?
 	 */
-	public ATObject base_send(ATAsyncMessage message) throws InterpreterException {
-		return meta_send(message);
+	public ATObject base_send(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
+		return meta_send(receiver, message);
 	}
 	
 	/**

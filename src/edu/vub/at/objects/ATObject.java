@@ -111,12 +111,13 @@ public interface ATObject extends ATConversions {
      * The default behaviour is to access the current actor's mirror and to
      * ask the actor to send the message in this object's stead by invoking
      * <pre>actor.send(message)</pre>
-     * 
+     * @param receiver the object designated to receive the asynchronous message
      * @param message the asynchronous message to be sent by this object
+     * 
      * @return the result of message sending, which will be the value of an
      * asynchronous message send expression.
      */
-    public ATObject meta_send(ATAsyncMessage message) throws InterpreterException;
+    public ATObject meta_send(ATObject receiver, ATAsyncMessage message) throws InterpreterException;
     
     /**
      * This behavioural meta-level operation reifies the act of receiving

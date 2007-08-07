@@ -35,8 +35,8 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
@@ -59,8 +59,6 @@ import java.util.Vector;
  */
 public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 
-	private final static AGSymbol _RECEIVER_ = AGSymbol.jAlloc("receiver");
-	
 	// The primitive methods of a native asynchronous message
 	
 	/** def process(bhv) { nil } */
@@ -82,14 +80,12 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 	
     /**
      * Create a new asynchronous message.
-     * @param rcv the receiver of the message, fill in 'nil' if none is determined yet
      * @param sel the selector of the asynchronous message
      * @param arg the arguments of the asynchronous message
      * @param types the types for the message. Isolate and AsyncMessage types are automatically added.
      */
-    public NATAsyncMessage(ATObject rcv, ATSymbol sel, ATTable arg, ATTable types) throws InterpreterException {
+    public NATAsyncMessage(ATSymbol sel, ATTable arg, ATTable types) throws InterpreterException {
     	super(sel, arg, types, NativeTypeTags._ASYNCMSG_);
-        super.meta_defineField(_RECEIVER_, rcv);
         super.meta_addMethod(_PRIM_PRO_);
     }
     
@@ -130,10 +126,6 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 				                   types);
 	}
     
-    public ATObject base_receiver() throws InterpreterException {
-    	return super.meta_invokeField(this, _RECEIVER_);
-    }
-    
     /**
      * When process is invoked from the Java-level, invoke the primitive implementation
      * with self bound to 'this'.
@@ -151,15 +143,14 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     }
 
     /**
-     * To evaluate an asynchronous message send, an asynchronous invoke is performed
-     * on the receiver object.
-     *
-     * @return NIL, by default. Overridable by the receiver.
+     * To evaluate an asynchronous message send, the asynchronous
+     * message object is asked to be <i>sent</t> by the sender object.
+     * I.e.: <tt>(reflect: sender).send(receiver, asyncmsg)</tt>
+     * 
+     * @return NIL, by default. Overridable by the sender.
      */
     public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException {
-        // fill in the receiver first
-        super.impl_invokeMutator(self, _RECEIVER_.asAssignmentSymbol(), NATTable.of(receiver));
-        return sender.meta_send(self.asAsyncMessage());
+        return sender.meta_send(receiver, self.asAsyncMessage());
     }
     
 	public NATText meta_print() throws InterpreterException {

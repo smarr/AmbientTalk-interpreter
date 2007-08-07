@@ -270,8 +270,7 @@ public final class DiscoveryManager {
 		Logging.VirtualMachine_LOG.debug("notifying: "+handler+"<-(["+service+"])");
 		try {
 			handler.meta_receive(
-				new NATAsyncMessage(handler,
-							        Evaluator._APPLY_,
+				new NATAsyncMessage(Evaluator._APPLY_,
 							        NATTable.atValue(new ATObject[] {
 							           NATTable.atValue(new ATObject[] {service})
 							        }),

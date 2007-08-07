@@ -201,7 +201,8 @@ public class TestEval extends AmbientTalkTest {
 		assertEquals(atM_, asyncMsg.base_selector());
 		assertEquals(atThree_, asyncMsg.base_arguments().base_at(NATNumber.ONE));
 		assertTrue(asyncMsg instanceof ATAsyncMessage);
-		assertEquals(OBJNil._INSTANCE_, ((ATAsyncMessage) asyncMsg).base_receiver());	
+		// following is removed because async msges no longer encapsulate their receiver
+		// assertEquals(OBJNil._INSTANCE_, ((ATAsyncMessage) asyncMsg).base_receiver());	
 	}
 	
 	public void testMethodApplication() throws InterpreterException {

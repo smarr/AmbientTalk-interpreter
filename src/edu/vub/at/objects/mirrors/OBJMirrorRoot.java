@@ -310,8 +310,8 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 		return base_base().magic_select(receiver, selector);
 	}
 
-	public ATObject base_send(ATAsyncMessage message) throws InterpreterException {
-		return base_base().magic_send(message);
+	public ATObject base_send(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
+		return base_base().magic_send(receiver, message);
 	}
 	
 }

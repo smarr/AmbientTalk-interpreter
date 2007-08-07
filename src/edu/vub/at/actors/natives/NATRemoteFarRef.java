@@ -56,8 +56,8 @@ public class NATRemoteFarRef extends NATFarReference {
 		sendLoop_ = new ELFarReference(objectId, hostActor, this);
 	}
 	
-	protected ATObject transmit(ATAsyncMessage message) throws InterpreterException {
-		sendLoop_.event_transmit(message);
+	protected ATObject transmit(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
+		sendLoop_.event_transmit(receiver, message);
 		return OBJNil._INSTANCE_;
 	}
 	

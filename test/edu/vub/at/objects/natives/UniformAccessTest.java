@@ -6,6 +6,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
@@ -417,14 +418,25 @@ public class UniformAccessTest extends AmbientTalkTest {
 	 * than simply being returned.
 	 */
 	public void testCoercedFieldAccess() throws InterpreterException {
+		// originally, the test was performed on actual asynchronous messages because
+		// they encapsulated their receiver. This is no longer true, hence we
+		// test the same principle (whether downInvocation gets it right) on an ATField instead
+		
 		// construct a coerced asynchronous message
-		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("AsyncMsg"), NativeTypeTags._ASYNCMSG_);
-		ATAsyncMessage msg = evalAndReturn("object: { def receiver := { 5 } } taggedAs: [AsyncMsg]").asAsyncMessage();
+		// ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("AsyncMsg"), NativeTypeTags._ASYNCMSG_);
+		// ATAsyncMessage msg = evalAndReturn("object: { def receiver := { 5 } } taggedAs: [AsyncMsg]").asAsyncMessage();
 		// rcv should be { 5 }, not 5
-		ATObject rcv = msg.base_receiver();
-		assertFalse(rcv.meta_isTaggedAs(NativeTypeTags._NUMBER_).asNativeBoolean().javaValue);
-		assertTrue(rcv.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue);
-		assertEquals(NATNumber.atValue(5), rcv.asClosure().base_apply(NATTable.EMPTY));
+		// ATObject rcv = msg.base_receiver();
+		
+		// construct a coerced field object
+		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("Field"), NativeTypeTags._FIELD_);
+		ATField fld = evalAndReturn("object: { def readField := { 5 } } taggedAs: [Field]").asField();
+		// readField should be { 5 }, not 5
+		ATObject val = fld.base_readField();
+		
+		assertFalse(val.meta_isTaggedAs(NativeTypeTags._NUMBER_).asNativeBoolean().javaValue);
+		assertTrue(val.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue);
+		assertEquals(NATNumber.atValue(5), val.asClosure().base_apply(NATTable.EMPTY));
 	}
 	
 }

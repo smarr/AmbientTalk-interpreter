@@ -99,8 +99,8 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
      * delegated to the base-level send method of the actor in which the object o is 
      * contained.
      */
-    public ATObject meta_send(ATAsyncMessage message) throws InterpreterException {
-    	return OBJLexicalRoot._INSTANCE_.base_actor().base_send(message);
+    public ATObject meta_send(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
+    	return OBJLexicalRoot._INSTANCE_.base_actor().base_send(receiver, message);
     }
 
     /**

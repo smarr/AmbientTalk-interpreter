@@ -83,9 +83,10 @@ public interface ATActorMirror extends ATObject {
 	 * programmer to modify the message sending semantics for all objects inside an 
 	 * actor. The default implementation ensures the correct passing of messages when
 	 * they transgress the boundaries of the sending actor. 
+	 * 
 	 * @throws InterpreterException
 	 */
-	public ATObject base_send(ATAsyncMessage message) throws InterpreterException;
+	public ATObject base_send(ATObject receiver, ATAsyncMessage message) throws InterpreterException;
 	
 	/**
 	 * This mechanism is the most basic mechanism to provide a service. It requires 

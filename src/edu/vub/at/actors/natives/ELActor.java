@@ -291,10 +291,10 @@ public class ELActor extends EventLoop {
 	 * Asynchronous self-sends do not undergo any form of parameter passing, there is no need
 	 * to serialize and deserialize the message parameter in a Packet.
 	 */
-	public void event_acceptSelfSend(final ATAsyncMessage msg) {
+	public void event_acceptSelfSend(final ATObject receiver, final ATAsyncMessage msg) {
 		receive(new Event("selfAccept("+msg+")") {
 			public void process(Object myActorMirror) {
-				performAccept(msg);
+				performAccept(receiver, msg);
 			}
 		});
 	}
@@ -309,8 +309,11 @@ public class ELActor extends EventLoop {
 		receive(new Event("remoteAccept("+serializedMessage+")") {
 			public void process(Object myActorMirror) {
 			  try {
-				ATAsyncMessage msg = serializedMessage.unpack().asAsyncMessage();
-				performAccept(msg);
+				// receive a pair [receiver, message]
+				ATObject[] pair = serializedMessage.unpack().asNativeTable().elements_;
+				ATObject receiver = pair[0];
+				ATAsyncMessage msg = pair[1].asAsyncMessage();
+				performAccept(receiver, msg);
 			  } catch (XObjectOffline e) {
 				 host_.event_objectTakenOffline(e.getObjectId(), sender);
 				Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
@@ -331,8 +334,11 @@ public class ELActor extends EventLoop {
 		receive(new Event("localAccept("+serializedMessage+")") {
 			public void process(Object myActorMirror) {
 			  try {
-				ATAsyncMessage msg = serializedMessage.unpack().asAsyncMessage();
-				performAccept(msg);
+				// receive a pair [receiver, message]
+				ATObject[] pair = serializedMessage.unpack().asNativeTable().elements_;
+				ATObject receiver = pair[0];
+				ATAsyncMessage msg = pair[1].asAsyncMessage();
+				performAccept(receiver, msg);
 			  } catch (XObjectOffline e) {
 				  ref.notifyTakenOffline();
 				  Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
@@ -343,9 +349,9 @@ public class ELActor extends EventLoop {
 		});
 	}
 	
-	private void performAccept(ATAsyncMessage msg) {
+	private void performAccept(ATObject receiver, ATAsyncMessage msg) {
 		try {
-			ATObject result = msg.base_receiver().meta_receive(msg);
+			ATObject result = receiver.meta_receive(msg);
 			// TODO what to do with return value?
 			Logging.Actor_LOG.info(mirror_ + ": "+ msg + " returned " + result);
 			} catch (InterpreterException e) {
@@ -454,10 +460,8 @@ public class ELActor extends EventLoop {
 						ATObject remoteService = remoteServicePkt.unpack();
 						// myhandler<-apply([remoteService])
 						myHandler.meta_receive(
-							new NATAsyncMessage(myHandler, Evaluator._APPLY_,
-								NATTable.atValue(new ATObject[] {
-									NATTable.atValue(new ATObject[] { remoteService })
-								}),
+							new NATAsyncMessage(Evaluator._APPLY_,
+								NATTable.of(NATTable.of(remoteService)),
 								NATTable.EMPTY));
 					}
 				} catch (XIOProblem e) {
