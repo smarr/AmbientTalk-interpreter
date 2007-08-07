@@ -48,6 +48,8 @@ import edu.vub.at.actors.net.comm.CommunicationBus;
  */
 public class CMDRequireService extends VMCommand {
 
+	private static final long serialVersionUID = -8532577019125490618L;
+	
 	private final Packet serializedTopic_;
 	
 	public CMDRequireService(Packet topic) {

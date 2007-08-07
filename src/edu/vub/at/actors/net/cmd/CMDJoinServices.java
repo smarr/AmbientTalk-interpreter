@@ -48,6 +48,8 @@ import edu.vub.util.MultiMap;
 
 public class CMDJoinServices extends VMCommand {
 
+	private static final long serialVersionUID = -531880533782855168L;
+	
 	/** 
 	 * A map from serialized ATTypeTag topics to Sets of serialized ATObjects that
 	 * provide the serialized topic

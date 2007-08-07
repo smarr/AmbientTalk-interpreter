@@ -20,6 +20,8 @@ import edu.vub.at.actors.net.comm.CommunicationBus;
  */
 public class CMDObjectTakenOffline extends VMCommand{
 	
+	private static final long serialVersionUID = -4486874219940264597L;
+	
 	private final ATObjectID senderObjectId_;
 	
 	public CMDObjectTakenOffline(ATObjectID senderObjectId) {

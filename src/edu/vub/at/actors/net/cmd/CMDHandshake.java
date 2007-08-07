@@ -48,6 +48,8 @@ import edu.vub.at.actors.net.comm.CommunicationBus;
  */
 public class CMDHandshake extends VMCommand {
 
+	private static final long serialVersionUID = 941583671647354717L;
+	
 	private final VirtualMachineID senderVMId_;
 	
 	public CMDHandshake(VirtualMachineID senderVMId) {

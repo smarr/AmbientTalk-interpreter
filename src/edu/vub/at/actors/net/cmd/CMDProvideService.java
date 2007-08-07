@@ -47,6 +47,8 @@ import edu.vub.at.actors.net.comm.CommunicationBus;
  */
 public class CMDProvideService extends VMCommand {
 
+	private static final long serialVersionUID = 6460962904701864474L;
+	
 	private final Packet serializedTopic_;
 	private final Packet serializedService_;
 	

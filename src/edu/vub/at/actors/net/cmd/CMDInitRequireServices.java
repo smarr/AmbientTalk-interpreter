@@ -50,6 +50,8 @@ import java.util.Set;
 
 public class CMDInitRequireServices extends VMCommand {
 
+	private static final long serialVersionUID = 7177638111444788771L;
+	
 	/**
 	 * A Set of Packet objects representing serialized ATTypeTag topics.
 	 */

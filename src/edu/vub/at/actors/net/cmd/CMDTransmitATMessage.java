@@ -51,6 +51,8 @@ import edu.vub.at.actors.net.comm.NetworkException;
  */
 public class CMDTransmitATMessage extends VMCommand {
 
+	private static final long serialVersionUID = -1369124457059610846L;
+	
 	private final Packet serializedATMessage_;
 	private final ActorID destinationActorId_;
 	
