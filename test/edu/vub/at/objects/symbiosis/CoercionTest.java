@@ -10,6 +10,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.base.BaseClosure;
 import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.natives.NATNumber;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -94,5 +95,24 @@ public class CoercionTest extends AmbientTalkTest {
 		
 		ATObject result = evalAndReturn("result");
 		assertEquals(AGSymbol.jAlloc("ok"), result);
+	}
+	
+	/**
+	 * Tests whether a coercer is AT-equals and Java-equals to its original
+	 * unwrapped AmbientTalk object.
+	 */
+	public void testEqualityOnCoercers() throws InterpreterException {
+		ATObject unwrapped = new NATObject();
+		ATObject coercedObject = (ATObject) Coercer.coerce(unwrapped, Runnable.class);
+		// they should not be the same Java object
+		assertFalse(unwrapped == coercedObject);
+		// they should be Java-equals
+		assertTrue(unwrapped.equals(coercedObject));
+		assertTrue(coercedObject.equals(unwrapped));
+		// they should be AmbientTalk-equals
+		assertTrue(unwrapped.base__opeql__opeql_(coercedObject).asNativeBoolean().javaValue);
+		assertTrue(coercedObject.base__opeql__opeql_(unwrapped).asNativeBoolean().javaValue);
+		// their hashcodes should be equal as well
+		assertTrue(unwrapped.hashCode() == coercedObject.hashCode());
 	}
 }
