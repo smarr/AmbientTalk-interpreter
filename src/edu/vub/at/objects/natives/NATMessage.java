@@ -29,14 +29,16 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -70,6 +72,20 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 					ctx.base_self().asMessage(),
 					arguments.base_at(NATNumber.ONE), arguments.base_at(NATNumber.atValue(2)));
 		}
+	};
+	
+	/** def from(sender) { nil } */
+	private static final PrimitiveMethod _PRIM_FRM_ = new PrimitiveMethod(        
+			AGSymbol.jAlloc("from"), NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("sender") })) {
+	  private static final long serialVersionUID = -5721508425469755751L;
+		
+      public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			int arity = arguments.base_length().asNativeNumber().javaValue;
+			if (arity != 1) {
+				throw new XArityMismatch("from", 1, arity);
+			}
+			return ctx.base_lexicalScope().asMessage().base_from(arguments.base_at(NATNumber.ONE));
+	  }
 	};
 	
 	
@@ -106,6 +122,7 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 		super.meta_defineField(_SELECTOR_, sel);
 		super.meta_defineField(_ARGUMENTS_, arg);
 		super.meta_addMethod(_PRIM_SND_);
+		super.meta_addMethod(_PRIM_FRM_);
 	}
 
     /**
@@ -133,6 +150,20 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 	public ATNil base_arguments__opeql_(ATTable arguments) throws InterpreterException {
 		super.impl_invokeMutator(this, _ARGUMENTS_.asAssignmentSymbol(), NATTable.of(arguments));
 		return OBJNil._INSTANCE_;
+	}
+	
+	public ATClosure base_from(final ATObject sender) {
+		final NATMessage msg = this;
+		return new NativeClosure(this) {
+			private static final long serialVersionUID = -5978871207209804505L;
+			public ATObject base_apply(ATTable args) throws InterpreterException {
+				ATObject[] arguments = args.asNativeTable().elements_;
+				if (arguments.length != 1) {
+					throw new XArityMismatch(msg.toString(), 1, arguments.length);
+				}
+				return msg.base_sendTo(arguments[0], sender);
+			}
+		};
 	}
 	
 	/**

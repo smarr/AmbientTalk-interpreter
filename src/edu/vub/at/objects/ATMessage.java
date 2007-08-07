@@ -73,6 +73,16 @@ public interface ATMessage extends ATObject {
 	public ATNil base_arguments__opeql_(ATTable arguments) throws InterpreterException;
 	
 	/**
+	 * Turns the receiver message into a unary closure that, when applied to a receiver
+	 * object, sends the message to the receiver object, where the sender used is the
+	 * object passed to from.
+	 * 
+	 * @param sender the object designating the sender of any message sent via the closure
+	 * @return a unary closure that accepts a receiver object and sends the message to the receiver
+	 */
+	public ATClosure base_from(ATObject sender) throws InterpreterException;
+	
+	/**
 	 * Sends this message to a particular receiver object. The way in which the message
 	 * send will be performed (synchronous or asynchronous) depends on the kind of message.
 	 * 
@@ -88,5 +98,5 @@ public interface ATMessage extends ATObject {
 	 * @param self the AmbientTalk object to which 'sendTo' was originally sent
 	 */
 	public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException;
-
+	
 }
