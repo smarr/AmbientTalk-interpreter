@@ -68,27 +68,4 @@ public interface ATFraction extends ATNumeric {
 	
 	// base-level interface
 	
-	/**
-	 * Returns the closest number to the fraction.
-	 * <p>
-	 * More specifically, rounding a number is equivalent to <code> (fraction + 0.5).floor() </code>
-	 *
-	 * @return an ATNumber resulting of rounding the receiver to the closest number value.
-	 */	
-	public ATNumber base_round() throws InterpreterException;
-	
-	/**
-	 * Returns the closest number to positive infinity that is smaller than the fraction.
-	 *
-	 * @return the closest number to positive infinity that is smaller than the fraction.
-	 */	
-	public ATNumber base_floor() throws InterpreterException;
-	
-	/**
-	 * Returns the closest number to negative infinity that is greater than the fraction.
-	 *
-	 * @return the closest number to negative infinity that is greater than the fraction.
-	 */	
-	public ATNumber base_ceiling() throws InterpreterException;
-	
 }

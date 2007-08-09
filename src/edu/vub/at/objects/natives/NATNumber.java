@@ -202,6 +202,18 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 		return NATNumber.atValue(Math.abs(javaValue));
 	}
 	
+	public ATNumber base_ceiling() throws InterpreterException {
+		return this;
+	}
+
+	public ATNumber base_floor() throws InterpreterException {
+		return this;
+	}
+
+	public ATNumber base_round() throws InterpreterException {
+		return this;
+	}
+
 	/**
 	 * NBR(start) ?? NBR(stop) => FRC(n) where n chosen randomly in [ start, stop [
 	 */
