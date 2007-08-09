@@ -112,6 +112,14 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 			return this;
 		}
 		
+		public ATBoolean base_and_and_(ATClosure b1, ATClosure b2) throws InterpreterException {
+			return b1.base_apply(NATTable.EMPTY).asBoolean().base_and_(b2);
+		}
+
+		public ATBoolean base_or_or_(ATClosure b1, ATClosure b2) throws InterpreterException {
+			return this;
+		}
+
 		public ATBoolean base_not() {
 			return NATFalse._INSTANCE_;
 		}
@@ -154,6 +162,14 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		
 		public ATBoolean base_not() {
 			return NATTrue._INSTANCE_;
+		}
+		
+		public ATBoolean base_and_and_(ATClosure b1, ATClosure b2) throws InterpreterException {
+			return this;
+		}
+
+		public ATBoolean base_or_or_(ATClosure b1, ATClosure b2) throws InterpreterException {
+			return b1.base_apply(NATTable.EMPTY).asBoolean().base_or_(b2);
 		}
 		
 		public ATObject meta_resolve() throws InterpreterException {

@@ -27,14 +27,21 @@
  */
 package edu.vub.at.objects;
 
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
  * the native object representing 'nil' implements this interface.
  * The type ATNil is a subtype of ATObject.
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public interface ATNil extends ATObject, ATExpression {
 
+	/**
+	 * The <tt>!=</tt> operator which returns <tt>false</tt> only if
+	 * the passed parameter equals <tt>nil</tt>.
+	 */
+	public ATBoolean base__opnot__opeql_(ATObject other) throws InterpreterException;
+	
 }

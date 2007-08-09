@@ -105,6 +105,10 @@ public class OBJNil extends NATByCopy implements ATNil {
 		}
 	};
 	
+	public ATBoolean base__opnot__opeql_(ATObject other) throws InterpreterException {
+		return this.base__opeql__opeql_(other).base_not();
+	}
+
 	public ATObject base_super() {
 		return dynamicSentinel_;
 	}

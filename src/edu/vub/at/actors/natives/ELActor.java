@@ -356,6 +356,7 @@ public class ELActor extends EventLoop {
 			Logging.Actor_LOG.info(mirror_ + ": "+ msg + " returned " + result);
 			} catch (InterpreterException e) {
 			// TODO what to do with exception?
+			e.printAmbientTalkStackTrace(System.err);
 			Logging.Actor_LOG.error(mirror_ + ": "+ msg + " failed ", e);
 		}
 	}
@@ -379,6 +380,7 @@ public class ELActor extends EventLoop {
 				try {
 					Reflection.downInvocation(principal, method, args);
 				} catch (InterpreterException e) {
+					e.printAmbientTalkStackTrace(System.err);
 					Logging.Actor_LOG.error("asynchronous symbiotic invocation of "+method.getName()+" failed", e);
 				}
 			}

@@ -90,6 +90,16 @@ public interface ATBoolean extends ATObject {
 	public ATBoolean base_and_(ATClosure other) throws InterpreterException;
 	
 	/**
+	 * Auxiliary function:
+	 * <code>
+	 * def boolean.and: b1 and: b2 {
+	 *   (boolean.and: b1).and: b2
+	 * }
+	 * </code>
+	 */
+	public ATBoolean base_and_and_(ATClosure b1, ATClosure b2) throws InterpreterException;
+	
+	/**
 	 * Returns true if the receiver is true or the result of the evaluation of the other
 	 * boolean expression passed as argument if the receiver is false.
 	 * <p>
@@ -100,6 +110,16 @@ public interface ATBoolean extends ATObject {
 	 * @throws InterpreterException if raised in the evaluation of the other boolean. 
 	 */
 	public ATBoolean base_or_(ATClosure other) throws InterpreterException;
+	
+	/**
+	 * Auxiliary function:
+	 * <code>
+	 * def boolean.or: b1 or: b2 {
+	 *   (boolean.or: b1).or: b2
+	 * }
+	 * </code>
+	 */
+	public ATBoolean base_or_or_(ATClosure b1, ATClosure b2) throws InterpreterException;
 	
 	/**
 	 * Returns true if the receiver is false or false if the receiver is true.
