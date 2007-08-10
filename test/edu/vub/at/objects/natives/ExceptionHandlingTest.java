@@ -205,26 +205,26 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 	}
 	
 	/**
-	 * Tests whether ensure: blocks are called when <ol>
+	 * Tests whether finally: blocks are called when <ol>
 	 * <li>the try block terminates normally
 	 * <li>a handler was invoked
 	 * <li>no matching handler was found
 	 * <li>the escape construct was used
 	 * </ol>
 	 */
-	public void testEnsureConstruct() throws InterpreterException {
+	public void testFinallyConstruct() throws InterpreterException {
 		evaluateInput(
 				"{ | return | \n" +
 				"  try: { nil } \n" +
 				"  catch: SelectorNotFound using: { fail() } \n" +
-				"  ensure: { return(true) }; \n" +
+				"  finally: { return(true) }; \n" +
 				"  fail() \n" +
 				"}.escape();", ctx_);
 		evaluateInput(
 				"def result1 := { | return | \n" +
 				"  try: { self.result } \n" +
 				"  catch: SelectorNotFound using: { false } \n" +
-				"  ensure: { return(true) }; \n" +
+				"  finally: { return(true) }; \n" +
 				"}.escape(); \n" +
 				"result1.ifFalse: { fail() };", ctx_);
 		evaluateInput(
@@ -232,7 +232,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 				"def result2 := { | return | \n" +
 				"  try: { self.result } \n" +
 				"  catch: WrongType using: { fail() } \n" +
-				"  ensure: { return(true) }; \n" +
+				"  finally: { return(true) }; \n" +
 				"  false \n" +
 				"}.escape(); \n" +
 				"result2.ifFalse: { fail() };", ctx_);
@@ -240,7 +240,7 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 				"def result3 := { | return | \n" +
 				"  try: { self.result } \n" +
 				"  catch: SelectorNotFound using: { return(false) } \n" +
-				"  ensure: { return(true) }; \n" +
+				"  finally: { return(true) }; \n" +
 				"  false \n" +
 				"}.escape(); \n" +
 				"result3.ifFalse: { fail() };", ctx_);
