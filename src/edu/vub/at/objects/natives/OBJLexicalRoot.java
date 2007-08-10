@@ -1290,16 +1290,49 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * ------------------------------- */
 	
 	/**
-	 * The <tt>try: { tryBlock } usingHandlers: [ handler1, handler2, ... ]</tt> construct.
+	 * The <tt>try: { tryBlock } usingHandlers: [ handler1, handler2, ... ] ensure: { ensureBlock }</tt> construct.
 	 * 
-	 * Applies the given closure (to <tt>[]</tt>) and handles exceptions using the given exception handlers.
-	 * This is the most general means of doing exception handling in AmbientTalk.
+	 * Applies the tryBlock closure (to <tt>[]</tt>) and handles exceptions using the given exception handlers.
+	 * Whether the tryBlock raises an exception or not, the ensureBlock closure is guaranteed to be applied either 
+	 * after the termination of the tryBlock or the execution of a fitting handler either before the exception is 
+	 * propagated if no matching handler is provided. This construct is the most general means of doing exception
+	 * handling in AmbientTalk.
 	 * 
 	 * The handlers given in the handler table represent first-class handler objects,
 	 * which should respond to the <tt>canHandle</tt> message.
 	 * @see ATHandler for the interface to which a handler object has to adhere
 	 */
+	public ATObject base_try_usingHandlers_ensure_(ATClosure tryBlock, ATTable exceptionHandlers, ATClosure ensureBlock) throws InterpreterException {
+		try {
+			return tryBlock.base_apply(NATTable.EMPTY);
+		} catch(InterpreterException e) {
+			ATObject[] handlers = exceptionHandlers.asNativeTable().elements_;
+			
+			// find the appropriate handler
+			for (int i = 0; i < handlers.length; i++) {
+				ATHandler handler = handlers[i].asHandler();
+				ATObject exc = e.getAmbientTalkRepresentation();
+				if (handler.base_canHandle(exc).asNativeBoolean().javaValue) {
+					return handler.base_handle(exc);
+				};	
+			}
+			
+			// no handler found, re-throw the exception
+			throw e;
+		} finally {
+			ensureBlock.base_apply(NATTable.EMPTY);
+		}
+	}
+	
+	/**
+	 * The <tt>try: { tryBlock } usingHandlers: [ handler1, handler2, ... ]</tt> construct.
+	 * 
+	 * Ad hoc code for tryBlocks which have an empty ensure block
+	 * @see OBJLexicalRoot#base_try_usingHandlers_ensure_(ATClosure, ATTable, ATClosure)
+	 */
 	public ATObject base_try_usingHandlers_(ATClosure tryBlock, ATTable exceptionHandlers) throws InterpreterException {
+		// An ad hoc version is provided since not using a finally block is a lot cheaper 
+		// when we know for sure we won't be needing one.
 		try {
 			return tryBlock.base_apply(NATTable.EMPTY);
 		} catch(InterpreterException e) {
@@ -1340,6 +1373,28 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
+	 * The <tt>try: { tryBlock} using: handler ensure: { ensureBlock }</tt> construct.
+	 * 
+	 * Ad-hoc code for one exception handler.
+	 * 
+	 * @see #base_try_usingHandlers_ensure_(ATClosure, ATTable, ATClosure)
+	 */
+	public ATObject base_try_using_ensure_(ATClosure tryBlock, ATHandler handler, ATClosure ensureBlock) throws InterpreterException {
+		try {
+			return tryBlock.base_apply(NATTable.EMPTY);
+		} catch(InterpreterException e) {
+			ATObject exc = e.getAmbientTalkRepresentation();
+			if (handler.base_canHandle(exc).asNativeBoolean().javaValue) {
+				return handler.base_handle(exc);
+			} else {
+				throw e;
+			}
+		} finally {
+			ensureBlock.base_apply(NATTable.EMPTY);
+		}
+	}
+	
+	/**
 	 * The <tt>try: { tryBlock} using: handler1 using: handler2</tt> construct.
 	 * 
 	 * Ad-hoc code for two exception handlers.
@@ -1348,6 +1403,17 @@ public final class OBJLexicalRoot extends NATByCopy {
 	public ATObject base_try_using_using_(ATClosure tryBlock, ATHandler hdl1, ATHandler hdl2) throws InterpreterException {
 		return base_try_usingHandlers_(tryBlock, NATTable.atValue(new ATObject[] { hdl1, hdl2 }));
 	}
+	
+	/**
+	 * The <tt>try: { tryBlock} using: handler1 using: handler2 ensure: { ensureBlock }</tt> construct.
+	 * 
+	 * Ad-hoc code for two exception handlers.
+	 * @see #base_try_usingHandlers_(ATClosure, ATTable)
+	 */
+	public ATObject base_try_using_using_ensure_(ATClosure tryBlock, ATHandler hdl1, ATHandler hdl2, ATClosure ensureBlock) throws InterpreterException {
+		return base_try_usingHandlers_ensure_(tryBlock, NATTable.atValue(new ATObject[] { hdl1, hdl2 }), ensureBlock);
+	}
+
 	
 	/**
 	 * The <tt>try: { tryBlock} using: hdl1 using: hdl2 using: hdl3</tt> construct.
@@ -1360,6 +1426,16 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
+	 * The <tt>try: { tryBlock} using: hdl1 using: hdl2 using: hdl3 ensure: { ensureBlock }</tt> construct.
+	 * 
+	 * Ad-hoc code for three exception handlers.
+	 * @see #base_try_usingHandlers_(ATClosure, ATTable)
+	 */
+	public ATObject base_try_using_using_using_ensure_(ATClosure tryBlock, ATHandler hdl1, ATHandler hdl2, ATHandler hdl3, ATClosure ensureBlock) throws InterpreterException {
+		return base_try_usingHandlers_ensure_(tryBlock, NATTable.atValue(new ATObject[] { hdl1, hdl2, hdl3 }), ensureBlock);
+	}
+	
+	/**
 	 * The <tt>try: { tryBlock} catch: type using: { |e| replacementCode }</tt>
 	 * 
 	 * 'Syntactic sugar' for one "in-line", native handler.
@@ -1367,6 +1443,16 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_try_catch_using_(ATClosure tryBlock, ATTypeTag filter, ATClosure replacementCode) throws InterpreterException {
 		return base_try_using_(tryBlock, new NATHandler(filter, replacementCode));
+	}
+	
+	/**
+	 * The <tt>try: { tryBlock} catch: type using: { |e| replacementCode } ensure: { ensureBlock }</tt>
+	 * 
+	 * 'Syntactic sugar' for one "in-line", native handler.
+	 * @see #base_try_usingHandlers_(ATClosure, ATTable)
+	 */
+	public ATObject base_try_catch_using_ensure_(ATClosure tryBlock, ATTypeTag filter, ATClosure replacementCode, ATClosure ensureBlock) throws InterpreterException {
+		return base_try_using_ensure_(tryBlock, new NATHandler(filter, replacementCode), ensureBlock);
 	}
 	
 	/**
@@ -1384,9 +1470,33 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @see #base_try_usingHandlers_(ATClosure, ATTable)
 	 */
 	public ATObject base_try_catch_using_catch_using_(	ATClosure tryBlock,
-													ATTypeTag filter1, ATClosure hdl1,
+														ATTypeTag filter1, ATClosure hdl1,
 			                						   	ATTypeTag filter2, ATClosure hdl2) throws InterpreterException {
 		return base_try_using_using_(tryBlock, new NATHandler(filter1, hdl1), new NATHandler(filter2, hdl2));
+	}
+	
+	
+	/**
+	 * The <tt>try:catch:using:catch:using:ensure:</tt> construct.
+	 * 
+	 * <pre>try: {
+	 *   tryBlock
+	 * } catch: type using: { |e|
+	 *   replacementCode
+	 * } catch: type2 using: { |e|
+	 *   replacementCode2
+	 * } ensure: {
+	 *   finalizationCode
+	 * }</pre>
+	 * 
+	 * 'Syntactic sugar' for two in-line handlers
+	 * @see #base_try_usingHandlers_(ATClosure, ATTable)
+	 */
+	public ATObject base_try_catch_using_catch_using_ensure_(	ATClosure tryBlock,
+														ATTypeTag filter1, ATClosure hdl1,
+			                						   	ATTypeTag filter2, ATClosure hdl2, 
+			                						   	ATClosure ensureBlock) throws InterpreterException {
+		return base_try_using_using_ensure_(tryBlock, new NATHandler(filter1, hdl1), new NATHandler(filter2, hdl2), ensureBlock);
 	}
 	
 	/**
@@ -1412,6 +1522,30 @@ public final class OBJLexicalRoot extends NATByCopy {
 		return base_try_using_using_using_(tryBlock, new NATHandler(filter1, hdl1), new NATHandler(filter2, hdl2), new NATHandler(filter3, hdl3));
 	}
 	
+	/**
+	 * The <tt>try:catch:using:catch:using:catch:using:ensure:</tt> construct.
+	 * 
+	 * <pre>try: {
+	 *   tryBlock
+	 * } catch: type using: { |e|
+	 *   replacementCode
+	 * } catch: type2 using: { |e|
+	 *   replacementCode2
+	 * } catch: type3 using: { |e|
+	 *   replacementCode3
+	 * }</pre>
+	 * 
+	 * 'Syntactic sugar' for three in-line handlers
+	 * @see #base_try_usingHandlers_(ATClosure, ATTable)
+	 */
+	public ATObject base_try_catch_using_catch_using_catch_using_ensure_(ATClosure tryBlock,
+															   ATTypeTag filter1, ATClosure hdl1,
+															   ATTypeTag filter2, ATClosure hdl2,
+															   ATTypeTag filter3, ATClosure hdl3,
+															   ATClosure ensureBlock) throws InterpreterException {
+		return base_try_using_using_using_ensure_(tryBlock, new NATHandler(filter1, hdl1), new NATHandler(filter2, hdl2), new NATHandler(filter3, hdl3), ensureBlock);
+	}
+
 	/**
 	 * The <tt>handle: type with: { |e| replacementCode }</tt> construct.
 	 * 
