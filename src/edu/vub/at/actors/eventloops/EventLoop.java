@@ -68,7 +68,7 @@ public abstract class EventLoop {
 	private final String name_;
 	
 	/**
-	 * Constructos a new event loop with the default processing behaviour.
+	 * Constructs a new event loop with the default processing behaviour.
 	 * @param name used for debugging purposes
 	 */
 	public EventLoop(String name) {
@@ -167,6 +167,8 @@ public abstract class EventLoop {
 		
 		BlockingFuture future = new BlockingFuture();
 		eventQueue_.enqueue(new FutureEvent(description, future) {
+			private static final long serialVersionUID = 1672724382106164388L;
+
 			public Object execute(Object owner) throws Exception {
 				return callable.call(owner);
 			}
