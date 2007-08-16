@@ -29,6 +29,7 @@ package edu.vub.at.eval;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XImportConflict;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
@@ -51,6 +52,8 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -164,6 +167,37 @@ public final class Import {
 	 */
 	public static ATObject performImport(ATObject sourceObject, ATContext ctx,
 			                             Hashtable aliases, HashSet exclude) throws InterpreterException {
+		
+		// first, check whether sourceObject contains all aliased and excluded names
+		StringBuffer erroneousNames = null; // lazy instantiation
+		Set oldNames = aliases.keySet();
+		// check all aliased symbols
+		for (Iterator iterator = oldNames.iterator(); iterator.hasNext();) {
+			ATSymbol name = (ATSymbol) iterator.next();
+			if (!sourceObject.meta_respondsTo(name).asNativeBoolean().javaValue) {
+				if (erroneousNames == null) {
+					erroneousNames = new StringBuffer(name.toString());
+				} else {
+					erroneousNames.append(", " + name.toString());
+				}
+			}
+		}
+		// check all non-default excludes symbols
+		for (Iterator iterator = exclude.iterator(); iterator.hasNext();) {
+			ATSymbol name = (ATSymbol) iterator.next();
+			if (!_DEFAULT_EXCLUDED_SLOTS_.contains(name) &&
+				!sourceObject.meta_respondsTo(name).asNativeBoolean().javaValue) {
+				if (erroneousNames == null) {
+					erroneousNames = new StringBuffer(name.toString());
+				} else {
+					erroneousNames.append(", " + name.toString());
+				}
+			}
+		}
+		if (erroneousNames != null) {
+			throw new XIllegalOperation("Undefined aliased or excluded slots during import: "+erroneousNames.toString());
+		}
+		
 		ATObject hostObject = ctx.base_lexicalScope();
 
 		// stores all conflicting symbols, initialized lazily
@@ -178,7 +212,6 @@ public final class Import {
 			ATField field = fields[i];
 			// skip excluded fields, such as the 'super' field
 			if (!exclude.contains(field.base_name())) {
-				
 				// check whether the field needs to be aliased
 				alias = (ATSymbol) aliases.get(field.base_name());
 				if (alias == null) {
