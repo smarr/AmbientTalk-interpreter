@@ -37,17 +37,12 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATCallframe;
+import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.NATClosure;
-import edu.vub.at.objects.natives.NATClosureMethod;
-import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.grammar.AGBegin;
-import edu.vub.at.objects.natives.grammar.AGDelegationCreation;
-import edu.vub.at.objects.natives.grammar.AGMessageSend;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.HashSet;
@@ -118,7 +113,7 @@ public final class Import {
 		}
 	}
 	
-	private static final AGSymbol _IMPORTED_OBJECT_NAME_ = AGSymbol.jAlloc("importedObject");
+	// private static final AGSymbol _IMPORTED_OBJECT_NAME_ = AGSymbol.jAlloc("importedObject");
 	
 	/**
 	 * Imports fields and methods from a given source object. This operation is very
@@ -236,9 +231,9 @@ public final class Import {
 		if (methods.length > 0) {
 			
             // create the lexical scope for the delegate method invocation by hand
-			NATCallframe delegateScope = new NATCallframe(hostObject);
+			// NATCallframe delegateScope = new NATCallframe(hostObject);
 			// add the parameter, it is used in the generated method
-			delegateScope.meta_defineField(_IMPORTED_OBJECT_NAME_, sourceObject);
+			// delegateScope.meta_defineField(_IMPORTED_OBJECT_NAME_, sourceObject);
 			
 			for (int i = 0; i < methods.length; i++) {
 				ATSymbol origMethodName = methods[i].base_name();
@@ -258,12 +253,12 @@ public final class Import {
 				}
 
 				// def alias(@args) { importedObject^origMethodName(@args) }
-				ATMethod delegate = new NATMethod(alias, Evaluator._ANON_MTH_ARGS_,
+				/* ATMethod delegate = new NATMethod(alias, Evaluator._ANON_MTH_ARGS_,
 						new AGBegin(NATTable.of(
 								//importedObject^origMethodName(@args)@[]
 								new AGMessageSend(_IMPORTED_OBJECT_NAME_,
 										new AGDelegationCreation(origMethodName,
-												Evaluator._ANON_MTH_ARGS_, NATTable.EMPTY)))));
+												Evaluator._ANON_MTH_ARGS_, NATTable.EMPTY))))); */
 
 				/*
 				 * Notice that the body of the delegate method is
@@ -287,11 +282,18 @@ public final class Import {
 				 */
 
 				try {
-					if (hostObject.isCallFrame()) {
+					/*(hostObject.isCallFrame()) {
 						NATClosure clo = new NATClosure(delegate, ctx.base_withLexicalEnvironment(delegateScope));
 						hostObject.meta_defineField(origMethodName, clo);
 					} else {
-						hostObject.meta_addMethod(new NATClosureMethod(delegateScope, delegate));
+						hostObject.meta_addMethod(new DelegateMethod(delegateScope, delegate));
+					}*/
+					DelegateMethod delegate = new DelegateMethod(alias, origMethodName, sourceObject);
+					if (hostObject.isCallFrame()) {
+						NATClosure clo = new NATClosure(delegate, ctx);
+						hostObject.meta_defineField(origMethodName, clo);
+					} else {
+						hostObject.meta_addMethod(delegate);
 					}
 				} catch(XDuplicateSlot e) {
 					if (conflicts == null) {
@@ -309,6 +311,42 @@ public final class Import {
 		} else {
 			throw new XImportConflict((ATSymbol[]) conflicts.toArray(new ATSymbol[conflicts.size()]));
 		}
+	}
+	
+	/**
+	 * A delegate-method is a pass-by-copy method.
+	 * This is allowed because the lexical scope of a delegate method only stores a reference
+	 * to the delegate object and further refers to the host object.
+	 * 
+	 * The reason why delegate methods are pass-by-copy is that this allows isolates
+	 * to import other isolates without any problems: when an isolate is parameter-passed,
+	 * all of its delegate methods are passed by copy just like regular methods, which is
+	 * fine as long as the delegate object from which the methods were imported is also
+	 * a delegate.
+	 */
+	public static final class DelegateMethod extends PrimitiveMethod {
+		
+		private final ATSymbol origMethodName_;
+		private final ATObject delegate_;
+		
+		/**
+		 * Create a new delegatemethod:
+		 * <code>
+		 * def alias(@args) {
+		 *   delegate^origMethodName(@args)
+		 * }
+		 * </code>
+		 */
+		public DelegateMethod(ATSymbol alias, ATSymbol origMethodName, ATObject delegate) throws InterpreterException {
+			super(alias, Evaluator._ANON_MTH_ARGS_);
+			origMethodName_ = origMethodName;
+			delegate_ = delegate;
+		}
+		
+		public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+			return delegate_.meta_invoke(ctx.base_self(), origMethodName_, args);
+		}
+		
 	}
 	
 }

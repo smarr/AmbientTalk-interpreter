@@ -53,7 +53,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * 
  * @author tvcutsem
  */
-public final class NATClosureMethod extends NATByRef implements ATMethod {
+public class NATClosureMethod extends NATByRef implements ATMethod {
 	
 	private final ATObject lexicalScope_;
 	private final ATMethod method_;
