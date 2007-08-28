@@ -1290,6 +1290,21 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * ------------------------------- */
 	
 	/**
+	 * The <tt>try: { tryBlock } finally: { finallyBlock }</tt> construct.
+	 * 
+	 * Applies the tryBlock closure (to <tt>[]</tt>).
+	 * Whether the tryBlock raises an exception or not, the finallyBlock closure is guaranteed to be applied either 
+	 * after normal termination of the tryBlock or when an exception is propagated from the tryBlock.
+	 */
+	public ATObject base_try_finally_(ATClosure tryBlock, ATClosure finallyBlock) throws InterpreterException {
+		try {
+			return tryBlock.base_apply(NATTable.EMPTY);
+		} finally {
+		    finallyBlock.base_apply(NATTable.EMPTY);
+		}
+	}
+	
+	/**
 	 * The <tt>try: { tryBlock } usingHandlers: [ handler1, handler2, ... ] finally: { finallyBlock }</tt> construct.
 	 * 
 	 * Applies the tryBlock closure (to <tt>[]</tt>) and handles exceptions using the given exception handlers.
