@@ -348,7 +348,7 @@ public class JavaInterfaceAdaptor {
 	 *    
 	 *    <code>jlobby.java.lang.Integer.new(10).longValue();</code>
 	 */
-	public static final Object atObjectToPrimitiveJava(ATObject atObj, Class type) throws InterpreterException {
+	public static final Object atObjectToPrimitiveJava(ATObject atObj, Class type) throws XTypeMismatch, XIllegalArgument {
 		// integer
 		if (type == int.class || type == Integer.class) {
 			return new Integer(atObj.asNativeNumber().javaValue);

@@ -36,6 +36,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJNil;
 
 /**
  * AGBegin represents the abstract grammar element of a list of statements.
@@ -67,6 +68,9 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		NATNumber siz = statements_.base_length().asNativeNumber();
 		int lastIdx = siz.javaValue;
+		if (lastIdx == 0) {
+			return OBJNil._INSTANCE_;
+		}
 		for (int i = 1; i < lastIdx; i++) {
 			statements_.base_at(NATNumber.atValue(i)).meta_eval(ctx);
 		}

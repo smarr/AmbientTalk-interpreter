@@ -314,4 +314,9 @@ public class TestEval extends AmbientTalkTest {
 		assertEquals("[2, 3, 4, 5]", ctx_.base_lexicalScope().impl_call(atY_, NATTable.EMPTY).meta_print().javaValue);
 	}
 	
+	/** test whether applying an empty closure {} yields nil */
+	public void testEmptyClosureApplication() throws InterpreterException {
+		evalAndCompareTo("({})()", "nil");
+	}
+	
 }
