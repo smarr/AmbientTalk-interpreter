@@ -51,7 +51,7 @@ import edu.vub.at.util.logging.Logging;
 import java.io.IOException;
 
 /**
- * OBJMirrorRoot denotes the root node of the intercessive mirrors delegation hierarchy.
+ * This class denotes the root node of the intercessive mirrors delegation hierarchy.
  * 
  * Intercessive mirrors are always tied to a particular 'base' object.
  * The default intercessive mirror is named 'mirrorroot' and is an object
@@ -79,7 +79,7 @@ import java.io.IOException;
  * 
  * @author tvcutsem, smostinc
  */
-public final class OBJMirrorRoot extends NATByCopy implements ATObject {
+public final class NATMirrorRoot extends NATByCopy implements ATObject {
 	
 	// The name of the field that points to the base_level representation of a custom mirror
 	public static final AGSymbol _BASE_NAME_ = AGSymbol.jAlloc("base");
@@ -99,7 +99,7 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 	/**
 	 * Constructor used to initialize the initial mirror root prototype.
 	 */
-	public OBJMirrorRoot() {
+	public NATMirrorRoot() {
 		base_ = new NATMirage(this);
 	};
 
@@ -108,7 +108,7 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 	 * @param base the base field value of the original mirror root from which
 	 * this new one will be cloned.
 	 */
-	private OBJMirrorRoot(NATMirage base) {
+	private NATMirrorRoot(NATMirage base) {
 		base_ = base;
 	};
 
@@ -140,7 +140,7 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 	 * would work perfectly, but this one is more efficient.
 	 */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-		OBJMirrorRoot clone = new OBJMirrorRoot(base_); // same as this.meta_clone()
+		NATMirrorRoot clone = new NATMirrorRoot(base_); // same as this.meta_clone()
 		clone.base_init(initargs.asNativeTable().elements_);
 		return clone;
 	}
@@ -156,7 +156,7 @@ public final class OBJMirrorRoot extends NATByCopy implements ATObject {
 	 * (in OBJMirrorRoot's primitive 'init' method).
 	 */
 	public ATObject meta_clone() throws InterpreterException {
-		return new OBJMirrorRoot(base_);
+		return new NATMirrorRoot(base_);
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {

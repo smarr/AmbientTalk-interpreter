@@ -89,7 +89,7 @@ public class NATMirage extends NATObject {
 	/**
 	 * Dedicated constructor for creating the initial empty mirage tied to the mirror root prototype.
 	 */
-	protected NATMirage(OBJMirrorRoot mirror) {
+	protected NATMirage(NATMirrorRoot mirror) {
 		super();
 		mirror_ = mirror;
 	}

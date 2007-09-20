@@ -99,7 +99,7 @@ public class AGAssignmentSymbol extends AGSymbol implements ATAssignmentSymbol {
 	/**
 	 * @return the field name being assigned by this assignment symbol
 	 */
-	public ATSymbol getFieldName() {
+	public ATSymbol base_fieldName() {
 		return AGSymbol.jAlloc(super.toString());
 	}
 	

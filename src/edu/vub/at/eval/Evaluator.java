@@ -37,7 +37,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignVariable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.mirrors.OBJMirrorRoot;
+import edu.vub.at.objects.mirrors.NATMirrorRoot;
 import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -392,8 +392,8 @@ public final class Evaluator {
 	/**
 	 * @return the mirror root of an actor, from which intercessive mirrors usually inherit.
 	 */
-	public static OBJMirrorRoot getMirrorRoot() {
-		return (OBJMirrorRoot) _MIRROR_ROOT_.get();
+	public static NATMirrorRoot getMirrorRoot() {
+		return (NATMirrorRoot) _MIRROR_ROOT_.get();
 	}
 	
 	/**
@@ -432,8 +432,8 @@ public final class Evaluator {
     /**
      * The default mirror root, with an empty base-level object
      */
-	private static OBJMirrorRoot createMirrorRoot() {
-		return new OBJMirrorRoot();
+	private static NATMirrorRoot createMirrorRoot() {
+		return new NATMirrorRoot();
 	}
 	
 	public static final String valueNameOf(Class c) {

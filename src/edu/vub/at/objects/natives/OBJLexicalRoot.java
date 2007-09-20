@@ -55,7 +55,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirage;
-import edu.vub.at.objects.mirrors.OBJMirrorRoot;
+import edu.vub.at.objects.mirrors.NATMirrorRoot;
 import edu.vub.at.parser.NATParser;
 
 /**
@@ -1184,7 +1184,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 		boolean parentRelation = parentType.asNativeBoolean().javaValue;
 		NATObject newObject;
 		// if the mirror is a 'default' mirror...
-		if (mirror instanceof OBJMirrorRoot) {
+		if (mirror instanceof NATMirrorRoot) {
 			// then create a native object
 			newObject = new NATObject(parent, // dynamic parent
 					                  code.base_context().base_lexicalScope(), // lexical parent
@@ -1244,7 +1244,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_clone_(ATObject original) throws InterpreterException {
 		if (original.meta_isTaggedAs(NativeTypeTags._MIRROR_).asNativeBoolean().javaValue) {
-		    return base_reflect_(base_clone_(original.impl_invokeAccessor(original, OBJMirrorRoot._BASE_NAME_, NATTable.EMPTY)));
+		    return base_reflect_(base_clone_(original.impl_invokeAccessor(original, NATMirrorRoot._BASE_NAME_, NATTable.EMPTY)));
 		} else {
 			return original.meta_clone();
 		}

@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATAssignmentSymbol.java created on 6-jul-2007 at 8:32:42
+ * ATException.java created on 20 sep 2007 at 13:30:00
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,23 +25,31 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.grammar;
+package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.InterpreterException;
-
+import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.NativeATObject;
 
 /**
- * Instances of this class represent 'assignment symbols', which are
- * symbols ending in <tt>:=</tt>.
+ * The public interface to an AmbientTalk exception object.
+ * Although potentially every object can be raised, normally a raised
+ * object understands the messages defined in this interface.
  * 
  * @author tvcutsem
  */
-public interface ATAssignmentSymbol extends ATSymbol {
+public interface ATException extends ATObject {
 
+	/** Returns a string-based text message describing the exception */
+	public NATText base_message() throws InterpreterException;
+	
+	/** Returns the stack trace in a string-based representation */
+	public NATText base_stackTrace() throws InterpreterException;
+	
 	/**
-	 * Returns the field name being assigned by this assignment symbol.
-	 * For example, for <tt>foo:=</tt> the result is <tt>foo</tt>.
+	 * Assigns a new stack trace to this exception. The stack trace is represented
+	 * as a simple string
 	 */
-	public ATSymbol base_fieldName() throws InterpreterException;
+	public NativeATObject base_stackTrace__opeql_(NATText newTrace) throws InterpreterException;
 	
 }

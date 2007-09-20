@@ -41,7 +41,7 @@ import edu.vub.at.objects.coercion.ATConversions;
 import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirage;
-import edu.vub.at.objects.mirrors.OBJMirrorRoot;
+import edu.vub.at.objects.mirrors.NATMirrorRoot;
 import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
@@ -79,14 +79,14 @@ import edu.vub.at.objects.symbiosis.JavaObject;
  *   objects to engage in symbiosis with either a Java class or a Java object.
  *   This implementation makes use of the Java Reflection API to regard Java objects
  *   as though it were AmbientTalk objects.
- *   <li>{@link NATMirage} and {@link OBJMirrorRoot}: these two classes work in tandem to
+ *   <li>{@link NATMirage} and {@link NATMirrorRoot}: these two classes work in tandem to
  *   enable reflection on AmbientTalk objects. That is, because of these two classes, an
  *   AmbientTalk programmer can himself invoke the methods provided in this interface.
  *   {@link NATMirage} implements each operation in this interface by forwarding a
  *   downed invocation to a custom so-called <i>mirror</i> object. This mirror object
- *   can delegate to {@link OBJMirrorRoot}, which is a special object that implements
+ *   can delegate to {@link NATMirrorRoot}, which is a special object that implements
  *   each meta-level operation of this interface as a base-level operation. Hence, in
- *   a sense, {@link OBJMirrorRoot} also 'implements' this interface, but at the
+ *   a sense, {@link NATMirrorRoot} also 'implements' this interface, but at the
  *   AmbientTalk level, rather than at the Java level.
  * </ul>
  * 

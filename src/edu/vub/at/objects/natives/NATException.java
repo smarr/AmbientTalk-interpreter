@@ -27,15 +27,16 @@
  */
 package edu.vub.at.objects.natives;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.Reflection;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 /**
  * Instances of the class NATException provide a AmbientTalk representation for the 
@@ -45,7 +46,7 @@ import edu.vub.at.objects.mirrors.Reflection;
  *
  * @author smostinc
  */
-public class NATException extends NATByCopy {
+public class NATException extends NATByCopy implements ATException {
 	
 	private final InterpreterException wrappedException_;
 	

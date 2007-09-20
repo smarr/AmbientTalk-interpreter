@@ -122,7 +122,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 			return NATBoolean._TRUE_;
 		} else {
 			if (selector.isAssignmentSymbol()) {
-				if (this.hasLocalField(selector.asAssignmentSymbol().getFieldName())) {
+				if (this.hasLocalField(selector.asAssignmentSymbol().base_fieldName())) {
 					return NATBoolean._TRUE_;
 				}
 			}
@@ -594,7 +594,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 			//  ctx.self  = the receiver, being in this case again the implementor
 			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, this));
 		} else {
-			ATSymbol fieldSelector = selector.getFieldName();
+			ATSymbol fieldSelector = selector.base_fieldName();
 			if (this.hasLocalField(fieldSelector)) {
 				ATObject value = NativeClosure.checkUnaryArguments(selector, arguments);
 				this.setLocalField(fieldSelector, value);
@@ -692,7 +692,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 			return this.getLocalMethod(selector).base_apply(arguments, new NATContext(this, receiver));
 		} else {
 			// try to treat a local field as a mutator
-			ATSymbol fieldSelector = selector.getFieldName();
+			ATSymbol fieldSelector = selector.base_fieldName();
 			if (this.hasLocalField(fieldSelector)) {
 				ATObject value = NativeClosure.checkUnaryArguments(selector, arguments);
 				this.setLocalField(fieldSelector, value);
@@ -789,7 +789,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 			//  ctx.super = the parent of the implementor
 			return this.getLocalMethod(selector).base_wrap(this, this);
 		} else {
-			final ATSymbol fieldSelector = selector.getFieldName();
+			final ATSymbol fieldSelector = selector.base_fieldName();
 			// try to wrap a local field in a mutator
 			if(this.hasLocalField(fieldSelector)) {
 				final NativeATObject scope = this;
@@ -865,7 +865,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     		return this.getLocalMethod(selector).base_wrap(this, receiver);
     	} else {
     		// try to wrap a local field in a mutator
-    		final ATSymbol fieldSelector = selector.getFieldName();
+    		final ATSymbol fieldSelector = selector.base_fieldName();
     		if (this.hasLocalField(fieldSelector)) {
     			final NativeATObject scope = this;
     			return new NativeClosure.Mutator(selector, this) {
