@@ -31,19 +31,21 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XImportConflict;
+import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJNil;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -289,9 +291,10 @@ public final class Import {
 						hostObject.meta_addMethod(new DelegateMethod(delegateScope, delegate));
 					}*/
 					DelegateMethod delegate = new DelegateMethod(alias, origMethodName, sourceObject);
+					
 					if (hostObject.isCallFrame()) {
 						NATClosure clo = new NATClosure(delegate, ctx);
-						hostObject.meta_defineField(origMethodName, clo);
+						hostObject.meta_defineField(alias, clo);
 					} else {
 						hostObject.meta_addMethod(delegate);
 					}
@@ -345,6 +348,20 @@ public final class Import {
 		
 		public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
 			return delegate_.meta_invoke(ctx.base_self(), origMethodName_, args);
+		}
+		
+		public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
+			if (other instanceof DelegateMethod) {
+				final DelegateMethod m = (DelegateMethod) other;
+				return (m.origMethodName_.base__opeql__opeql_(origMethodName_).base_and_(
+						new NativeClosure(this) {
+							public ATObject base_apply(ATTable args) throws InterpreterException {
+								return m.delegate_.base__opeql__opeql_(delegate_);
+							}
+						}));
+			} else {
+				return NATBoolean._FALSE_;
+			}
 		}
 		
 	}
