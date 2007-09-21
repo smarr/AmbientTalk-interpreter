@@ -166,7 +166,7 @@ public final class Coercer implements InvocationHandler, Serializable {
 				if (Thread.currentThread() instanceof EventProcessor) {
 					// another event loop has direct access to this object, this means
 					// an AT object has been shared between actors via Java, signal an error
-					throw new XIllegalOperation("Detected illegal invocation: sharing via Java level of object " + principal_);
+					throw new XIllegalOperation("Detected illegal invocation of "+method.getName()+": sharing via Java level of object " + principal_);
 				}
 				
 				ELActor owningActor = (ELActor) EventLoop.toEventLoop(wrappingThread_);
