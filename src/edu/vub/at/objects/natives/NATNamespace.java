@@ -37,6 +37,7 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
@@ -160,11 +161,18 @@ public final class NATNamespace extends NATObject {
 					this.impl_invokeMutator(this, selector.asAssignmentSymbol(), NATTable.of(result));
 					//this.meta_assignField(this, selector, result);
 					
-					return new NativeClosure(this) {
-						public ATObject base_apply(ATTable args) {
-							return result;
-						}
-					};
+					// keeping up with the UAP: if the return value of a module is
+					// a function, the function itself is returned (and most presumably
+					// applied immediately). This allows modules to be parameterized easily.
+					if (result.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+						return result.asClosure();
+					} else {
+						return new NativeClosure(this) {
+							public ATObject base_apply(ATTable args) {
+								return result;
+							}
+						};	
+					}
 				} catch (IOException e) {
 					throw new XIOProblem(e);
 				}
