@@ -127,7 +127,7 @@ public final class NATNamespace extends NATObject {
 		File dir = new File(path_, javaSelector);
 		if (dir.exists() && dir.isDirectory()) {
              // create a new namespace object for this directory
-			final NATNamespace childNS = new NATNamespace(name_ + "/" + javaSelector, dir);
+			final NATNamespace childNS = new NATNamespace(name_ + File.separator + javaSelector, dir);
 
 			// bind the new child namespace to the selector
 			this.meta_defineField(selector, childNS);
