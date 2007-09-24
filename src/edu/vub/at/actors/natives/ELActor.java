@@ -95,7 +95,7 @@ public class ELActor extends EventLoop {
 			} catch (InterpreterException e) {
 			  // Backport from JDK 1.4 to 1.3
               // throw new RuntimeException("Failed to initialize default actor",e);
-              throw new RuntimeException("Failed to initialize default actor");
+              throw new RuntimeException("Failed to initialize default actor: " + e.getMessage());
 			}
 	    }
 	};

@@ -54,7 +54,6 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.IdentityHashMap;
 
-import java.io.IOException;
 import java.lang.ref.SoftReference;
 
 /**
@@ -288,6 +287,16 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 		return NATText.atValue("<java:"+wrappedClass_.toString()+">");
 	}
 
+	/**
+	 * Java class wrappers may be passed by-copy since Java Class
+	 * objects are serializable. Upon deserialization however, the
+	 * class wrapper returned will be the one local to the receiving
+	 * actor.
+	 */
+	public ATObject meta_pass() throws InterpreterException {
+		return this;
+	}
+	
 	/**
      * A Java Class object remains unique within an actor.
      */
