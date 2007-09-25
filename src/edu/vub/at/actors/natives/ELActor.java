@@ -353,7 +353,7 @@ public class ELActor extends EventLoop {
 		try {
 			ATObject result = receiver.meta_receive(msg);
 			// TODO what to do with return value?
-			Logging.Actor_LOG.info(mirror_ + ": "+ msg + " returned " + result);
+			Logging.Actor_LOG.debug(mirror_ + ": "+ msg + " returned " + result);
 			} catch (InterpreterException e) {
 			// TODO what to do with exception?
 			e.printAmbientTalkStackTrace(System.err);

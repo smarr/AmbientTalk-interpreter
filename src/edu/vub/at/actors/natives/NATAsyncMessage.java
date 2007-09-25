@@ -154,7 +154,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     }
     
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<asynchronous message:"+base_selector()+Evaluator.printAsList(base_arguments()).javaValue+">");
+		return NATText.atValue("<async msg:"+base_selector()+Evaluator.printAsList(base_arguments()).javaValue+">");
 	}
 
     public ATAsyncMessage asAsyncMessage() throws XTypeMismatch {

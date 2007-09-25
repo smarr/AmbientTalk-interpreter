@@ -216,7 +216,7 @@ public abstract class EventLoop {
 		try {
 			Event event = eventQueue_.dequeue();
 
-			Logging.EventLoop_LOG.info(owner() + " is processing " + event);
+			Logging.EventLoop_LOG.debug(owner() + " is processing " + event);
 
 			handle(event);
 		} catch (InterruptedException e) {

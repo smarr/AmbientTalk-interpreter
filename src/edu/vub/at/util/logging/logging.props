@@ -4,8 +4,8 @@
 
 # default priority = DEBUG
 
-at.eventloops=DEBUG
-at.eventloops.actors=DEBUG
+at.eventloops=WARN
+at.eventloops.actors=WARN
 at.eventloops.remoterefs=DEBUG
 at.eventloops.vm=DEBUG
 at.init=INFO
