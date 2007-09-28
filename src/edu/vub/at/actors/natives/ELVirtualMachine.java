@@ -107,6 +107,7 @@ public final class ELVirtualMachine extends EventLoop {
 		vmId_ = new VirtualMachineID();
 		localActors_ = new Hashtable();
 		discoveryActor_ = new ELDiscoveryActor(this);
+		discoveryActor_.event_init();
 		
 		// initialize the message dispatcher using a JChannel
 		connectionManager_ = new ConnectionListenerManager();

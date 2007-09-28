@@ -268,6 +268,10 @@ public class ELActor extends EventLoop {
 					// pass far ref to behaviour to creator actor who is waiting for this
 					future.resolve(receptionists_.exportObject(behaviour_));
 					
+					// !! WARNING: the following code is also duplicated in
+					// ELDiscoveryActor's event_init. If this code is modified, don't
+					// forget to modify that of the discovery actor as well !!
+					
 					// initialize lexically visible fields
 					initSharedFields();
 

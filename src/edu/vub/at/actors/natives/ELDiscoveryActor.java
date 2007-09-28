@@ -27,6 +27,7 @@
  */
 package edu.vub.at.actors.natives;
 
+import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.natives.DiscoveryManager.Publication;
 import edu.vub.at.actors.natives.DiscoveryManager.Subscription;
@@ -36,8 +37,12 @@ import edu.vub.at.actors.net.cmd.CMDProvideService;
 import edu.vub.at.actors.net.cmd.CMDRequireService;
 import edu.vub.at.actors.net.comm.Address;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.natives.NATContext;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.MultiMap;
 
@@ -58,6 +63,27 @@ public final class ELDiscoveryActor extends ELActor {
 	public ELDiscoveryActor(ELVirtualMachine host) {
 		super(host);
 		discoveryManager_ = new DiscoveryManager();
+	}
+	
+	/**
+	 * A dedicated initialization procedure for the discovery actor
+	 */
+	protected void event_init() {
+		receive(new Event("initDiscovery("+this+")") {
+			public void process(Object byMyself) {
+				try {
+					// !! CODE DUPLICATED FROM ELActor's event_init !!
+					
+					// initialize lexically visible fields
+					initSharedFields();
+
+					// go on to initialize the root and all lexically visible fields
+					initRootObject();
+				} catch (InterpreterException e) {
+					Logging.Actor_LOG.error("error while initializing discovery actor", e);
+				}
+			}
+		});
 	}
 	
 	/**
