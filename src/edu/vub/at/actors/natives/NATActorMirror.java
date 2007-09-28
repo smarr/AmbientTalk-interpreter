@@ -94,9 +94,6 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		BlockingFuture future = new BlockingFuture();
 		ELActor processor = new ELActor(actorMirror, host);
 		
-		// notify host VM about my creation
-		host.actorCreated(processor);
-		
 		// schedule special 'init' message which will:
 		// A) create a new behaviour and will unblock creating actor (by passing it a far ref via the future)
 		// B) unpack the parameters used to invoke the initializatin code

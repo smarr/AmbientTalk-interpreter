@@ -133,6 +133,8 @@ public class ELActor extends EventLoop {
 		mirror_ = mirror;
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
+		// notify host VM about my creation
+		host.actorCreated(this);
 	}
 	
 	/** constructor dedicated to initialization of discovery actor */
@@ -142,6 +144,8 @@ public class ELActor extends EventLoop {
 		mirror_ = new NATActorMirror(host);
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
+		// notify host VM about my creation
+		host.actorCreated(this);
 	}
 
 	/**
