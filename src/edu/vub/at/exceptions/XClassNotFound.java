@@ -27,6 +27,7 @@
  */
 package edu.vub.at.exceptions;
 
+import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 
@@ -42,6 +43,8 @@ public final class XClassNotFound extends InterpreterException {
 
 	private static final long serialVersionUID = 131014866438710913L;
 
+	private final String qualifiedClassName_;
+	
 	/**
 	 * Constructor reporting that no class could be loaded with a given name.
 	 * @param qualifiedClassname The fully qualified name of the class (i.e. including the package) being loaded
@@ -49,7 +52,11 @@ public final class XClassNotFound extends InterpreterException {
 	 */
 	public XClassNotFound(String qualifiedClassname, Throwable cause) {
 		super("Could not find class " + qualifiedClassname, cause);
+		qualifiedClassName_ = qualifiedClassname;
 	}
+	
+	/** @return the name of the class that the JVM was unable to load */
+	public String getClassName() { return qualifiedClassName_; }
 	
 	public ATTypeTag getType() {
 		return NativeTypeTags._CLASSNOTFOUND_;

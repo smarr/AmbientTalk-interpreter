@@ -29,11 +29,16 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.symbiosis.Symbiosis;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -96,5 +101,20 @@ public class NATException extends NATByCopy implements ATException {
     
 	public ATObject meta_clone() throws InterpreterException {
 		return this;
+	}
+	
+	/**
+	 * delegate messages not understood to the wrapped exception object
+	 */
+	public ATClosure meta_doesNotUnderstand(final ATSymbol selector) {
+		return new NativeClosure(this) {
+			public ATObject base_apply(ATTable args) throws InterpreterException {
+				return Symbiosis.symbioticInvocation(scope_,
+						                             wrappedException_,
+						                             wrappedException_.getClass(),
+						                             Reflection.upSelector(selector),
+						                             args.asNativeTable().elements_);
+			}
+		};
 	}
 }
