@@ -49,8 +49,6 @@ public class Logger {
 	 */
 	private int leastPriority_;
 	
-	private String textPriority_;
-	
 	/**
 	 * Access to the map should actually be synchronized, but this
 	 * adds overhead to accessing the loggers.
@@ -82,7 +80,6 @@ public class Logger {
 	private Logger(String nam) {
 		name_ = nam;
 		leastPriority_ = _DEBUG_LEVEL_;
-		textPriority_ = "DEBUG";
 	}
 	
 	/**
@@ -92,7 +89,6 @@ public class Logger {
 	 */
 	public void setPriority(String priority) throws IllegalArgumentException {
 		leastPriority_ = textToLevel(priority);
-		textPriority_ = priority;
 	}
 	
 	/**
@@ -101,7 +97,7 @@ public class Logger {
 	 * @param msg the message to be logged.
 	 */
 	public void debug(String msg) {
-		log(_DEBUG_LEVEL_, msg, null);
+		log(_DEBUG_LEVEL_, "DEBUG", msg, null);
 	}
 	
 	/**
@@ -111,7 +107,7 @@ public class Logger {
 	 * @param exc the underlying exception that triggered the log request.
 	 */
 	public void debug(String msg, Throwable exc) {
-		log(_DEBUG_LEVEL_, msg, exc);
+		log(_DEBUG_LEVEL_, "DEBUG", msg, exc);
 	}
 	
 	/**
@@ -121,7 +117,7 @@ public class Logger {
 	 * @param msg the message to be logged.
 	 */
 	public void warn(String msg) {
-		log(_WARN_LEVEL_, msg, null);
+		log(_WARN_LEVEL_, "WARN", msg, null);
 	}
 	
 	/**
@@ -132,7 +128,7 @@ public class Logger {
 	 * @param exc the underlying exception that triggered the log request.
 	 */
 	public void warn(String msg, Throwable exc) {
-		log(_WARN_LEVEL_, msg, exc);
+		log(_WARN_LEVEL_, "WARN", msg, exc);
 	}
 	
 	/**
@@ -142,7 +138,7 @@ public class Logger {
 	 * @param msg the message to be logged.
 	 */
 	public void info(String msg) {
-		log(_INFO_LEVEL_, msg, null);
+		log(_INFO_LEVEL_, "INFO", msg, null);
 	}
 	
 	/**
@@ -153,7 +149,7 @@ public class Logger {
 	 * @param exc the underlying exception that triggered the log request.
 	 */
 	public void info(String msg, Throwable exc) {
-		log(_INFO_LEVEL_, msg, exc);
+		log(_INFO_LEVEL_, "INFO", msg, exc);
 	}
 	
 	/**
@@ -162,7 +158,7 @@ public class Logger {
 	 * @param msg the message to be logged.
 	 */
 	public void error(String msg) {
-		log(_ERROR_LEVEL_, msg, null);
+		log(_ERROR_LEVEL_, "ERROR", msg, null);
 	}
 	
 	/**
@@ -172,7 +168,7 @@ public class Logger {
 	 * @param exc the underlying exception that triggered the log request.
 	 */
 	public void error(String msg, Throwable exc) {
-		log(_ERROR_LEVEL_, msg, exc);
+		log(_ERROR_LEVEL_, "ERROR", msg, exc);
 	}
 	
 	/**
@@ -180,7 +176,7 @@ public class Logger {
 	 * @param msg the message to be logged.
 	 */
 	public void fatal(String msg) {
-		log(_FATAL_LEVEL_, msg, null);
+		log(_FATAL_LEVEL_, "FATAL", msg, null);
 	}
 	
 	/**
@@ -189,13 +185,13 @@ public class Logger {
 	 * @param exc the underlying exception that triggered the log request.
 	 */
 	public void fatal(String msg, Throwable exc) {
-		log(_FATAL_LEVEL_, msg, exc);
+		log(_FATAL_LEVEL_, "FATAL", msg, exc);
 	}
 	
-	private void log(int priority, String msg, Throwable exc) {
+	private void log(int priority, String textPriority, String msg, Throwable exc) {
 		if (priority >= leastPriority_) {
 			// format: date priority logname - message
-			System.err.println(new Date().toString() + " " + textPriority_ + " "+ name_ + " - " + msg);
+			System.err.println(new Date().toString() + " " + textPriority + " "+ name_ + " - " + msg);
 			if (exc != null) {
 				exc.printStackTrace(System.err);
 			}
