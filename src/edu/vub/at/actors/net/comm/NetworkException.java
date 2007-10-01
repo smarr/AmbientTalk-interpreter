@@ -57,7 +57,7 @@ public class NetworkException extends Exception {
 		if (cause_ == null) {
 			return super.getMessage();
 		} else {
-			return getMessage() + " caused by: " + cause_.getMessage();
+			return super.getMessage() + " caused by: " + cause_.getMessage();
 		}
 	}
 
