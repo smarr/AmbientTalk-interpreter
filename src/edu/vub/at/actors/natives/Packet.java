@@ -36,8 +36,10 @@ import edu.vub.at.objects.ATObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
 import java.io.Serializable;
 
 /**
@@ -77,6 +79,19 @@ public class Packet implements Serializable {
 		} 
 	}
 	
+	/** deserialize this message, using a custom class loader to load the classes into the JVM */
+	public ATObject unpackUsingClassLoader(ClassLoader cld) throws InterpreterException {
+		try {
+			return (ATObject) deserialize(payload_, cld);
+        } catch (SerializationException e) {
+          throw e.getWrappedException();
+		} catch (IOException e) {
+			throw new XIOProblem(e);
+		} catch (ClassNotFoundException e) {
+			throw new XClassNotFound(e.getMessage(), e);
+		} 
+	}
+	
 	public String toString() { return "packet["+description_+"]"; }
 	
 	private static byte[] serialize(Object o) throws IOException {
@@ -91,6 +106,30 @@ public class Packet implements Serializable {
 	private static Object deserialize(byte[] b) throws IOException, ClassNotFoundException {
 		ByteArrayInputStream in = new ByteArrayInputStream(b);
 		ObjectInputStream instream = new ObjectInputStream(in);
+		return instream.readObject();
+	}
+	
+	/**
+	 * A dedicated subclass of {@link ObjectInputStream} that hooks into
+	 * that class's facility to define additional sources to look for classes
+	 * that are read from the input stream.
+	 */
+	private static class HookedObjectInputStream extends ObjectInputStream {
+		private final ClassLoader loader_;
+		protected HookedObjectInputStream(ClassLoader cld, InputStream is) throws IOException, SecurityException {
+			super(is);
+			loader_ = cld;
+		}
+
+		protected Class resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+			return loader_.loadClass(desc.getName());
+		}
+	}
+	
+	// deserialize and use the given class loader to try and load any missing classes
+	private static Object deserialize(byte[] b, ClassLoader cld) throws IOException, ClassNotFoundException {
+		ByteArrayInputStream in = new ByteArrayInputStream(b);
+		ObjectInputStream instream = new HookedObjectInputStream(cld, in);
 		return instream.readObject();
 	}
 	

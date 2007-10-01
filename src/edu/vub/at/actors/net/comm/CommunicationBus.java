@@ -442,7 +442,7 @@ public class CommunicationBus {
 	 * that all currently connected VMs will receive the message
 	 */
 	public void sendAsyncMulticast(VMCommand msg) {
-		Logging.Network_LOG.info("sending async multicast cmd: " + msg);
+		Logging.Network_LOG.debug("sending async multicast cmd: " + msg);
 		
 		// first clone the connection table such that we do not need to acquire the
 		// lock for the entire duration of the multicast
