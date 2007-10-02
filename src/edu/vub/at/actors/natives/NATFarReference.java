@@ -222,7 +222,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * The only operation that is allowed to be synchronously invoked on far references is '=='
 	 * @throws XIllegalOperation Cannot synchronously invoke a method on a far reference
 	 */
-	public ATObject native_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
+	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
 		if (atSelector.equals(NATObject._EQL_NAME_)) {
 			return super.meta_invoke(receiver, atSelector, arguments);
 		}
@@ -275,7 +275,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	/**
 	 * @throws XIllegalOperation - cannot select in objects hosted by another actor.
 	 */
-	public ATClosure native_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
+	public ATClosure meta_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
 		if (atSelector.equals(NATObject._EQL_NAME_)) {
 			return super.meta_select(receiver, atSelector);
 		}
