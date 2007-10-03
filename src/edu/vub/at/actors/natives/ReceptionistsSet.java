@@ -27,20 +27,16 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
-import edu.vub.util.MultiMap;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * An NATActorMirror's ReceptionistsSet keeps a mapping between identifiers and local objects
@@ -58,10 +54,12 @@ public class ReceptionistsSet {
 	private final HashMap exportedObjectsTable_;	
 	
 	/**
-	 * local object (ATObject) -> remote clients pointing to this object (Set of ATFarReference)
-	 * @deprecated currently not in use
+	 * local object (ATObject) -> object id (ATObjectID)
+	 * under which this object is currently exported. This map
+	 * and the previous map maintain a bi-directional mapping
+	 * between objects and globally unique object IDs.
 	 */
-	private final MultiMap objectToClients_;
+	private final HashMap exportedObjectIds_;
 	
 	private final ELActor owner_;
 	
@@ -77,10 +75,11 @@ public class ReceptionistsSet {
 	 */
 	private final Hashtable farReferences_;
 	
+	/** Create a fresh receptionist owned by a given actor */
 	public ReceptionistsSet(ELActor forActor) {
 		owner_ = forActor;
 		exportedObjectsTable_ = new HashMap();
-		objectToClients_ = new MultiMap();
+		exportedObjectIds_ = new HashMap();
 		remoteReferences_ = new Hashtable();
 		farReferences_ = new Hashtable();
 	}
@@ -127,18 +126,25 @@ public class ReceptionistsSet {
 			throw new XIllegalOperation("Cannot export a far reference to " + object);
 		}
 		
-		// get the host VM
-		ELVirtualMachine currentVM = owner_.getHost();
 
-		// create a new unique ID for the exported object, but make sure that the unique identity
-		// remembers the VM id and actor ID from which the object originated
-		ATObjectID objId = new ATObjectID(currentVM.getGUID(), owner_.getActorID(), object.toString());
-		
-		// store the object if it was not previously exported */ 
-		if(!exportedObjectsTable_.containsKey(objId)) {
+		ATObjectID objId = null;
+
+		// if this object was already exported, return a far ref with the same ID
+		// as the one already stored
+		if (exportedObjectIds_.containsKey(object)) {
+			objId = (ATObjectID) exportedObjectIds_.get(object);
+		} else {
+			// get the host VM
+			ELVirtualMachine currentVM = owner_.getHost();
+			
+			// create a new unique ID for the exported object, but make sure that the unique identity
+			// remembers the VM id and actor ID from which the object originated
+			objId = new ATObjectID(currentVM.getGUID(), owner_.getActorID(), object.toString());
+			
 			exportedObjectsTable_.put(objId, object);
+			exportedObjectIds_.put(object, objId);
 		}
-		
+				
 		// copy types of local object
 		ATObject[] origTypes = object.meta_typeTags().asNativeTable().elements_;
 		ATTypeTag[] types = new ATTypeTag[origTypes.length];
@@ -153,24 +159,17 @@ public class ReceptionistsSet {
 	 * @throws XIllegalOperation if the object was not found locally
 	 */
 	public void takeOfflineObject(ATObject object) throws XIllegalOperation {
-		
-		if (exportedObjectsTable_.containsValue(object)){
+		if (exportedObjectIds_.containsKey(object)) {
+			ATObjectID objId = (ATObjectID) exportedObjectIds_.get(object);
+			exportedObjectsTable_.remove(objId);
+			exportedObjectIds_.remove(object);
 			
-			for (Iterator i = exportedObjectsTable_.entrySet().iterator(); i.hasNext();) {
-				Map.Entry entry = (Map.Entry) i.next();
-				ATObject obj = (ATObject) entry.getValue();
-				
-				if (obj.equals(object)){
-					i.remove();
-					//notify the rest of VM that this object was taken offline
-					owner_.getHost().event_objectTakenOffline((ATObjectID) entry.getKey(), null);
-	
-				}
-			}
-		}else{
+			//notify the rest of VM that this object was taken offline
+			owner_.getHost().event_objectTakenOffline(objId, null);
+		} else{
+			
 			//the object was not previously exported or it has already been taken offline
 			//I don't know the objectId => throw XIllegalOperation
-			
 			throw new XIllegalOperation("Cannot take offline an object that is not online: " + object);
 		}
 	}
@@ -203,28 +202,4 @@ public class ReceptionistsSet {
 		}
 	}
 	
-	/**
-	 * Invoked whenever another actor is passed a reference to an object offering a
-	 * service on this actor. This is automatically done when serialising a local 
-	 * object during parameter or result passing. Upon serialisation of a far 
-	 * reference pointing to a service, a command object should be sent at the lowest
-	 * level to invoke this method as well.
-	 * 
-	 * This method is related to a simple reference listing strategy which should be 
-	 * the basis for a distributed garbage collector.
-	 * @deprecated currently not in use
-	 */
-	public void addClient(ATObject service, ATFarReference client) throws InterpreterException {
-		objectToClients_.put(service, client);
-	}
-
-	/**
-	 * Called upon the collection of a service on a remote device, or possibly when 
-	 * the conditions negotiated for the use of the service (e.g. its lease period)
-	 * have expired.
-	 * @deprecated currently not in use
-	 */
-	public void removeClient(ATObject service, ATFarReference client) throws InterpreterException {
-		objectToClients_.removeValue(service, client);
-	}
 }
