@@ -31,9 +31,9 @@ import edu.vub.at.exceptions.InterpreterException;
 
 
 /**
- * ATContext describes a triplet of scope pointers used during evaluation, namely
- * one for the lexical scope (where the lookup starts for receiverless messages),
- * one for the late-bound receiver and one for the parent object.
+ * ATContext describes a pair of scope pointers used during evaluation, namely
+ * one storing the lexical scope (where the lookup starts for receiverless messages),
+ * one storing the late-bound receiver <tt>self</tt>.
  * 
  * @author smostinc
  */
