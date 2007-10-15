@@ -108,7 +108,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	 * @throws InterpreterException 
 	 */
 	public ATNil meta_defineField(ATSymbol name, ATObject value) throws InterpreterException {
-		if (this.hasLocalField(name)) {
+		if (this.hasLocalField(name) || this.hasLocalMethod(name)) {
 			// field already exists...
 			throw new XDuplicateSlot(name);			
 		} else {
