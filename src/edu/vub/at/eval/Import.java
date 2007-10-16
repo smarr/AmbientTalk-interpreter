@@ -217,7 +217,6 @@ public final class Import {
 				}
 				
 				try {
-					System.out.println("defining field " + field.base_name());
 					hostObject.meta_defineField(alias, field.base_readField());
 				} catch(XDuplicateSlot e) {
 					if (conflicts == null) {
