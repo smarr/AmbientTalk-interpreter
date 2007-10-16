@@ -71,6 +71,9 @@ public class XSymbiosisFailure extends InterpreterException {
 	 */
 	public XSymbiosisFailure(Object symbiont, String selector, LinkedList choices, ATObject[] atArgs) throws InterpreterException {
 		StringBuffer buff = new StringBuffer("Overloaded Java invocation has " + choices.size() + " matches:\n");
+		if (symbiont == null) {
+			symbiont = ((Method) choices.getFirst()).getDeclaringClass().getName();
+		}
 		buff.append(symbiont.toString() + "." + Reflection.downSelector(selector) + Evaluator.printElements(atArgs, "(",",",")").javaValue);
 		for (Iterator iter = choices.iterator(); iter.hasNext();) {
 			buff.append("\n" + iter.next().toString());
