@@ -325,7 +325,7 @@ public final class Symbiosis {
 	 * Query whether the given Java Class contains a (non-)static method with the given selector
 	 */
 	public static boolean hasMethod(Class c, String selector, boolean isStatic) {
-		Method[] methods = c.getMethods();
+		Method[] methods = (isStatic) ? c.getDeclaredMethods() : c.getMethods();
 		for (int i = 0; i < methods.length; i++) {
 			if (Modifier.isStatic(methods[i].getModifiers()) == isStatic) {
 				if (methods[i].getName().equals(selector)) {
@@ -380,7 +380,7 @@ public final class Symbiosis {
 			return cachedEntry;
 		} else {
 			// cache miss: assemble a new JavaMethod entry
-			Method[] methods = fromClass.getMethods();
+			Method[] methods = (isStatic) ? fromClass.getDeclaredMethods() : fromClass.getMethods();
 			Method m;
 			Vector properMethods = new Vector(methods.length);
 			for (int i = 0; i < methods.length; i++) {
@@ -412,7 +412,7 @@ public final class Symbiosis {
 	public static JavaMethod[] getAllMethods(Class fromClass, boolean isStatic) {
 		// assemble a set of all unique selectors of all (non-)static methods of the class
 		HashSet uniqueNames = new HashSet();
-		Method[] methods = fromClass.getMethods();
+		Method[] methods = (isStatic) ? fromClass.getDeclaredMethods() : fromClass.getMethods();
 		for (int i = 0; i < methods.length; i++) {
 			Method m = methods[i];
 			if ((Modifier.isStatic(m.getModifiers())) == isStatic) {

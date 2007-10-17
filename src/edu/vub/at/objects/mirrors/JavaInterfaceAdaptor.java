@@ -215,7 +215,7 @@ public class JavaInterfaceAdaptor {
 	 */
 	public static Method[] allMethodsPrefixed(Class fromClass, String prefix, boolean isStatic) {
 		// all public methods defined in the class
-		Method[] allPublicMethods = fromClass.getMethods();
+		Method[] allPublicMethods = (isStatic) ? fromClass.getDeclaredMethods() : fromClass.getMethods();
 		
 		Vector matchingMethods = new Vector(allPublicMethods.length);
 		for (int i = 0; i < allPublicMethods.length; i++) {
