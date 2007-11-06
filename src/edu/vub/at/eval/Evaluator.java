@@ -27,11 +27,16 @@
  */
 package edu.vub.at.eval;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
+
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XAmbienttalk;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalParameter;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -50,12 +55,6 @@ import edu.vub.at.objects.symbiosis.JavaPackage;
 import edu.vub.at.objects.symbiosis.XJavaException;
 import edu.vub.util.Matcher;
 import edu.vub.util.Pattern;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.LinkedList;
 
 /**
  * The Evaluator class serves as a repository for auxiliary evaluation methods.

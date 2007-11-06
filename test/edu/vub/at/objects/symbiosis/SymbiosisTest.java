@@ -27,6 +27,12 @@
  */
 package edu.vub.at.objects.symbiosis;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+
 import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -38,7 +44,6 @@ import edu.vub.at.exceptions.XNotInstantiatable;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XSymbiosisFailure;
 import edu.vub.at.exceptions.XTypeMismatch;
-import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
@@ -47,21 +52,14 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATFraction;
-import edu.vub.at.objects.natives.NativeATObject;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.NativeATObject;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.objects.natives.grammar.TestEval;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
 
 /**
  * Tests the symbiosis with Java. This is primarily done by wrapping

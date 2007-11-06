@@ -27,6 +27,8 @@
  */
 package edu.vub.at.actors.natives;
 
+import java.util.Vector;
+
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.Event;
@@ -44,9 +46,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.util.logging.Logging;
-
-import java.lang.ref.WeakReference;
-import java.util.Vector;
 
 /**
  * An instance of the class ELFarReference represents the event loop processor for

@@ -27,7 +27,6 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;

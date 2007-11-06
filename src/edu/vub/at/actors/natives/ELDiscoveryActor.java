@@ -27,7 +27,9 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.eventloops.BlockingFuture;
+import java.util.Iterator;
+import java.util.Set;
+
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.natives.DiscoveryManager.Publication;
 import edu.vub.at.actors.natives.DiscoveryManager.Subscription;
@@ -37,17 +39,10 @@ import edu.vub.at.actors.net.cmd.CMDProvideService;
 import edu.vub.at.actors.net.cmd.CMDRequireService;
 import edu.vub.at.actors.net.comm.Address;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
-import edu.vub.at.objects.natives.NATContext;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.MultiMap;
-
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * Every VM has an associated DiscoveryBus Actor. This is a regular actor (with a native Actor Mirror)

@@ -31,11 +31,7 @@ import java.lang.reflect.Method;
 import java.util.Vector;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
-import edu.vub.at.exceptions.XSelectorNotFound;
-import edu.vub.at.exceptions.XUndefinedSlot;
-import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;

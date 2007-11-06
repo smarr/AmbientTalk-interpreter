@@ -27,19 +27,17 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.eval.Evaluator;
+import java.util.LinkedList;
+import java.util.Vector;
+
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATFieldSelection;
 import edu.vub.at.objects.ATMessage;
-import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
-
-import java.util.LinkedList;
-import java.util.Vector;
 
 /**
  * Instances of this class represent first-class field selections.

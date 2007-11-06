@@ -27,18 +27,17 @@
  */
 package edu.vub.at.eval;
 
-import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATMessage;
-import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATExpression;
-
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ListIterator;
 import java.util.Stack;
+
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATExpression;
 
 /**
  * An InvocationStack instance represents the stack of method invocations and function applications
