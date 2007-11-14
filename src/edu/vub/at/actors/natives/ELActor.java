@@ -359,7 +359,7 @@ public class ELActor extends EventLoop {
 	
 	private void performAccept(ATObject receiver, ATAsyncMessage msg) {
 		try {
-			ATObject result = receiver.meta_receive(msg);
+			ATObject result = mirror_.base_receive(receiver, msg);
 			// TODO what to do with return value?
 			Logging.Actor_LOG.debug(mirror_ + ": "+ msg + " returned " + result);
 			} catch (InterpreterException e) {

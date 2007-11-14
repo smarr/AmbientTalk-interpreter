@@ -294,6 +294,16 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return oldMirror;
 	}
 	
+	/**
+	 * When an actor receives an asynchronous message for a given receiver, it will delegate this
+	 * to the meta-level 'receive' operation of the designated object. This operation is introduced
+	 * as a mechanism to alter the semantics of message reception for all objects contained in an
+	 * actor. It can be used e.g. to keep track of all succesfully processed messages. 
+	 */
+	public ATObject base_receive(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
+		return receiver.meta_receive(message);
+	}
+	
     public ATActorMirror asActorMirror() throws XTypeMismatch {
     	return this;
     }

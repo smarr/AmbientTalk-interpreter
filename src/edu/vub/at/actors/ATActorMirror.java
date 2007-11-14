@@ -89,6 +89,15 @@ public interface ATActorMirror extends ATObject {
 	public ATObject base_send(ATObject receiver, ATAsyncMessage message) throws InterpreterException;
 	
 	/**
+	 * When an actor receives an asynchronous message for a given receiver, it will delegate this
+	 * to the meta-level 'receive' operation of the designated object. This operation is introduced
+	 * as a mechanism to alter the semantics of message reception for all objects contained in an
+	 * actor. It can be used e.g. to keep track of all succesfully processed messages. 
+	 */
+	public ATObject base_receive(ATObject receiver, ATAsyncMessage message) throws InterpreterException;
+
+	
+	/**
 	 * This mechanism is the most basic mechanism to provide a service. It requires 
 	 * a separate service description and an object offering the service. The return
 	 * value is a publication object which allows cancelling the service offer.
