@@ -161,7 +161,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 	 *     } else: {
 	 *       raise: e
 	 *     }
-	 *   } finally: { // doesn't yet exist in AT/2
+	 *   } finally: {
 	 *     returned := true;
 	 *   }
 	 * }
