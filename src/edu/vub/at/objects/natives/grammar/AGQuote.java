@@ -71,5 +71,9 @@ public final class AGQuote extends AGExpression implements ATQuote {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("`("+ stmt_.meta_print().javaValue + ")");
 	}
+	
+	public ATQuote asQuote() throws InterpreterException {
+		return this;
+	}
 
 }
