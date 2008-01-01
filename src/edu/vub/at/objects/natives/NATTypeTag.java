@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.actors.natives.DiscoveryManager;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATObject;
@@ -163,6 +164,9 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
     	return NATTable.of(NativeTypeTags._TYPETAG_, NativeTypeTags._ISOLATE_);
     }
 	
+    /** required as type tags are stored in a hashset in the {@link DiscoveryManager} */
+    public int hashCode() { return typeName_.hashCode(); }
+    
 	/**
 	 * The root type of the type hierarchy: every type eventually
 	 * has this type as its parent.

@@ -92,6 +92,13 @@ public class Packet implements Serializable {
 		} 
 	}
 	
+	public boolean equals(Object other) {
+		return ((other instanceof Packet) &&
+				((Packet) other).payload_.equals(payload_));
+	}
+	
+	public int hashCode() { return payload_.hashCode(); }
+	
 	public String toString() { return "packet["+description_+"]"; }
 	
 	private static byte[] serialize(Object o) throws IOException {

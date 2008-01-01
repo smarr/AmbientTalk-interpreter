@@ -117,7 +117,7 @@ public final class DiscoveryManager {
 	/**
 	 * A new local subscription:
 	 *  - is stored locally
-	 *  - is checked against local publications, which may cause the subscrption
+	 *  - is checked against local publications, which may cause the subscription
 	 *    to fire immediately
 	 *  - is broadcast to all currently connected members (done by VM)
 	 */
@@ -162,10 +162,20 @@ public final class DiscoveryManager {
 	 * a local subscription is still open.
 	 */
 	public Set getAllLocalSubscriptionTopics() {
+		
+		// Following Bugfix #54, in order to ensure that the returned set
+		// contains no duplicate type tags, we maintain a second hashset
+		// to filter upon deserialized type tags, because packets containing
+		// the same serialized type tag are not equal!
+		
 		HashSet openSubs = new HashSet();
+		HashSet encounteredSubTopics = new HashSet();
 		for (Iterator iter = subscriptions_.iterator(); iter.hasNext();) {
 			Subscription sub = (Subscription) iter.next();
-			openSubs.add(sub.requiredTypeTag_);
+			if (!encounteredSubTopics.contains(sub.deserializedTopic_)) {
+				encounteredSubTopics.add(sub.deserializedTopic_);
+				openSubs.add(sub.requiredTypeTag_);
+			}
 		}
 		return openSubs;
 	}
