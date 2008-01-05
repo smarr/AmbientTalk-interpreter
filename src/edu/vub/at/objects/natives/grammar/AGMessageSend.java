@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageSend;
 import edu.vub.at.objects.natives.OBJNil;
@@ -76,8 +77,9 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 		ATObject rcvr = rcvExp_.meta_eval(ctx);
 		ATObject result = null;
 		InvocationStack stack = InvocationStack.getInvocationStack();
+		ATTable args = msg.base_arguments();
 		try {
-			stack.methodInvoked(this, rcvr, msg.base_arguments());
+			stack.methodInvoked(this, rcvr, args);
 			result = msg.base_sendTo(rcvr, ctx.base_self());
 		} finally {
 			stack.methodReturned(result);
