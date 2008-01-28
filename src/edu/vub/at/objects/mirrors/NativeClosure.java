@@ -211,7 +211,7 @@ public class NativeClosure extends NATClosure {
 				return access();
 			}
 		}
-		public abstract ATObject access() throws InterpreterException;
+		protected abstract ATObject access() throws InterpreterException;
 		
 		public NATText meta_print() throws InterpreterException {
 			return NATText.atValue("<native closure:"+name_+">");
