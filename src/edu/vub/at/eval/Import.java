@@ -61,7 +61,7 @@ import java.util.Vector;
 public final class Import {
 
 	private static HashSet _DEFAULT_EXCLUDED_SLOTS_;
-	private static HashSet getDefaultExcludedSlots() {
+	private synchronized static HashSet getDefaultExcludedSlots() {
 		if (_DEFAULT_EXCLUDED_SLOTS_ == null) {
 			_DEFAULT_EXCLUDED_SLOTS_ = new HashSet();
 			  // prepare the default names to exclude
