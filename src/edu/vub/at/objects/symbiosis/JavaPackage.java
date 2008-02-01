@@ -137,14 +137,14 @@ public final class JavaPackage extends NATObject {
 		if (Character.isUpperCase(s.charAt(0))) {
 			// the field access is interpreted as a class reference
 			return new NativeClosure.Accessor(selector, this) {
-				public ATObject access() throws InterpreterException {
+				protected ATObject access() throws InterpreterException {
 					return base_class(selector);
 				}
 			};
 		} else {
 			// the field access is interpreted as a package reference
 			return new NativeClosure.Accessor(selector, this) {
-				public ATObject access() throws InterpreterException {
+				protected ATObject access() throws InterpreterException {
 					return base_package(selector);
 				}
 			};

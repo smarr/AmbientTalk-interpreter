@@ -236,7 +236,7 @@ public class NativeClosure extends NATClosure {
 				return mutate(args.base_at(NATNumber.ONE));
 			}
 		}
-		public abstract ATObject mutate(ATObject val) throws InterpreterException;
+		protected abstract ATObject mutate(ATObject val) throws InterpreterException;
 		
 		public NATText meta_print() throws InterpreterException {
 			return NATText.atValue("<native closure:"+name_+">");

@@ -767,7 +767,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 			if(this.hasLocalField(selector)) {
 				final NativeATObject scope = this;
 				return new NativeClosure.Accessor(selector, this) {
-					public ATObject access() throws InterpreterException {
+					protected ATObject access() throws InterpreterException {
 						return scope.getLocalField(selector);
 					}
 				};
@@ -799,7 +799,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 			if(this.hasLocalField(fieldSelector)) {
 				final NativeATObject scope = this;
 				return new NativeClosure.Mutator(selector, this) {
-					public ATObject mutate(ATObject arg) throws InterpreterException {
+					protected ATObject mutate(ATObject arg) throws InterpreterException {
 						scope.setLocalField(fieldSelector, arg);
 						return arg;
 					}
@@ -842,7 +842,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     		if (this.hasLocalField(selector)) {
     			final NativeATObject scope = this;
     			return new NativeClosure.Accessor(selector, this) {
-    				public ATObject access() throws InterpreterException {
+    				protected ATObject access() throws InterpreterException {
     					return scope.getLocalField(selector);
     				}
     			};
@@ -874,7 +874,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     		if (this.hasLocalField(fieldSelector)) {
     			final NativeATObject scope = this;
     			return new NativeClosure.Mutator(selector, this) {
-    				public ATObject mutate(ATObject arg) throws InterpreterException {
+    				protected ATObject mutate(ATObject arg) throws InterpreterException {
     					scope.setLocalField(fieldSelector, arg);
     					return arg;
     				}
