@@ -84,7 +84,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 	
 	public static class NATTrue extends NATBoolean {
 		
-		public static NATTrue _INSTANCE_ = new NATTrue();
+		public static final NATTrue _INSTANCE_ = new NATTrue();
 		
 		public NATTrue() { super(true); }
 		
@@ -132,7 +132,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 
 	public static class NATFalse extends NATBoolean {
 		
-		public static NATFalse _INSTANCE_ = new NATFalse();
+		public static final NATFalse _INSTANCE_ = new NATFalse();
 		
 		public NATFalse() { super(false); }
 		

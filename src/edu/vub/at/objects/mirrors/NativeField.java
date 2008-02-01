@@ -62,7 +62,7 @@ public class NativeField extends NATByRef implements ATField {
 	/**
 	 * The AmbientTalk native object to which this field belongs
 	 */
-	private ATObject host_;
+	private final ATObject host_;
 	
 	/**
 	 * The native Java accessor method to be called when accessing the field
