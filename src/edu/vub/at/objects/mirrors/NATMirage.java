@@ -436,7 +436,7 @@ public class NATMirage extends NATObject {
 		mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("send"),
-				NATTable.atValue(new ATObject[] { message }));
+				NATTable.atValue(new ATObject[] { receiver, message }));
 		return OBJNil._INSTANCE_;
 	}
 
