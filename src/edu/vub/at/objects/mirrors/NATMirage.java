@@ -433,11 +433,10 @@ public class NATMirage extends NATObject {
 
 
 	public ATObject meta_send(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
-		mirror_.meta_invoke(
+		return mirror_.meta_invoke(
 				mirror_,
 				AGSymbol.jAlloc("send"),
 				NATTable.atValue(new ATObject[] { receiver, message }));
-		return OBJNil._INSTANCE_;
 	}
 
 
