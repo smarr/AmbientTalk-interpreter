@@ -646,6 +646,9 @@ public final class Symbiosis {
 			else if (e.getTargetException() instanceof Signal) {
 			    throw (Signal) e.getTargetException();
 			} else if (e.getTargetException() instanceof UndeclaredThrowableException) {
+				// Undeclared throwable exceptions in symbiotically invoked Java code are automatically
+				// 'unwrapped' into the undeclared exception. This is useful because such undeclared
+				// thrown exceptions are often InterpreterExceptions caused by Java code calling back on AT code
 				throw new XJavaException(symbiont, javaMethod,
 						                 ((UndeclaredThrowableException) e.getTargetException()).getUndeclaredThrowable());
 			} else {
