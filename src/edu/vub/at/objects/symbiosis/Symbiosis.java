@@ -54,6 +54,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -643,7 +644,10 @@ public final class Symbiosis {
 			if (e.getTargetException() instanceof InterpreterException)
 				throw (InterpreterException) e.getTargetException();
 			else if (e.getTargetException() instanceof Signal) {
-			    throw (Signal) e.getTargetException();	
+			    throw (Signal) e.getTargetException();
+			} else if (e.getTargetException() instanceof UndeclaredThrowableException) {
+				throw new XJavaException(symbiont, javaMethod,
+						                 ((UndeclaredThrowableException) e.getTargetException()).getUndeclaredThrowable());
 			} else {
 				throw new XJavaException(symbiont, javaMethod, e.getTargetException());
 		    }
