@@ -245,7 +245,6 @@ public final class DiscoveryManager {
 	 * can already be satisfied by some local publications on this VM (but from different actors)
 	 */
 	private void checkLocalPublishers(Subscription sub) {
-		ATObject deserializedService = null; // only deserialize once we have a match
 		for (Iterator iter = publications_.iterator(); iter.hasNext();) {
 			Publication pub = (Publication) iter.next();
 			try {
@@ -254,12 +253,8 @@ public final class DiscoveryManager {
 					
 					// only notify if subscriber is hosted by another actor than publisher
 					if (sub.subscriberActor_ != pub.providerActor_) {
-						if (deserializedService == null) {
-							// first deserialize publisher
-							deserializedService = pub.exportedService_.unpack();
-						}
 						
-						notify(sub.deserializedHandler_, deserializedService);
+						notify(sub.deserializedHandler_, pub.exportedService_.unpack());
 						
 						// if the subscription is not permanent, cancel it
 						if (!sub.isPermanentSubscription_) {
