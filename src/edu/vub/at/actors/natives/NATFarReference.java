@@ -27,9 +27,6 @@
  */
 package edu.vub.at.actors.natives;
 
-import java.util.Iterator;
-import java.util.Vector;
-
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.id.ATObjectID;
@@ -45,19 +42,22 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByCopy;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
+
+import java.util.Iterator;
+import java.util.Vector;
 
 /**
  * 
@@ -111,9 +111,25 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		return objectId_;
 	}
 	
+	public int hashCode() {
+		return objectId_.hashCode();
+	}
+	
+	public boolean isNativeFarReference() {
+		return true;
+	}
+	
 	public NATFarReference asNativeFarReference() throws XTypeMismatch {
 		return this;
 	}
+	
+	public boolean isFarReference() {
+		return true;
+	}
+	
+    public ATFarReference asFarReference() throws XTypeMismatch {
+  	    return this;
+  	}
 		
 	public synchronized void addDisconnectionListener(ATObject listener) {
 		if (disconnectedListeners_ == null) {
@@ -394,14 +410,6 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
     public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.atValue(types_);
     }
-	
-	public boolean isFarReference() {
-		return true;
-	}
-
-    public ATFarReference asFarReference() throws XTypeMismatch {
-  	    return this;
-  	}
     
     /**
      * Two far references are equal if and only if they point to the same object Id.
@@ -409,8 +417,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
     public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
 		if (this == other) {
 			return NATBoolean._TRUE_;
-		} else if (other instanceof NATFarReference) {
-			ATObjectID otherId = ((NATFarReference) other).getObjectId();
+		} else if (other.isNativeFarReference()) {
+			ATObjectID otherId = other.asNativeFarReference().getObjectId();
 			return NATBoolean.atValue(objectId_.equals(otherId));
 		} else {
 			return NATBoolean._FALSE_;

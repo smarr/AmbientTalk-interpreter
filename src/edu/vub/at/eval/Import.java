@@ -346,13 +346,16 @@ public final class Import {
 			delegate_ = delegate;
 		}
 		
+		public boolean isNativeDelegateMethod() { return true; }
+		public DelegateMethod asNativeDelegateMethod() { return this; }
+		
 		public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
 			return delegate_.meta_invoke(ctx.base_self(), origMethodName_, args);
 		}
 		
 		public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
-			if (other instanceof DelegateMethod) {
-				final DelegateMethod m = (DelegateMethod) other;
+			if (other.isNativeDelegateMethod()) {
+				final DelegateMethod m = other.asNativeDelegateMethod();
 				return (m.origMethodName_.base__opeql__opeql_(origMethodName_).base_and_(
 						new NativeClosure(this) {
 							public ATObject base_apply(ATTable args) throws InterpreterException {

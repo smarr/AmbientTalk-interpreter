@@ -66,16 +66,17 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 		javaValue = javaNumber;
 	}
 
-    public ATBoolean base__opeql__opeql_(ATObject comparand) {
-		return NATBoolean.atValue(this.equals(comparand));
-    }
-	
-    public boolean equals(Object comparand) {
-		return (comparand instanceof NATNumber) &&
-		       (javaValue == ((NATNumber) comparand).javaValue);
+    public ATBoolean base__opeql__opeql_(ATObject comparand) throws XTypeMismatch {
+    	if (comparand.isNativeNumber()) {
+    		return NATBoolean.atValue(javaValue == comparand.asNativeNumber().javaValue);
+    	} else {
+    		return NATBoolean._FALSE_;
+    	}
     }
 	
 	public ATNumber asNumber() throws XTypeMismatch { return this; }
+	
+	public boolean isNativeNumber() { return true; }
 	
 	public NATNumber asNativeNumber() { return this; }
 	
@@ -89,6 +90,8 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	
 	// contract with NATNumeric
 	protected double getJavaValue() { return javaValue; }
+	
+	public int hashCode() { return javaValue; }
 	
 	/* -----------------------------------
 	 * - base-level interface to numbers -

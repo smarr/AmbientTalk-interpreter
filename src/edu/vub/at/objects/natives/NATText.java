@@ -90,12 +90,11 @@ public final class NATText extends AGExpression implements ATText {
 		// comparison and identity operations
 		
 	    public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
-			return NATBoolean.atValue(this.equals(comparand));
-	    }
-	    
-	    public boolean equals(Object comparand) {
-			return (comparand instanceof NATText) &&
-		           ((NATText) comparand).javaValue.equals(this.javaValue);
+	    	if (comparand.isNativeText()) {
+	    		return NATBoolean.atValue(javaValue.equals(comparand.asNativeText().javaValue));
+	    	} else {
+	    		return NATBoolean._FALSE_;
+	    	}
 	    }
 		
 		public int hashCode() {

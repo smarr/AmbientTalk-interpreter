@@ -100,6 +100,16 @@ public class NATIntrospectiveMirror extends NATByRef {
 		principal_ = representation;
 	}
 	
+	
+	
+	public NATIntrospectiveMirror asNativeIntrospectiveMirror() {
+		return this;
+	}
+
+	public boolean isNativeIntrospectiveMirror() {
+		return true;
+	}
+
 	/**
 	 * This method is used to allow selecting the base field of an intercessive mirror using 
 	 * the reflective selection of fields. This method is never invoked directly by the 
@@ -110,10 +120,11 @@ public class NATIntrospectiveMirror extends NATByRef {
 		return principal_;
 	}
 	
+	public int hashCode() { return principal_.hashCode(); }
+	
 	public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
-		if (other instanceof NATIntrospectiveMirror) {
-			NATIntrospectiveMirror mirror = (NATIntrospectiveMirror) other;
-			return principal_.base__opeql__opeql_(mirror.principal_);
+		if (other.isNativeIntrospectiveMirror()) {
+			return principal_.base__opeql__opeql_(other.asNativeIntrospectiveMirror().principal_);
 		} else {
 			return NATBoolean._FALSE_;
 		}

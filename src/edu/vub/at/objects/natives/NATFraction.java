@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATFraction;
 import edu.vub.at.objects.ATNumber;
@@ -61,17 +62,22 @@ public final class NATFraction extends NATNumeric implements ATFraction {
 		javaValue = javaFrc;
 	}
 	
+	public boolean isNativeFraction() {
+		return true;
+	}
+	
 	public NATFraction asNativeFraction() {
 		return this;
 	}
-    
-    public ATBoolean base__opeql__opeql_(ATObject comparand) {
-		return NATBoolean.atValue(this.equals(comparand));
-    }
 	
-    public boolean equals(Object comparand) {
-		return (comparand instanceof NATFraction) &&
-		       (javaValue == ((NATFraction) comparand).javaValue);
+	public int hashCode() { return (int) javaValue; }
+    
+    public ATBoolean base__opeql__opeql_(ATObject comparand) throws XTypeMismatch {
+    	if (comparand.isNativeFraction()) {
+    		return NATBoolean.atValue(javaValue == comparand.asNativeFraction().javaValue);
+    	} else {
+    		return NATBoolean._FALSE_;
+    	}
     }
 	
 	public NATText meta_print() throws InterpreterException {

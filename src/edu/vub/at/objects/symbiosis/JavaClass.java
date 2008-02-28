@@ -166,16 +166,16 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 	/** return the class object denoted by this AmbientTalk symbiont */
 	public Class getWrappedClass() { return wrappedClass_; }
 	
+	public boolean isJavaClassUnderSymbiosis() { return true; }
 	public JavaClass asJavaClassUnderSymbiosis() throws XTypeMismatch { return this; }
 	
     public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
-        return NATBoolean.atValue(this.equals(comparand));
+    	if (comparand.isJavaClassUnderSymbiosis()) {
+            return NATBoolean.atValue(wrappedClass_.equals(comparand.asJavaClassUnderSymbiosis().wrappedClass_));
+    	} else {
+    		return NATBoolean._FALSE_;
+    	}
     }
-	
-	public boolean equals(Object other) {
-		return ((other instanceof JavaClass) &&
-				(wrappedClass_.equals(((JavaClass) other).wrappedClass_)));
-	}
         
     /**
      * Fields can be defined within a symbiotic Java class object. They are added

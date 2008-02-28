@@ -31,6 +31,7 @@ import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.natives.NATFarReference;
+import edu.vub.at.eval.Import.DelegateMethod;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
@@ -52,6 +53,7 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
+import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATFraction;
@@ -61,6 +63,7 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.symbiosis.JavaClass;
+import edu.vub.at.objects.symbiosis.JavaMethod;
 import edu.vub.at.objects.symbiosis.JavaObject;
 
 /**
@@ -137,12 +140,23 @@ public interface ATConversions {
 
 	// Native Value Elements
 	
+	// The isNative / asNative type-casting protocol is crucial for correct
+	// semantics in the case of e.g. wrapped natives in a Coercer (for symbiosis)
+	// Never use Java type-casts explicitly!
+	
 	public boolean isNativeBoolean();
 	public boolean isNativeText();
 	public boolean isAmbientTalkObject(); // distinguish native from non-native objects
 	public boolean isCallFrame() throws InterpreterException; // distinguish call frames from objects
 	public boolean isJavaObjectUnderSymbiosis();
+	public boolean isJavaClassUnderSymbiosis();
+	public boolean isJavaMethodUnderSymbiosis();
 	public boolean isNativeField();
+	public boolean isNativeFarReference();
+	public boolean isNativeFraction();
+	public boolean isNativeNumber();
+	public boolean isNativeIntrospectiveMirror();
+	public boolean isNativeDelegateMethod();
 	
 	public NATObject   asAmbientTalkObject() throws XTypeMismatch;
 	public NATMirage   asMirage() throws XTypeMismatch;
@@ -153,9 +167,11 @@ public interface ATConversions {
 	public NATBoolean  asNativeBoolean() throws XTypeMismatch;
 	public NATNumeric  asNativeNumeric() throws XTypeMismatch;
 	public NATFarReference asNativeFarReference() throws XTypeMismatch;
-	
+	public NATIntrospectiveMirror asNativeIntrospectiveMirror() throws XTypeMismatch;
+	public DelegateMethod asNativeDelegateMethod() throws XTypeMismatch;
 	public JavaObject  asJavaObjectUnderSymbiosis() throws XTypeMismatch;
 	public JavaClass   asJavaClassUnderSymbiosis() throws XTypeMismatch;
+	public JavaMethod  asJavaMethodUnderSymbiosis() throws XTypeMismatch;
 	
 
 }

@@ -33,6 +33,7 @@ import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.actors.net.SerializationException;
 import edu.vub.at.eval.Evaluator;
+import edu.vub.at.eval.Import.DelegateMethod;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
@@ -61,10 +62,12 @@ import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
+import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.symbiosis.JavaClass;
+import edu.vub.at.objects.symbiosis.JavaMethod;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.util.logging.Logging;
 
@@ -340,6 +343,10 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     public boolean isNativeText() {
         return false;
     }
+    
+	public boolean isNativeNumber() {
+		return false;
+	}
 
     public boolean isNativeField() {
         return false;
@@ -349,6 +356,21 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
         return false;
     }
     
+	public boolean isNativeFarReference() {
+		return false;
+	}
+    
+    // Conversions for concurrency and distribution related object
+    public boolean isFarReference() {
+    	return false;
+    }
+    
+    public boolean isNativeFraction() { return false; }
+    public boolean isNativeIntrospectiveMirror() { return false; }
+	public boolean isJavaClassUnderSymbiosis() { return false; }
+	public boolean isJavaMethodUnderSymbiosis() { return false; }
+	public boolean isNativeDelegateMethod() { return false; }
+	
     public ATClosure asClosure() throws InterpreterException {
         throw new XTypeMismatch(ATClosure.class, this);
     }
@@ -387,11 +409,6 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 
     public ATTypeTag asTypeTag() throws InterpreterException {
 	    throw new XTypeMismatch(ATTypeTag.class, this);
-    }
-    
-    // Conversions for concurrency and distribution related object
-    public boolean isFarReference() {
-    	return false;
     }
     
     public ATFarReference asFarReference() throws InterpreterException {
@@ -487,6 +504,18 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     
     public JavaClass asJavaClassUnderSymbiosis() throws XTypeMismatch {
 	    throw new XTypeMismatch(JavaClass.class, this);
+    }
+    
+    public JavaMethod asJavaMethodUnderSymbiosis() throws XTypeMismatch {
+	    throw new XTypeMismatch(JavaMethod.class, this);
+    }
+    
+    public DelegateMethod asNativeDelegateMethod() throws XTypeMismatch {
+	    throw new XTypeMismatch(DelegateMethod.class, this);
+    }
+    
+    public NATIntrospectiveMirror asNativeIntrospectiveMirror() throws XTypeMismatch {
+	    throw new XTypeMismatch(NATIntrospectiveMirror.class, this);
     }
     
     /**

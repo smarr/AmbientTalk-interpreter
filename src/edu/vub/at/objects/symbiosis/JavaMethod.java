@@ -116,23 +116,23 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 		return this;
 	}
 	
-    public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
-        return NATBoolean.atValue(this.equals(comparand));
-    }
+	public boolean isJavaMethodUnderSymbiosis() { return true; }
+	public JavaMethod asJavaMethodUnderSymbiosis() { return this; }
 	
 	/**
 	 * Two JavaMethod instances are equal if they both represent a set of methods
 	 * from the same declaring class with the same selector.
 	 */
-	public boolean equals(Object other) {
-		if (other instanceof JavaMethod) {
-			JavaMethod mth = (JavaMethod) other;
-			return (mth.choices_[0].getDeclaringClass().equals(choices_[0].getDeclaringClass())) &&
-			       (mth.choices_[0].getName().equals(choices_[0].getName()));
+    public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
+		if (comparand.isJavaMethodUnderSymbiosis()) {
+			JavaMethod mth = comparand.asJavaMethodUnderSymbiosis();
+			return NATBoolean.atValue(
+					(mth.choices_[0].getDeclaringClass().equals(choices_[0].getDeclaringClass())) &&
+			         mth.choices_[0].getName().equals(choices_[0].getName()));
 		} else {
-			return false;
+			return NATBoolean._FALSE_;
 		}
-	}
+    }
 
 	public ATClosure base_wrap(ATObject lexicalScope, ATObject dynamicReceiver) {
 		return new JavaClosure(lexicalScope, this);
