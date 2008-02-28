@@ -184,13 +184,13 @@ public class NativeClosure extends NATClosure {
 	
 	public static void checkNullaryArguments(ATSymbol selector, ATTable args) throws InterpreterException {
 		if (args != NATTable.EMPTY)
-			throw new XArityMismatch("access to " + selector.toString(), 0, args.base_length().asNativeNumber().javaValue);
+			throw new XArityMismatch("access to non-closure field " + selector.toString(), 0, args.base_length().asNativeNumber().javaValue);
 	}
 	
     public static ATObject checkUnaryArguments(ATSymbol selector, ATTable args) throws InterpreterException {
     	int len = args.base_length().asNativeNumber().javaValue;
 		if (len != 1)
-			throw new XArityMismatch("mutation of " + selector.toString(), 1, len);
+			throw new XArityMismatch("mutation of field " + selector.toString(), 1, len);
 		return args.base_at(NATNumber.ONE);
 	}
 	

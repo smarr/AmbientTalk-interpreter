@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
@@ -38,6 +39,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByRef;
+import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -168,7 +170,10 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * @return <b>another</b> (possibly new) mirror object 
 	 */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-		ATObject reflectee = NativeClosure.checkUnaryArguments(AGSymbol.jAlloc("init"), initargs);
+    	int len = initargs.base_length().asNativeNumber().javaValue;
+		if (len != 1)
+			throw new XArityMismatch("init method of mirror", 1, len);
+		ATObject reflectee = initargs.base_at(NATNumber.ONE);
 		return atValue(reflectee);
 		/*ATObject[] initargs = init.asNativeTable().elements_;
 		if(initargs.length != 1) {
