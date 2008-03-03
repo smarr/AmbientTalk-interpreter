@@ -67,7 +67,7 @@ public class DistributionTest extends TestCase {
 	
 	// Creates an ELActor, hosted on the provided VM.
 	private ELActor setUpActor(ELVirtualMachine host) throws InterpreterException {
-		return NATActorMirror.createEmptyActor(host, new NATActorMirror(host)).getFarHost();
+		return host.createEmptyActor().getFarHost();
 	}
 	
 	// installs a closure in a particular actor's scope which allows signalling a return value

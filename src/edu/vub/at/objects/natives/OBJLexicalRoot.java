@@ -517,8 +517,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 		
 		Packet serializedBindings = new Packet("actor-bindings", copiedBindings);
 		Packet serializedInitCode = new Packet("actor-initcode", method);
-		ELVirtualMachine host = ELVirtualMachine.currentVM();
-		return NATActorMirror.createActor(host, serializedBindings, serializedInitCode, new NATActorMirror(host));
+		return ELVirtualMachine.currentVM().createActor(serializedBindings, serializedInitCode);
 	}
 	
 	/**

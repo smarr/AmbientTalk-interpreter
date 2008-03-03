@@ -27,6 +27,7 @@
  */
 package edu.vub.at.actors.natives;
 
+import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
@@ -39,7 +40,13 @@ import edu.vub.at.actors.net.cmd.CMDObjectTakenOffline;
 import edu.vub.at.actors.net.comm.Address;
 import edu.vub.at.actors.net.comm.CommunicationBus;
 import edu.vub.at.actors.net.comm.NetworkException;
+import edu.vub.at.eval.Evaluator;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.natives.NATMethod;
+import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.OBJNil;
+import edu.vub.at.objects.natives.grammar.AGBegin;
 import edu.vub.at.util.logging.Logging;
 
 import java.util.Hashtable;
@@ -107,6 +114,7 @@ public final class ELVirtualMachine extends EventLoop {
 		vmId_ = new VirtualMachineID();
 		localActors_ = new Hashtable();
 		discoveryActor_ = new ELDiscoveryActor(this);
+		localActors_.put(discoveryActor_.getActorID(), discoveryActor_);
 		discoveryActor_.event_init();
 		
 		// initialize the message dispatcher using a JChannel
@@ -154,17 +162,6 @@ public final class ELVirtualMachine extends EventLoop {
 			return entry;
 		} else {
 			throw new RuntimeException("Asked for unknown actor id: " + id);
-		}
-	}
-	
-	/**
-	 * Signals the creation of a new actor on this virtual machine.
-	 */
-	public void actorCreated(ELActor actor) {
-		// lock the localActors_ table first to ensure addition is
-		// atomic w.r.t. lookup in getActor
-		synchronized (localActors_) {
-			localActors_.put(actor.getActorID(), actor);
 		}
 	}
 	
@@ -266,6 +263,56 @@ public final class ELVirtualMachine extends EventLoop {
 				 
 			 }
 		 });
+	}
+
+	/**
+	 * Auxiliary creation method to create an actor with an empty behaviour.
+	 * Equivalent to evaluating:
+	 * 
+	 * actor: { nil }
+	 */
+	public NATLocalFarRef createEmptyActor() throws InterpreterException {
+		Packet noParams = new Packet(NATTable.EMPTY);
+		Packet noinitcode = new Packet(new NATMethod(Evaluator._ANON_MTH_NAM_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_))));
+		return createActor(noParams, noinitcode);
+	}
+
+	/**
+	 * Creates a new actor on this Virtual Machine. The actor its behaviour
+	 * is intialized by means of the passed parameters and initialization code. The calling
+	 * thread is **blocked** until the actor has been constructed. However, actor behaviour
+	 * and root initialization is carried out by the newly created actor itself.
+	 * 
+	 * @param parametersPkt the serialized parameters used to invoke the initialization code
+	 * @param initcodePkt the serialized initialization code used to initialize the actor behaviour
+	 * @param actorMirror this actor's mirror
+	 * @return a far reference to the behaviour of the actor
+	 * @throws InterpreterException
+	 */
+	public NATLocalFarRef createActor(Packet parametersPkt,
+			                          Packet initcodePkt) throws InterpreterException {
+		
+		BlockingFuture future = new BlockingFuture();
+		ELActor processor = new ELActor(new NATActorMirror(this), this);
+		
+		// lock the localActors_ table first to ensure addition is
+		// atomic w.r.t. lookup in getActor
+		synchronized (localActors_) {
+			localActors_.put(processor.getActorID(), processor);
+		}
+		
+		// schedule special 'init' message which will:
+		// A) create a new behaviour and will unblock creating actor (by passing it a far ref via the future)
+		// B) unpack the parameters used to invoke the initializatin code
+		// C) unpack the init code to initialize the behaviour
+		// D) initialize the root and lobby objects of this actor
+		processor.event_init(future, parametersPkt, initcodePkt);
+	    
+		try {
+			return (NATLocalFarRef) future.get();
+		} catch (Exception e) {
+			throw (InterpreterException) e;
+		}
 	}
 	
 }

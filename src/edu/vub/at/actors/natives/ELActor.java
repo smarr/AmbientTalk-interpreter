@@ -91,7 +91,7 @@ public class ELActor extends EventLoop {
 				  OBJNil._INSTANCE_,
 				  new SharedActorField[] { },
 				  ELVirtualMachine._DEFAULT_GROUP_NAME_);
-				return NATActorMirror.createEmptyActor(host, new NATActorMirror(host)).getFarHost();
+				return host.createEmptyActor().getFarHost();
 			} catch (InterpreterException e) {
 			  // Backport from JDK 1.4 to 1.3
               // throw new RuntimeException("Failed to initialize default actor",e);
@@ -133,8 +133,6 @@ public class ELActor extends EventLoop {
 		mirror_ = mirror;
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
-		// notify host VM about my creation
-		host.actorCreated(this);
 	}
 	
 	/** constructor dedicated to initialization of discovery actor */
@@ -144,8 +142,6 @@ public class ELActor extends EventLoop {
 		mirror_ = new NATActorMirror(host);
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
-		// notify host VM about my creation
-		host.actorCreated(this);
 	}
 
 	/**
