@@ -131,6 +131,10 @@ public class NATMirage extends NATObject {
 		mirror_ = OBJNil._INSTANCE_;
 	}
 	
+    public boolean isMirage() {
+    	return true;
+    }
+	
 	public NATMirage asMirage() throws XTypeMismatch {
 		return this;
 	}

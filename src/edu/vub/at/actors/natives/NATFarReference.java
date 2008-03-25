@@ -111,6 +111,10 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		return objectId_;
 	}
 	
+	public ATTypeTag[] getTypes() {
+		return types_;
+	}
+	
 	public int hashCode() {
 		return objectId_.hashCode();
 	}
@@ -229,10 +233,11 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 
 	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
 		// the far reference itself is the receiver of the asynchronous message
-		return this.transmit(this, message);
+		this.transmit(message);
+		return OBJNil._INSTANCE_;
 	}
 	
-	protected abstract ATObject transmit(ATObject receiver, ATAsyncMessage passedMessage) throws InterpreterException;
+	protected abstract void transmit(ATAsyncMessage passedMessage) throws InterpreterException;
 
 	/**
 	 * The only operation that is allowed to be synchronously invoked on far references is '=='

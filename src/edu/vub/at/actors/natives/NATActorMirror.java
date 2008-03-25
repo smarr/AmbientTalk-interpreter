@@ -190,43 +190,28 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return NATText.atValue("<actormirror:" + this.hashCode() + ">");
 	}
 
+    public ATTable meta_typeTags() throws InterpreterException {
+    	return NATTable.of(NativeTypeTags._ACTORMIRROR_);
+    }
+	
 	/* -----------------------------
 	 * -- Object Passing Protocol --
 	 * ----------------------------- */
 	
 	/**
-	 * To send a message msg to a receiver object rcv:
-	 *  - if rcv is a local reference, schedule accept(msg) in my incoming event queue
-	 *  - if rcv is a far reference, schedule msg in far reference's outbox
-	 */
-	public ATObject meta_send(ATObject receiver, ATAsyncMessage msg) throws InterpreterException {
-		if (receiver.isFarReference()) {
-			return receiver.meta_receive(msg);
-		} else {
-			//return this.meta_receive(msg);
-			ELActor.currentActor().event_acceptSelfSend(receiver, msg);
-			return OBJNil._INSTANCE_;
-		}
-	}
-	
-	public ATObject meta_receive(ATAsyncMessage msg) throws InterpreterException {
-		ELActor.currentActor().event_acceptSelfSend(this, msg);
-		return OBJNil._INSTANCE_;
-	}
-	
-    public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._ACTORMIRROR_);
-    }
-	
-	/**
 	 * When default base-level objects send an asynchronous message, they delegate
-	 * this responsibility to their actor by means of this base-level method. The actor's
-	 * base-level 'send' operation dispatches to its meta-level 'send' operation. In effect,
-	 * the semantics of an object sending an async message are the same as those of an actor
-	 * sending an async message directly.
+	 * this responsibility to their actor by means of this base-level method.
+	 * 
+	 * The actor's default implementation is to invoke the receiver mirror's <tt>receive</tt> method
+	 * which defines the default asynchronous message reception semantics.
+	 * 
+	 * Note: in pre-2.9 versions of AmbientTalk, this method did not immediately pass
+	 * control to the receiver via the <tt>receive</tt> method. By delegating to the receiver
+	 * in the same execution turn as the message send, we allow possible proxies (custom eventual
+	 * references) to intervene in the message sending process.
 	 */
 	public ATObject base_send(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
-		return meta_send(receiver, message);
+		return receiver.meta_receive(message);
 	}
 	
 	/**
@@ -243,12 +228,20 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
 	/**
-	 * When an actor receives an asynchronous message for a given receiver, it will delegate this
-	 * to the meta-level 'receive' operation of the designated object. This operation is introduced
-	 * as a mechanism to alter the semantics of message reception for all objects contained in an
-	 * actor. It can be used e.g. to keep track of all succesfully processed messages. 
+	 * This operation is
+	 * introduced as a mechanism to alter the semantics of message reception for all objects
+	 * owned by an actor. It can be used e.g. to keep track of all successfully processed messages. 
+	 * 
+	 * Note that this operation is *only* invoked for messages received from *other*
+	 * actors (i.e. local or remote actors), it is *not* invoked for recursive asynchronous self-sends
+	 * (intra-actor message sends)! This is an important change w.r.t pre-2.9 versions of AmbientTalk.
 	 */
 	public ATObject base_receive(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
+		// this additional dispatch to receive will schedule an async self-send when performed
+		// on near references, which then invokes message.base_process in a later execution turn
+		// We do not short-circuit this behaviour for consistency purposes: receive is invoked
+		// on all receiver objects consistently, whether they are near refs, far refs, custom eventual
+		// refs or any other kind of mirage.
 		return receiver.meta_receive(message);
 	}
 	

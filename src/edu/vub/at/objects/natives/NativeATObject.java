@@ -30,6 +30,7 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.actors.net.SerializationException;
 import edu.vub.at.eval.Evaluator;
@@ -98,7 +99,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     protected NativeATObject() {};
 
     /**
-     * Asynchronous messages ( o<-m( args )) sent in the context of an object o (i.e. 
+     * Asynchronous messages ( <tt>o<-m( args )</tt> ) sent in the context of an object o (i.e. 
      * sent in a method or closure where the self pseudovariable is bound to o)  are 
      * delegated to the base-level send method of the actor in which the object o is 
      * contained.
@@ -108,12 +109,19 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     }
 
     /**
-     * By default, when an object receives an incoming asynchronous message, it tells
-     * the message to process itself. The message's default behaviour is to subsequently
-     * invoke the method corresponding to the message's selector on this object.
+     * When a local object reference is used as an eventual reference by sending it an
+     * asynchronous message, the object simply schedules the message in its owner's
+     * message queue and returns <tt>nil</tt> immediately. The message is later transformed
+     * into a method invocation (in a later actor execution "turn").
+     * 
+     * Note: in pre-2.9 versions of AmbientTalk, this method was invoked in the later
+     * execution turn and immediately performed the message processing. Now, this method
+     * is invoked by the sender of an async message and allows custom eventual references
+     * to return a value other than <tt>nil</tt> for an async message send.
      */
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
-    	return message.base_process(this);
+    	ELActor.currentActor().event_acceptSelfSend(this, message);
+		return OBJNil._INSTANCE_;
     }
     
 	/**
@@ -332,6 +340,10 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     	return false;
     }
     
+    public boolean isMirage() {
+    	return false;
+    }
+    
     public boolean isJavaObjectUnderSymbiosis() {
     	return false;
     }
@@ -361,7 +373,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 	}
     
     // Conversions for concurrency and distribution related object
-    public boolean isFarReference() {
+    public boolean isFarReference() throws InterpreterException {
     	return false;
     }
     

@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
@@ -733,6 +734,7 @@ public class NATObject extends NATCallframe implements ATObject {
     public ATSplice asSplice() throws InterpreterException { return (ATSplice) coerce(NativeTypeTags._SPLICE_, ATSplice.class); }
 	public ATDefinition asDefinition() throws InterpreterException { return (ATDefinition) coerce(NativeTypeTags._DEFINITION_, ATDefinition.class); }
 	public ATMessageCreation asMessageCreation() throws InterpreterException { return (ATMessageCreation) coerce(NativeTypeTags._MSGCREATION_, ATMessageCreation.class); }
+	public ATFarReference asFarReference() throws InterpreterException { return (ATFarReference) coerce(NativeTypeTags._FARREF_, ATFarReference.class); }
 	
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	
@@ -745,7 +747,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public boolean isTable() throws InterpreterException { return meta_isTaggedAs(NativeTypeTags._TABLE_).asNativeBoolean().javaValue; }
 	public boolean isUnquoteSplice() throws InterpreterException { return meta_isTaggedAs(NativeTypeTags._UQSPLICE_).asNativeBoolean().javaValue; }
 	public boolean isTypeTag() throws InterpreterException { return meta_isTaggedAs(NativeTypeTags._TYPETAG_).asNativeBoolean().javaValue; }
-	
+	public boolean isFarReference() throws InterpreterException { return meta_isTaggedAs(NativeTypeTags._FARREF_).asNativeBoolean().javaValue; }
 	
 	// private methods
 	

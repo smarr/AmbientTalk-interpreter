@@ -122,7 +122,7 @@ public class ReceptionistsSet {
 	 * @throws XIllegalOperation - if object is a far reference
 	 */
 	public NATLocalFarRef exportObject(ATObject object) throws InterpreterException {
-		if (object.isFarReference()) {
+		if (object.isNativeFarReference()) {
 			throw new XIllegalOperation("Cannot export a far reference to " + object);
 		}
 		

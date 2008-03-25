@@ -55,14 +55,14 @@ public class NATRemoteFarRef extends NATFarReference {
 		sendLoop_ = new ELFarReference(objectId, hostActor, this);
 	}
 	
-	protected ATObject transmit(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
-		sendLoop_.event_transmit(receiver, message);
-		return OBJNil._INSTANCE_;
+	protected void transmit(ATAsyncMessage message) throws InterpreterException {
+		sendLoop_.event_transmit(this, message);
 	}
 	
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {
 		return sendLoop_.retractUnsentMessages();
 	}
+	
 	protected void finalize() throws Throwable{
 		sendLoop_.stopProcessing();
 	}

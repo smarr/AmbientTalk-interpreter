@@ -83,10 +83,11 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * a custom intercessive mirror.
 	 */
 	public static final ATObject atValue(ATObject objectRepresentation) throws XTypeMismatch {
-		if(objectRepresentation instanceof NATMirage)
+		if (objectRepresentation.isMirage()) {
 			return objectRepresentation.asMirage().getMirror();
-		else
-			return new NATIntrospectiveMirror(objectRepresentation);		
+		} else {
+			return new NATIntrospectiveMirror(objectRepresentation);
+		}
 	}
 	
 	/**
@@ -101,8 +102,6 @@ public class NATIntrospectiveMirror extends NATByRef {
 	private NATIntrospectiveMirror(ATObject representation) {
 		principal_ = representation;
 	}
-	
-	
 	
 	public NATIntrospectiveMirror asNativeIntrospectiveMirror() {
 		return this;

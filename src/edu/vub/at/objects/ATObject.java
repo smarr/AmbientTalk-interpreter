@@ -123,21 +123,32 @@ public interface ATObject extends ATConversions {
      * This behavioural meta-level operation reifies the act of receiving
      * an asynchronous message.
      * 
-     * When an AmbientTalk object receives a message that was sent to it
-     * asynchronously, the message is delivered to the object's mirror by
-     * means of this meta-level operation.
+     * When an asynchronous message is sent to an AmbientTalk object, its mirror
+     * is notified of this event by the invocation of this method. The method
+     * is invoked in the same execution turn as the turn in which the message
+     * is sent. This allows the receiver (e.g. a custom eventual reference proxy)
+     * to intervene in the message sending process and return a value different
+     * than the default <tt>nil</tt> value.
      * <p>
-     * The default behaviour of a mirror in response to the reception of a
-     * message <tt>msg</tt> is to invoke:
+     * The default behaviour of a mirror on a local reference in response to
+     * the reception of an async
+     * message is to schedule this message for execution in a later turn
+     * in its owner's message queue. The actor will then later process
+     * the message by invoking
      * <pre>msg.process(self)</pre>
      * In turn, the default message processing behaviour is to invoke
      * the method corresponding to the message's selector on this object.
-     * Hence, usually a <tt>receive</tt> operation is simply translated into
-     * a <tt>invoke</tt> operation. The reason for having a separate <tt>receive</tt>
+     * Hence, usually a <tt>receive</tt> operation is translated into
+     * a <tt>invoke</tt> operation in a later turn. The reason for having a
+     * separate <tt>receive</tt>
      * operation is that this enables the AmbientTalk meta-level programmer to
      * distinguish between synchronously and asynchronously received messages.
+     * 
+     * Far references react to <tt>receive</tt> by transmitting their message
+     * to their remote target.
+     * 
      * @param message the message that was asynchronously sent to this object
-     * @return by default, the value of invoking the method corresponding to the message
+     * @return <tt>nil</tt>, by default
      */
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException;
    

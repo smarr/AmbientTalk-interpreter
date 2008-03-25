@@ -292,13 +292,26 @@ public class ELActor extends EventLoop {
 	
 	/**
 	 * The main entry point for any asynchronous self-sends.
-	 * Asynchronous self-sends do not undergo any form of parameter passing, there is no need
-	 * to serialize and deserialize the message parameter in a Packet.
+	 * Asynchronous self-sends (i.e. intra-actor sends) do not undergo any form of parameter passing,
+	 * there is no need to serialize and deserialize the message parameter in a Packet.
+	 * 
+	 * When an actor receives an asynchronous message for a given receiver, it delegates control
+	 * to the message itself by means of the message's <tt>process</tt> method.
 	 */
 	public void event_acceptSelfSend(final ATObject receiver, final ATAsyncMessage msg) {
 		receive(new Event("selfAccept("+msg+")") {
 			public void process(Object myActorMirror) {
-				performAccept(receiver, msg);
+				try {
+					// we know receiver is a local object reference, so immediately process
+					// the message
+					ATObject result = msg.base_process(receiver);
+					// TODO what to do with return value?
+					Logging.Actor_LOG.debug(mirror_ + ": "+ msg + " returned " + result);
+				} catch (InterpreterException e) {
+					// TODO what to do with exception?
+					e.printAmbientTalkStackTrace(System.err);
+					Logging.Actor_LOG.error(mirror_ + ": "+ msg + " failed ", e);
+				}
 			}
 		});
 	}
@@ -358,7 +371,7 @@ public class ELActor extends EventLoop {
 			ATObject result = mirror_.base_receive(receiver, msg);
 			// TODO what to do with return value?
 			Logging.Actor_LOG.debug(mirror_ + ": "+ msg + " returned " + result);
-			} catch (InterpreterException e) {
+		} catch (InterpreterException e) {
 			// TODO what to do with exception?
 			e.printAmbientTalkStackTrace(System.err);
 			Logging.Actor_LOG.error(mirror_ + ": "+ msg + " failed ", e);
@@ -464,7 +477,7 @@ public class ELActor extends EventLoop {
 					// is there a match?
 					if (discoveredType.base_isSubtypeOf(requiredType).asNativeBoolean().javaValue) {
 						ATObject remoteService = remoteServicePkt.unpack();
-						// myhandler<-apply([remoteService])
+						// myhandler<-apply([remoteService])@[]
 						myHandler.meta_receive(
 							new NATAsyncMessage(Evaluator._APPLY_,
 								NATTable.of(NATTable.of(remoteService)),

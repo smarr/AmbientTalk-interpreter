@@ -269,16 +269,14 @@ public final class DiscoveryManager {
 	}
 
 	/**
-	 * Performs <code>handler&lt;-apply([ service ])</code>
+	 * Performs <code>handler&lt;-apply([ service ])@[]</code>
 	 */
 	private void notify(ATObject handler, ATObject service) {
 		Logging.VirtualMachine_LOG.debug("notifying: "+handler+"<-(["+service+"])");
 		try {
 			handler.meta_receive(
 				new NATAsyncMessage(Evaluator._APPLY_,
-							        NATTable.atValue(new ATObject[] {
-							           NATTable.atValue(new ATObject[] {service})
-							        }),
+							        NATTable.of(NATTable.of(service)),
 							        NATTable.EMPTY));
 		} catch (InterpreterException e) {
 			Logging.VirtualMachine_LOG.error("DiscoveryManager: error notifying subscriber closure:", e);

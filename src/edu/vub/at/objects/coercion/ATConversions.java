@@ -157,6 +157,7 @@ public interface ATConversions {
 	public boolean isNativeNumber();
 	public boolean isNativeIntrospectiveMirror();
 	public boolean isNativeDelegateMethod();
+	public boolean isMirage();
 	
 	public NATObject   asAmbientTalkObject() throws XTypeMismatch;
 	public NATMirage   asMirage() throws XTypeMismatch;

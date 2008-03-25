@@ -595,7 +595,7 @@ public final class Symbiosis {
 		// -- INTERFACE TYPES AND NAT CLASSES --
 		} else {
 			// only allow NATObject and subclasses and far references to be coerced into an interface
-			if (atObj.isAmbientTalkObject() || atObj.isFarReference()) {
+			if (atObj.isAmbientTalkObject() || atObj.isNativeFarReference()) {
 				return Coercer.coerce(atObj, targetType);
 			} else {
 				throw new XTypeMismatch(targetType, atObj);
