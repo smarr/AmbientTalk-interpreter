@@ -60,9 +60,18 @@ public final class BlockingFuture implements Future {
         return fulfilled;
     }
 	
-	public synchronized Object get() throws Exception {
-		waitFor();
-		return getResult();
+	public Object get() throws Exception {
+		Object result;
+		synchronized(this) {
+			waitFor();
+			result = getResult();
+		}
+    	// 'blocking future' pipelining...
+    	if (result instanceof BlockingFuture) {
+    		return ((BlockingFuture) result).get();
+    	} else {
+    		return result;
+    	}
 	}
 	
     /**

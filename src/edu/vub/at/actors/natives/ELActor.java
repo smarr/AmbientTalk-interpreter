@@ -28,9 +28,6 @@
 package edu.vub.at.actors.natives;
 
 
-import java.lang.reflect.Method;
-import java.util.EventListener;
-
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
@@ -52,14 +49,20 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATTypeTag;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.OBJNil;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.Symbiosis;
 import edu.vub.at.util.logging.Logging;
+
+import java.lang.reflect.Method;
+import java.util.EventListener;
 
 /**
  * An instance of the class ELActor represents a programmer-defined
@@ -84,20 +87,18 @@ public class ELActor extends EventLoop {
 	 * only be used for testing purposes.
 	 */
 	private static final ThreadLocal _DEFAULT_ACTOR_ = new ThreadLocal() {
-	    protected synchronized Object initialValue() {
-	    	Logging.Actor_LOG.warn("Creating a default actor for thread " + Thread.currentThread());
-	    	try {
+		protected synchronized Object initialValue() {
+			Logging.Actor_LOG.warn("Creating a default actor for thread " + Thread.currentThread());
+			try {
 				ELVirtualMachine host = new ELVirtualMachine(
-				  OBJNil._INSTANCE_,
-				  new SharedActorField[] { },
-				  ELVirtualMachine._DEFAULT_GROUP_NAME_);
+						OBJNil._INSTANCE_,
+						new SharedActorField[] { },
+						ELVirtualMachine._DEFAULT_GROUP_NAME_);
 				return host.createEmptyActor().getFarHost();
 			} catch (InterpreterException e) {
-			  // Backport from JDK 1.4 to 1.3
-              // throw new RuntimeException("Failed to initialize default actor",e);
-              throw new RuntimeException("Failed to initialize default actor: " + e.getMessage());
+				throw new RuntimeException("Failed to initialize default actor: " + e.getMessage());
 			}
-	    }
+		}
 	};
 	
 	/**
@@ -404,6 +405,33 @@ public class ELActor extends EventLoop {
 		});
 	}
 	
+	/* The following native code corresponds to the following AmbientTalk code:
+	 * deftype Future;
+	 * deftype MetaMessage;
+	 * deftype OneWayMessage;
+	 * def ResolutionListener := object: {
+	 *   def notifyResolved(val) { ... };
+	 * }
+	 */
+	private static final ATTypeTag _FUTURE_ = NATTypeTag.atValue("Future");
+	private static final ATTypeTag _METAMESSAGE_ = NATTypeTag.atValue("MetaMessage");
+	private static final ATTypeTag _ONEWAYMESSAGE_ = NATTypeTag.atValue("OneWayMessage");
+	
+	private static class NATResolutionListener extends NATObject {
+		private static final AGSymbol _NOTIFYRESOLVED_ = AGSymbol.jAlloc("notifyResolved");
+		public NATResolutionListener(final BlockingFuture delayed, final Method meth) throws InterpreterException {
+			this.meta_defineField(_NOTIFYRESOLVED_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					Logging.Actor_LOG.debug("Symbiotic futures: resolution listener on AT future triggered, resolving Java future");
+					checkArity(args, 1);
+					ATObject properResult = get(args, 1);
+					delayed.resolve(Symbiosis.ambientTalkToJava(properResult, meth.getReturnType()));
+					return OBJNil._INSTANCE_;
+				}
+			});
+		}
+	}
+	
 	/**
 	 * This method is invoked by a coercer in order to schedule a symbiotic invocation
 	 * from the Java world, which should be synchronous to the Java thread, but which
@@ -422,7 +450,19 @@ public class ELActor extends EventLoop {
 		return receiveAndWait("syncSymbioticInv of " + meth.getName(), new Callable() {
 			public Object call(Object actorMirror) throws Exception {
 				ATObject result = Reflection.downInvocation(principal, meth, args);
-				return Symbiosis.ambientTalkToJava(result, meth.getReturnType());
+				// SUPPORT FOR FUTURES
+				if (result.meta_isTaggedAs(_FUTURE_).asNativeBoolean().javaValue) {
+					Logging.Actor_LOG.debug("Symbiotic futures: symbiotic call to " + meth.getName() + " returned an AT future");
+					final BlockingFuture delayed = new BlockingFuture();
+					ATTable annotations = NATTable.of(_METAMESSAGE_, _ONEWAYMESSAGE_);
+					ATObject listener = new NATResolutionListener(delayed, meth);
+					// result<-addResolutionListener({ |properResult| ... })@[MetaMessage,OneWayMessage]
+					result.meta_receive(new NATAsyncMessage(AGSymbol.jAlloc("addResolutionListener"),NATTable.of(listener),annotations));
+					return delayed;
+				} else {
+					// return the proper value immediately
+					return Symbiosis.ambientTalkToJava(result, meth.getReturnType());
+				}
 			}
 		});
 	}
