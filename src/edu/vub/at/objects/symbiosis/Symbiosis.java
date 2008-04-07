@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.symbiosis;
 
+import edu.vub.at.actors.eventloops.BlockingFuture;
+import edu.vub.at.actors.natives.NATAsyncMessage;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
@@ -40,13 +42,20 @@ import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.exceptions.signals.Signal;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATException;
-import edu.vub.at.objects.natives.OBJNil;
+import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.NATTypeTag;
+import edu.vub.at.objects.natives.OBJNil;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.util.logging.Logging;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -613,6 +622,61 @@ public final class Symbiosis {
 		return EventListener.class.isAssignableFrom(method.getDeclaringClass()) // is an EventListener
 		    && (method.getReturnType() == Void.TYPE) // does not return a value
 		    && (method.getExceptionTypes().length == 0); // throws no exceptions
+	}
+	
+	/* The following native code corresponds to the following AmbientTalk code:
+	 * deftype Future;
+	 * deftype MetaMessage;
+	 * deftype OneWayMessage;
+	 * def ResolutionListener := object: {
+	 *   def notifyResolved(val) { ... };
+	 * }
+	 */
+	private static final ATTypeTag _FUTURE_ = NATTypeTag.atValue("Future");
+	private static final ATTypeTag _METAMESSAGE_ = NATTypeTag.atValue("MetaMessage");
+	private static final ATTypeTag _ONEWAYMESSAGE_ = NATTypeTag.atValue("OneWayMessage");
+	
+	private static class NATResolutionListener extends NATObject {
+		private static final AGSymbol _NOTIFYRESOLVED_ = AGSymbol.jAlloc("notifyResolved");
+		private static final AGSymbol _NOTIFYRUINED_ = AGSymbol.jAlloc("notifyRuined");
+
+		public NATResolutionListener(final BlockingFuture delayed, final Class returnType) throws InterpreterException {
+			this.meta_defineField(_NOTIFYRESOLVED_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					Logging.Actor_LOG.debug("Symbiotic futures: resolution listener on AT future triggered, resolving Java future");
+					checkArity(args, 1);
+					ATObject properResult = get(args, 1);
+					delayed.resolve(Symbiosis.ambientTalkToJava(properResult, returnType));
+					return OBJNil._INSTANCE_;
+				}
+			});
+			
+			this.meta_defineField(_NOTIFYRUINED_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					Logging.Actor_LOG.debug("Symbiotic futures: resolution listener on AT future triggered, ruining Java future");
+					checkArity(args, 1);
+					ATObject exception = get(args, 1);
+					delayed.ruin(Evaluator.asJavaException(exception));
+					return OBJNil._INSTANCE_;
+				}
+			});
+		}
+	}
+	
+	/**
+	 * Converts an AmbientTalk future to a Java future of type targetType.
+	 */
+	public static BlockingFuture ambientTalkFutureToJavaFuture(ATObject atFuture, Class targetType) throws InterpreterException {
+		final BlockingFuture delayed = new BlockingFuture();
+		ATTable annotations = NATTable.of(_METAMESSAGE_, _ONEWAYMESSAGE_);
+		ATObject listener = new NATResolutionListener(delayed, targetType);
+		// atFuture<-addResolutionListener(listener)@[MetaMessage,OneWayMessage]
+		atFuture.meta_receive(new NATAsyncMessage(AGSymbol.jAlloc("addResolutionListener"),NATTable.of(listener),annotations));
+		return delayed;
+	}
+	
+	public static boolean isAmbientTalkFuture(ATObject obj) throws InterpreterException {
+		return obj.meta_isTaggedAs(Symbiosis._FUTURE_).asNativeBoolean().javaValue;
 	}
 	
 	private static ATObject invokeUniqueSymbioticMethod(Object symbiont, Method javaMethod, Object[] jArgs) throws InterpreterException {

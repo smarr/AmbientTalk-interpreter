@@ -405,45 +405,6 @@ public class ELActor extends EventLoop {
 		});
 	}
 	
-	/* The following native code corresponds to the following AmbientTalk code:
-	 * deftype Future;
-	 * deftype MetaMessage;
-	 * deftype OneWayMessage;
-	 * def ResolutionListener := object: {
-	 *   def notifyResolved(val) { ... };
-	 * }
-	 */
-	private static final ATTypeTag _FUTURE_ = NATTypeTag.atValue("Future");
-	private static final ATTypeTag _METAMESSAGE_ = NATTypeTag.atValue("MetaMessage");
-	private static final ATTypeTag _ONEWAYMESSAGE_ = NATTypeTag.atValue("OneWayMessage");
-	
-	private static class NATResolutionListener extends NATObject {
-		private static final AGSymbol _NOTIFYRESOLVED_ = AGSymbol.jAlloc("notifyResolved");
-		private static final AGSymbol _NOTIFYRUINED_ = AGSymbol.jAlloc("notifyRuined");
-
-		public NATResolutionListener(final BlockingFuture delayed, final Method meth) throws InterpreterException {
-			this.meta_defineField(_NOTIFYRESOLVED_, 	new NativeClosure(this) {
-				public ATObject base_apply(ATTable args) throws InterpreterException {
-					Logging.Actor_LOG.debug("Symbiotic futures: resolution listener on AT future triggered, resolving Java future");
-					checkArity(args, 1);
-					ATObject properResult = get(args, 1);
-					delayed.resolve(Symbiosis.ambientTalkToJava(properResult, meth.getReturnType()));
-					return OBJNil._INSTANCE_;
-				}
-			});
-			
-			this.meta_defineField(_NOTIFYRUINED_, 	new NativeClosure(this) {
-				public ATObject base_apply(ATTable args) throws InterpreterException {
-					Logging.Actor_LOG.debug("Symbiotic futures: resolution listener on AT future triggered, ruining Java future");
-					checkArity(args, 1);
-					ATObject exception = get(args, 1);
-					delayed.ruin(Evaluator.asJavaException(exception));
-					return OBJNil._INSTANCE_;
-				}
-			});
-		}
-	}
-	
 	/**
 	 * This method is invoked by a coercer in order to schedule a symbiotic invocation
 	 * from the Java world, which should be synchronous to the Java thread, but which
@@ -463,14 +424,9 @@ public class ELActor extends EventLoop {
 			public Object call(Object actorMirror) throws Exception {
 				ATObject result = Reflection.downInvocation(principal, meth, args);
 				// SUPPORT FOR FUTURES
-				if (result.meta_isTaggedAs(_FUTURE_).asNativeBoolean().javaValue) {
+				if (Symbiosis.isAmbientTalkFuture(result)) {
 					Logging.Actor_LOG.debug("Symbiotic futures: symbiotic call to " + meth.getName() + " returned an AT future");
-					final BlockingFuture delayed = new BlockingFuture();
-					ATTable annotations = NATTable.of(_METAMESSAGE_, _ONEWAYMESSAGE_);
-					ATObject listener = new NATResolutionListener(delayed, meth);
-					// result<-addResolutionListener({ |properResult| ... })@[MetaMessage,OneWayMessage]
-					result.meta_receive(new NATAsyncMessage(AGSymbol.jAlloc("addResolutionListener"),NATTable.of(listener),annotations));
-					return delayed;
+					return Symbiosis.ambientTalkFutureToJavaFuture(result, meth.getReturnType());
 				} else {
 					// return the proper value immediately
 					return Symbiosis.ambientTalkToJava(result, meth.getReturnType());
