@@ -585,7 +585,7 @@ public final class Symbiosis {
 			return jArray;
 		// -- EXCEPTIONS --
 		} else if (Exception.class.isAssignableFrom(targetType)) {
-			return Evaluator.asNativeException(atObj);
+			return Evaluator.asJavaException(atObj);
 		// -- CLASS OBJECTS --
 		} else if (targetType == Class.class) {
 			return atObj.asJavaClassUnderSymbiosis().getWrappedClass();

@@ -485,8 +485,7 @@ public final class Evaluator {
 		return nam.substring(nam.lastIndexOf(".") + 1);
 	}
 	
-
-	public static final InterpreterException asNativeException(ATObject atObj) throws InterpreterException {
+	public static final Exception asJavaException(ATObject atObj) throws InterpreterException {
 		if (atObj instanceof NATException) {
 			return ((NATException)atObj).getWrappedException();
 		}
@@ -495,12 +494,20 @@ public final class Evaluator {
 			JavaObject jObject = atObj.asJavaObjectUnderSymbiosis();
 			
 			Object object = jObject.getWrappedObject();
-			if (object instanceof InterpreterException) {
-				return (InterpreterException) object;				
-			} else if (object instanceof Throwable) {
-				return new XJavaException((Throwable)object);
+			if (object instanceof Exception) {
+				return (Exception) object;				
 			}
 		}
+		
 		return new XAmbienttalk(atObj);
+	}
+	
+	public static final InterpreterException asNativeException(ATObject atObj) throws InterpreterException {
+		Exception exc = asJavaException(atObj);
+		if (exc instanceof InterpreterException) {
+			return (InterpreterException) exc;
+		} else {
+			return new XJavaException(exc);
+		}
 	}
 }

@@ -82,4 +82,19 @@ public interface ATTypeTag extends ATObject {
 	 */
 	public ATBoolean base_isSubtypeOf(ATTypeTag other) throws InterpreterException;
 	
+	/**
+	 * Invoked on a type tag when the type tag is used to annotate asynchronous message sends.
+	 * E.g. when invoking:
+	 * <code>obj<-m(args)@Type</code>
+	 * The interpreter will invoke:
+	 * <code>Type.annotate(msg)</code> where <tt>msg</tt> is the message <tt><-m(args)</tt>
+	 * The return value of the annotate method is an extended message which will be used during
+	 * message sending. When a message is annotated with multiple type tags, the annotate methods
+	 * of these different type tags are chained to produce the final message.
+	 * 
+	 * @param originalMessage the message to annotate
+	 * @return the annotated message (the message extended with metadata)
+	 */
+	public ATObject base_annotate(ATObject originalMessage) throws InterpreterException;
+	
 }

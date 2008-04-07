@@ -135,6 +135,14 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 	}
 	
 	/**
+	 * By default, annotate is the identity function, it does not add any new metadata
+	 * to the message.
+	 */
+	public ATObject base_annotate(ATObject originalMessage) throws InterpreterException {
+		return originalMessage;
+	}
+	
+	/**
 	 * Identity of types is based on their name
 	 */
     public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {

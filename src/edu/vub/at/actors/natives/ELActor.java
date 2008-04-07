@@ -419,6 +419,8 @@ public class ELActor extends EventLoop {
 	
 	private static class NATResolutionListener extends NATObject {
 		private static final AGSymbol _NOTIFYRESOLVED_ = AGSymbol.jAlloc("notifyResolved");
+		private static final AGSymbol _NOTIFYRUINED_ = AGSymbol.jAlloc("notifyRuined");
+
 		public NATResolutionListener(final BlockingFuture delayed, final Method meth) throws InterpreterException {
 			this.meta_defineField(_NOTIFYRESOLVED_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
@@ -426,6 +428,16 @@ public class ELActor extends EventLoop {
 					checkArity(args, 1);
 					ATObject properResult = get(args, 1);
 					delayed.resolve(Symbiosis.ambientTalkToJava(properResult, meth.getReturnType()));
+					return OBJNil._INSTANCE_;
+				}
+			});
+			
+			this.meta_defineField(_NOTIFYRUINED_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					Logging.Actor_LOG.debug("Symbiotic futures: resolution listener on AT future triggered, ruining Java future");
+					checkArity(args, 1);
+					ATObject exception = get(args, 1);
+					delayed.ruin(Evaluator.asJavaException(exception));
 					return OBJNil._INSTANCE_;
 				}
 			});

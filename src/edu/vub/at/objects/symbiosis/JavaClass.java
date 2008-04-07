@@ -335,6 +335,12 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 		}
 	}
 	
+	/**
+	 * When a Java interface type is used to annotate a message, this does not lead to
+	 * any additional metadata being added to the message.
+	 */
+	public ATObject base_annotate(ATObject originalMessage) { return originalMessage; }
+	
 	// IMPLEMENTATION INTERFACE
 	
     /**
