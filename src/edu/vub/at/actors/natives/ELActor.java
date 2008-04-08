@@ -410,26 +410,40 @@ public class ELActor extends EventLoop {
 	 * from the Java world, which should be synchronous to the Java thread, but which
 	 * must be scheduled asynchronously to comply with the AT/2 actor model.
 	 * 
-	 * This method makes the calling (Java) thread <b>block</b>, waiting until the actor
-	 * has processed the symbiotic invocation.
+	 * The future returned by this method makes the calling (Java) thread <b>block</b> upon
+	 * accessing its value, waiting until the actor has processed the symbiotic invocation.
 	 * 
 	 * @param principal the AmbientTalk object owned by this actor on which to invoke the method
 	 * @param meth the Java method that was symbiotically invoked on the principal
 	 * @param args the arguments to the Java method call, already converted into AmbientTalk values
-	 * @return the result of the symbiotic invocation
+	 * @return a Java future that is resolved with the result of the symbiotic invocation
 	 * @throws Exception if the symbiotic invocation fails
 	 */
-	public Object sync_event_symbioticInvocation(final ATObject principal, final Method meth, final ATObject[] args) throws Exception {
-		return receiveAndWait("syncSymbioticInv of " + meth.getName(), new Callable() {
+	public BlockingFuture sync_event_symbioticInvocation(final ATObject principal, final Method meth, final ATObject[] args) throws Exception {
+		return receiveAndReturnFuture("syncSymbioticInv of " + meth.getName(), new Callable() {
 			public Object call(Object actorMirror) throws Exception {
-				ATObject result = Reflection.downInvocation(principal, meth, args);
+				Class targetType = meth.getReturnType();
+				ATObject[] actualArgs = args;
+				// if the return type is BlockingFuture, the first argument should specify the type
+				// of the value with which BlockingFuture will be resolved
+				if (targetType.isAssignableFrom(BlockingFuture.class)) {
+					if ((meth.getParameterTypes().length > 0) && (meth.getParameterTypes()[0].equals(Class.class))) {
+						targetType = args[0].asJavaClassUnderSymbiosis().getWrappedClass();
+						// drop first argument, it only exists to specify the targetType
+						ATObject[] newArgs = new ATObject[args.length-1];
+						System.arraycopy(args, 1, newArgs, 0, newArgs.length);
+						actualArgs = newArgs;
+					}
+				}
+				
+				ATObject result = Reflection.downInvocation(principal, meth, actualArgs);
 				// SUPPORT FOR FUTURES
 				if (Symbiosis.isAmbientTalkFuture(result)) {
 					Logging.Actor_LOG.debug("Symbiotic futures: symbiotic call to " + meth.getName() + " returned an AT future");
-					return Symbiosis.ambientTalkFutureToJavaFuture(result, meth.getReturnType());
+					return Symbiosis.ambientTalkFutureToJavaFuture(result, targetType);
 				} else {
 					// return the proper value immediately
-					return Symbiosis.ambientTalkToJava(result, meth.getReturnType());
+					return Symbiosis.ambientTalkToJava(result, targetType);
 				}
 			}
 		});

@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.coercion;
 
+import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.eventloops.EventLoop.EventProcessor;
 import edu.vub.at.actors.natives.ELActor;
@@ -174,15 +175,23 @@ public final class Coercer implements InvocationHandler, Serializable {
 				// if the invoked method is part of an EventListener interface, treat the
 				// invocation as a pure asynchronous message send, if the returntype is void
 				if (Symbiosis.isEvent(method)) {
+					// asynchronous symbiotic invocation
 					owningActor.event_symbioticInvocation(principal_, method, symbioticArgs);
 					return null; // void return type
 				} else {
 					// because a message send is asynchronous and Java threads work synchronously,
 					// we'll have to make the Java thread wait for the result
-					return owningActor.sync_event_symbioticInvocation(principal_, method, symbioticArgs);
+					BlockingFuture future = owningActor.sync_event_symbioticInvocation(principal_, method, symbioticArgs);
+					if (method.getReturnType().isAssignableFrom(BlockingFuture.class)) {
+						// future-type symbiotic invocation
+						return future;
+					} else {
+						// synchronous symbiotic invocation
+						return future.get();
+					}
 				}
 			} else {
-				// perform a synchronous invocation
+				// perform an immediate symbiotic invocation
 				ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);
 				// properly 'cast' the returned object into the appropriate interface
 				return Symbiosis.ambientTalkToJava(result, method.getReturnType());		

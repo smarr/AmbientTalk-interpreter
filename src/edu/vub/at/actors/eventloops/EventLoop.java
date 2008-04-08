@@ -160,6 +160,24 @@ public abstract class EventLoop {
 	 * @param callable the functor object encapsulating the task to be performed inside the event loop
 	 */
 	protected final Object receiveAndWait(String description, final Callable callable) throws Exception {
+		/*if (Thread.currentThread() == processor_) {
+			throw new RuntimeException("Potential deadlock detected: "
+					+ processor_ + " tried to perform a synchronous operation on itself");
+		}
+		
+		BlockingFuture future = new BlockingFuture();
+		eventQueue_.enqueue(new FutureEvent(description, future) {
+			private static final long serialVersionUID = 1672724382106164388L;
+
+			public Object execute(Object owner) throws Exception {
+				return callable.call(owner);
+			}
+		});*/
+		BlockingFuture future = receiveAndReturnFuture(description, callable);
+		return future.get();
+	}
+	
+	protected final BlockingFuture receiveAndReturnFuture(String description, final Callable callable) throws Exception {
 		if (Thread.currentThread() == processor_) {
 			throw new RuntimeException("Potential deadlock detected: "
 					+ processor_ + " tried to perform a synchronous operation on itself");
@@ -173,7 +191,7 @@ public abstract class EventLoop {
 				return callable.call(owner);
 			}
 		});
-		return future.get();
+		return future;
 	}
 	
 	/**
