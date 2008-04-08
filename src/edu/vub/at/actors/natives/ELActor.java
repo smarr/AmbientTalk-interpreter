@@ -426,7 +426,7 @@ public class ELActor extends EventLoop {
 				ATObject[] actualArgs = args;
 				// if the return type is BlockingFuture, the first argument should specify the type
 				// of the value with which BlockingFuture will be resolved
-				if (targetType.isAssignableFrom(BlockingFuture.class)) {
+				if (targetType.equals(BlockingFuture.class)) {
 					if ((meth.getParameterTypes().length > 0) && (meth.getParameterTypes()[0].equals(Class.class))) {
 						targetType = args[0].asJavaClassUnderSymbiosis().getWrappedClass();
 						// drop first argument, it only exists to specify the targetType
