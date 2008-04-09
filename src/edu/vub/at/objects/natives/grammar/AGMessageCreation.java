@@ -101,7 +101,7 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return this.newQuoted(selector_.meta_quote(ctx).asSymbol(),
 				              arguments_.meta_quote(ctx).asTable(),
-				              annotations_.meta_quote(ctx).asTable());
+				              annotations_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
