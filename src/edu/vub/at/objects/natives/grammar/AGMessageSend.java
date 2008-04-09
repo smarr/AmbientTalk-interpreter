@@ -94,7 +94,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGMessageSend(rcvExp_.meta_quote(ctx).asExpression(),
-				                message_.meta_quote(ctx).asMessageCreation());
+				                message_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {
