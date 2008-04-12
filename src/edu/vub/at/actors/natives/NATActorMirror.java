@@ -82,9 +82,9 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
      * -- Language Construct to Actor Protocol --
      * ------------------------------------------ */
 
-	// TODO: still needs to be tested!
 	public ATAsyncMessage base_createMessage(ATSymbol selector, ATTable arguments, ATTable types) throws InterpreterException {
 		ATAsyncMessage msg = new NATAsyncMessage(selector, arguments, types);
+		// types.inject: msg into: { |constructingMsg, type| type.annotate(constructingMsg) }
 		return types.base_inject_into_(msg, new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
 				checkArity(args, 2);

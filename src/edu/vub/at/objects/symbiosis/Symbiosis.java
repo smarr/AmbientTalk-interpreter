@@ -600,7 +600,13 @@ public final class Symbiosis {
 			return atObj.asJavaClassUnderSymbiosis().getWrappedClass();
 	    // -- nil => NULL --
 		} else if (atObj == OBJNil._INSTANCE_) {
-			return null;
+			// this conversion should only be applied when the target type is not ATObject, because
+		    // such types should never contain a null value!
+			if (ATObject.class.isAssignableFrom(targetType)) {
+				throw new XTypeMismatch(targetType, atObj);
+			} else {
+				return null;
+			}
 		// -- INTERFACE TYPES AND NAT CLASSES --
 		} else {
 			// only allow NATObject and subclasses and far references to be coerced into an interface
