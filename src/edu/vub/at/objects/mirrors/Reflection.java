@@ -27,9 +27,6 @@
  */
 package edu.vub.at.objects.mirrors;
 
-import java.lang.reflect.Method;
-import java.util.Vector;
-
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATMethod;
@@ -39,8 +36,14 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.Symbiosis;
-import edu.vub.util.Matcher;
-import edu.vub.util.Pattern;
+import edu.vub.at.util.logging.Logging;
+import edu.vub.util.Regexp;
+
+import java.lang.reflect.Method;
+import java.util.Vector;
+
+import org.apache.regexp.RE;
+import org.apache.regexp.REProgram;
 
 /**
  * Reflection is an auxiliary class meant to serve as a repository for methods
@@ -136,22 +139,17 @@ public final class Reflection {
 	 */
 	public static final String upSelector(ATSymbol atSelector) throws InterpreterException {
 		// : -> _
-		String nam = atSelector.base_text().asNativeText().javaValue;
-        // Backport from JDK 1.4 to 1.3
-		// nam = nam.replaceAll(":", "_");
-        nam = Pattern.compile(":").matcher(new StringBuffer(nam)).replaceAll("_");
-        
+        String nam = new RE(colon).subst(atSelector.base_text().asNativeText().javaValue, "_");
+
 		// operator symbol -> _op{code}_
-		Matcher m = symbol.matcher(new StringBuffer(nam));
-		StringBuffer sb = new StringBuffer();
-		while (m.find()) {
-			// find every occurence of a non-word character and convert it into a symbol
-			String oprCode = symbol2oprCode(m.group(0));
-			// only add the _op prefix and _ postfix if the code has been found...
-			m.appendReplacement(sb, (oprCode.length() == 3) ? "_op" + oprCode  + "_" : oprCode);
-		}
-		m.appendTail(sb);
-		return sb.toString();
+		// find every occurence of a non-word character and convert it into a symbol
+        return Regexp.replaceAll(new RE(symbol), nam, new Regexp.StringCallable() {
+        	public String call(String match) {
+        		String oprCode = symbol2oprCode(match);
+    			// only add the _op prefix and _ postfix if the code has been found...
+        		return (oprCode.length() == 3) ? "_op" + oprCode  + "_" : oprCode;
+        	}
+        });
 	}
 	
 	/**
@@ -401,14 +399,17 @@ public final class Reflection {
 		return (ATMethod[]) allATMetaMethods.toArray(new ATMethod[allATMetaMethods.size()]);
 	}
 	
-	private static final Pattern oprCode = Pattern.compile("_op(\\w\\w\\w)_"); //'_op', 3 chars, '_'
-	private static final Pattern symbol = Pattern.compile("\\W"); //any non-word character
+	private static final REProgram oprCode = Regexp.compile("_op(\\w\\w\\w)_"); //'_op', 3 chars, '_'
+	private static final REProgram symbol = Regexp.compile("\\W"); //any non-word character
+	private static final REProgram underScore = Regexp.compile("_");
+	private static final REProgram colon = Regexp.compile(":");
 	
 	private static String stripPrefix(String input, String prefix) {
-		// \A matches start of input
+		// ^ matches start of input
 	    // Backport from JDK 1.4 to 1.3
         // return input.replaceFirst("\\A"+prefix, "");
-		return Pattern.compile("\\A"+prefix).matcher(new StringBuffer(input)).replaceFirst("");
+		return new RE(Regexp.compile("^"+prefix)).subst(input, "", RE.REPLACE_FIRSTONLY);
+		// return Pattern.compile("\\A"+prefix).matcher(new StringBuffer(input)).replaceFirst("");
 	}
 	
 	private static final String oprCode2Symbol(String code) {
@@ -448,19 +449,29 @@ public final class Reflection {
 	}
 	
 	private static final String javaToAmbientTalkSelector(String jSelector) {
-		// _op{code}_ -> operator symbol
-		Matcher m = oprCode.matcher(new StringBuffer(jSelector));
-		StringBuffer sb = new StringBuffer();
-		while (m.find()) {
-             // find every occurence of _op\w\w\w_ and convert it into a symbol
-			m.appendReplacement(sb, oprCode2Symbol(m.group(1)));
+        // find every occurence of _op\w\w\w_ and convert it into a symbol
+		try {
+			final RE codePattern = new RE(oprCode);
+			
+			String oprcodesReplaced = Regexp.replaceAll(codePattern, jSelector, new Regexp.StringCallable() {
+				public String call(String match) {
+					// match == _op{code}_
+					
+					// CAREFUL: we are mutating the same RE object used by the replaceAll function
+					// itself! This is normally not a problem if we do not depend on the codePattern's
+					// stateful methods
+					codePattern.match(match);
+					
+					// _op{code}_ -> operator symbol
+					return oprCode2Symbol(codePattern.getParen(1));
+				}
+			});
+	        // finally, replace all "_" by ":"
+	        return new RE(underScore).subst(oprcodesReplaced,":");
+		} catch (InterpreterException e) { // all this to make compiler happy
+			Logging.VirtualMachine_LOG.fatal("unexpected exception: " + e.getMessage(), e);
+			throw new RuntimeException("Unexpected exception: " + e.getMessage());
 		}
-		m.appendTail(sb);
-		
-		// _ -> :
-        // Backport from JDK 1.4 to 1.3
-		// return sb.toString().replaceAll("_", ":");
-        return Pattern.compile("_").matcher(sb).replaceAll(":");
 	}
 	
 }

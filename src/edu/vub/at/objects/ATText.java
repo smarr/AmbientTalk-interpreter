@@ -30,6 +30,8 @@ package edu.vub.at.objects;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATExpression;
 
+import org.apache.regexp.RE;
+
 /**
  * ATText is the public interface to a native AmbientTalk string (a string of characters).
  * Extends the ATExpression interface since a Text can also be output by the parser as a literal.
@@ -53,6 +55,8 @@ public interface ATText extends ATExpression {
 	 * Splits a text according to the given regular expression.
 	 * <p>
 	 * For regular expression syntax, see the Java regular-expression constructs in java.util.regex.Pattern.
+	 * For regular expression syntax, see the Apache Regexp API of class
+	 * <a href="http://jakarta.apache.org/regexp/apidocs/org/apache/regexp/RE.html">RE</a>.
 	 * <p>
 	 * Usage example:
 	 * <code>"one, two, three".split(", ")</code> returns <code>[ "one", "two", "three" ]</code>
@@ -66,7 +70,8 @@ public interface ATText extends ATExpression {
 	/**
 	 * Evaluates a given closure on those elements of this text that match a given regular expression.
 	 * <p>
-	 * For regular expression syntax, see the Java regular-expression constructs in java.util.regex.Pattern.
+	 * For regular expression syntax, see the Apache Regexp API of class
+	 * <a href="http://jakarta.apache.org/regexp/apidocs/org/apache/regexp/RE.html">RE</a>.
 	 * <p>
 	 * Usage example:
 	 * <code>"ambienttalk".find: "[aeiou]" do: { |vowel| buff << vowel; nil }</code> returns <code>buff = "aiea"</code>
@@ -82,6 +87,9 @@ public interface ATText extends ATExpression {
 	/**
 	 * Returns a new text replacing those elements of this text that match a given regular expression with the
 	 * value resulting of the evaluation of a given closure.
+	 * <p>
+	 * For regular expression syntax, see the Apache Regexp API of class
+	 * <a href="http://jakarta.apache.org/regexp/apidocs/org/apache/regexp/RE.html">RE</a>.
 	 * <p>
 	 * Usage example:
 	 * <code>"ambienttalk".replace: "[aeiou]" by: { |vowel| vowel.toUpperCase() }</code> returns <code>AmbIEnttAlk</code>
@@ -147,7 +155,8 @@ public interface ATText extends ATExpression {
 	/**
 	 * Attempts to match this text against a given regular expression.
 	 * <p>
-	 * For regular expression syntax, see the Java regular-expression constructs in java.util.regex.Pattern.
+	 * For regular expression syntax, see the Apache Regexp API of class
+	 * <a href="http://jakarta.apache.org/regexp/apidocs/org/apache/regexp/RE.html">RE</a>.
 	 * <p>
 	 * Usage example:
 	 * <code>"ambienttalk" ~= ".*tt.*"</code> returns <code>true</code>

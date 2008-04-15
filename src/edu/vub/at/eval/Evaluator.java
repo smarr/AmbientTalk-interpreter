@@ -27,12 +27,6 @@
  */
 package edu.vub.at.eval;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.LinkedList;
-
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XAmbienttalk;
 import edu.vub.at.exceptions.XArityMismatch;
@@ -53,8 +47,17 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.objects.symbiosis.JavaPackage;
 import edu.vub.at.objects.symbiosis.XJavaException;
-import edu.vub.util.Matcher;
-import edu.vub.util.Pattern;
+import edu.vub.at.util.logging.Logging;
+import edu.vub.util.Regexp;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
+
+import org.apache.regexp.RE;
+import org.apache.regexp.REProgram;
 
 /**
  * The Evaluator class serves as a repository for auxiliary evaluation methods.
@@ -460,19 +463,22 @@ public final class Evaluator {
 		}
 	}
 	
+    private static final REProgram _UPPERCASE_ = Regexp.compile("[A-Z]");
+	
 	private static final String classnameToValuename(String classname, String prefix) {
-		 // replace all uppercased letters "L" by " l"		 
-         // Backport from JDK 1.4 to 1.3
-         // Matcher m = p.matcher(classname.replaceFirst(prefix, ""));
-         Pattern p = Pattern.compile("[A-Z]");
-         Matcher m = p.matcher(new StringBuffer(Pattern.compile(prefix).matcher(new StringBuffer(classname)).replaceFirst("")));
-		 // Matcher m = p.matcher(classname.replaceFirst(prefix, ""));
-		 StringBuffer sb = new StringBuffer();
-		 while (m.find()) {
-		     m.appendReplacement(sb, " " + new Character(Character.toLowerCase(m.group().charAt(0))).toString());
-		 }
-		 m.appendTail(sb);
-		 return sb.toString();
+		// first, get rid of the given prefix by replacing it with ""
+		String classnameWithoutPrefix = new RE(prefix).subst(classname, "",RE.REPLACE_FIRSTONLY);
+		 // next, replace all uppercased letters "L" by " l"		 
+        try {
+        	return Regexp.replaceAll(new RE(_UPPERCASE_), classnameWithoutPrefix, new Regexp.StringCallable() {
+            	public String call(String uppercaseLetter) {
+            		return " " + Character.toLowerCase(uppercaseLetter.charAt(0));
+            	}
+            });
+        } catch (InterpreterException e) { // all this just to make the compiler happy
+        	Logging.VirtualMachine_LOG.fatal("Unexpected exception: " + e.getMessage(), e);
+        	throw new RuntimeException("Unexpected exception: " + e.getMessage());
+        }
 	}
 	
 	// UTILITY METHODS

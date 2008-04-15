@@ -40,9 +40,10 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.grammar.AGExpression;
-import edu.vub.util.Matcher;
-import edu.vub.util.Pattern;
-import edu.vub.util.PatternSyntaxException;
+import edu.vub.util.Regexp;
+
+import org.apache.regexp.RE;
+import org.apache.regexp.RESyntaxException;
 
 /*
 import java.util.regex.Matcher;
@@ -54,10 +55,11 @@ import java.util.regex.PatternSyntaxException;
  * The native implementation of an AmbientTalk text string.
  * A text string is implemented by a Java String.
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public final class NATText extends AGExpression implements ATText {
 		
+	    /** Text is represented as Java String */
 		public final String javaValue;
 		
 		/**
@@ -117,58 +119,47 @@ public final class NATText extends AGExpression implements ATText {
 		
 		/**
 		 * Split the string according to the given regular expression.
-		 * For regular expression syntax, see the Java API.
+		 * For regular expression syntax, see the Apache Regexp API of class {@link RE}.
 		 */
 		public ATTable base_split(ATText regexp) throws InterpreterException {
-			String[] elements = null;
 			 try {
-                 // Backport from JDK 1.4 to 1.3
-                 // elements = javaValue.split(regexp.asNativeText().javaValue);
-				 elements = Pattern.compile(regexp.asNativeText().javaValue).split(new StringBuffer(javaValue));
-			 } catch (PatternSyntaxException e) {
+				 String[] elements = new RE(Regexp.compile(regexp.asNativeText().javaValue)).split(javaValue);
+				 ATObject[] tbl = new ATObject[elements.length];
+				 for (int i = 0; i < elements.length; i++) {
+					 tbl[i] = NATText.atValue(elements[i]);
+				 }
+				 return NATTable.atValue(tbl);
+			 } catch (RESyntaxException e) {
 				throw new XIllegalArgument("Illegal argument to split: " + e.getMessage());
 			 }
-			
-			ATObject[] tbl = new ATObject[elements.length];
-			for (int i = 0; i < elements.length; i++) {
-				tbl[i] = NATText.atValue(elements[i]);
-			}
-			return NATTable.atValue(tbl);
 		}
 		
-		public ATNil base_find_do_(ATText regexp, ATClosure consumer) throws InterpreterException {
-			 Pattern p = null;
-			 
+		public ATNil base_find_do_(ATText regexp, final ATClosure consumer) throws InterpreterException {
 			 try {
-				p = Pattern.compile(regexp.asNativeText().javaValue);
-			 } catch (PatternSyntaxException e) {
+				 RE pattern = new RE(Regexp.compile(regexp.asNativeText().javaValue));
+				 Regexp.findAll(pattern, javaValue, new Regexp.StringRunnable() {
+					 public void run(String match) throws InterpreterException {
+						 consumer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(match) }));
+					 }
+				 });
+				 return OBJNil._INSTANCE_;
+			 } catch (RESyntaxException e) {
 				throw new XIllegalArgument("Illegal argument to find:do: " + e.getMessage());
 			 }
-			 
-			 Matcher m = p.matcher(new StringBuffer(javaValue));
-			 while (m.find()) {
-				 consumer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(m.group()) }));
-			 }
-			 return OBJNil._INSTANCE_;
 		}
 		
-		public ATText base_replace_by_(ATText regexp, ATClosure transformer) throws InterpreterException {
-			 Pattern p = null;
-			 
+		public ATText base_replace_by_(ATText regexp, final ATClosure transformer) throws InterpreterException {
 			 try {
-				p = Pattern.compile(regexp.asNativeText().javaValue);
-			 } catch (PatternSyntaxException e) {
+				 RE pattern = new RE(Regexp.compile(regexp.asNativeText().javaValue));
+				 return NATText.atValue(Regexp.replaceAll(pattern, javaValue, new Regexp.StringCallable() {
+					 public String call(String match) throws InterpreterException {
+						 ATObject replacement = transformer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(match) }));
+						 return replacement.asNativeText().javaValue;
+					 }
+				 }));
+			 } catch (RESyntaxException e) {
 				throw new XIllegalArgument("Illegal argument to replace:by: " + e.getMessage());
 			 }
-			 
-			 Matcher m = p.matcher(new StringBuffer(javaValue));
-			 StringBuffer sb = new StringBuffer();
-			 while (m.find()) {
-				 ATObject replacement = transformer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(m.group()) }));
-			     m.appendReplacement(sb, replacement.asNativeText().javaValue);
-			 }
-			 m.appendTail(sb);
-			 return NATText.atValue(sb.toString());
 		}
 		
 		public ATText base_toUpperCase() {
@@ -200,8 +191,8 @@ public final class NATText extends AGExpression implements ATText {
 		
 		public ATBoolean base__optil__opeql_(ATText regexp) throws InterpreterException {
 			try {
-				return NATBoolean.atValue(Pattern.matches(regexp.asNativeText().javaValue, new StringBuffer(javaValue)));
-			} catch (PatternSyntaxException e) {
+				return NATBoolean.atValue(new RE(Regexp.compile(regexp.asNativeText().javaValue)).match(javaValue));
+			} catch (RESyntaxException e) {
 				throw new XIllegalArgument("Illegal regular expression for ~=: " + e.getMessage());
 			}
 		}
@@ -218,6 +209,7 @@ public final class NATText extends AGExpression implements ATText {
 			}
 		}
 		
+		/** Convert this text into a Java character */
 		public char asChar() throws XTypeMismatch {
 			if (javaValue.length() == 1) {
 				return javaValue.charAt(0);

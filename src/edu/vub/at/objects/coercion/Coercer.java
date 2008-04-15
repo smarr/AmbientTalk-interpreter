@@ -60,6 +60,10 @@ import java.lang.reflect.Proxy;
  * 
  * where principal is the original object 'coerced into' the given interface
  * 
+ * TODO: we should implement a mapping uniquely identifiying a Coercer per
+ * ATObject, Interface pair, i.e. we must implement a Map:
+ *  (ATObject x Class) -> Coercer
+ * 
  * @author tvcutsem
  */
 public final class Coercer implements InvocationHandler, Serializable {
