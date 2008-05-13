@@ -46,10 +46,11 @@ import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.util.IdentityHashMap;
 
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
+
+import com.thoughtworks.xstream.core.util.ObjectIdDictionary;
 
 /**
  * JavaObject instances represent java objects under symbiosis.
@@ -80,7 +81,7 @@ public final class JavaObject extends NATObject implements ATObject {
 	 */
 	private static final ThreadLocal _JAVAOBJECT_POOL_ = new ThreadLocal() {
         protected synchronized Object initialValue() {
-            return new IdentityHashMap();
+            return new ObjectIdDictionary();
         }
 	};
 	
@@ -88,21 +89,21 @@ public final class JavaObject extends NATObject implements ATObject {
 	 * Return a unique appearance for the Java object.
 	 */
 	public static final JavaObject wrapperFor(Object o) {
-		IdentityHashMap map = (IdentityHashMap) _JAVAOBJECT_POOL_.get();
-		if (map.containsKey(o)) {
-			SoftReference ref = (SoftReference) map.get(o);
+		ObjectIdDictionary map = (ObjectIdDictionary) _JAVAOBJECT_POOL_.get();
+		if (map.containsId(o)) {
+			SoftReference ref = (SoftReference) map.lookupId(o);
 			JavaObject obj = (JavaObject) ref.get();
 			if (obj != null) {
 				return obj;
 			} else {
-				map.remove(obj);
+				map.removeId(obj);
 				obj = new JavaObject(o);
-				map.put(o, new SoftReference(obj));
+				map.associateId(o, new SoftReference(obj));
 				return obj;
 			}
 		} else {
 			JavaObject jo = new JavaObject(o);
-			map.put(o, new SoftReference(jo));
+			map.associateId(o, new SoftReference(jo));
 			return jo;
 		}
 	}

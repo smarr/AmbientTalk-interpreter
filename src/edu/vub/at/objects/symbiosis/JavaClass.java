@@ -52,9 +52,10 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
-import edu.vub.util.IdentityHashMap;
 
 import java.lang.ref.SoftReference;
+
+import com.thoughtworks.xstream.core.util.ObjectIdDictionary;
 
 /**
  * A JavaClass instance represents a Java Class under symbiosis.
@@ -84,7 +85,7 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 	 */
 	private static final ThreadLocal _JAVACLASS_POOL_ = new ThreadLocal() {
         protected synchronized Object initialValue() {
-            return new IdentityHashMap();
+            return new ObjectIdDictionary();
         }
 	};
 	
@@ -92,21 +93,21 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 	 * Allocate a unique symbiont object for the given Java class.
 	 */
 	public static final JavaClass wrapperFor(Class c) {
-		IdentityHashMap map = (IdentityHashMap) _JAVACLASS_POOL_.get();
-		if (map.containsKey(c)) {
-			SoftReference ref = (SoftReference) map.get(c);
+		ObjectIdDictionary map = (ObjectIdDictionary) _JAVACLASS_POOL_.get();
+		if (map.containsId(c)) {
+			SoftReference ref = (SoftReference) map.lookupId(c);
 			JavaClass cls = (JavaClass) ref.get();
 			if (cls != null) {
 				return cls;
 			} else {
-				map.remove(c);
+				map.removeId(c);
 				cls = new JavaClass(c);
-				map.put(c, new SoftReference(cls));
+				map.associateId(c, new SoftReference(cls));
 				return cls;
 			}
 		} else {
 			JavaClass jc = new JavaClass(c);
-			map.put(c, new SoftReference(jc));
+			map.associateId(c, new SoftReference(jc));
 			return jc;
 		}
 	}
