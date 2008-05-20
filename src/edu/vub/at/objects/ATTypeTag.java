@@ -87,7 +87,7 @@ public interface ATTypeTag extends ATObject {
 	 * E.g. when invoking:
 	 * <code>obj<-m(args)@Type</code>
 	 * The interpreter will invoke:
-	 * <code>Type.annotate(msg)</code> where <tt>msg</tt> is the message <tt><-m(args)</tt>
+	 * <code>Type.annotateMessage(msg)</code> where <tt>msg</tt> is the message <tt><-m(args)</tt>
 	 * The return value of the annotate method is an extended message which will be used during
 	 * message sending. When a message is annotated with multiple type tags, the annotate methods
 	 * of these different type tags are chained to produce the final message.
@@ -95,6 +95,22 @@ public interface ATTypeTag extends ATObject {
 	 * @param originalMessage the message to annotate
 	 * @return the annotated message (the message extended with metadata)
 	 */
-	public ATObject base_annotate(ATObject originalMessage) throws InterpreterException;
+	public ATObject base_annotateMessage(ATObject originalMessage) throws InterpreterException;
+	
+	/**
+	 * Invoked on a type tag when the type tag is used to annotate method definitions. 
+	 * E.g. when evaluating:
+	 * <code>def method(arg1, ..., argN) @Type { ... }</code>
+	 * the interpreter will invoke <code>Type.annotateMethod(meth)</code> where <tt>meth</tt>
+	 * is a method object with the given name, arguments and body. The return value of the 
+	 * annotateMethod is an extended method object which will be installed in the method 
+	 * dictionary. The object can override e.g. apply to intervene when the method is being
+	 * applied. When a method definition is annotated with multiple type tags, the annotate 
+	 * methods of these different type tags are chained to produced the final method object.
+	 * 
+	 * @param originalMethod the method to annotate
+	 * @return the annotated method (the method with additional metadata)
+	 */
+	public ATMethod base_annotateMethod(ATMethod originalMethod) throws InterpreterException;
 	
 }

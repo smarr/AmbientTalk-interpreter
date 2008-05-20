@@ -94,7 +94,7 @@ public class PrimitiveMethod extends NATMethod {
 	}
 	
 	public PrimitiveMethod(ATSymbol name, ATTable formals, PrimitiveBody body) {
-		super(name, formals, body);
+		super(name, formals, body, NATTable.EMPTY);
 	}
 
 	/**
@@ -109,7 +109,7 @@ public class PrimitiveMethod extends NATMethod {
 			public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 				return OBJNil._INSTANCE_;
 			}
-		});
+		}, NATTable.EMPTY);
 	}
 	
 	public NATText meta_print() throws InterpreterException {

@@ -60,4 +60,10 @@ public interface ATDefMethod extends ATDefinition {
 	 */
 	public ATBegin base_bodyExpression();
 	
+	/**
+	 * A method may have zero or more annotations.
+	 * Example; <code>`{def m() @[Getter] { x }}.statements[1].annotations == `[Getter]</code>
+	 * @return The annotations of the method
+	 */
+	public ATExpression base_annotationExpression();
 }

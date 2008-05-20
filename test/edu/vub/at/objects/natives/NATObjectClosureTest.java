@@ -105,7 +105,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			return new NATMethod(
 					name, 
 					NATTable.EMPTY, 
-					new AGBegin(NATTable.atValue(new ATObject[] { this })));
+					new AGBegin(NATTable.atValue(new ATObject[] { this })), NATTable.EMPTY);
 		}
 
 		public NATText meta_print() throws InterpreterException {
@@ -470,13 +470,19 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			// extend: parent with: { def superSemantics() { #superSemanticsTest } };
 			ATObject child = OBJLexicalRoot._INSTANCE_.base_extend_with_(parent,
 					new NATClosure(
-							new NATMethod(AGSymbol.alloc(NATText.atValue("lambda")), NATTable.EMPTY,
+							new NATMethod(
+									AGSymbol.alloc(NATText.atValue("lambda")), 
+									NATTable.EMPTY,
 									new AGBegin(NATTable.atValue(new ATObject[] {
-											new AGDefFunction(superSemantics, NATTable.EMPTY, 
+											new AGDefFunction(
+													superSemantics, 
+													NATTable.EMPTY, 
 													new AGBegin(
-															NATTable.atValue(new ATObject[] { superSemanticsTest })))}))),
-															ctx_.base_lexicalScope(),
-															ctx_.base_lexicalScope()));
+															NATTable.atValue(new ATObject[] { superSemanticsTest })),
+													NATTable.EMPTY)})), 
+									NATTable.EMPTY),
+							ctx_.base_lexicalScope(),
+							ctx_.base_lexicalScope()));
 			
 			superSemanticsTest.scope_ = child;
 			superSemanticsTest.self_ = child;
@@ -526,7 +532,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 		
 		extender.meta_addMethod(new NATMethod(AGSymbol.jAlloc("extend"),
 				                              NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("o")}),
-				                              new AGBegin(NATTable.of(methodBody))));
+				                              new AGBegin(NATTable.of(methodBody)), NATTable.EMPTY));
 	}
 
 	

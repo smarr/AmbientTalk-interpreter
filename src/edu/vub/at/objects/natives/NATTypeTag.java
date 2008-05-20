@@ -30,6 +30,7 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.actors.natives.DiscoveryManager;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
@@ -135,12 +136,21 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 	}
 	
 	/**
-	 * By default, annotate is the identity function, it does not add any new metadata
+	 * By default, annotateMessage is the identity function, it does not add any new metadata
 	 * to the message.
 	 */
-	public ATObject base_annotate(ATObject originalMessage) throws InterpreterException {
+	public ATObject base_annotateMessage(ATObject originalMessage) throws InterpreterException {
 		return originalMessage;
 	}
+	
+	/**
+	 * By default, annotateMethos is the identity function, it does not add any new metadata
+	 * to the message.
+	 */
+	public ATMethod base_annotateMethod(ATMethod originalMethod) throws InterpreterException {
+		return originalMethod;
+	}
+
 	
 	/**
 	 * Identity of types is based on their name

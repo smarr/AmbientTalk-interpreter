@@ -31,7 +31,6 @@ import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.ELVirtualMachine;
-import edu.vub.at.actors.natives.NATActorMirror;
 import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.actors.net.OBJNetwork;

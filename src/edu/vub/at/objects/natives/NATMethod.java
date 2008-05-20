@@ -53,15 +53,17 @@ public class NATMethod extends NATByCopy implements ATMethod {
 	private final ATSymbol 	name_;
 	private final ATTable 	parameters_;
 	private final ATBegin	body_;
+	private final ATTable	annotations_;
 	
 	// partial function denoting a parameter binding algorithm specialized for this method's parameter list
 	private final PartialBinder parameterBindingFunction_;
 	
 	/** construct a new method. This method may raise an exception if the parameter list is illegal. */
-	public NATMethod(ATSymbol name, ATTable parameters, ATBegin body) throws InterpreterException {
+	public NATMethod(ATSymbol name, ATTable parameters, ATBegin body, ATTable annotations) throws InterpreterException {
 		name_ 		= name;
 		parameters_ = parameters;
 		body_ 		= body;
+		annotations_= annotations;
 		
 		// calculate the parameter binding strategy to use using partial evaluation
 		parameterBindingFunction_ =
@@ -71,10 +73,12 @@ public class NATMethod extends NATByCopy implements ATMethod {
 	/**
 	 * Constructor to be used by primitive methods only.
 	 */
-	protected NATMethod(ATSymbol name, ATTable parameters, PrimitiveMethod.PrimitiveBody body) {
+	protected NATMethod(ATSymbol name, ATTable parameters, PrimitiveMethod.PrimitiveBody body, ATTable annotations) {
 		name_ 		= name;
 		parameters_ = parameters;
 		body_ 		= body;
+		annotations_= annotations;
+		
 		PartialBinder parameterBindingFunction;
 		try {
 			// calculate the parameter binding strategy to use using partial evaluation
@@ -101,6 +105,10 @@ public class NATMethod extends NATByCopy implements ATMethod {
 
 	public ATBegin base_bodyExpression() {
 		return body_;
+	}
+	
+	public ATTable base_annotations() throws InterpreterException {
+		return annotations_;
 	}
 	
 	/**

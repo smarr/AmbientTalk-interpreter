@@ -30,10 +30,8 @@ package edu.vub.at.actors.natives;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
-import edu.vub.at.objects.natives.OBJNil;
 
 /**
  * Instances of NATRemoteFarRef represent far references to physically remote actors.

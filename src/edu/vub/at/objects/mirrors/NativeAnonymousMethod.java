@@ -94,6 +94,10 @@ public class NativeAnonymousMethod extends NATByRef implements ATMethod {
 				AGSymbol.jAlloc("Native anonymous implementation in " + creatorClass_.getName())}));
 	}
 	
+	public ATTable base_annotations() throws InterpreterException {
+		return NATTable.EMPTY;
+	}
+	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<anonymous java method in "+creatorClass_.getName()+">");
 	}

@@ -27,15 +27,20 @@
  */
 package edu.vub.at.eval;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
+
+import org.apache.regexp.RE;
+import org.apache.regexp.REProgram;
+
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XAmbienttalk;
-import edu.vub.at.exceptions.XArityMismatch;
-import edu.vub.at.exceptions.XIllegalParameter;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATAssignVariable;
-import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirrorRoot;
 import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATObject;
@@ -49,15 +54,6 @@ import edu.vub.at.objects.symbiosis.JavaPackage;
 import edu.vub.at.objects.symbiosis.XJavaException;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.Regexp;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.LinkedList;
-
-import org.apache.regexp.RE;
-import org.apache.regexp.REProgram;
 
 /**
  * The Evaluator class serves as a repository for auxiliary evaluation methods.
@@ -175,132 +171,6 @@ public final class Evaluator {
 			}
 		}
 		return NATTable.atValue((ATObject[]) result.toArray(new ATObject[siz]));
-	}
-
-	// auxiliary interface to support functor objects
-	private interface BindClosure {
-		public void bindParamToArg(ATObject inScope, ATSymbol param, ATObject arg) throws InterpreterException;
-	}
-	
-	/**
-	 * Auxiliary function to bind formal parameters to actual arguments within a certain scope.
-	 * 
-	 * A formal parameter list is defined as:
-	 * (mandatory arg: ATSymbol)* , (optional arg: ATVarAssignment)*, (rest arg: ATSplice)?
-	 * 
-	 * An actual argument list is defined as:
-	 * (actual arg: ATObject)*
-	 * 
-	 * @deprecated use partial evalation using {@link PartialBinder#bind(ATObject[], ATContext, edu.vub.at.eval.PartialBinder.BindClosure)} instead. 
-	 * 
-	 * @param funnam the name of the function for which to bind these elements, for debugging purposes only
-	 * @param context the context whose lexical scope denotes the frame in which to store the bindings
-	 * The context is also the context in which to evaluate optional argument expressions.
-	 * @param parameters the formal parameter references (of which the last element may be a 'rest' arg to collect left-over arguments)
-	 * @param arguments the actual arguments, already evaluated
-	 * @param binder a functor object describing the strategy to bind an argument to a parameter (assign or define the parameter)
-	 * @throws XArityMismatch when the formals don't match the actuals
-	 */
-	private static final void bindArguments(String funnam, ATContext context, ATTable parameters, ATTable arguments, BindClosure binder) throws InterpreterException {
-		if (parameters == NATTable.EMPTY) {
-			if (arguments == NATTable.EMPTY)
-				return; // no need to bind any arguments
-			else
-				throw new XArityMismatch(funnam, 0, arguments.base_length().asNativeNumber().javaValue); 
-		}
-		
-		ATObject[] pars = parameters.asNativeTable().elements_;
-		ATObject[] args = arguments.asNativeTable().elements_;
-		
-		/* Traverse formal parameter list conceptually according to
-		 * the following state diagram:
-		 * 
-		 *  state: mandatory [start state, end state]
-		 *    case Symbol => mandatory
-		 *    case Assignment => optional
-		 *    case Splice => rest-arg
-		 *  state: optional [end state]
-		 *    case Symbol => error // no mandatory pars after optional pars
-		 *    case Assignment => optional
-		 *    case Splice => rest-arg
-		 *  state: rest-arg [end state]
-		 *    case * => error // rest-arg should be last
-		 *  state: error [end state]
-		 *    case * => error
-		 */
-		
-		int paridx = 0;
-		int numMandatoryArguments = 0;
-		ATObject scope = context.base_lexicalScope();
-		
-		// determine number of mandatory arguments
-		for (; paridx < pars.length && pars[paridx].isSymbol(); paridx++) {
-			numMandatoryArguments++;
-		}
-		
-		// are there enough actual arguments to satisfy all mandatory args?
-		if (numMandatoryArguments > args.length) {
-			// error: not enough actuals
-			throw new XArityMismatch(funnam, numMandatoryArguments, args.length);
-		}
-		
-		// bind all mandatory arguments
-		for (paridx = 0; paridx < numMandatoryArguments; paridx++) {
-			// bind formal to actual
-			binder.bindParamToArg(scope, pars[paridx].asSymbol(), args[paridx]);			
-		}
-		
-		// if there are no more parameters, make sure all actuals are processed
-		if (numMandatoryArguments == pars.length) {
-			if (numMandatoryArguments < args.length) {
-				// error: too many actuals
-				throw new XArityMismatch(funnam, numMandatoryArguments, args.length);
-			} // else { return; }
-		} else {
-		    // if there are more parameters, process optionals first and then rest parameter
-			int numDefaultOptionals = 0; // count the number of optional arguments that had no corresponding actual
-			// determine number of optional arguments
-			for (; paridx < pars.length && pars[paridx].isVariableAssignment(); paridx++) {
-				if (paridx < args.length) {
-					// bind formal to actual and ignore default initialization expression
-					binder.bindParamToArg(scope, pars[paridx].asVariableAssignment().base_name(), args[paridx]);	
-				} else {
-					// no more actuals: bind optional parameter to default initialization expression
-					ATAssignVariable param = pars[paridx].asVariableAssignment();
-					binder.bindParamToArg(scope, param.base_name(), param.base_valueExpression().meta_eval(context));
-					numDefaultOptionals++;
-				}
-			}
-			
-			// if there are no more parameters, make sure all actuals are processed
-			if (paridx == pars.length) {
-				if (paridx < args.length) {
-					// error: too many actuals
-					throw new XArityMismatch(funnam, numMandatoryArguments, args.length);
-				} // else { return; }
-			} else {
-				// all that is left to process is an optional rest-parameter
-				// check whether last param is spliced, which indicates variable parameter list
-				if (pars[paridx].isSplice()) {
-					// bind the last parameter to the remaining arguments
-					int numRemainingArgs = args.length - paridx + numDefaultOptionals; // #actuals - #actuals used to fill in mandatory or optional args 
-					ATObject[] restArgs = new ATObject[numRemainingArgs];
-					for (int i = 0; i < numRemainingArgs; i++) {
-						restArgs[i] = args[i + paridx];
-					}
-					ATSymbol restArgsName = pars[paridx].asSplice().base_expression().asSymbol();
-					binder.bindParamToArg(scope, restArgsName, NATTable.atValue(restArgs));
-					
-					// rest parameter should always be last
-					if (paridx != pars.length - 1) {
-						throw new XIllegalParameter(funnam, "rest parameter is not the last parameter: " + pars[paridx]);
-					} // else { return; }
-				} else {
-					// optionals followed by mandatory parameter
-					throw new XIllegalParameter(funnam, "optional parameters followed by mandatory parameter " + pars[paridx]);
-				}
-			}
-		}
 	}
 	
 	/**

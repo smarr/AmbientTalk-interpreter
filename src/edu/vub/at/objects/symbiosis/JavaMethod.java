@@ -104,6 +104,10 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 		return Evaluator._ANON_MTH_ARGS_;
 	}
 
+	public ATTable base_annotations() throws InterpreterException {
+		return NATTable.EMPTY;
+	}
+	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<java method:"+choices_[0].getName()+">");
 	}

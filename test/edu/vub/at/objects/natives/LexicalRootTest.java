@@ -49,13 +49,13 @@ public class LexicalRootTest extends AmbientTalkTest {
 	public void setUp() throws Exception {
 		super.setUp();
 		NATObject parent = new NATObject();
-		parent.meta_addMethod(new NATMethod(atN_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_))));
-		parent.meta_addMethod(new NATMethod(atM_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_))));
+		parent.meta_addMethod(new NATMethod(atN_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_)), NATTable.EMPTY));
+		parent.meta_addMethod(new NATMethod(atM_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_)), NATTable.EMPTY));
 		trait_ = new NATObject(parent, Evaluator.getGlobalLexicalScope(), NATObject._IS_A_);
 		trait_.meta_defineField(atX_, NATNumber.ZERO);
 		trait_.meta_addMethod(new NATMethod(atM_,
 				                            NATTable.EMPTY,
-				                            new AGBegin(NATTable.of(AGSelf._INSTANCE_))));
+				                            new AGBegin(NATTable.of(AGSelf._INSTANCE_)), NATTable.EMPTY));
 	}
 	
 	/**
@@ -68,7 +68,7 @@ public class LexicalRootTest extends AmbientTalkTest {
 		AGSymbol atTest = AGSymbol.jAlloc("test");
 		// test method accesses 'x' unqualified
 		host.meta_addMethod(new NATMethod(atTest, NATTable.EMPTY,
-				                  new AGBegin(NATTable.of(atX_))));
+				                  new AGBegin(NATTable.of(atX_)), NATTable.EMPTY));
 		
 		// < import trait > . eval(ctx[lex=host;self=host])
 		new AGImport(trait_, NATTable.EMPTY, NATTable.EMPTY).meta_eval(new NATContext(host, host));

@@ -90,7 +90,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 				checkArity(args, 2);
 				ATObject newMessage = get(args, 1);
 				ATObject type = get(args, 2);
-				return type.asTypeTag().base_annotate(newMessage);
+				return type.asTypeTag().base_annotateMessage(newMessage);
 			}
 		}).asAsyncMessage();
 	}

@@ -78,7 +78,7 @@ public class CoercionTest extends TestCase {
 					return OBJNil._INSTANCE_;
 				}
 			});
-			customClosure_.meta_defineField(AGSymbol.jAlloc("method"), new NATMethod(AGSymbol.jAlloc("foo"), NATTable.EMPTY, new AGBegin(NATTable.EMPTY)));
+			customClosure_.meta_defineField(AGSymbol.jAlloc("method"), new NATMethod(AGSymbol.jAlloc("foo"), NATTable.EMPTY, new AGBegin(NATTable.EMPTY), NATTable.EMPTY));
 			customContext_ = new NATObject(new ATTypeTag[] { NativeTypeTags._CONTEXT_ });
 			customContext_.meta_defineField(AGSymbol.jAlloc("self"), NATNumber.atValue(24));
 			customClosure_.meta_defineField(AGSymbol.jAlloc("context"), customContext_);

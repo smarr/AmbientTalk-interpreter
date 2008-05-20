@@ -31,14 +31,18 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefExternalMethod;
+import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosureMethod;
 import edu.vub.at.objects.natives.NATMethod;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -48,19 +52,21 @@ import edu.vub.at.objects.natives.NATText;
  */
 public final class AGDefExternalMethod extends NATAbstractGrammar implements ATDefExternalMethod {
 
-	private final ATSymbol rcvNam_;
-	private final ATSymbol selectorExp_;
-	private final ATTable argumentExps_;
-	private final ATBegin bodyStmts_;
+	private final ATSymbol		rcvNam_;
+	private final ATSymbol		selectorExp_;
+	private final ATTable		argumentExps_;
+	private final ATBegin		bodyStmts_;
+	private final ATExpression	annotationExps_;
+
+	private ATMethod preprocessedMethod_;
 	
-	private NATMethod preprocessedMethod_;
-	
-	public AGDefExternalMethod(ATSymbol rcv, ATSymbol sel, ATTable args, ATBegin bdy)
+	public AGDefExternalMethod(ATSymbol rcv, ATSymbol sel, ATTable args, ATBegin bdy, ATExpression ann)
 	       throws InterpreterException {
 		rcvNam_ = rcv;
 		selectorExp_ = sel;
 		argumentExps_ = args;
 		bodyStmts_ = bdy;
+		annotationExps_ = ann;
 	}
 
 	public ATSymbol base_receiver() {
@@ -77,6 +83,10 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 
 	public ATBegin base_bodyExpression() {
 		return bodyStmts_;
+	}
+	
+	public ATExpression base_annotationExpression() {
+		return annotationExps_;
 	}
 	
 	/**
@@ -97,7 +107,24 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 		// exception while actually the external method was defined in the context of a quotation,
 		// so at runtime the external definition would have never been evaluated (but quoted instead)
 		if (preprocessedMethod_ == null) {
-			preprocessedMethod_ = new NATMethod(selectorExp_, argumentExps_, bodyStmts_);
+			ATObject oneOrMoreAnnotation = annotationExps_.meta_eval(ctx);
+			ATTable  annotationTable;
+			
+			if(oneOrMoreAnnotation.isTable()) {
+				annotationTable = oneOrMoreAnnotation.asTable();
+			} else {
+				annotationTable = NATTable.of(oneOrMoreAnnotation);
+			}
+			
+			preprocessedMethod_ = new NATMethod(selectorExp_, argumentExps_, bodyStmts_, annotationTable);
+
+			ATObject[] annotations = annotationTable.asNativeTable().elements_;
+			
+			for (int i = 0; i < annotations.length; i++) {
+				ATTypeTag theAnnotation = annotations[i].asTypeTag();
+				
+				preprocessedMethod_ = theAnnotation.base_annotateMethod(preprocessedMethod_);
+			}
 		}
 		
 		ATObject receiver = rcvNam_.meta_eval(ctx);
@@ -122,7 +149,8 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 		return new AGDefExternalMethod(rcvNam_.meta_quote(ctx).asSymbol(),
 				               selectorExp_.meta_quote(ctx).asSymbol(),
 				               argumentExps_.meta_quote(ctx).asTable(),
-				               bodyStmts_.meta_quote(ctx).asBegin());
+				               bodyStmts_.meta_quote(ctx).asBegin(),
+				               annotationExps_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

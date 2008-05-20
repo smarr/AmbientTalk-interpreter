@@ -37,6 +37,7 @@ import edu.vub.at.objects.grammar.ATClosureLiteral;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -74,7 +75,7 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 		// exception while actually the block was defined in the context of a quotation,
 		// so at runtime the block would have never been evaluated (but quoted instead)
 		if (preprocessedMethod_ == null) {
-			preprocessedMethod_ = new NATMethod(Evaluator._LAMBDA_, arguments_, body_);
+			preprocessedMethod_ = new NATMethod(Evaluator._LAMBDA_, arguments_, body_, NATTable.EMPTY);
 		}
 		return new NATClosure(preprocessedMethod_, ctx);
 	}

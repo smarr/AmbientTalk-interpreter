@@ -113,6 +113,10 @@ public class NATClosureMethod extends NATByRef implements ATMethod {
 		return method_.base_parameters();
 	}
 	
+	public ATTable base_annotations() throws InterpreterException {
+		return method_.base_annotations();
+	}
+	
 	/**
 	 * When wrapping a closure method, return a closure that is bound to the given lexical scope.
 	 */

@@ -28,9 +28,8 @@
 package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.grammar.ATExpression;
-
-import org.apache.regexp.RE;
 
 /**
  * ATText is the public interface to a native AmbientTalk string (a string of characters).

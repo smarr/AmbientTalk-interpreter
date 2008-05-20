@@ -42,7 +42,6 @@ import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * <p>NATIntrospectiveMirror is a default mirror to represent an ambienttalk object 

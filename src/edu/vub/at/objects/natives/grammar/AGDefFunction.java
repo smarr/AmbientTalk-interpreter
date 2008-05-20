@@ -30,11 +30,14 @@ package edu.vub.at.objects.natives.grammar;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefMethod;
+import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
@@ -52,13 +55,16 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	private final ATSymbol selectorExp_;
 	private final ATTable argumentExps_;
 	private final ATBegin bodyStmts_;
+	private final ATExpression	annotationExps_;
+
+	private ATMethod preprocessedMethod_;
 	
-	private NATMethod preprocessedMethod_;
-	
-	public AGDefFunction(ATSymbol sel, ATTable args, ATBegin bdy) throws InterpreterException {
+	public AGDefFunction(ATSymbol sel, ATTable args, ATBegin bdy, ATExpression ann) 
+			throws InterpreterException {
 		selectorExp_ = sel;
 		argumentExps_ = args;
 		bodyStmts_ = bdy;
+		annotationExps_ = ann;
 	}
 	
 	public ATSymbol base_selector() {
@@ -71,6 +77,10 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 
 	public ATBegin base_bodyExpression() {
 		return bodyStmts_;
+	}
+	
+	public ATExpression base_annotationExpression() {
+		return annotationExps_;
 	}
 	
 	/**
@@ -95,7 +105,24 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 		// exception while actually the function was defined in the context of a quotation,
 		// so at runtime the function definition would have never been evaluated (but quoted instead)
 		if (preprocessedMethod_ == null) {
-			preprocessedMethod_ = new NATMethod(selectorExp_, argumentExps_, bodyStmts_);
+			ATObject oneOrMoreAnnotation = annotationExps_.meta_eval(ctx);
+			ATTable  annotationTable;
+			
+			if(oneOrMoreAnnotation.isTable()) {
+				annotationTable = oneOrMoreAnnotation.asTable();
+			} else {
+				annotationTable = NATTable.of(oneOrMoreAnnotation);
+			}
+			
+			preprocessedMethod_ = new NATMethod(selectorExp_, argumentExps_, bodyStmts_, annotationTable);
+			
+			ATObject[] annotations = annotationTable.asNativeTable().elements_;
+			
+			for (int i = 0; i < annotations.length; i++) {
+				ATTypeTag theAnnotation = annotations[i].asTypeTag();
+				
+				preprocessedMethod_ = theAnnotation.base_annotateMethod(preprocessedMethod_);
+			}
 		}
 		
 		ATObject current = ctx.base_lexicalScope();
@@ -117,7 +144,8 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGDefFunction(selectorExp_.meta_quote(ctx).asSymbol(),
 				                 argumentExps_.meta_quote(ctx).asTable(),
-				                 bodyStmts_.meta_quote(ctx).asBegin());
+				                 bodyStmts_.meta_quote(ctx).asBegin(),
+				                 annotationExps_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

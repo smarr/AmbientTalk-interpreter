@@ -273,7 +273,7 @@ public final class ELVirtualMachine extends EventLoop {
 	 */
 	public NATLocalFarRef createEmptyActor() throws InterpreterException {
 		Packet noParams = new Packet(NATTable.EMPTY);
-		Packet noinitcode = new Packet(new NATMethod(Evaluator._ANON_MTH_NAM_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_))));
+		Packet noinitcode = new Packet(new NATMethod(Evaluator._ANON_MTH_NAM_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_)), NATTable.EMPTY));
 		return createActor(noParams, noinitcode);
 	}
 

@@ -106,4 +106,11 @@ public interface ATMethod extends ATObject {
 	 * @return an {@link ATBegin} representing the body of the method.
 	 */
 	public ATBegin base_bodyExpression() throws InterpreterException;
+	
+	/**
+	 * Returns the annotations associated with the method.
+	 * 
+	 * @return an {@link ATTable} containing the annotations of the method.
+	 */
+	public ATTable base_annotations() throws InterpreterException;
 }

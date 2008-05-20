@@ -28,6 +28,9 @@
 package edu.vub.at.actors.natives;
 
 
+import java.lang.reflect.Method;
+import java.util.EventListener;
+
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
@@ -49,20 +52,14 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
-import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.NATTypeTag;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.OBJNil;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.Symbiosis;
 import edu.vub.at.util.logging.Logging;
-
-import java.lang.reflect.Method;
-import java.util.EventListener;
 
 /**
  * An instance of the class ELActor represents a programmer-defined

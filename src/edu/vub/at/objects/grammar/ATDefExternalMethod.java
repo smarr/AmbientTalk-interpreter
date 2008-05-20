@@ -91,4 +91,9 @@ public interface ATDefExternalMethod extends ATDefinition {
 	 */
 	public ATBegin base_bodyExpression();
 	
+	/**
+	 * Example: <code>`{ def o.m() @[Getter] { 5 } }.statements[1].annotations == `[Getter]</code>
+	 * @return the annotations of the new method
+	 */
+	public ATExpression base_annotationExpression();
 }

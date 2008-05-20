@@ -44,9 +44,7 @@ public class UniformAccessTest extends AmbientTalkTest {
 	private final NATNumber atThree_ = NATNumber.atValue(3);
 	private final AGSymbol atX_ = AGSymbol.alloc(NATText.atValue("x"));
 	private final AGSymbol atY_ = AGSymbol.alloc(NATText.atValue("y"));
-	private final AGSymbol atZ_ = AGSymbol.alloc(NATText.atValue("z"));
 	private final AGSymbol atM_ = AGSymbol.alloc(NATText.atValue("m"));
-	private final AGSymbol atFooBar_ = AGSymbol.alloc(NATText.atValue("foo:bar:"));
 	
 	/**
 	 * Auxiliary construct to be used in the test suite to execute a closure within the

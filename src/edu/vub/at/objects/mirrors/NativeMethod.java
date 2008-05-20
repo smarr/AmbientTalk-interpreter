@@ -101,6 +101,10 @@ public final class NativeMethod extends NATByRef implements ATMethod {
 				NATText.atValue("Native implementation of " + javaMethod_.toString())}));
 	}
 	
+	public ATTable base_annotations() throws InterpreterException {
+		return NATTable.EMPTY;
+	}
+	
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 		return JavaInterfaceAdaptor.invokeNativeATMethod(javaMethod_, nativeReceiver_,
 						                                 arguments.asNativeTable().elements_);
