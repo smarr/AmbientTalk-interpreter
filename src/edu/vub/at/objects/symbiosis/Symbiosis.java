@@ -204,7 +204,7 @@ public final class Symbiosis {
 	/**
 	 * Creates a new instance of a Java class.
 	 * 
-	 * @param ofClass the Java class of which to create an instance
+	 * @param constructor the JavaConstructor using which to create an instance
 	 * @param atArgs the AmbientTalk arguments to the constructor, to be converted to Java arguments
 	 * @return an unitialized JavaObject wrapper around a newly created instance of the class
 	 * 
@@ -215,12 +215,15 @@ public final class Symbiosis {
 	 * @throws XReflectionFailure if the invoked constructor is not accessible from within AmbientTalk
 	 * @throws XJavaException if the invoked Java constructor throws a Java exception
 	 */
-	public static ATObject symbioticInstanceCreation(Class ofClass, ATObject[] atArgs) throws InterpreterException {
-		Constructor[] ctors = ofClass.getConstructors();
+	public static ATObject symbioticInstanceCreation(JavaConstructor constructor, ATObject[] atArgs) throws InterpreterException {
+		int len = constructor.choices_.length;
+		Constructor[] ctors = new Constructor[len];
+		System.arraycopy(constructor.choices_, 0, ctors, 0, len);
+		
 		switch (ctors.length) {
 		     // no constructors found? class is not instantiatable...
 		case 0:
-			throw new XNotInstantiatable(ofClass);
+			throw new XNotInstantiatable(constructor.class_);
 			// just one constructor found, no need to resolve overloaded methods
 		case 1: {
 			// if the constructor takes an ATObject array as its sole parameter, it is interpreted as taking
@@ -271,7 +274,7 @@ public final class Symbiosis {
 		
 		if (matchingCtors != 1) {
 			// no constructors left or more than one constructor left? overloading resolution failed
-			throw new XSymbiosisFailure(ofClass, ctors, atArgs, matchingCtors);
+			throw new XSymbiosisFailure(constructor.class_, ctors, atArgs, matchingCtors);
 		} else {
 			// just one constructor left, invoke it
 			return invokeUniqueSymbioticConstructor(matchingCtor, actuals);

@@ -35,6 +35,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.symbiosis.JavaConstructor;
 import edu.vub.at.objects.symbiosis.Symbiosis;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.Regexp;
@@ -341,7 +342,7 @@ public final class Reflection {
 	
 	public static final ATObject upExceptionCreation(InterpreterException jRcvr, ATTable atInitargs) throws InterpreterException {
 		ATObject[] args = atInitargs.asNativeTable().elements_;
-		return Symbiosis.symbioticInstanceCreation(jRcvr.getClass(), args);
+		return Symbiosis.symbioticInstanceCreation(new JavaConstructor(jRcvr.getClass()), args);
 	}
 
 	/**

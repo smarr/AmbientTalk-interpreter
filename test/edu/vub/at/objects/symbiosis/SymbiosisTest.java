@@ -695,6 +695,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			assertEquals(10, instance.impl_invokeAccessor(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);
 			assertEquals(11, instance.impl_invokeAccessor(instance, AGSymbol.jAlloc("ytest"), NATTable.EMPTY).asNativeNumber().javaValue);
 		} catch (InterpreterException e) {
+			e.printStackTrace();
 			fail(e.getMessage());
 		}
 	}

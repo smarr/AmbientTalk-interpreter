@@ -146,6 +146,17 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 			  NATObject._NO_TYPETAGS_);
 		wrappedClass_ = wrappedClass;
 		
+		/*
+		 * We install a JavaConstructor instead of the default primitive method such that it 
+		 * will be wrapped correctly (using a JavaClosure) which implies that it is possible 
+		 * to cast a constructor.
+		 */
+		try {
+			super.meta_addMethod(new JavaConstructor(wrappedClass_));
+		} catch (InterpreterException e) {
+			Logging.Actor_LOG.fatal("Error while initializing Java Class constructor: " + wrappedClass.getName(), e);
+		}
+		
 		// add the two fields and one method needed for an ATTypeTag
 		if (wrappedClass.isInterface()) {
 			Class[] extendedInterfaces = wrappedClass_.getInterfaces();
@@ -214,7 +225,8 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 	 * </tt>
 	 */
     public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-    	return Symbiosis.symbioticInstanceCreation(wrappedClass_, initargs.asNativeTable().elements_);
+//    	return Symbiosis.symbioticInstanceCreation(wrappedClass_, initargs.asNativeTable().elements_);
+    	return Symbiosis.symbioticInstanceCreation(new JavaConstructor(wrappedClass_), initargs.asNativeTable().elements_);
     }
     
     /**
