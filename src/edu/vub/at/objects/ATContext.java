@@ -51,7 +51,7 @@ public interface ATContext extends ATObject {
 	 * 
 	 * @return an {@link ATObject} representing the receiver in the current context.
 	 */
-	public ATObject base_self() throws InterpreterException;
+	public ATObject base_receiver() throws InterpreterException;
 	
 	/*
 	 * Factory methods for creating new context objects as a delta w.r.t. the receiver context object.

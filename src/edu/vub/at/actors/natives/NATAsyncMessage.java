@@ -73,7 +73,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 				throw new XArityMismatch("process", 1, arity);
 			}
 			return ctx.base_lexicalScope().asAsyncMessage().prim_process(
-					ctx.base_self().asAsyncMessage(),
+					ctx.base_receiver().asAsyncMessage(),
 					arguments.base_at(NATNumber.ONE));
 		}
 	};

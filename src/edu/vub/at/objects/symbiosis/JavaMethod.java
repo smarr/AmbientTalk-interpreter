@@ -70,7 +70,7 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 	}
 	
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-		ATObject wrapper = ctx.base_self();
+		ATObject wrapper = ctx.base_receiver();
 		Object receiver;
 		if (wrapper.isJavaObjectUnderSymbiosis()) {
 			receiver = wrapper.asJavaObjectUnderSymbiosis().getWrappedObject();

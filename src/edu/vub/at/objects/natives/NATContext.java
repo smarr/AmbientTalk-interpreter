@@ -54,7 +54,7 @@ public class NATContext extends NATByCopy implements ATContext {
 		return scope_;
 	}
 
-	public ATObject base_self() {
+	public ATObject base_receiver() {
 		return self_;
 	}
 

@@ -150,7 +150,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	    private static final long serialVersionUID = -6475956316807558583L;
 
 		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			return ctx.base_lexicalScope().asAmbientTalkObject().prim_init(ctx.base_self(), arguments.asNativeTable().elements_);
+			return ctx.base_lexicalScope().asAmbientTalkObject().prim_init(ctx.base_receiver(), arguments.asNativeTable().elements_);
 		}
 	};
 	

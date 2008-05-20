@@ -80,7 +80,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 		ATTable args = msg.base_arguments();
 		try {
 			stack.methodInvoked(this, rcvr, args);
-			result = msg.base_sendTo(rcvr, ctx.base_self());
+			result = msg.base_sendTo(rcvr, ctx.base_receiver());
 		} finally {
 			stack.methodReturned(result);
 		}

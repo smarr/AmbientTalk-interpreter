@@ -56,7 +56,7 @@ public class UniformAccessTest extends AmbientTalkTest {
 			ATObject closureScope = arguments.base_at(NATNumber.ONE);
 			ATClosure literalClosure = arguments.base_at(NATNumber.atValue(2)).asClosure();
 			
-			return literalClosure.base_method().base_wrap(closureScope, literalClosure.base_context().base_self())
+			return literalClosure.base_method().base_wrap(closureScope, literalClosure.base_context().base_receiver())
 			  .base_apply(NATTable.EMPTY);
 		}
 	};

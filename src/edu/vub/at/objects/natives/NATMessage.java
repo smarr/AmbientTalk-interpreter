@@ -69,7 +69,7 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 				throw new XArityMismatch("sendTo", 2, arity);
 			}
 			return ctx.base_lexicalScope().asMessage().prim_sendTo(
-					ctx.base_self().asMessage(),
+					ctx.base_receiver().asMessage(),
 					arguments.base_at(NATNumber.ONE), arguments.base_at(NATNumber.atValue(2)));
 		}
 	};

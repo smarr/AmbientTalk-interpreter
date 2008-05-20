@@ -86,7 +86,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			
 			// SELF-tests
 			// Is the current value of self consistent with our expectations
-			assertEquals(self_, ctx.base_self());
+			assertEquals(self_, ctx.base_receiver());
 			// Is the expected value of self accessible through the pseudovariable
 			assertEquals(self_, AGSelf._INSTANCE_.meta_eval(ctx));	
 			

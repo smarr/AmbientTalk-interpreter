@@ -169,7 +169,7 @@ public class TestEval extends AmbientTalkTest {
 	}
 	
 	public void testSelfReference() throws InterpreterException {
-        evalAndCompareTo("self", ctx_.base_self());
+        evalAndCompareTo("self", ctx_.base_receiver());
 	}
 	
 	public void testSuperReference() throws InterpreterException {
@@ -178,7 +178,7 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testSelection() throws InterpreterException {
 		// def x := object: { def y() { 3 } }
-		NATObject x = new NATObject(ctx_.base_self());
+		NATObject x = new NATObject(ctx_.base_receiver());
 		NATMethod y = new NATMethod(atY_, NATTable.EMPTY, new AGBegin(NATTable.atValue(new ATObject[] { atThree_ })), NATTable.EMPTY);
 		x.meta_addMethod(y);
 		ctx_.base_lexicalScope().meta_defineField(atX_, x);
@@ -247,7 +247,7 @@ public class TestEval extends AmbientTalkTest {
 		NATObject x = new NATObject(ctx_.base_lexicalScope());
 		ATMethod m = evalAndReturn("def m() { self.y + 1 }").asClosure().base_method();
 		x.meta_addMethod(m);
-		ctx_.base_self().meta_defineField(atY_, NATNumber.atValue(2));
+		ctx_.base_receiver().meta_defineField(atY_, NATNumber.atValue(2));
 		ctx_.base_lexicalScope().meta_defineField(atX_, x);
 		
 		evalAndCompareTo("x^m()", atThree_);
@@ -272,7 +272,7 @@ public class TestEval extends AmbientTalkTest {
 		// def m(x,y,z) { z }
 		NATMethod m = new NATMethod(atM_, NATTable.atValue(new ATObject[] { atX_, atY_, atZ_ }),
                                            new AGBegin(NATTable.atValue(new ATObject[] { atZ_ })), NATTable.EMPTY);
-        ctx_.base_self().meta_addMethod(m);
+        ctx_.base_receiver().meta_addMethod(m);
 		
 		evalAndCompareTo("m(1,@[2,3])", "3");
 		evalAndCompareTo("self.m(1,@[2,3])", "3");
@@ -284,7 +284,7 @@ public class TestEval extends AmbientTalkTest {
                                            new AGBegin(NATTable.atValue(new ATObject[] {
                                         		   NATTable.atValue(new ATObject[] { atX_, atY_, atZ_ })
                                            })), NATTable.EMPTY);
-        ctx_.base_self().meta_addMethod(m);
+        ctx_.base_receiver().meta_addMethod(m);
 		
 		evalAndCompareTo("m(1,2,3,4,5)", "[1, 2, [3, 4, 5]]");
 		evalAndCompareTo("m(1,2,3)", "[1, 2, [3]]");
@@ -297,7 +297,7 @@ public class TestEval extends AmbientTalkTest {
 		// def foo:bar:(x,@y) { y }
 		NATMethod fooBar = new NATMethod(atFooBar_, NATTable.atValue(new ATObject[] { atX_, new AGSplice(atY_) }),
                                                 new AGBegin(NATTable.atValue(new ATObject[] { atY_ })), NATTable.EMPTY);
-        ctx_.base_self().meta_addMethod(fooBar);
+        ctx_.base_receiver().meta_addMethod(fooBar);
 		
 		evalAndCompareTo("foo: 1 bar: 2", "[2]");
 		evalAndCompareTo("foo: 1 bar: @[2,3]", "[2, 3]");

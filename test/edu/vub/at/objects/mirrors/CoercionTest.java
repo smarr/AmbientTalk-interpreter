@@ -128,7 +128,7 @@ public class CoercionTest extends TestCase {
 		try {
 			ATClosure coercedObject = customClosure_.asClosure();
 			ATContext coercedContext = coercedObject.base_context();
-			assertEquals(24, coercedContext.base_self().asNativeNumber().javaValue);
+			assertEquals(24, coercedContext.base_receiver().asNativeNumber().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
