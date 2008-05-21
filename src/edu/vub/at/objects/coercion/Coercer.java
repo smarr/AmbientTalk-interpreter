@@ -186,7 +186,7 @@ public final class Coercer implements InvocationHandler, Serializable {
 					// because a message send is asynchronous and Java threads work synchronously,
 					// we'll have to make the Java thread wait for the result
 					BlockingFuture future = owningActor.sync_event_symbioticInvocation(principal_, method, symbioticArgs);
-					if (method.getReturnType().isAssignableFrom(BlockingFuture.class)) {
+					if (method.getReturnType().equals(BlockingFuture.class)) {
 						// future-type symbiotic invocation
 						return future;
 					} else {
