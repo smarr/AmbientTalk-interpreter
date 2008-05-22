@@ -366,6 +366,10 @@ public final class Import {
 			}
 		}
 		
+		public ATTable base_annotations() throws InterpreterException {
+			return delegate_.meta_select(delegate_, origMethodName_).base_method().base_annotations();
+		}
+		
 	}
 	
 }
