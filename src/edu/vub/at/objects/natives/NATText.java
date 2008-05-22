@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -142,7 +143,7 @@ public final class NATText extends AGExpression implements ATText {
 						 consumer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(match) }));
 					 }
 				 });
-				 return OBJNil._INSTANCE_;
+				 return Evaluator.getNil();
 			 } catch (RESyntaxException e) {
 				throw new XIllegalArgument("Illegal argument to find:do: " + e.getMessage());
 			 }

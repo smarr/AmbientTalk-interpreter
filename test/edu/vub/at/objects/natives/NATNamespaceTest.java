@@ -118,7 +118,7 @@ public class NATNamespaceTest extends TestCase {
 			assertEquals(test, fileScope.impl_invokeAccessor(fileScope, AGSymbol.jAlloc("~"), NATTable.EMPTY));
 			
 			// test.file2.y should equal nil
-			assertEquals(OBJNil._INSTANCE_, fileScope.impl_invokeAccessor(fileScope, AGSymbol.jAlloc("y"), NATTable.EMPTY));
+			assertEquals(Evaluator.getNil(), fileScope.impl_invokeAccessor(fileScope, AGSymbol.jAlloc("y"), NATTable.EMPTY));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -147,7 +147,7 @@ public class NATNamespaceTest extends TestCase {
 			try {
 				test.impl_invokeAccessor(test, AGSymbol.jAlloc("file2"), NATTable.EMPTY);
 			} catch(XSelectorNotFound e) {
-				if (e.getSelector().equals(AGSymbol.jAlloc("x")) && e.getInObject().equals(OBJNil._INSTANCE_)) {
+				if (e.getSelector().equals(AGSymbol.jAlloc("x")) && e.getInObject().equals(Evaluator.getNil())) {
 					// ok
 					System.out.println("[expected]: "+e.getMessage());
 				} else

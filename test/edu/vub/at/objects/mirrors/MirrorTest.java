@@ -29,6 +29,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XAmbienttalk;
@@ -36,7 +37,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.NATBoolean;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -106,7 +106,7 @@ public class MirrorTest extends AmbientTalkTest {
 				"<mirror on:" + subject.toString() + ">");
 		evalAndCompareTo(
 				"mirror.base.super;",
-				OBJNil._INSTANCE_);
+				Evaluator.getNil());
 		
 		/*evalAndCompareTo( => bad unit test: order of field names is undefined
 				"mirror.listFields();",

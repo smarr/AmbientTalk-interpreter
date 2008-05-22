@@ -143,7 +143,7 @@ public final class NATNamespace extends NATObject {
 			if (src.exists() && src.isFile()) {
 			
                  // bind the missing slot to nil to prevent calling this dNU recursively when evaluating the code in the file
-				this.meta_defineField(selector, OBJNil._INSTANCE_);
+				this.meta_defineField(selector, Evaluator.getNil());
 				
 	             // create a new file scope object for this file
 				NATObject fileScope = createFileScopeFor(this);

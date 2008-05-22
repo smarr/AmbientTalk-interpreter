@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
@@ -44,7 +45,6 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
 
@@ -126,7 +126,7 @@ public final class NATMirrorRoot extends NATByCopy implements ATObject {
 		
 		NATMirage newBase = initargs[0].asMirage();
 		// check whether the passed base field does not have a mirror assigned to it yet
-		if (newBase.getMirror() == OBJNil._INSTANCE_) {
+		if (newBase.getMirror() == Evaluator.getNil()) {
 			base_ = newBase;
 			return newBase;
 		} else {

@@ -232,7 +232,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * the empty, dynamic parent of all AmbientTalk objects. 
 	 */
 	public ATNil base_nil() {
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 	
 	/**
@@ -692,7 +692,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	public ATObject base_object_(ATClosure code) throws InterpreterException {
 		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
-				OBJNil._INSTANCE_,
+				Evaluator.getNil(),
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				NATTable.EMPTY,
 				base_defaultMirror());
@@ -997,7 +997,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	public ATObject base_object_taggedAs_(ATClosure code, ATTable types) throws InterpreterException {
 		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
-				OBJNil._INSTANCE_,
+				Evaluator.getNil(),
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				types,
 				base_defaultMirror());
@@ -1108,7 +1108,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	public ATObject base_object_mirroredBy_(ATClosure code, ATObject mirror) throws InterpreterException {
 		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
-				OBJNil._INSTANCE_,
+				Evaluator.getNil(),
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				NATTable.EMPTY,
 				mirror);
@@ -1142,7 +1142,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	public ATObject base_object_taggedAs_mirroredBy_(ATClosure code, ATTable types, ATObject mirror) throws InterpreterException {
 		return base_object_childOf_extends_taggedAs_mirroredBy_(
 				code,
-				OBJNil._INSTANCE_,
+				Evaluator.getNil(),
 				NATBoolean._FALSE_ /* SHARES-A link */,
 				types,
 				mirror);
@@ -1260,7 +1260,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	 public ATNil base_takeOffline_ (ATObject object) throws InterpreterException{
 		ELActor.currentActor().takeOffline(object);
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	 }
 	
 	/* -------------------

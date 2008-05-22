@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.actors.natives.DiscoveryManager;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATMethod;
@@ -131,7 +132,7 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 					return type.base_isSubtypeOf(supertype);
 				}
 			});
-			return NATBoolean.atValue(found != OBJNil._INSTANCE_);
+			return NATBoolean.atValue(found != Evaluator.getNil());
 		}
 	}
 	
@@ -144,8 +145,8 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 	}
 	
 	/**
-	 * By default, annotateMethos is the identity function, it does not add any new metadata
-	 * to the message.
+	 * By default, annotateMethod is the identity function, it does not add any new metadata
+	 * to the method.
 	 */
 	public ATMethod base_annotateMethod(ATMethod originalMethod) throws InterpreterException {
 		return originalMethod;

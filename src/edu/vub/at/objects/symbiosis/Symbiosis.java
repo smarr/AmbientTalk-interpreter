@@ -53,7 +53,6 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.NATTypeTag;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
 
@@ -509,7 +508,7 @@ public final class Symbiosis {
 	public static final ATObject javaToAmbientTalk(Object jObj) throws InterpreterException {
 		// -- NULL => NIL --
 	    if (jObj == null) {
-		  return OBJNil._INSTANCE_;
+		  return Evaluator.getNil();
 		// -- AmbientTalk implementation-level objects --
 		// -- This also includes COERCED objects! (i.e. symbiotic objects) --
 	    } else if (jObj instanceof ATObject) {
@@ -602,7 +601,7 @@ public final class Symbiosis {
 		} else if (targetType == Class.class) {
 			return atObj.asJavaClassUnderSymbiosis().getWrappedClass();
 	    // -- nil => NULL --
-		} else if (atObj == OBJNil._INSTANCE_) {
+		} else if (atObj == Evaluator.getNil()) {
 			// this conversion should only be applied when the target type is not ATObject, because
 		    // such types should never contain a null value!
 			if (ATObject.class.isAssignableFrom(targetType)) {
@@ -656,7 +655,7 @@ public final class Symbiosis {
 					checkArity(args, 1);
 					ATObject properResult = get(args, 1);
 					delayed.resolve(Symbiosis.ambientTalkToJava(properResult, returnType));
-					return OBJNil._INSTANCE_;
+					return Evaluator.getNil();
 				}
 			});
 			
@@ -666,7 +665,7 @@ public final class Symbiosis {
 					checkArity(args, 1);
 					ATObject exception = get(args, 1);
 					delayed.ruin(Evaluator.asJavaException(exception));
-					return OBJNil._INSTANCE_;
+					return Evaluator.getNil();
 				}
 			});
 		}

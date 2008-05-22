@@ -27,6 +27,7 @@
  */
 package edu.vub.at;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.ATAbstractGrammar;
@@ -36,7 +37,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATContext;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NativeATObject;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
@@ -67,28 +67,28 @@ public class OBJUnit extends NATByCopy {
 	
 	public NativeATObject base_echo_(ATObject message) throws InterpreterException {
 		System.out.println(message.meta_print().javaValue);
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	};
 	
 	
 	public NativeATObject base_fail()  {
 		Assert.fail();
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	};
 	
 	public NativeATObject base_fail_(NATText description)  {
 		Assert.fail(description.javaValue);
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	};
 		
 	
 	public NativeATObject base_success() {
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	};
 	
 	public NativeATObject base_assert_equals_(ATObject expected, ATObject actual) {
 		Assert.assertEquals(expected, actual);
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 	
 	public ATObject meta_evaluate(ATText source) {
@@ -108,7 +108,7 @@ public class OBJUnit extends NATByCopy {
 		if(actual != null) {
 			this.base_assert_equals_(expected, actual);
 		} 
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 	
 	public NativeATObject base_assert_printsTo(ATText source, ATObject expected) {
@@ -120,7 +120,7 @@ public class OBJUnit extends NATByCopy {
 		} catch (InterpreterException e) {
 			Assert.fail("Value cannot be represented in a textual format : " + e);
 		} 
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 	/**
 	 * The unittest: primitive, implemented as base-level code.

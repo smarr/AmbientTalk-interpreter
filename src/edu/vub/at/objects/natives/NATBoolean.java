@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
@@ -97,7 +98,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		}
 
 		public ATObject base_ifFalse_(ATClosure clo) throws InterpreterException {
-			return OBJNil._INSTANCE_;
+			return Evaluator.getNil();
 		}
 		
 		public ATObject base_ifTrue_ifFalse_(ATClosure consequent, ATClosure alternative) throws InterpreterException {
@@ -141,7 +142,7 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		// base interface for false
 		
 		public ATObject base_ifTrue_(ATClosure clo) throws InterpreterException {
-			return OBJNil._INSTANCE_;
+			return Evaluator.getNil();
 		}
 
 		public ATObject base_ifFalse_(ATClosure clo) throws InterpreterException {

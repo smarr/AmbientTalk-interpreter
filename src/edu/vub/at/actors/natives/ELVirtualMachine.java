@@ -45,7 +45,6 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 import edu.vub.at.util.logging.Logging;
 
@@ -273,7 +272,7 @@ public final class ELVirtualMachine extends EventLoop {
 	 */
 	public NATLocalFarRef createEmptyActor() throws InterpreterException {
 		Packet noParams = new Packet(NATTable.EMPTY);
-		Packet noinitcode = new Packet(new NATMethod(Evaluator._ANON_MTH_NAM_, NATTable.EMPTY, new AGBegin(NATTable.of(OBJNil._INSTANCE_)), NATTable.EMPTY));
+		Packet noinitcode = new Packet(new NATMethod(Evaluator._ANON_MTH_NAM_, NATTable.EMPTY, new AGBegin(NATTable.of(Evaluator.getNil())), NATTable.EMPTY));
 		return createActor(noParams, noinitcode);
 	}
 

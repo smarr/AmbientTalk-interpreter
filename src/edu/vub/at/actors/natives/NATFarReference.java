@@ -52,7 +52,6 @@ import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
 
@@ -234,7 +233,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
 		// the far reference itself is the receiver of the asynchronous message
 		this.transmit(message);
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 	
 	protected abstract void transmit(ATAsyncMessage passedMessage) throws InterpreterException;
@@ -430,14 +429,6 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		}
 	}
 
-	public ATObject base_init(ATObject[] initargs) throws InterpreterException {
-		throw new XIllegalOperation("Cannot initialize far reference " + this);
-	}
-
-	public ATObject base_new(ATObject[] initargs) throws InterpreterException {
-		throw new XIllegalOperation("Cannot instantiate far reference " + this);
-	}
-
 	/**
      * Performs listener&lt;-apply([ [] ])
      * 
@@ -470,7 +461,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_, NATTable.EMPTY);
 						remote.removeDisconnectionListener(handler);
 					}
-					return OBJNil._INSTANCE_;
+					return Evaluator.getNil();
 				}
 			});
 		}
@@ -494,7 +485,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_,NATTable.EMPTY);
 						remote.removeReconnectionListener(handler);
 					}
-					return OBJNil._INSTANCE_;
+					return Evaluator.getNil();
 				}
 			});
 		}
@@ -518,7 +509,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_,NATTable.EMPTY);
 						remote.removeTakenOfflineListener(handler);
 					}
-					return OBJNil._INSTANCE_;
+					return Evaluator.getNil();
 				}
 			});
 		}

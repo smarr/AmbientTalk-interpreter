@@ -27,10 +27,6 @@
  */
 package edu.vub.at.objects.symbiosis;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.util.Vector;
-
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -53,8 +49,11 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGBegin;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.util.Vector;
 
 /**
  * JavaConstructor is a wrapper class encapsulating one or more java.lang.reflect.Constructor objects.
@@ -203,7 +202,7 @@ public class JavaConstructor extends NATByRef implements ATMethod, ATJavaClosure
 					continue;
 				} else {
 					// return nil
-					return OBJNil._INSTANCE_;
+					return Evaluator.getNil();
 				}
 			} else {
 				// cond is a user-defined boolean, do a recursive send

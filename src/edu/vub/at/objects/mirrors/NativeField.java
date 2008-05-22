@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATField;
@@ -35,7 +36,6 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByRef;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -94,7 +94,7 @@ public class NativeField extends NATByRef implements ATField {
 		// certain fields may not have setters
 		if (mutator_ != null) {
 			JavaInterfaceAdaptor.invokeNativeATMethod(accessor_, host_, new ATObject[] { newValue });
-			return OBJNil._INSTANCE_;
+			return Evaluator.getNil();
 		} else {
 			throw new XIllegalOperation("Field " + name_ + " cannot be set.");
 		}

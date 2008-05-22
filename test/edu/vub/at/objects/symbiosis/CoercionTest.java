@@ -4,6 +4,7 @@
 package edu.vub.at.objects.symbiosis;
 
 import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -12,7 +13,6 @@ import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
@@ -51,7 +51,7 @@ public class CoercionTest extends AmbientTalkTest {
 		ATTable coercedCubbyhole = (ATTable)Coercer.coerce(cubbyhole, ATTable.class);
 		ATObject result = coercedCubbyhole.base_at(NATNumber.ONE);
 		
-		assertEquals(OBJNil._INSTANCE_, result);
+		assertEquals(Evaluator.getNil(), result);
 	}
 
 	/**

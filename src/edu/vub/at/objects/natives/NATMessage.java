@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.objects.ATClosure;
@@ -149,7 +150,7 @@ public abstract class NATMessage extends NATObject implements ATMessage {
 	
 	public ATNil base_arguments__opeql_(ATTable arguments) throws InterpreterException {
 		super.impl_invokeMutator(this, _ARGUMENTS_.asAssignmentSymbol(), NATTable.of(arguments));
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 	
 	public ATClosure base_from(final ATObject sender) {

@@ -30,6 +30,7 @@ package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.AmbientTalkTestCase;
 import edu.vub.at.OBJUnit;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XParseError;
 import edu.vub.at.objects.ATAbstractGrammar;
@@ -39,7 +40,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATClosure;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -67,29 +67,29 @@ public class ReflectiveAccessTest extends AmbientTalkTestCase {
 	 * -- Auxiliary definitions --
 	 * --------------------------- */	
 	
-	protected final NATClosure fail = new NativeClosure(OBJNil._INSTANCE_)  {
+	protected final NATClosure fail = new NativeClosure(Evaluator.getNil())  {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			fail();
-			return OBJNil._INSTANCE_;
+			return Evaluator.getNil();
 		}
 	};
 	
-	protected final NATClosure success = new NativeClosure(OBJNil._INSTANCE_) {
+	protected final NATClosure success = new NativeClosure(Evaluator.getNil()) {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
-			return OBJNil._INSTANCE_;
+			return Evaluator.getNil();
 		}		
 	};
 	
-	protected final NATClosure symbol = new NativeClosure(OBJNil._INSTANCE_) {
+	protected final NATClosure symbol = new NativeClosure(Evaluator.getNil()) {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			return AGSymbol.alloc(arguments.base_at(NATNumber.ONE).asNativeText());
 		}				
 	};
 	
-	protected final NATClosure echo_ = new NativeClosure(OBJNil._INSTANCE_) {
+	protected final NATClosure echo_ = new NativeClosure(Evaluator.getNil()) {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			System.out.println(arguments.base_at(NATNumber.ONE).meta_print().javaValue);
-			return OBJNil._INSTANCE_;
+			return Evaluator.getNil();
 		}						
 	};
 	

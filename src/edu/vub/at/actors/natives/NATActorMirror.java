@@ -31,6 +31,7 @@ import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.natives.DiscoveryManager.Publication;
 import edu.vub.at.actors.natives.DiscoveryManager.Subscription;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -45,7 +46,6 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATByRef;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -119,7 +119,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					discoveryActor.event_cancelPublication(pub);
-					return OBJNil._INSTANCE_;
+					return Evaluator.getNil();
 				}
 			});
 		}
@@ -148,7 +148,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					discoveryActor.event_cancelSubscription(sub);
-					return OBJNil._INSTANCE_;
+					return Evaluator.getNil();
 				}
 			});
 		}

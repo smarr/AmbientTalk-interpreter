@@ -2,6 +2,7 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUndefinedSlot;
@@ -20,7 +21,6 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.OBJNil;
 
 /**
  * Tests the ATObject.meta_eval(ATContext) method for different kinds of abstract grammar elements.
@@ -103,7 +103,7 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testAssignVariable() throws InterpreterException {
 		// def x := nil
-		ctx_.base_lexicalScope().meta_defineField(atX_, OBJNil._INSTANCE_);
+		ctx_.base_lexicalScope().meta_defineField(atX_, Evaluator.getNil());
 		
         evalAndCompareTo("x := 3", atThree_);
         assertEquals(atThree_, ctx_.base_lexicalScope().impl_call(atX_, NATTable.EMPTY));
@@ -111,7 +111,7 @@ public class TestEval extends AmbientTalkTest {
 	
 	public void testAssignTable() throws InterpreterException {
 		// def x[2] { nil }
-		ATTable table = NATTable.atValue(new ATObject[] { OBJNil._INSTANCE_, OBJNil._INSTANCE_ });
+		ATTable table = NATTable.atValue(new ATObject[] { Evaluator.getNil(), Evaluator.getNil() });
 		ctx_.base_lexicalScope().meta_defineField(atX_, table);
 		
         evalAndCompareTo("x[1] := 3", atThree_);

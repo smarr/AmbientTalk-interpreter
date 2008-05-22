@@ -77,7 +77,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			// Is the current callframe lexically connected to the expected scope
 			ATObject lexEnv = ctx.base_lexicalScope();
 			while (lexEnv != scope_) {
-				if(lexEnv == OBJNil._INSTANCE_) {
+				if(lexEnv == Evaluator.getNil()) {
 					fail("Lexical scope not found");
 					break;
 				}

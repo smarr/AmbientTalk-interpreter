@@ -2,6 +2,7 @@ package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XUnassignableField;
@@ -51,7 +52,7 @@ public class UniformAccessTest extends AmbientTalkTest {
 	 * scope of a given scope object. This is used to test the semantics of call and 
 	 * lookup in particularly in combination with native and symbiotic objects. 
 	 */
-	private final ATClosure atWithScope_Do_ = new NativeClosure(OBJNil._INSTANCE_) {
+	private final ATClosure atWithScope_Do_ = new NativeClosure(Evaluator.getNil()) {
 		public ATObject base_apply(ATTable arguments) throws InterpreterException {
 			ATObject closureScope = arguments.base_at(NATNumber.ONE);
 			ATClosure literalClosure = arguments.base_at(NATNumber.atValue(2)).asClosure();

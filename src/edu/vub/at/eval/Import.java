@@ -45,7 +45,6 @@ import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.OBJNil;
 
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -310,7 +309,7 @@ public final class Import {
 
 		if (conflicts == null) {
 			// no conflicts found
-			return OBJNil._INSTANCE_;
+			return Evaluator.getNil();
 		} else {
 			throw new XImportConflict((ATSymbol[]) conflicts.toArray(new ATSymbol[conflicts.size()]));
 		}

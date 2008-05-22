@@ -1,6 +1,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.objects.ATObject;
@@ -59,7 +60,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	 */
 	public void testCustomFieldRead() throws Exception {
 		testHost_.meta_addField(testField_.asField());
-		assertEquals(OBJNil._INSTANCE_, testHost_.impl_invokeAccessor(testHost_, foo_, NATTable.EMPTY));
+		assertEquals(Evaluator.getNil(), testHost_.impl_invokeAccessor(testHost_, foo_, NATTable.EMPTY));
 	}
 
 	/**

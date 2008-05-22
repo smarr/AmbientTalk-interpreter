@@ -121,7 +121,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
      */
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
     	ELActor.currentActor().event_acceptSelfSend(this, message);
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
     }
     
 	/**
@@ -536,7 +536,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
      * 'super' is a read-only field (i.e. only an accessor for the virtual field exists).
      */
     public ATObject base_super() throws InterpreterException {
-        return OBJNil._INSTANCE_;
+        return Evaluator.getNil();
     };
 
     public String toString() {
@@ -576,7 +576,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     }
     
     public ATObject base_init(ATObject[] initargs) throws InterpreterException {
-    	return OBJNil._INSTANCE_;
+    	return Evaluator.getNil();
     }
     
 	/**

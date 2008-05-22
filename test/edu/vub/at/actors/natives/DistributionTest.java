@@ -7,7 +7,6 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.NativeClosure;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATObjectClosureTest;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
@@ -49,8 +48,8 @@ public class DistributionTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		virtual1_ = new ELVirtualMachine(OBJNil._INSTANCE_, new SharedActorField[] { }, _TEST_GROUP_NAME_);
-		virtual2_ = new ELVirtualMachine(OBJNil._INSTANCE_, new SharedActorField[] { }, _TEST_GROUP_NAME_);
+		virtual1_ = new ELVirtualMachine(Evaluator.getNil(), new SharedActorField[] { }, _TEST_GROUP_NAME_);
+		virtual2_ = new ELVirtualMachine(Evaluator.getNil(), new SharedActorField[] { }, _TEST_GROUP_NAME_);
 	}
 	
 	protected void tearDown() throws Exception {
@@ -77,12 +76,12 @@ public class DistributionTest extends TestCase {
 			public Object call(Object argument)throws InterpreterException {
 				return Evaluator.getGlobalLexicalScope().meta_defineField(
 						AGSymbol.jAlloc("success"),
-						new NativeClosure(OBJNil._INSTANCE_) {
+						new NativeClosure(Evaluator.getNil()) {
 
 							public ATObject base_apply(ATTable arguments) throws InterpreterException {
 								setTestResult(true);
 								
-								return OBJNil._INSTANCE_;
+								return Evaluator.getNil();
 							}
 						});
 			}

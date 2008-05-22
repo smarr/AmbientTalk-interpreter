@@ -28,6 +28,7 @@
 
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATMessage;
@@ -35,7 +36,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATContext;
 import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -209,7 +209,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 			
 			message.base_arguments__opeql_(NATTable.of(closures.base_length()));
 
-			ATObject element = message.base_sendTo(closures, OBJNil._INSTANCE_);
+			ATObject element = message.base_sendTo(closures, Evaluator.getNil());
 			
 			element.asClosure().base_apply(NATTable.EMPTY);
 
@@ -238,7 +238,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 					AGAssignmentSymbol.jAlloc("arguments:="), 
 					NATTable.of(NATTable.of(closures.base_length())));	
 
-			ATObject element = message.base_sendTo(closures, OBJNil._INSTANCE_);
+			ATObject element = message.base_sendTo(closures, Evaluator.getNil());
 			
 			element.asClosure().base_apply(NATTable.EMPTY);
 		} catch (InterpreterException e) {

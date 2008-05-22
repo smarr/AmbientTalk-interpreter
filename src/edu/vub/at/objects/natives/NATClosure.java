@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.signals.SignalEscape;
@@ -122,7 +123,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 					continue;
 				} else {
 					// return nil
-					return OBJNil._INSTANCE_;
+					return Evaluator.getNil();
 				}
 			} else {
 				// cond is a user-defined boolean, do a recursive send
@@ -175,7 +176,7 @@ public class NATClosure extends NATByRef implements ATClosure {
 				} else {
 					ATObject val;
 					if (args.base_isEmpty().asNativeBoolean().javaValue) {
-						val = OBJNil._INSTANCE_; 
+						val = Evaluator.getNil(); 
 					} else {
 						val = get(args, 1);
 					}

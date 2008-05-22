@@ -57,7 +57,6 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.NativeATObject;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -164,12 +163,12 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// -- CLASS OBJECTS --
 			assertEquals(jTestClass, Symbiosis.ambientTalkToJava(atTestClass, Class.class));
 			// -- nil => NULL if converting to Java --
-			assertEquals(null, Symbiosis.ambientTalkToJava(OBJNil._INSTANCE_, Runnable.class));
+			assertEquals(null, Symbiosis.ambientTalkToJava(Evaluator.getNil(), Runnable.class));
 			// -- nil => nil if remaining within AT --
-			assertEquals(OBJNil._INSTANCE_, Symbiosis.ambientTalkToJava(OBJNil._INSTANCE_, ATObject.class));
+			assertEquals(Evaluator.getNil(), Symbiosis.ambientTalkToJava(Evaluator.getNil(), ATObject.class));
 			// beware with types such as java.lang.Object that match both Java and AT types!
 			// if the ATObject can be assigned to the Java type, the ATObject will be kept
-			assertEquals(OBJNil._INSTANCE_, Symbiosis.ambientTalkToJava(OBJNil._INSTANCE_, Object.class));
+			assertEquals(Evaluator.getNil(), Symbiosis.ambientTalkToJava(Evaluator.getNil(), Object.class));
 			// -- INTERFACE TYPES AND NAT CLASSES --
 			assertTrue(Symbiosis.ambientTalkToJava(new NATObject(), Runnable.class) instanceof Runnable);
 			try {
@@ -201,7 +200,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// -- CLASS OBJECTS --
 			assertEquals(atTestClass, Symbiosis.javaToAmbientTalk(jTestClass));
 			// -- nil => NULL --
-			assertEquals(OBJNil._INSTANCE_, Symbiosis.javaToAmbientTalk(null));
+			assertEquals(Evaluator.getNil(), Symbiosis.javaToAmbientTalk(null));
 			// -- INTERFACE TYPES AND NAT CLASSES --
 			ATObject orig = new NATObject();
 			Object proxy = Symbiosis.ambientTalkToJava(orig, Runnable.class);
@@ -225,7 +224,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			
 			// result := atTestObject.settertest(1); assert(result == nil); assert(atTestObject.xtest == 1)
 			result = atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("settertest"), NATTable.atValue(new ATObject[] { NATNumber.ONE }));
-			assertEquals(OBJNil._INSTANCE_, result);
+			assertEquals(Evaluator.getNil(), result);
 			assertEquals(1, jTestObject.xtest);
 			// result := atTestObject.xtest
 			result = atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("xtest"), NATTable.EMPTY);
@@ -268,7 +267,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testFaultyArity() {
 		try {
-			atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("gettertest"), NATTable.atValue(new ATObject[] { OBJNil._INSTANCE_ }));
+			atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("gettertest"), NATTable.atValue(new ATObject[] { Evaluator.getNil() }));
 			fail("Expected an arity mismatch exception");
 		} catch(XArityMismatch e) {
 			// expected exception: success
@@ -319,7 +318,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			ATObject result = atTestObject.meta_invoke(atTestObject,
 													AGSymbol.jAlloc("overloadedvararg"),
 													NATTable.atValue(new ATObject[] { NATNumber.ZERO, NATNumber.ONE }));
-			assertEquals(OBJNil._INSTANCE_, result);
+			assertEquals(Evaluator.getNil(), result);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -474,7 +473,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// the dynamic parent of atTestObject is atTestClass
 			assertEquals(atTestClass, atTestObject.base_super());
 			// the dynamic parent of atTestClass is nil
-			assertEquals(OBJNil._INSTANCE_, atTestClass.base_super());
+			assertEquals(Evaluator.getNil(), atTestClass.base_super());
 			
 			// the lexical parent of atTestObject is the lexical root
 			assertEquals(Evaluator.getGlobalLexicalScope(), atTestObject.impl_lexicalParent());

@@ -28,6 +28,7 @@
 package edu.vub.at.objects.mirrors;
 
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -46,7 +47,6 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATCallframe;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -96,7 +96,7 @@ public class NATMirage extends NATObject {
 	
 	public NATMirage(ATObject dynamicParent, ATObject lexParent, boolean parentType, ATTypeTag[] types) {
 		super(dynamicParent, lexParent, parentType, types);
-		mirror_ = OBJNil._INSTANCE_; // set to nil while not initialized
+		mirror_ = Evaluator.getNil(); // set to nil while not initialized
 	}
 	
 	/**
@@ -128,7 +128,7 @@ public class NATMirage extends NATObject {
 			         byte flags,
 			         ATTypeTag[] types) throws InterpreterException {
 		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types);
-		mirror_ = OBJNil._INSTANCE_;
+		mirror_ = Evaluator.getNil();
 	}
 	
     public boolean isMirage() {
@@ -326,7 +326,7 @@ public class NATMirage extends NATObject {
 				NATTable.atValue(new ATObject[] { method })
 				);
 			
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 
 	public ATObject meta_clone() throws InterpreterException {
@@ -341,7 +341,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.jAlloc("defineField"),
 				NATTable.atValue(new ATObject[] { name, value }));
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 	
 	public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException {
@@ -408,7 +408,7 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.jAlloc("addField"),
 				NATTable.atValue(new ATObject[] { field }));
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 
 

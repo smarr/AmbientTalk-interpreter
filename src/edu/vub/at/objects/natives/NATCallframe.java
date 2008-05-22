@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XDuplicateSlot;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -119,7 +120,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 			// field now defined, add its value to the state vector
 			stateVector_.add(value);
 		}
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 
 	/* ------------------------------------
@@ -159,7 +160,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 			// append the custom field object
 			customFields_.add(field);
 		}
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 	
 	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {

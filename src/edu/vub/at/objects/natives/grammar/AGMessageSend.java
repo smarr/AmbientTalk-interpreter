@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
@@ -36,7 +37,6 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageSend;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -58,7 +58,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	
 	public ATNil base_receiverExpression__opeql_(ATExpression rcv) { 
 		rcvExp_ = rcv;
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 
 	public ATExpression base_messageExpression() { return message_; }

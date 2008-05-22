@@ -1,6 +1,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.objects.ATContext;
@@ -52,7 +53,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				new NativeClosure(clone) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Cloning is not properly defined under the isCloneOf test.");
-						return OBJNil._INSTANCE_;
+						return Evaluator.getNil();
 					}					
 				});
 			
@@ -76,7 +77,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				new NativeClosure(clone) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Adding fields to a clone should disrupt the isCloneOf test when comparing the original to the extended object.");
-						return OBJNil._INSTANCE_;
+						return Evaluator.getNil();
 					}					
 				});
 		
@@ -84,7 +85,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				new NativeClosure(original) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Adding fields to a clone should NOT disrupt the isCloneOf test when comparing the extended object to the original.");
-						return OBJNil._INSTANCE_;
+						return Evaluator.getNil();
 					}					
 				});
 		
@@ -92,7 +93,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				new NativeClosure(original) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Extensions should not return true to the isCloneOf test.");
-						return OBJNil._INSTANCE_;
+						return Evaluator.getNil();
 					}					
 				});
 		
@@ -100,7 +101,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				new NativeClosure(clone) {
 					public ATObject base_apply(ATTable arguments) throws InterpreterException {
 						fail("Extensions should not return true to the isCloneOf test.");
-						return OBJNil._INSTANCE_;
+						return Evaluator.getNil();
 					}					
 				});
 		

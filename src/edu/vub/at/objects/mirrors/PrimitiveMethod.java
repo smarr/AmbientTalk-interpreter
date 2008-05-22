@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
@@ -35,7 +36,6 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATMethod;
-import edu.vub.at.objects.natives.OBJNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
@@ -81,7 +81,7 @@ public class PrimitiveMethod extends NATMethod {
 			return this;
 		}
 		
-		public ATTable base_statements() { return NATTable.of(OBJNil._INSTANCE_); }
+		public ATTable base_statements() { return NATTable.of(Evaluator.getNil()); }
 		
 		public NATText meta_print() throws InterpreterException {
 			return NATText.atValue("<primitive body>");
@@ -107,7 +107,7 @@ public class PrimitiveMethod extends NATMethod {
             private static final long serialVersionUID = -2177230227968386983L;
 
 			public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-				return OBJNil._INSTANCE_;
+				return Evaluator.getNil();
 			}
 		}, NATTable.EMPTY);
 	}

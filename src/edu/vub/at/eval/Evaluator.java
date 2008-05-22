@@ -47,6 +47,7 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.JavaObject;
@@ -58,7 +59,7 @@ import edu.vub.util.Regexp;
 /**
  * The Evaluator class serves as a repository for auxiliary evaluation methods.
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public final class Evaluator {
 	
@@ -114,6 +115,17 @@ public final class Evaluator {
 	private static final ThreadLocal _MIRROR_ROOT_ = new ThreadLocal() {
 	    protected synchronized Object initialValue() {
 	        return createMirrorRoot();
+	    }
+	};
+	
+	/**
+	 * A thread-local variable is used to assign a unique nil object to
+	 * each separate actor. This object is the root of the delegation
+	 * chain of all objects owned by that actor.
+	 */
+	private static final ThreadLocal _NIL_ = new ThreadLocal() {
+	    protected synchronized Object initialValue() {
+	        return createNil();
 	    }
 	};
 	
@@ -269,6 +281,13 @@ public final class Evaluator {
 	}
 	
 	/**
+	 * @return the nil object of an actor, to which all objects owned by that actor eventually delegate.
+	 */
+	public static NATNil getNil() {
+		return (NATNil) _NIL_.get();
+	}
+	
+	/**
 	 * Restores the global lexical scope to a fresh empty object.
 	 * Resets the lobby global namespace.
 	 */
@@ -306,6 +325,13 @@ public final class Evaluator {
      */
 	private static NATMirrorRoot createMirrorRoot() {
 		return new NATMirrorRoot();
+	}
+	
+    /**
+     * The default nil object.
+     */
+	private static NATNil createNil() {
+		return new NATNil();
 	}
 	
 	public static final String valueNameOf(Class c) {

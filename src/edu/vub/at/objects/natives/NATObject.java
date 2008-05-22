@@ -216,8 +216,9 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	/**
 	 * The method dictionary of this object. It maps method selectors to ATMethod objects.
+	 * Protected access modifier because {@link NATNil} needs to add primitive methods.
 	 */
-	private MethodDictionary methodDictionary_;
+	protected MethodDictionary methodDictionary_;
 	
 	/**
 	 * The types with which this object has been tagged.
@@ -259,7 +260,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * @param lexicalParent - the lexical scope in which the object's definition was nested
 	 */
 	public NATObject(ATObject lexicalParent) {
-		this(OBJNil._INSTANCE_, lexicalParent, _SHARES_A_);
+		this(Evaluator.getNil(), lexicalParent, _SHARES_A_);
 	}
 	
 	/**
@@ -267,7 +268,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * The object's dynamic parent is nil and is tagged with the given table of type tags
 	 */
 	public NATObject(ATObject lexicalParent, ATTypeTag[] tags) {
-		this(OBJNil._INSTANCE_, lexicalParent, _SHARES_A_, tags);
+		this(Evaluator.getNil(), lexicalParent, _SHARES_A_, tags);
 	}
 
 	/**
@@ -534,7 +535,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			}
 			methodDictionary_.put(name, method);
 		}
-		return OBJNil._INSTANCE_;
+		return Evaluator.getNil();
 	}
 
 	public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException {
@@ -797,7 +798,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public static ATField[] listTransitiveFields(ATObject obj) throws InterpreterException {
 		Vector fields = new Vector();
 		HashSet encounteredNames = new HashSet(); // to filter duplicates
-		for (; obj != OBJNil._INSTANCE_ ; obj = obj.base_super()) {
+		for (; obj != Evaluator.getNil() ; obj = obj.base_super()) {
 			ATObject[] localFields = obj.meta_listFields().asNativeTable().elements_;
 			for (int i = 0; i < localFields.length; i++) {
 				ATField field = localFields[i].asField();
@@ -818,7 +819,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public static ATMethod[] listTransitiveMethods(ATObject obj) throws InterpreterException {
 		Vector methods = new Vector();
 		HashSet encounteredNames = new HashSet(); // to filter duplicates		
-		for (; obj != OBJNil._INSTANCE_ ; obj = obj.base_super()) {
+		for (; obj != Evaluator.getNil() ; obj = obj.base_super()) {
 			// fast-path for native objects
 			if (obj instanceof NATObject) {
 				Collection localMethods = ((NATObject) obj).methodDictionary_.values();
