@@ -27,9 +27,17 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Vector;
+
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.ATLetter;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
@@ -62,13 +70,6 @@ import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Vector;
 
 /**
  * Native implementation of a default ambienttalk object.
@@ -662,6 +663,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public ATDefinition asDefinition() throws InterpreterException { return (ATDefinition) coerce(NativeTypeTags._DEFINITION_, ATDefinition.class); }
 	public ATMessageCreation asMessageCreation() throws InterpreterException { return (ATMessageCreation) coerce(NativeTypeTags._MSGCREATION_, ATMessageCreation.class); }
 	public ATFarReference asFarReference() throws InterpreterException { return (ATFarReference) coerce(NativeTypeTags._FARREF_, ATFarReference.class); }
+	public ATLetter asLetter() throws InterpreterException { return (ATLetter) coerce(NativeTypeTags._LETTER_, ATLetter.class); }
 	
 	// ALL isXXX methods return true (can be overridden by programmer-defined base-level methods)
 	

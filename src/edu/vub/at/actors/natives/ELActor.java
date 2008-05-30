@@ -282,23 +282,15 @@ public class ELActor extends EventLoop {
 	 * 
 	 * When an actor receives an asynchronous message for a given receiver, it delegates control
 	 * to the message itself by means of the message's <tt>process</tt> method.
+	 * @throws InterpreterException 
 	 */
-	public void event_acceptSelfSend(final ATObject receiver, final ATAsyncMessage msg) {
-		receive(new Event("selfAccept("+msg+")") {
-			public void process(Object myActorMirror) {
-				try {
-					// we know receiver is a local object reference, so immediately process
-					// the message
-					ATObject result = msg.base_process(receiver);
-					// TODO what to do with return value?
-					Logging.Actor_LOG.debug(mirror_ + ": "+ msg + " returned " + result);
-				} catch (InterpreterException e) {
-					// TODO what to do with exception?
-					e.printAmbientTalkStackTrace(System.err);
-					Logging.Actor_LOG.error(mirror_ + ": "+ msg + " failed ", e);
-				}
-			}
-		});
+	public void acceptSelfSend(final ATObject receiver, final ATAsyncMessage msg) throws InterpreterException {
+		// This is the only place where messages are scheduled
+		// The receiver is always a local object, receive has
+		// already been invoked.
+    	mirror_.base_schedule(receiver, msg);
+    	// signal a serve event for every message that is accepted
+    	this.event_serve();
 	}
 	
 	/**
@@ -351,15 +343,34 @@ public class ELActor extends EventLoop {
 		});
 	}
 	
+	public void event_serve() {
+		receive(new Event("serve()") {
+			public void process(Object myActorMirror) {
+				try {
+					ATObject result = mirror_.base_serve();
+					// TODO what to do with return value?
+					Logging.Actor_LOG.debug(mirror_ + ": serve() returned " + result);
+				} catch (InterpreterException e) {
+					// TODO what to do with exception?
+					e.printAmbientTalkStackTrace(System.err);
+					Logging.Actor_LOG.error(mirror_ + ": serve() failed ", e);
+				}
+			}
+		});
+	}
+	
 	private void performAccept(ATObject receiver, ATAsyncMessage msg) {
 		try {
 			ATObject result = mirror_.base_receive(receiver, msg);
 			// TODO what to do with return value?
-			Logging.Actor_LOG.debug(mirror_ + ": "+ msg + " returned " + result);
+			Logging.Actor_LOG.debug(mirror_ + ": scheduling "+ msg + " returned " + result);
+			
+			// signal a serve event for every message that is accepted
+			event_serve();
 		} catch (InterpreterException e) {
 			// TODO what to do with exception?
 			e.printAmbientTalkStackTrace(System.err);
-			Logging.Actor_LOG.error(mirror_ + ": "+ msg + " failed ", e);
+			Logging.Actor_LOG.error(mirror_ + ": scheduling "+ msg + " failed ", e);
 		}
 	}
 	

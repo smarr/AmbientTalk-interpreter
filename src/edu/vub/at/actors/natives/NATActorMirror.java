@@ -27,8 +27,11 @@
  */
 package edu.vub.at.actors.natives;
 
+import java.util.LinkedList;
+
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATLetter;
 import edu.vub.at.actors.natives.DiscoveryManager.Publication;
 import edu.vub.at.actors.natives.DiscoveryManager.Subscription;
 import edu.vub.at.eval.Evaluator;
@@ -39,8 +42,8 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
@@ -50,8 +53,10 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.NATTypeTag;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.util.logging.Logging;
 
 /**
  * The NATActorMirror class implements the concurrency model of ambienttalk. It continually
@@ -269,5 +274,72 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
     public ATActorMirror asActorMirror() throws XTypeMismatch {
     	return this;
     }
+    
+    /* -------------------------
+	 * -- Scheduling Protocol --
+	 * ------------------------- */
+    
+    /**
+     * The inbox of this actor. It contains objects that implement the {@link ATLetter} interface
+     */
+    private LinkedList inbox_ = new LinkedList();
+	
+	/**
+	 * A letter object is defined as:
+	 * object: {
+	 *   def receiver := //receiver of the letter;
+	 *   def message := //the message that is being sent;
+	 *   def cancel() { //cancel the delivery of the letter }
+	 * }
+	 */
+	public static class NATLetter extends NATObject {
+		private static final AGSymbol _RCVR_ = AGSymbol.jAlloc("receiver");
+		private static final AGSymbol _MSG_ = AGSymbol.jAlloc("message");
+		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
+		public NATLetter(final LinkedList inbox, ATObject receiver, ATObject message) throws InterpreterException {
+			super(new ATTypeTag[] { NativeTypeTags._LETTER_ });
+			meta_defineField(_RCVR_, receiver);
+			meta_defineField(_MSG_, message);
+			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					inbox.remove(this);
+					return Evaluator.getNil();
+				}
+			});
+		}
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("<letter:"+impl_invokeAccessor(this, _MSG_, NATTable.EMPTY)+">");
+		}
+	}
+
+	/**
+	 * Returns a table with all letters currently in the inbox
+	 */
+	public ATTable base_listIncomingLetters() throws InterpreterException {
+		ATObject[] incoming = (ATObject[]) inbox_.toArray(new ATObject[inbox_.size()]);
+		return NATTable.atValue(incoming);
+	}
+
+	/**
+	 * 
+	 */
+	public ATObject base_schedule(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
+		NATLetter letter = new NATLetter(inbox_, receiver, message);
+		inbox_.addFirst(letter);
+		return letter;
+	}
+
+	public ATObject base_serve() throws InterpreterException {
+		if (inbox_.size() > 0) {
+			ATObject next = (ATObject) inbox_.removeLast();
+			ATLetter letter = next.asLetter();
+			// receive has already been invoked prior to scheduling
+			// the receive is known to be a local object, therefore we
+			// can immediately process the message
+			return letter.base_message().base_process(letter.base_receiver());
+		} else {
+			return Evaluator.getNil();
+		}
+	}
 		
 }

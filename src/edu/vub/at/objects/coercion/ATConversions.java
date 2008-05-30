@@ -30,6 +30,7 @@ package edu.vub.at.objects.coercion;
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.ATLetter;
 import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.eval.Import.DelegateMethod;
 import edu.vub.at.exceptions.InterpreterException;
@@ -125,6 +126,7 @@ public interface ATConversions {
 	public ATFarReference asFarReference() throws InterpreterException;
 	public ATAsyncMessage asAsyncMessage() throws InterpreterException;
 	public ATActorMirror asActorMirror() throws InterpreterException;
+	public ATLetter    asLetter() throws InterpreterException;
 	
 	// Abstract Grammar Elements
 	

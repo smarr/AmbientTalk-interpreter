@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.coercion;
 
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATTypeTag;
 
 /**
@@ -78,6 +79,9 @@ public final class NativeTypeTags {
 	
 //deftype AsyncMessage <: Message;
 	public final static NATTypeTag _ASYNCMSG_ = NATTypeTag.atValue("AsyncMessage", _MESSAGE_);
+	
+//deftype Letter;
+	public final static NATTypeTag _LETTER_ = NATTypeTag.atValue("Letter");
 	
 //deftype Mirror;
 	public final static NATTypeTag _MIRROR_ = NATTypeTag.atValue("Mirror");
@@ -218,4 +222,5 @@ public final class NativeTypeTags {
 
 //deftype ObjectOffline <: Exception;
     public final static NATTypeTag _OBJECTOFFLINE_ = NATTypeTag.atValue("ObjectOffline", _EXCEPTION_);
+
 }

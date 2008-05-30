@@ -32,6 +32,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
@@ -96,6 +97,26 @@ public interface ATActorMirror extends ATObject {
 	 * actor. It can be used e.g. to keep track of all succesfully processed messages. 
 	 */
 	public ATObject base_receive(ATObject receiver, ATAsyncMessage message) throws InterpreterException;
+	
+	/**
+	 * This method provides access to a snapshot of the inbox of an actor. It is however not causally
+	 * connected to the inbox; adding/removing elements to/from this snapshot will not affect the inbox of
+	 * the actor.
+	 * @return a table containing all letters that are scheduled to be processed
+	 */
+	public ATTable base_listIncomingLetters() throws InterpreterException;
+	
+	/**
+	 * This mechanism allows for changing the scheduling semantics of the actor's inbox.
+	 * @return a letter, which can be canceled again
+	 */
+	public ATObject base_schedule(ATObject receiver, ATAsyncMessage message) throws InterpreterException;
+	
+	/**
+	 * This method fetches and processes the next letter from the inbox.
+	 * It should take into account the possibility that the inbox is empty.
+	 */
+	public ATObject base_serve() throws InterpreterException;
 
 	
 	/**

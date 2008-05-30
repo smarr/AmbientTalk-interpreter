@@ -27,9 +27,14 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.io.InvalidObjectException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.ATLetter;
 import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.actors.net.SerializationException;
@@ -71,10 +76,6 @@ import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaMethod;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.util.logging.Logging;
-
-import java.io.InvalidObjectException;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
 
 /**
  * This class implements default semantics for all test and conversion methods.
@@ -120,7 +121,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
      * to return a value other than <tt>nil</tt> for an async message send.
      */
     public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
-    	ELActor.currentActor().event_acceptSelfSend(this, message);
+    	ELActor.currentActor().acceptSelfSend(this, message);
 		return Evaluator.getNil();
     }
     
@@ -471,6 +472,10 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     
     public ATSplice asSplice() throws InterpreterException {
         throw new XTypeMismatch(ATSplice.class, this);
+    }
+    
+    public ATLetter asLetter() throws InterpreterException {
+    	throw new XTypeMismatch(ATLetter.class, this);
     }
     
     // Conversions for native values
