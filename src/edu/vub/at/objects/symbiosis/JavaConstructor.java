@@ -45,8 +45,8 @@ import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATContext;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
-import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
@@ -129,7 +129,7 @@ public class JavaConstructor extends NATByRef implements ATMethod, ATJavaClosure
 	}
 
 	public ATSymbol base_name() throws InterpreterException {
-		return NATObject._NEW_NAME_;
+		return NATNil._NEW_NAME_;
 	}
 
 	public ATTable base_parameters() throws InterpreterException {

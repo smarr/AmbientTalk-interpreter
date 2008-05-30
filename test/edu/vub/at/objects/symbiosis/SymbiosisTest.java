@@ -682,13 +682,13 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testCustomInstanceCreation() {
 		try {
-			// def orignew := atTestClass.new; def atTestClass.new(x,y) { def o := orignew(x); def o.ytest := y; o }
-			ATClosure newClo = evalAndReturn("def new(x,y) { def o := orignew(x); def o.ytest := y; o }; &new").asClosure();
+			// def orignew := atTestClass.new; def atTestClass.customNew(x,y) { def o := orignew(x); def o.ytest := y; o }
+			ATClosure newClo = evalAndReturn("def customNew(x,y) { def o := orignew(x); def o.ytest := y; o }; &customNew").asClosure();
 			atTestClass.meta_defineField(AGSymbol.jAlloc("orignew"), atTestClass.meta_select(atTestClass, AGSymbol.jAlloc("new")));
 			atTestClass.meta_addMethod(newClo.base_method());
 			
-			// def instance := atTestClass.new(10, 11)
-			ATObject instance = atTestClass.meta_invoke(atTestClass, AGSymbol.jAlloc("new"),
+			// def instance := atTestClass.customNew(10, 11)
+			ATObject instance = atTestClass.meta_invoke(atTestClass, AGSymbol.jAlloc("customNew"),
 					NATTable.atValue(new ATObject[] { NATNumber.atValue(10), NATNumber.atValue(11) }));
 			
 			assertEquals(10, instance.impl_invokeAccessor(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);

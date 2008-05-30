@@ -45,7 +45,7 @@ public abstract class NATByRef extends NativeATObject {
 	 * representation takes the form of a far reference to the local object.
 	 */
 	public ATObject meta_pass() throws InterpreterException {
-		return ELActor.currentActor().export(this);
+		return ELActor.currentActor().getActorMirror().base_createReference(this);
 	}
 	
 	/**

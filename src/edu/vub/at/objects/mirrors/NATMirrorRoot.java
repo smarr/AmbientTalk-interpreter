@@ -43,6 +43,8 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -136,13 +138,21 @@ public final class NATMirrorRoot extends NATByCopy implements ATObject {
 
 	/**
 	 * This implementation is actually an ad hoc modification of the NATObject implementation
-	 * of instance creation, dedicated for OBJMirrorRoot. Using the NATObject implementation
+	 * of instance creation, dedicated for the mirror root. Using the NATObject implementation
 	 * would work perfectly, but this one is more efficient.
 	 */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
-		NATMirrorRoot clone = new NATMirrorRoot(base_); // same as this.meta_clone()
-		clone.base_init(initargs.asNativeTable().elements_);
-		return clone;
+		ATObject[] initargz = initargs.asNativeTable().elements_;
+		if (initargz.length != 1) {
+			throw new XArityMismatch("newInstance", 1, initargz.length);
+		}
+		NATMirage newBase = initargz[0].asMirage();
+		// check whether the passed base field does not have a mirror assigned to it yet
+		if (newBase.getMirror() == Evaluator.getNil()) {
+			return new NATMirrorRoot(newBase);
+		} else {
+			throw new XIllegalArgument("mirror root's init method requires an uninitialized mirage, found: " + newBase);
+		}
 	}
 	
 	/* ------------------------------------
@@ -153,7 +163,7 @@ public final class NATMirrorRoot extends NATByCopy implements ATObject {
 	 * The mirror root is cloned but the base field is only shallow-copied, i.e. it is shared
 	 * between the clones! Normally, mirrors are instantiated rather than cloned when assigned
 	 * to a new object, such that this new base field will be re-assigned to another mirage
-	 * (in OBJMirrorRoot's primitive 'init' method).
+	 * (in {@link NATMirrorRoot#base_init(ATObject[])}).
 	 */
 	public ATObject meta_clone() throws InterpreterException {
 		return new NATMirrorRoot(base_);

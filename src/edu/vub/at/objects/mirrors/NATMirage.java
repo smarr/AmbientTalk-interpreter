@@ -39,14 +39,15 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATCallframe;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -76,7 +77,7 @@ public class NATMirage extends NATObject {
 			// the mirror and re-initializes it, setting the base field to this new mirage
 			// def mirrorClone := mirror.new(<uninitialized mirage>)
 			// the init method of the mirror root will normally 
-			ATObject mirrorClone = mirror.meta_invoke(mirror, NATObject._NEW_NAME_, NATTable.of(newMirage));
+			ATObject mirrorClone = mirror.meta_invoke(mirror, NATNil._NEW_NAME_, NATTable.of(newMirage));
 			
 			// set the mirage's mirror to the cloned mirror
 			newMirage.initializeWithMirror(mirrorClone);
@@ -156,7 +157,7 @@ public class NATMirage extends NATObject {
 				flags,
 				types);
         // clonedMirage.mirror := myMirror.new(clonedMirage)
-		clonedMirage.mirror_ = mirror_.meta_invoke(mirror_, NATObject._NEW_NAME_, NATTable.of(clonedMirage));
+		clonedMirage.mirror_ = mirror_.meta_invoke(mirror_, NATNil._NEW_NAME_, NATTable.of(clonedMirage));
 		return clonedMirage;
 	}
 	

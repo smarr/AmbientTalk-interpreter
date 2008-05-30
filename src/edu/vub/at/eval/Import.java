@@ -42,6 +42,7 @@ import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATClosure;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -66,9 +67,9 @@ public final class Import {
 			  // prepare the default names to exclude
 			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._SUPER_NAME_); // skip 'super', present in all objects
 			_DEFAULT_EXCLUDED_SLOTS_.add(Evaluator._CURNS_SYM_); // sip '~', present in all namespaces
-			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._EQL_NAME_); // skip '==', present in all objects
-			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._INI_NAME_); // skip 'init', present in all objects
-			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._NEW_NAME_); // skip 'new', present in all objects
+			_DEFAULT_EXCLUDED_SLOTS_.add(NATNil._EQL_NAME_); // skip '==', present in all objects via nil
+			_DEFAULT_EXCLUDED_SLOTS_.add(NATNil._INI_NAME_); // skip 'init', present in all objects via nil
+			_DEFAULT_EXCLUDED_SLOTS_.add(NATNil._NEW_NAME_); // skip 'new', present in all objects via nil
 		}
 		return _DEFAULT_EXCLUDED_SLOTS_;
 	}

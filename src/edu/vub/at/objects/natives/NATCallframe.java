@@ -151,7 +151,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 			throw new XDuplicateSlot(name);			
 		} else {
 			// add a clone of the field initialized with its new host
-			field = field.base_new(new ATObject[] { this }).asField();
+			field = field.meta_newInstance(NATTable.of(this)).asField();
 			
 			// add the field to the list of custom fields, which is created lazily
 			if (customFields_ == null) {

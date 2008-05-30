@@ -29,6 +29,7 @@
 package edu.vub.at.actors;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
@@ -111,6 +112,17 @@ public interface ATActorMirror extends ATObject {
 	 * has been satisfied, it is automatically cancelled.
 	 */
 	public ATObject base_require(ATTypeTag topic, ATClosure handler, ATBoolean bool) throws InterpreterException;
+	
+	/**
+	 * Create a far reference to a local object. Custom actor mirrors may override
+	 * this method in order to return different kinds of object references, e.g.
+	 * leased object references.
+	 * 
+	 * @param toObject a **near** reference to the object to export
+	 * @return a local far reference to the object being exported
+	 * @throws XIllegalOperation if the passed object is a far reference, i.e. non-local
+	 */
+	public ATObject base_createReference(ATObject toObject) throws InterpreterException;
 	
 	/**
 	 * def oldprotocol := actor.install: newprotocol

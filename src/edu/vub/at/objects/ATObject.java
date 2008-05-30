@@ -772,7 +772,7 @@ public interface ATObject extends ATConversions {
      * @param initargs the variable argument list to pass to the <tt>init</tt> method.
      * @return by default, the new instance of this mirror's base object.
      */
-    public ATObject base_new(ATObject[] initargs) throws InterpreterException;
+    // public ATObject base_new(ATObject[] initargs) throws InterpreterException;
 
     /**
      * The object initialisation method. In class-based languages, this method
@@ -797,7 +797,7 @@ public interface ATObject extends ATConversions {
      * this value is <i>discarded</i> when <tt>init</tt> is invoked from the
      * <tt>newInstance</tt> meta-level operation.
      */
-    public ATObject base_init(ATObject[] initargs) throws InterpreterException;
+    // public ATObject base_init(ATObject[] initargs) throws InterpreterException;
     
     /* -----------------------------------------
      * - Implementation-Level Object interface -

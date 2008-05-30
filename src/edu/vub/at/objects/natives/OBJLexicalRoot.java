@@ -1665,10 +1665,11 @@ public final class OBJLexicalRoot extends NATByCopy {
      * Instantiate the <tt>root</tt> object. I.e. <code>new()</code> is equivalent
      * to <tt>root.new()</tt>.
      */
-    public ATObject base_new(ATObject[] initargs) throws InterpreterException {
+    /*public ATObject base_new(ATObject[] initargs) throws InterpreterException {
     	// root.new(@initargs)
-	    return Evaluator.getGlobalLexicalScope().base_new(initargs);
-    }
+    	ATObject root = Evaluator.getGlobalLexicalScope();
+	    return root.meta_invoke(root,NATNil._NEW_NAME_,NATTable.atValue(initargs));
+    }*/
     
 	/**
 	 * After deserialization, ensure that the lexical root remains unique.

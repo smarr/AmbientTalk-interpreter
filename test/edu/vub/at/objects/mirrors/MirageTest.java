@@ -74,7 +74,7 @@ public class MirageTest extends AmbientTalkTest {
 		
 		// when creating a mirror, its base field is initialised to an empty mirage
 		assertEquals(baseP.getClass(), NATMirage.class);
-		evalAndCompareTo("mirrorP.listMethods().length", "3"); // default objects have three primitve methods
+		evalAndCompareTo("mirrorP.listMethods().length", "0");
 		evalAndCompareTo( // default objects have one primitive field super
 				"mirrorP.listFields()",
 				"[<field:super>]");

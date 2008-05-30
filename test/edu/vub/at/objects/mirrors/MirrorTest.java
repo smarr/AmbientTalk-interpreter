@@ -116,9 +116,9 @@ public class MirrorTest extends AmbientTalkTest {
 		                   new String[] { "super", "field" });
 		
 		evalAndTestContainsAll("mirror.listMethods().map: { |meth| meth.name };",
-				           new String[] { "keyworded:message:", "new", "init", "==", "canonical" });
+				           new String[] { "keyworded:message:", "canonical" });
 		// methodNames should equal the following table (apart from the ordering of the elements):
-        // [<method:keyworded:message:>, <primitive method:new>, <primitive method:init>, <primitive method:==>, <method:canonical>]
+        // [<method:keyworded:message:>, <method:canonical>]
 		
 		evalAndCompareTo(
 				"mirror.eval(context);",
@@ -291,33 +291,33 @@ public class MirrorTest extends AmbientTalkTest {
 	public void testListMethods() throws InterpreterException {
 		
 		evalAndTestContainsAll(
-				"def test := object: { nil }; \n" +
+				"def test := object: { }; \n" +
 				"(reflect: test).listMethods().map: { |meth| meth.name }; \n",
-				new String[] { "new", "init", "==" });
+				new String[] { });
 		evalAndTestContainsAll(
 				"def testMirrored := object: { nil } mirroredBy: (mirror: { nil }); \n" +
 				"(reflect: testMirrored).listMethods().map: { |meth| meth.name }; \n",
-				new String[] { "new", "init", "==" });
+				new String[] { });
 		evalAndTestContainsAll(
 				"test := object: { \n" +
 				"  def init(); \n" +
 				"}; \n" +
 				"(reflect: test).listMethods().map: { |meth| meth.name }; \n",
-				new String[] { "new", "init", "==" });
+				new String[] { "init" });
 		evalAndTestContainsAll(
 				"testMirrored := object: { \n" +
 				"  def init(); \n" +
 				"} mirroredBy: (mirror: { nil });  \n" +
 				"(reflect: testMirrored).listMethods().map: { |meth| meth.name }; \n",
-				new String[] { "new", "init", "==" });
+				new String[] { "init" });
 		evalAndTestContainsAll(
 				"def test.hello() { \"hello world\" }; \n" +
 				"(reflect: test).listMethods().map: { |meth| meth.name }; \n",
-				new String[] { "new", "init", "==", "hello" });
+				new String[] { "hello" });
 		evalAndTestContainsAll(
 				"def testMirrored.hello() { \"hello world\" }; \n" +
 				"(reflect: test).listMethods().map: { |meth| meth.name }; \n",
-				new String[] { "new", "init", "==", "hello" });
+				new String[] { "hello" });
 	}
 	
 	/**

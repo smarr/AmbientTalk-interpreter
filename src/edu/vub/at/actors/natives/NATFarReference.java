@@ -49,6 +49,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByCopy;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -243,7 +244,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * @throws XIllegalOperation Cannot synchronously invoke a method on a far reference
 	 */
 	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
-		if (atSelector.equals(NATObject._EQL_NAME_)) {
+		if (atSelector.equals(NATNil._EQL_NAME_)) {
 			return super.meta_invoke(receiver, atSelector, arguments);
 		}
 		throw new XIllegalOperation("Cannot invoke " + atSelector + " on far reference " + this);
@@ -296,7 +297,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * @throws XIllegalOperation - cannot select in objects hosted by another actor.
 	 */
 	public ATClosure meta_select(ATObject receiver, ATSymbol atSelector) throws InterpreterException {
-		if (atSelector.equals(NATObject._EQL_NAME_)) {
+		if (atSelector.equals(NATNil._EQL_NAME_)) {
 			return super.meta_select(receiver, atSelector);
 		}
 		throw new XIllegalOperation("Cannot select " + atSelector + " from far reference " + this);

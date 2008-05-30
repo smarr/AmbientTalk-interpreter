@@ -254,6 +254,18 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return receiver.meta_receive(message);
 	}
 	
+	/**
+	 * Export the given local object such that it is now remotely accessible via the
+	 * returned object id.
+	 * @param object a **near** reference to the object to export
+	 * @return a local far reference to the object being exported
+	 * @throws XIllegalOperation if the passed object is a far reference, i.e. non-local
+	 */
+	public ATObject base_createReference(ATObject object) throws InterpreterException {
+		// receptionist set will check whether ATObject is really local to me
+		return ELActor.currentActor().receptionists_.exportObject(object);
+	}
+	
     public ATActorMirror asActorMirror() throws XTypeMismatch {
     	return this;
     }

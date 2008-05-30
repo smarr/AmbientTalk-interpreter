@@ -571,13 +571,13 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		return NATBoolean.atValue(this == other);
     }
     
-    public ATObject base_new(ATObject[] initargs) throws InterpreterException {
+    /*public ATObject base_new(ATObject[] initargs) throws InterpreterException {
     	return this.meta_newInstance(NATTable.atValue(initargs));
-    }
+    }*/
     
-    public ATObject base_init(ATObject[] initargs) throws InterpreterException {
+    /*public ATObject base_init(ATObject[] initargs) throws InterpreterException {
     	return Evaluator.getNil();
-    }
+    }*/
     
 	/**
 	 * This method is used to evaluate code of the form <tt>selector(args)</tt>

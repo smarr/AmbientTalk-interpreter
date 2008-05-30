@@ -110,57 +110,6 @@ public class NATObject extends NATCallframe implements ATObject {
 	// The name of the field that points to the dynamic parent
 	public static final AGSymbol _SUPER_NAME_ = AGSymbol.jAlloc("super");
 	
-	// The names of the primitive methods
-	public static final AGSymbol _EQL_NAME_ = AGSymbol.jAlloc("==");
-	public static final AGSymbol _NEW_NAME_ = AGSymbol.jAlloc("new");
-	public static final AGSymbol _INI_NAME_ = AGSymbol.jAlloc("init");
-	
-	// The primitive methods themselves
-	
-	/** def ==(comparand) { nil } */
-	private static final PrimitiveMethod _PRIM_EQL_ = new PrimitiveMethod(
-
-			_EQL_NAME_, NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("comparand")})) {
-      private static final long serialVersionUID = -4475956316807558583L;
-      
-		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			if (!arguments.base_length().equals(NATNumber.ONE)) {
-				throw new XArityMismatch("==", 1, arguments.base_length().asNativeNumber().javaValue);
-			}
-			
-			ATObject comparand = arguments.base_at(NATNumber.ONE);
-			
-			// make other object perform the actual pointer equality
-			// if comparand is a proxy, it can delegate this request to its principal
-			return comparand.impl_identityEquals(ctx.base_lexicalScope());
-		}
-	};
-	/** def new(@initargs) { nil } */
-	private static final PrimitiveMethod _PRIM_NEW_ = new PrimitiveMethod(
-			_NEW_NAME_, NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("initargs")) })) {
-        private static final long serialVersionUID = -5475956316807558583L;
-
-		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			return ctx.base_lexicalScope().base_new(arguments.asNativeTable().elements_);
-		}
-	};
-	/** def init(@initargs) { nil } */
-	private static final PrimitiveMethod _PRIM_INI_ = new PrimitiveMethod(
-			_INI_NAME_, NATTable.atValue(new ATObject[] { new AGSplice(AGSymbol.jAlloc("initargs")) })) {
-	    private static final long serialVersionUID = -6475956316807558583L;
-
-		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
-			return ctx.base_lexicalScope().asAmbientTalkObject().prim_init(ctx.base_receiver(), arguments.asNativeTable().elements_);
-		}
-	};
-	
-	/**
-	 * Does the selector signify a 'primitive' method, present in each AmbientTalk object?
-	 */
-	public static boolean isPrimitive(ATSymbol name) {
-		return name.equals(_EQL_NAME_) || name.equals(_NEW_NAME_) || name.equals(_INI_NAME_);
-	}
-	
 	// Auxiliary static methods to support the type of dynamic parent
 	public static final boolean _IS_A_ 		= true;
 	public static final boolean _SHARES_A_ 	= false;
@@ -316,12 +265,6 @@ public class NATObject extends NATCallframe implements ATObject {
 		variableMap_.put(_SUPER_NAME_);
 		stateVector_.add(dynamicParent);
 		
-		// add ==, new and init to the method dictionary directly
-		// we don't pass via meta_addMethod as this would trigger mirages too early
-		methodDictionary_.put(_EQL_NAME_, _PRIM_EQL_);
-		methodDictionary_.put(_NEW_NAME_, _PRIM_NEW_);
-		methodDictionary_.put(_INI_NAME_, _PRIM_INI_);
-		
 		if (parentType) { // parentType == _IS_A_)
 			// requested an 'is-a' parent
 			setFlag(_ISAPARENT_FLAG_); // set is-a parent flag to 1
@@ -379,7 +322,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			Iterator it = originalCustomFields.iterator();
 			while (it.hasNext()) {
 				ATField field = (ATField) it.next();
-				customFields_.add(field.base_new(new ATObject[] { this }).asField());
+				customFields_.add(field.meta_newInstance(NATTable.of(this)).asField());
 			}
 		}
 	}
@@ -403,25 +346,12 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * Invoke NATObject's primitive implementation, such that Java invocations of this
 	 * method have the same behaviour as AmbientTalk invocations.
 	 */
-    public ATObject base_init(ATObject[] initargs) throws InterpreterException {
-    	return this.prim_init(this, initargs);
-    }
-	
-	/**
-	 * The primitive implementation of init in objects is to invoke the init
-	 * method of their parent.
-	 * @param self the object that originally received the 'init' message.
-	 * 
-	 * def init(@args) {
-	 *   super^init(@args)
-	 * }
-	 */
-    private ATObject prim_init(ATObject self, ATObject[] initargs) throws InterpreterException {
-    	return base_super().meta_invoke(self, Evaluator._INIT_, NATTable.atValue(initargs));
-    }
+    /*public ATObject base_init(ATObject[] initargs) throws InterpreterException {
+    	return this.meta_invoke(this, NATNil._INI_NAME_, NATTable.atValue(initargs));
+    }*/
     
     public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
-    	return this.meta_invoke(this, _EQL_NAME_, NATTable.of(comparand)).asBoolean();
+    	return this.meta_invoke(this, NATNil._EQL_NAME_, NATTable.of(comparand)).asBoolean();
     }
 
 	/* ------------------------------------------
@@ -518,14 +448,10 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * already exist. Also, care has to be taken that the method dictionary of an object
 	 * does not affect clones. Therefore, if the method dictionary is shared, a copy
 	 * of the dictionary is taken before adding the method.
-	 * 
-	 * One exception to method addition are primitive methods: if the method added
-	 * would conflict with a primitive method, the primitive is replaced by the new
-	 * method instead.
 	 */
 	public ATNil meta_addMethod(ATMethod method) throws InterpreterException {
 		ATSymbol name = method.base_name();
-		if (this.hasLocalField(name) || (this.hasLocalMethod(name) && !isPrimitive(name))) {
+		if (this.hasLocalField(name) || this.hasLocalMethod(name)) {
 			throw new XDuplicateSlot(name);
 		} else {
 			// first check whether the method dictionary is shared

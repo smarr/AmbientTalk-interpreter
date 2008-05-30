@@ -170,18 +170,6 @@ public class ELActor extends EventLoop {
 	}
 	
 	/**
-	 * Export the given local object such that it is now remotely accessible via the
-	 * returned object id.
-	 * @param object a **near** reference to the object to export
-	 * @return a unique identifier by which this object can be retrieved via the resolve method.
-	 * @throws XObjectOffline if the passed object is a far reference, i.e. non-local
-	 */
-	public NATLocalFarRef export(ATObject object) throws InterpreterException {
-		// receptionist set will check whether ATObject is really local to me
-		return receptionists_.exportObject(object);
-	}
-	
-	/**
 	 * Takes offline a given remote object such that it is no longer remotely accessible.
 	 * @param object a **far?** reference to the object to export
 	 * @throws XIllegalOperation if the passed object is not part of the export table - i.e. non-remotely accessible.

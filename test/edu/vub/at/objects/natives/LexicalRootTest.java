@@ -98,8 +98,8 @@ public class LexicalRootTest extends AmbientTalkTest {
 		
 		// host's primitive methods should be left untouched, i.e.
 		// host != trait and host == host
-		assertTrue(host.meta_invoke(host, NATObject._EQL_NAME_, NATTable.of(host)).asNativeBoolean().javaValue);
-		assertFalse(host.meta_invoke(host, NATObject._EQL_NAME_, NATTable.of(trait_)).asNativeBoolean().javaValue);
+		assertTrue(host.meta_invoke(host, NATNil._EQL_NAME_, NATTable.of(host)).asNativeBoolean().javaValue);
+		assertFalse(host.meta_invoke(host, NATNil._EQL_NAME_, NATTable.of(trait_)).asNativeBoolean().javaValue);
 	}
 	
 	/**
