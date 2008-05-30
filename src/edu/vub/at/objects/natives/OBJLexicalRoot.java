@@ -1100,7 +1100,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * object.
 	 * 
 	 * @param code a closure containing both the code with which to initialize the object and the new object's lexical parent.
-	 * @param mirror the mirror of the newly created mirage object.
+	 * @param mirror the mirror prototype of the newly created mirage object, or a constructor closure.
 	 * @return a new AmbientTalk object with the properties defined above.
 	 * @see #base_object_(ATClosure)
 	 * @see #base_object_childOf_extends_taggedAs_mirroredBy_(ATClosure, ATObject, ATBoolean, ATTable, ATObject)
@@ -1123,7 +1123,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  <li>The object's <b>dynamic parent</b> is <tt>nil</tt>.
 	 *  <li>The object's <b>parent type</b> is <b>SHARES-A</b> (i.e. it is not an extension of its parent).
 	 *  <li>The object's <b>types</b> are set to the argument types.
-	 *  <li>The object's <b>mirror</b> is the given mirror. This means that this object is a <i>mirage</i>
+	 *  <li>The object's <b>mirror</b> is a clone of given mirror, or the return value of a constructor closure. This means that this object is a <i>mirage</i>
 	 *  whose metaobject protocol is entirely dictated by the given mirror.
 	 * </ul>
 	 * 
@@ -1157,7 +1157,8 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 *  <li>The object's <b>dynamic parent</b> is the argument parent object.
 	 *  <li>The object's <b>parent type</b> is the argument parent type, true being <tt>IS-A</tt>, false being <tt>SHARES-A</tt>.
 	 *  <li>The object's <b>types</b> are set to the argument types table.
-	 *  <li>The object's <b>mirror</b> is the given mirror. This means that this object is a <i>mirage</i>
+	 *  <li>The object's <b>mirror</b> is a clone of the given mirror prototype,
+	 *  or the return value of the given constructor closure. This means that this object is a <i>mirage</i>
 	 *  whose metaobject protocol is entirely dictated by the given mirror, if the mirror is not <tt>defaultMirror</tt>.
 	 * </ul>
 	 * 

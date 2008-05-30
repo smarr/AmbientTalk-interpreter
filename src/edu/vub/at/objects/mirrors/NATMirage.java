@@ -69,21 +69,28 @@ public class NATMirage extends NATObject {
 	private ATObject mirror_;
 	
 	public static NATMirage createMirage(ATClosure code, ATObject dynamicParent, boolean parentType, ATTypeTag[] types, ATObject mirror) throws InterpreterException {
-		if (mirror.meta_isTaggedAs(NativeTypeTags._MIRROR_).asNativeBoolean().javaValue) {
-			// create a new, uninitialized mirage
-			NATMirage newMirage = new NATMirage(dynamicParent, code.base_context().base_lexicalScope(), parentType, types);
+		// create a new, uninitialized mirage
+		NATMirage newMirage = new NATMirage(dynamicParent, code.base_context().base_lexicalScope(), parentType, types);
 			
-			// create a new instance of the mirror with the uninitialized mirage, this implicitly clones
-			// the mirror and re-initializes it, setting the base field to this new mirage
+		ATObject theMirror;
+		if (mirror.meta_isTaggedAs(NativeTypeTags._CLOSURE_).asNativeBoolean().javaValue) {
+			// the mirror argument is a constructor closure: the mirror to be used
+			// is the return value of applying the closure
+			theMirror = mirror.asClosure().base_apply(NATTable.of(newMirage));
+		} else {
+			// create a new instance of the mirror prototype with the uninitialized mirage,
+			// this implicitly clones the mirror and re-initializes it, setting the base field
+			// to this new mirage
 			// def mirrorClone := mirror.new(<uninitialized mirage>)
-			// the init method of the mirror root will normally 
-			ATObject mirrorClone = mirror.meta_invoke(mirror, NATNil._NEW_NAME_, NATTable.of(newMirage));
-			
+			theMirror = mirror.meta_invoke(mirror, NATNil._NEW_NAME_, NATTable.of(newMirage));	
+		}
+
+		if (theMirror.meta_isTaggedAs(NativeTypeTags._MIRROR_).asNativeBoolean().javaValue) {
 			// set the mirage's mirror to the cloned mirror
-			newMirage.initializeWithMirror(mirrorClone);
+			newMirage.initializeWithMirror(theMirror);
 			return newMirage;
 		} else {
-			throw new XIllegalArgument("Object used as a mirror without having the Mirror type tag: " + mirror);
+			throw new XIllegalArgument("Object used as a mirror without having the Mirror type tag: " + theMirror);
 		}
 	}
 	
