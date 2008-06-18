@@ -229,12 +229,12 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
 	/**
-	 * def install: protocol
+	 * def replaceMirror: protocol
 	 *  => returns the old installed protocol
 	 * 
-	 * @see ATActorMirror#base_install_(ATClosure)
+	 * @see ATActorMirror#base_replaceMirror_(ATClosure)
 	 */
-	public ATObject base_install_(ATActorMirror newActorMirror) throws InterpreterException {
+	public ATObject base_replaceMirror_(ATActorMirror newActorMirror) throws InterpreterException {
 		ELActor myEventLoop = ELActor.currentActor();
 		ATActorMirror oldMirror = myEventLoop.getActorMirror();
 		myEventLoop.setActorMirror(newActorMirror);
