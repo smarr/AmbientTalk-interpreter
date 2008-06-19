@@ -30,6 +30,7 @@ package edu.vub.at.actors.natives;
 import java.util.Iterator;
 import java.util.Set;
 
+import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.natives.DiscoveryManager.Publication;
 import edu.vub.at.actors.natives.DiscoveryManager.Subscription;
@@ -304,6 +305,30 @@ public final class ELDiscoveryActor extends ELActor {
 		    	}
 			}
 		});
+	}
+
+	public Publication[] sync_event_listPublications(final ELActor actor) throws InterpreterException {
+		try {
+			return (Publication[]) this.receiveAndWait("currentPublications("+actor+")", new Callable() {
+				public Object call(Object argument) {
+					return discoveryManager_.listPublications(actor);
+				}
+			});
+		} catch (Exception e) {
+			throw (InterpreterException) e;
+		}
+	}
+
+	public Subscription[] sync_event_listSubscriptions(final ELActor actor) throws InterpreterException {
+		try {
+			return (Subscription[]) this.receiveAndWait("currentPublications("+actor+")", new Callable() {
+				public Object call(Object argument) {
+					return discoveryManager_.listSubscriptions(actor);
+				}
+			});
+		} catch (Exception e) {
+			throw (InterpreterException) e;
+		}
 	}
 	
 }

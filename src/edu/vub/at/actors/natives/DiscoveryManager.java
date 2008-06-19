@@ -282,4 +282,26 @@ public final class DiscoveryManager {
 			Logging.VirtualMachine_LOG.error("DiscoveryManager: error notifying subscriber closure:", e);
 		}
 	}
+
+	public Publication[] listPublications(ELActor actor) {
+		LinkedList matches = new LinkedList();
+        for (Iterator iter = publications_.iterator(); iter.hasNext();) {
+                Publication pub = (Publication) iter.next();
+                if (pub.providerActor_ == actor) {
+                        matches.add(pub);
+                }
+        }
+        return (Publication[]) matches.toArray(new Publication[matches.size()]);
+	}
+
+	public Subscription[] listSubscriptions(ELActor actor) {
+		LinkedList matches = new LinkedList();
+        for (Iterator iter = subscriptions_.iterator(); iter.hasNext();) {
+                Subscription sub = (Subscription) iter.next();
+                if (sub.subscriberActor_ == actor) {
+                        matches.add(sub);
+                }
+        }
+        return (Subscription[]) matches.toArray(new Subscription[matches.size()]);
+	}
 }

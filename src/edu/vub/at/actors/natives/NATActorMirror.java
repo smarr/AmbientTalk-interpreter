@@ -178,6 +178,36 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		discoveryActor_.event_clientSubscribed(sub);
 		return new NATSubscription(discoveryActor_, topic, handler, sub);
 	}
+
+	public ATTable base_listPublications() throws InterpreterException {
+		ELActor myEventLoop = ELActor.currentActor();
+		Publication[] pubs = discoveryActor_.sync_event_listPublications(myEventLoop);
+        NATPublication[] natpubs = new NATPublication[pubs.length];
+        for(int i = 0; i < pubs.length; i++) {
+        	Publication pub = pubs[i];
+        	natpubs[i] = new NATPublication(
+        			discoveryActor_,
+        			pub.providedTypeTag_.unpack().asTypeTag(),
+        			pub.exportedService_.unpack(),
+        			pub);
+        }
+        return NATTable.atValue(natpubs);
+	}
+
+	public ATTable base_listSubscriptions() throws InterpreterException {
+		ELActor myEventLoop = ELActor.currentActor();
+		Subscription[] subs = discoveryActor_.sync_event_listSubscriptions(myEventLoop);
+		NATSubscription[] natsubs = new NATSubscription[subs.length];
+        for(int i = 0; i < subs.length; i++) {
+        	Subscription sub = subs[i];
+        	natsubs[i] = new NATSubscription(
+        			discoveryActor_,
+        			sub.requiredTypeTag_.unpack().asTypeTag(),
+        			sub.registeredHandler_.unpack().asClosure(),
+        			sub);
+        }
+        return NATTable.atValue(natsubs);
+	}
 	
     /* --------------------------
      * -- VM to Actor Protocol --
@@ -321,7 +351,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 
 	/**
-	 * 
+	 * Creates a letter object and adds it to the actor's inbox
 	 */
 	public ATObject base_schedule(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
 		NATLetter letter = new NATLetter(inbox_, receiver, message);
@@ -329,6 +359,9 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return letter;
 	}
 
+	/**
+	 * Fetches the next letter from the actor's inbox, if any, and processes it.
+	 */
 	public ATObject base_serve() throws InterpreterException {
 		if (inbox_.size() > 0) {
 			ATObject next = (ATObject) inbox_.removeLast();

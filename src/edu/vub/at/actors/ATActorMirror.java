@@ -118,6 +118,21 @@ public interface ATActorMirror extends ATObject {
 	 */
 	public ATObject base_serve() throws InterpreterException;
 
+	/**
+	 * This method provides access to a snapshot of the current published services of an actor.
+	 * The result is not causally connected; adding/removing elements to/from this snapshot will
+	 * not affect the current publications.
+	 * @return a table containing all publications of this actor
+	 */
+	public ATTable base_listPublications() throws InterpreterException;
+
+	/**
+	 * This method provides access to a snapshot of the current subscriptions of an actor.
+	 * The result is not causally connected; adding/removing elements to/from this snapshot will
+	 * not affect the current subscriptions.
+	 * @return a table containing all subscriptions of this actor
+	 */
+	public ATTable base_listSubscriptions() throws InterpreterException;
 	
 	/**
 	 * This mechanism is the most basic mechanism to provide a service. It requires 
