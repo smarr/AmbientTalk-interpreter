@@ -43,6 +43,7 @@ import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
 import edu.vub.at.objects.natives.NATMessage;
+import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -139,7 +140,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      */
     public ATObject prim_process(ATAsyncMessage self, ATObject receiver) throws InterpreterException {
     	// receiver is not necessarily equal to base_receiver() anymore
-    	return receiver.meta_invoke(receiver, self.base_selector(), self.base_arguments());
+    	return receiver.meta_invoke(receiver, new NATMethodInvocation(self.base_selector(), self.base_arguments(), self.meta_typeTags()));
     }
 
     /**

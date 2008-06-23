@@ -149,7 +149,7 @@ public class ELActor extends EventLoop {
 		event.process(mirror_);
 	}
 	
-	public ATActorMirror getActorMirror() { return mirror_; }
+	public ATActorMirror getImplicitActorMirror() { return mirror_; }
 
 	public void setActorMirror(ATActorMirror mirror) { mirror_ = mirror; }
 	

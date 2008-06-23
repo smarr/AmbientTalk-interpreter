@@ -71,6 +71,8 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
     	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types);
     }
 
+    public ATMethodInvocation asMethodInvocation() { return this; }
+    
 	/**
 	 * To evaluate a delegating message send, invoke the method corresponding to the encapsulated
 	 * selector with the encapsulated arguments. During execution of the method, 'self' should be
@@ -79,7 +81,7 @@ public final class NATDelegation extends NATMessage implements ATMethodInvocatio
 	 * @return the return value of the invoked method.
 	 */
 	public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException {
-		return receiver.meta_invoke(super.meta_invokeField(self, _DELEGATOR_), self.base_selector(), self.base_arguments());
+		return receiver.meta_invoke(super.meta_invokeField(self, _DELEGATOR_), self.asMethodInvocation());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

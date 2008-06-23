@@ -116,13 +116,13 @@ public class ExceptionHandlingTest extends AmbientTalkTestCase {
 					"def pythonObjectMirror := \n" +
 					"  mirror: { \n" +
 					"    def invokeField(receiver, symbol) {" +
-					"      self.invoke(receiver,symbol,[])" +
+					"      self.invoke(receiver, `(.#(symbol)()))" +
 					"    };" +
-					"    def invoke( receiver, symbol, args ) { \n" +
+					"    def invoke( receiver, invocation ) { \n" +
 					"      try: { \n" +
-					"        super^invoke( receiver, symbol, args ); \n" +
+					"        super^invoke( receiver, invocation ); \n" +
 					"      } catch: SelectorNotFound using: { | e | \n" +
-					"        super^defineField( symbol, defaultValue ); \n" +
+					"        super^defineField( invocation.selector, defaultValue ); \n" +
 					"        defaultValue; \n" +
 					"      } \n" +
 					"    } \n" +

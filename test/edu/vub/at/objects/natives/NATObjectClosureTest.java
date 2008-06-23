@@ -413,7 +413,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			
 			object.meta_addMethod(expectedValues.transformToMethodNamed(scopeTest));
 				
-			object.meta_invoke(object, scopeTest, NATTable.EMPTY);
+			object.impl_invoke(object, scopeTest, NATTable.EMPTY);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail();
@@ -424,7 +424,7 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 	 * NATIVE TEST: Tests the validity of the various scope pointers in a context object when 
 	 * applying a method in a simple hierarchy of objects. 
 	 * 
-	 * - covers meta_invoke & meta_select for method lookup with dynamic chains
+	 * - covers impl_invoke & meta_select for method lookup with dynamic chains
 	 * - covers proper self semantics at closure creation 
 	 * - covers super semantics during method application
 	 */
@@ -443,8 +443,8 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			parent.meta_addMethod(lateBoundSelfTest.transformToMethodNamed(lateBoundSelf));
 			child.meta_addMethod(superSemanticsTest.transformToMethodNamed(superSemantics));
 			
-			child.meta_invoke(child, lateBoundSelf, NATTable.EMPTY);
-			child.meta_invoke(child, superSemantics, NATTable.EMPTY);
+			child.impl_invoke(child, lateBoundSelf, NATTable.EMPTY);
+			child.impl_invoke(child, superSemantics, NATTable.EMPTY);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail();
@@ -493,8 +493,8 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			
 			parent.meta_addMethod(lateBoundSelfTest.transformToMethodNamed(lateBoundSelf));
 			
-			child.meta_invoke(child, lateBoundSelf, NATTable.EMPTY);
-			child.meta_invoke(child, superSemantics, NATTable.EMPTY);
+			child.impl_invoke(child, lateBoundSelf, NATTable.EMPTY);
+			child.impl_invoke(child, superSemantics, NATTable.EMPTY);
 		} catch (InterpreterException e) {
 			e.printStackTrace();
 			fail();

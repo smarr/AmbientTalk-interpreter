@@ -161,14 +161,23 @@ public interface ATActorMirror extends ATObject {
 	public ATObject base_createReference(ATObject toObject) throws InterpreterException;
 	
 	/**
-	 * def oldprotocol := actor.replaceMirror: newprotocol
+	 * def oldprotocol := actor.becomeMirroredBy: newprotocol
 	 * 
 	 * Installs a new meta-object protocol into this actor.
 	 * 
 	 * @param protocol meta-level code that overrides an actor's MOP methods
 	 * @return the previously installed meta-object protocol
 	 */
-	public ATObject base_replaceMirror_(ATActorMirror protocol) throws InterpreterException;
+	public ATObject base_becomeMirroredBy_(ATActorMirror protocol) throws InterpreterException;
+	
+	/**
+	 * def aM := implicitActorMirror.getExplicitActorMirror()
+	 * 
+	 * This method serves as the 'mirror factory' for explicit actor mirrors.
+	 * 
+	 * @return an explicit actor mirror for the current actor.
+	 */
+	public ATActorMirror base_getExplicitActorMirror() throws InterpreterException;
 	
     /* -------------------------------------
      * -- Object Passing Protocol Support --

@@ -73,7 +73,7 @@ public class NATField extends NATByRef implements ATField {
 	}
 
 	public ATObject base_writeField(ATObject newValue) throws InterpreterException {
-		return host_.meta_invoke(host_, name_.asAssignmentSymbol(), NATTable.of(newValue));
+		return host_.impl_invoke(host_, name_.asAssignmentSymbol(), NATTable.of(newValue));
 	}
 	
 	public NATText meta_print() throws InterpreterException {

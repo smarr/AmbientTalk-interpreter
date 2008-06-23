@@ -520,14 +520,14 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
-	 * <tt>actor</tt> evaluates to the mirror on the actor executing this code.
+	 * <tt>reflectOnActor</tt> evaluates to the mirror on the actor executing this code.
 	 * The actor mirror is an object whose behaviour is consulted for operations
 	 * such as creating and sending asynchronous messages or creating mirrors on
 	 * other objects. It can be replaced by a custom mirror by means of the actor
-	 * mirror's <tt>install:</tt> primitive.
+	 * mirror's <tt>getExplicitActorMirror</tt> method.
 	 */
-	public ATActorMirror base_actor() throws InterpreterException {
-		return ELActor.currentActor().getActorMirror();
+	public ATActorMirror base_reflectOnActor() throws InterpreterException {
+		return ELActor.currentActor().getImplicitActorMirror().base_getExplicitActorMirror();
 	}
 	
 	/**
@@ -542,7 +542,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a publication object whose <tt>cancel</tt> method can be used to cancel the publication.
 	 */
 	public ATObject base_export_as_(ATObject object, ATTypeTag topic) throws InterpreterException {
-		return ELActor.currentActor().getActorMirror().base_provide(topic, object);
+		return ELActor.currentActor().getImplicitActorMirror().base_provide(topic, object);
 	}
 	
 	/**
@@ -562,7 +562,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * for execution by the current actor. This request is not cancelled by invoking the <tt>cancel</tt> method.
 	 */
 	public ATObject base_when_discovered_(ATTypeTag topic, ATClosure handler) throws InterpreterException {
-		return ELActor.currentActor().getActorMirror().base_require(topic, handler, NATBoolean._FALSE_);
+		return ELActor.currentActor().getImplicitActorMirror().base_require(topic, handler, NATBoolean._FALSE_);
 	}
 	
 	/**
@@ -583,7 +583,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * for execution by the current actor. This request is not cancelled by invoking the <tt>cancel</tt> method.
 	 */
 	public ATObject base_whenever_discovered_(ATTypeTag topic, ATClosure handler) throws InterpreterException {
-		return ELActor.currentActor().getActorMirror().base_require(topic, handler, NATBoolean._TRUE_);
+		return ELActor.currentActor().getImplicitActorMirror().base_require(topic, handler, NATBoolean._TRUE_);
 	}
 	
 	/**
@@ -1212,7 +1212,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @see ATActorMirror#base_createMirror(ATObject) for the details about mirror creation on objects.
 	 */
 	public ATObject base_reflect_(ATObject reflectee) throws InterpreterException {
-		return base_actor().base_createMirror(reflectee);
+		return base_reflectOnActor().base_createMirror(reflectee);
 	}
 	
 	/**
@@ -1277,7 +1277,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
-	 * The <tt>tagsOf: object</tt>
+	 * The <tt>tagsOf: object</tt> construct.
 	 * @return a table of all of the <i>local</i> types of an object.
 	 */
 	public ATTable base_tagsOf_(ATObject object) throws InterpreterException {

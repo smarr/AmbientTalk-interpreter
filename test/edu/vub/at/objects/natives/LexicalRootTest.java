@@ -81,25 +81,25 @@ public class LexicalRootTest extends AmbientTalkTest {
 		assertTrue(host.meta_respondsTo(atN_).asNativeBoolean().javaValue);
 		
 		// ensure that 'self' is correctly late bound to host when invoking m()
-		assertEquals(host, host.meta_invoke(host, atM_, NATTable.EMPTY));
+		assertEquals(host, host.impl_invoke(host, atM_, NATTable.EMPTY));
 		// when invoking m() directly on the trait, self should be bound to the trait
-		assertEquals(trait_, trait_.meta_invoke(trait_, atM_, NATTable.EMPTY));
+		assertEquals(trait_, trait_.impl_invoke(trait_, atM_, NATTable.EMPTY));
 		
 		// when someone delegates m() to host, the trait's self should be bound to the original delegator
 		NATObject delegator = new NATObject();
-		assertEquals(delegator, host.meta_invoke(delegator, atM_, NATTable.EMPTY));
+		assertEquals(delegator, host.impl_invoke(delegator, atM_, NATTable.EMPTY));
 		
 		// ensure that when invoking test() on host, it can access x unqualified
-		assertEquals(NATNumber.ZERO, host.meta_invoke(host, atTest, NATTable.EMPTY));
+		assertEquals(NATNumber.ZERO, host.impl_invoke(host, atTest, NATTable.EMPTY));
 		
 		// when assigning x in host, trait's x field should not be modified
-		host.meta_invoke(host, atX_.asAssignmentSymbol(), NATTable.of(NATNumber.ONE));
+		host.impl_invoke(host, atX_.asAssignmentSymbol(), NATTable.of(NATNumber.ONE));
 		assertEquals(NATNumber.ZERO, trait_.impl_invokeAccessor(trait_, atX_, NATTable.EMPTY));
 		
 		// host's primitive methods should be left untouched, i.e.
 		// host != trait and host == host
-		assertTrue(host.meta_invoke(host, NATNil._EQL_NAME_, NATTable.of(host)).asNativeBoolean().javaValue);
-		assertFalse(host.meta_invoke(host, NATNil._EQL_NAME_, NATTable.of(trait_)).asNativeBoolean().javaValue);
+		assertTrue(host.impl_invoke(host, NATNil._EQL_NAME_, NATTable.of(host)).asNativeBoolean().javaValue);
+		assertFalse(host.impl_invoke(host, NATNil._EQL_NAME_, NATTable.of(trait_)).asNativeBoolean().javaValue);
 	}
 	
 	/**
@@ -132,7 +132,7 @@ public class LexicalRootTest extends AmbientTalkTest {
 		new AGImport(trait_, NATTable.EMPTY, NATTable.EMPTY).meta_eval(new NATContext(hostB, hostB));
 		
 		// check whether m() can be invoked from hostB and that self equals hostB
-		assertEquals(hostB, hostB.meta_invoke(hostB, atM_, NATTable.EMPTY));
+		assertEquals(hostB, hostB.impl_invoke(hostB, atM_, NATTable.EMPTY));
 	}
 	
 	/**
@@ -147,7 +147,7 @@ public class LexicalRootTest extends AmbientTalkTest {
 		
 		// check whether m() can be invoked as foo()
 		assertTrue(host.meta_respondsTo(foo).asNativeBoolean().javaValue);
-		assertEquals(host, host.meta_invoke(host, foo, NATTable.EMPTY));
+		assertEquals(host, host.impl_invoke(host, foo, NATTable.EMPTY));
 	}
 	
 	/**
@@ -177,7 +177,7 @@ public class LexicalRootTest extends AmbientTalkTest {
 		
 		// check whether m() can be invoked as foo()
 		assertTrue(host.meta_respondsTo(foo).asNativeBoolean().javaValue);
-		assertEquals(host, host.meta_invoke(host, foo, NATTable.EMPTY));
+		assertEquals(host, host.impl_invoke(host, foo, NATTable.EMPTY));
 		
 		// check whether n is not present
 		assertFalse(host.meta_respondsTo(atN_).asNativeBoolean().javaValue);

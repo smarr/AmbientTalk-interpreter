@@ -212,9 +212,9 @@ public class MirrorTest extends AmbientTalkTest {
 				"subject.thisBase := subject; \n" +
 				"subject.thisMeta := mirror;");
 		ATObject base = evalAndReturn(
-				"mirror.invoke(subject, `thisBase, []);");
+				"mirror.invoke(subject, .thisBase());");
 		ATObject meta = evalAndReturn(
-				"mirror.invoke(subject, `thisMeta, []);");
+				"mirror.invoke(subject, .thisMeta());");
 		
 		assertNotSame(base, meta);
 		assertEquals("<mirror on:"+ base.toString() + ">", meta.toString());

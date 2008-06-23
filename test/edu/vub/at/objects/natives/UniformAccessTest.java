@@ -388,11 +388,11 @@ public class UniformAccessTest extends AmbientTalkTest {
 		
 		// test whether explicit invocation on mirrors can abstract over fields
 		// or methods or fields containing closures
-		evalAndCompareTo("cplxm.invoke(cplx, `im, [])", "1");
-		evalAndCompareTo("cplxm.invoke(cplx, `re, [])", "42");
-		evalAndCompareTo("cplxm.invoke(cplx, `im:=, [4])", "4");
-		evalAndCompareTo("cplxm.invoke(cplx, `re:=,[3])", "5");
-		evalAndCompareTo("cplxm.invoke(cplx, `clofield, [])", "5"); // cplx.clofield() = 5
+		evalAndCompareTo("cplxm.invoke(cplx, .im())", "1");
+		evalAndCompareTo("cplxm.invoke(cplx, .re())", "42");
+		evalAndCompareTo("cplxm.invoke(cplx, `(.#(`im:=)(4)))", "4"); // cplxm.invoke(cplx, .im:=(4)) but parser does not support this (yet)
+		evalAndCompareTo("cplxm.invoke(cplx, `(.#(`re:=)(3)))", "5");
+		evalAndCompareTo("cplxm.invoke(cplx, .clofield())", "5"); // cplx.clofield() = 5
 		evalAndCompareTo("cplxm.invokeField(cplx, `clofield)", "<closure:lambda>"); // cplx.clofield = <lambda>
 	}
 	

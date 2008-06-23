@@ -41,6 +41,7 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
@@ -121,6 +122,7 @@ public interface ATConversions {
 	public ATMessage   asMessage() throws InterpreterException;
 	public ATField     asField() throws InterpreterException;
 	public ATMethod    asMethod() throws InterpreterException;
+	public ATMethodInvocation asMethodInvocation() throws InterpreterException;
 	public ATHandler   asHandler() throws InterpreterException;
 	public ATTypeTag    asTypeTag() throws InterpreterException;
 	public ATFarReference asFarReference() throws InterpreterException;

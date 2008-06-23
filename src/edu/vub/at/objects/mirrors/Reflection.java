@@ -234,7 +234,7 @@ public final class Reflection {
 				return atRcvr.meta_invokeField(atRcvr, downBaseLevelSelector(jSelector));
 			} else {
 				// obj.base_selector(args) => obj.meta_invoke(obj, selector, args)
-				return atRcvr.meta_invoke(atRcvr, downBaseLevelSelector(jSelector), NATTable.atValue(jArgs));	
+				return atRcvr.impl_invoke(atRcvr, downBaseLevelSelector(jSelector), NATTable.atValue(jArgs));	
 			}
 		} else if (jSelector.startsWith(Reflection._META_PREFIX_)) {
 			// obj.meta_selector(args) => obj.meta_selector(args)
@@ -249,7 +249,7 @@ public final class Reflection {
 				    return atRcvr.meta_invokeField(atRcvr, downSelector(jSelector));
 				} else {
 				    // obj.selector(args) => obj.meta_invoke(obj, selector, args)
-				    return atRcvr.meta_invoke(atRcvr, downSelector(jSelector), NATTable.atValue(jArgs));	
+				    return atRcvr.impl_invoke(atRcvr, downSelector(jSelector), NATTable.atValue(jArgs));	
 				}
 			}
 		}

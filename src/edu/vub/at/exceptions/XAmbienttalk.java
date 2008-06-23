@@ -27,9 +27,6 @@
  */
 package edu.vub.at.exceptions;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
@@ -38,6 +35,9 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * The XAmbienttalk exception class is used to wrap non-primitive exceptions in the interpreter.
@@ -70,7 +70,7 @@ public class XAmbienttalk extends InterpreterException {
 		StringWriter buffer = new StringWriter();
 		
 		runtimeStack_.printStackTrace(new PrintWriter(buffer, /* autoflush = */ true));
-		customException_.meta_invoke(customException_, _STACKTRACE_SYM_, NATTable.atValue(new ATObject[] { NATText.atValue(buffer.toString()) } ));
+		customException_.impl_invoke(customException_, _STACKTRACE_SYM_, NATTable.atValue(new ATObject[] { NATText.atValue(buffer.toString()) } ));
 	}
 
 	public ATObject getAmbientTalkRepresentation() {

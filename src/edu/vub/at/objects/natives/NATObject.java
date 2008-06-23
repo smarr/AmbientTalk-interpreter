@@ -51,6 +51,7 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -352,7 +353,7 @@ public class NATObject extends NATCallframe implements ATObject {
     }*/
     
     public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
-    	return this.meta_invoke(this, NATNil._EQL_NAME_, NATTable.of(comparand)).asBoolean();
+    	return this.impl_invoke(this, NATNil._EQL_NAME_, NATTable.of(comparand)).asBoolean();
     }
 
 	/* ------------------------------------------
@@ -432,7 +433,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	public ATObject meta_newInstance(ATTable initargs) throws InterpreterException {
 		ATObject clone = this.meta_clone();
-		clone.meta_invoke(clone, Evaluator._INIT_, initargs);
+		clone.impl_invoke(clone, NATNil._INI_NAME_, initargs);
 		return clone;
 	}
 
@@ -574,7 +575,6 @@ public class NATObject extends NATCallframe implements ATObject {
     	}
     }
     
-    
 	// NATObject has to duplicate the NATByCopy implementation
 	// because NATObject inherits from NATByRef, and because Java has no
 	// multiple inheritance to override that implementation with that of
@@ -648,6 +648,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	public ATField asField() throws InterpreterException { return (ATField) coerce(NativeTypeTags._FIELD_, ATField.class); }
 	public ATMessage asMessage() throws InterpreterException { return (ATMessage) coerce(NativeTypeTags._MESSAGE_, ATMessage.class); }
 	public ATMethod asMethod() throws InterpreterException { return (ATMethod) coerce(NativeTypeTags._METHOD_, ATMethod.class); }
+	public ATMethodInvocation asMethodInvocation() throws InterpreterException { return (ATMethodInvocation) coerce(NativeTypeTags._METHODINV_, ATMethodInvocation.class); }
 	public ATHandler asHandler() throws InterpreterException { return (ATHandler) coerce(NativeTypeTags._HANDLER_, ATHandler.class); }
 	public ATNumber asNumber() throws InterpreterException { return (ATNumber) coerce(NativeTypeTags._NUMBER_, ATNumber.class); }
 	public ATTable asTable() throws InterpreterException { return (ATTable) coerce(NativeTypeTags._TABLE_, ATTable.class); }

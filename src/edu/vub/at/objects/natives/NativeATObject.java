@@ -51,6 +51,7 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
@@ -106,7 +107,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
      * contained.
      */
     public ATObject meta_send(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
-    	return OBJLexicalRoot._INSTANCE_.base_actor().base_send(receiver, message);
+    	return OBJLexicalRoot._INSTANCE_.base_reflectOnActor().base_send(receiver, message);
     }
 
     /**
@@ -407,6 +408,10 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     public ATMessage asMessage() throws InterpreterException {
         throw new XTypeMismatch(ATMessage.class, this);
     }
+    
+    public ATMethodInvocation asMethodInvocation() throws InterpreterException {
+        throw new XTypeMismatch(ATMethodInvocation.class, this);
+    }
 
     public ATField asField() throws InterpreterException {
         throw new XTypeMismatch(ATField.class, this);
@@ -682,17 +687,25 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 			}
 		}
 	}
-	
+
+	/**
+	 * This method simply deconstructs the method invocation object and passes it on to
+	 * the native implementation.
+	 */
+    public ATObject meta_invoke(ATObject delegate, ATMethodInvocation invocation) throws InterpreterException {
+        return this.impl_invoke(delegate, invocation.base_selector(), invocation.base_arguments());
+    }
+    
 	/**
 	 * This method dispatches to specific invocation primitives
 	 * depending on whether or not the given selector denotes an assignment.
 	 */
-    public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException {
+    public ATObject impl_invoke(ATObject delegate, ATSymbol selector, ATTable arguments) throws InterpreterException {
         // If the selector is an assignment symbol (i.e. `field:=) try to assign the corresponding field
 		if (selector.isAssignmentSymbol()) {
-			return this.impl_invokeMutator(receiver, selector.asAssignmentSymbol(), arguments);
+			return this.impl_invokeMutator(delegate, selector.asAssignmentSymbol(), arguments);
 		} else {
-			return this.impl_invokeAccessor(receiver, selector, arguments);
+			return this.impl_invokeAccessor(delegate, selector, arguments);
 		}
     }
     

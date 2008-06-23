@@ -65,7 +65,7 @@ public class NATObjectTest extends AmbientTalkTest {
 				});
 		
 		try {
-			clone.meta_invoke(clone, AGSymbol.jAlloc("addedMethod"), NATTable.EMPTY);
+			clone.impl_invoke(clone, AGSymbol.jAlloc("addedMethod"), NATTable.EMPTY);
 		} catch (TestException ae) { 
 			// given the definition, this should happen!!!
 		} catch (XSelectorNotFound se) {

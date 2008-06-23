@@ -350,7 +350,7 @@ public class PrimitivesTest extends AmbientTalkTest {
 			assertTrue(nil.base__opeql__opeql_(nil).asNativeBoolean().javaValue);
 		    // object: {} != nil => true
 			ATObject obj = new NATObject();
-			assertTrue(obj.meta_invoke(obj, AGSymbol.jAlloc("!="), NATTable.of(nil)).asNativeBoolean().javaValue);
+			assertTrue(obj.impl_invoke(obj, AGSymbol.jAlloc("!="), NATTable.of(nil)).asNativeBoolean().javaValue);
 			// nil != object: {} => true
 			assertTrue(nil.base__opnot__opeql_(obj).asNativeBoolean().javaValue);
 		} catch (InterpreterException e) {

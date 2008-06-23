@@ -40,6 +40,7 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -243,9 +244,9 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * The only operation that is allowed to be synchronously invoked on far references is '=='
 	 * @throws XIllegalOperation Cannot synchronously invoke a method on a far reference
 	 */
-	public ATObject meta_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
+	public ATObject impl_invoke(ATObject delegate, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
 		if (atSelector.equals(NATNil._EQL_NAME_)) {
-			return super.meta_invoke(receiver, atSelector, arguments);
+			return super.impl_invoke(delegate, atSelector, arguments);
 		}
 		throw new XIllegalOperation("Cannot invoke " + atSelector + " on far reference " + this);
 	}

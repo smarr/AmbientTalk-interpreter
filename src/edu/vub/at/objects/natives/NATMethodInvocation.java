@@ -67,6 +67,10 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
     	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types);
     }
 
+    public ATMethodInvocation asMethodInvocation() {
+    	return this;
+    }
+    
 	/**
 	 * To evaluate a method invocation, invoke the method corresponding to the encapsulated
 	 * selector to the given receiver with the encapsulated arguments.
@@ -74,7 +78,7 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	 * @return the return value of the invoked method.
 	 */
 	public ATObject prim_sendTo(ATMessage self, ATObject receiver, ATObject sender) throws InterpreterException {
-		return receiver.meta_invoke(receiver, self.base_selector(), self.base_arguments());
+		return receiver.meta_invoke(receiver, self.asMethodInvocation());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

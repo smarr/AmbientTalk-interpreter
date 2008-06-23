@@ -180,13 +180,13 @@ public interface ATObject extends ATConversions {
      * @see #meta_doesNotUnderstand(ATSymbol) for what happens if the selector
      * is not found.
      *
-     * @param receiver the object to which <tt>self</tt> is bound during execution
+     * @param delegate the object to which <tt>self</tt> is bound during execution
      * of the method
-     * @param selector a symbol denoting the name of the method, accessor or mutator to be invoked
-     * @param arguments the table of actual arguments to be passed to the method
+     * @param invocation an object encapsulating at least the invocation's
+     *        <tt>selector</tt> (a {@link ATSymbol}) and <tt>arguments</tt> (a {@link ATTable}).
      * @return by default, the object returned from the invoked method
      */
-    public ATObject meta_invoke(ATObject receiver, ATSymbol selector, ATTable arguments) throws InterpreterException;
+    public ATObject meta_invoke(ATObject delegate, ATMethodInvocation invocation) throws InterpreterException;
 
     /**
      * This meta-level operation reifies "field selection".
@@ -195,14 +195,14 @@ public interface ATObject extends ATConversions {
      * is interpreted at the meta-level as:
      * <code>(reflect: o).invokeField(o, `m)</code>
      * 
-     * This meta-level operation is nearly identical to {@link #meta_invoke(ATObject, ATSymbol, ATTable)} with one
+     * This meta-level operation is nearly identical to {@link #meta_invoke(ATObject, ATMethodInvocation)} with one
      * important difference. When the selector is bound to a field storing a closure, this meta-level operation
      * does <b>not</b> auto-apply the closure, but returns the closure instead.
      * 
      * For all other cases, the following equality holds:
      * <code>o.m == o.m()</code>
      * or, at the meta-level:
-     * <code>(reflect: o).invokeField(o, `m) == (reflect: o).invoke(o, `m, [])</code>
+     * <code>(reflect: o).invokeField(o, `m) == (reflect: o).invoke(o, MethodInvocation.new(`m, []))</code>
      * 
      * This effectively means that for client objects, it should not matter whether
      * a property is implemented as a field or as a pair of accessor/mutator methods.
@@ -802,6 +802,13 @@ public interface ATObject extends ATConversions {
     /* -----------------------------------------
      * - Implementation-Level Object interface -
      * ----------------------------------------- */
+    
+    /**
+     * Implementation-level shortcut for method invocation that foregoes the creation of
+     * a 'method invocation' object, but rather passes the selector and arguments directly
+     * to the implementation.
+     */
+    public ATObject impl_invoke(ATObject delegate, ATSymbol selector, ATTable arguments) throws InterpreterException;
     
     /**
      * The <tt>lexicalParent</tt> field of a mirror denotes the lexical parent

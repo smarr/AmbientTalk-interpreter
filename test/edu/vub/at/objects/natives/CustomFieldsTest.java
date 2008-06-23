@@ -70,7 +70,7 @@ public class CustomFieldsTest extends AmbientTalkTest {
 		testHost_.meta_addField(testField_.asField());
 		// testHost.foo := 1
 		assertEquals(NATNumber.atValue(1),
-				     testHost_.meta_invoke(testHost_, foo_.asAssignmentSymbol(), NATTable.of(NATNumber.ONE)));
+				     testHost_.impl_invoke(testHost_, foo_.asAssignmentSymbol(), NATTable.of(NATNumber.ONE)));
 		// testHost.foo == 2
 		assertEquals(NATNumber.atValue(2), testHost_.impl_invokeAccessor(testHost_, foo_, NATTable.EMPTY));
 	}
@@ -110,10 +110,10 @@ public class CustomFieldsTest extends AmbientTalkTest {
 	public void testCloneFieldReinit() throws Exception {
 		testHost_.meta_addField(testField_.meta_clone().asField());
 		// set foo field of testHost to 1 -> testHost_.foo := 1
-		testHost_.meta_invoke(testHost_, foo_.asAssignmentSymbol(), NATTable.of(NATNumber.ONE));
+		testHost_.impl_invoke(testHost_, foo_.asAssignmentSymbol(), NATTable.of(NATNumber.ONE));
 		ATObject clone = testHost_.meta_clone();
 		// set foo field of clone to 55 -> clone.foo := 55
-		clone.meta_invoke(clone, foo_.asAssignmentSymbol(), NATTable.of(NATNumber.atValue(55)));
+		clone.impl_invoke(clone, foo_.asAssignmentSymbol(), NATTable.of(NATNumber.atValue(55)));
 		// check whether original foo field of testHost is not modified (remember: writeField increments with + 1)
 		assertEquals(2, testHost_.impl_invokeAccessor(testHost_, foo_, NATTable.EMPTY).asNativeNumber().javaValue);
 	}

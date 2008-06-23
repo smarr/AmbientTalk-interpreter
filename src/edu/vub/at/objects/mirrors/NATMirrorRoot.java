@@ -36,6 +36,7 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
+import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -43,8 +44,6 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
-import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -276,8 +275,8 @@ public final class NATMirrorRoot extends NATByCopy implements ATObject {
 		return base_base().magic_grabMethod(methodName);
 	}
 
-	public ATObject base_invoke(ATObject receiver, ATSymbol atSelector, ATTable arguments) throws InterpreterException {
-		return base_base().magic_invoke(receiver, atSelector, arguments);
+	public ATObject base_invoke(ATObject receiver, ATMethodInvocation inv) throws InterpreterException {
+		return base_base().magic_invoke(receiver, inv);
 	}
 
 	public ATBoolean base_isCloneOf(ATObject original) throws InterpreterException {

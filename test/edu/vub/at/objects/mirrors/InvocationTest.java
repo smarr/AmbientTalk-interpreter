@@ -83,23 +83,23 @@ public class InvocationTest extends ReflectiveAccessTest {
 	 */
 	public void testSimulatedBaseInvocation() {
 		try {
-			True.meta_invoke(
+			True.impl_invoke(
 					True, AGSymbol.jAlloc("ifTrue:"),
 					NATTable.atValue(new ATObject[] { success }));
-			True.meta_invoke(
+			True.impl_invoke(
 					True, AGSymbol.jAlloc("ifFalse:"),
 					NATTable.atValue(new ATObject[] { fail }));
-			True.meta_invoke(
+			True.impl_invoke(
 					True, AGSymbol.jAlloc("ifTrue:ifFalse:"),
 					NATTable.atValue(new ATObject[] { success, fail }));
 
-			False.meta_invoke(
+			False.impl_invoke(
 					False, AGSymbol.jAlloc("ifTrue:"),
 					NATTable.atValue(new ATObject[] { fail }));
-			False.meta_invoke(
+			False.impl_invoke(
 					False, AGSymbol.jAlloc("ifFalse:"),
 					NATTable.atValue(new ATObject[] { success }));
-			False.meta_invoke(
+			False.impl_invoke(
 					False, AGSymbol.jAlloc("ifTrue:ifFalse:"),
 					NATTable.atValue(new ATObject[] { fail, success }));
 		} catch (InterpreterException e) {
@@ -156,7 +156,7 @@ public class InvocationTest extends ReflectiveAccessTest {
 			ATClosure accessor = closures.meta_select(closures, AGSymbol.jAlloc("at"));
 			ATObject element = accessor.base_apply(
 					NATTable.atValue(new ATObject[] {
-							closures.meta_invoke(closures, AGSymbol.jAlloc("length"), NATTable.EMPTY)}));
+							closures.impl_invoke(closures, AGSymbol.jAlloc("length"), NATTable.EMPTY)}));
 			element.asClosure().base_apply(NATTable.EMPTY);
 		} catch (InterpreterException e) {
 			e.printStackTrace();

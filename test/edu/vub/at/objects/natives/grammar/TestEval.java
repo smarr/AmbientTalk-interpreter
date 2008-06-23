@@ -81,7 +81,7 @@ public class TestEval extends AmbientTalkTest {
         try {
         	  ATClosure clo = rcvr.impl_lookup(atX_).asClosure();
         	  assertEquals(atX_, clo.base_method().base_name());
-        	  assertEquals(rcvr, rcvr.meta_invoke(rcvr, atX_, NATTable.EMPTY));
+        	  assertEquals(rcvr, rcvr.impl_invoke(rcvr, atX_, NATTable.EMPTY));
         } catch(XSelectorNotFound e) {
         	  fail("broken external method definition:"+e.getMessage());
         }

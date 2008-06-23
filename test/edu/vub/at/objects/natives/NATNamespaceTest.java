@@ -134,7 +134,7 @@ public class NATNamespaceTest extends TestCase {
 			// create the namespace 'at' bound to the path /tmp/at
 			NATNamespace atNS = new NATNamespace("/at", at_);
 			// bind the name 'at' to the atNS namespace in the lobby
-			lobby.meta_invoke(lobby, AGAssignmentSymbol.jAlloc("at:="), NATTable.of(atNS));
+			lobby.impl_invoke(lobby, AGAssignmentSymbol.jAlloc("at:="), NATTable.of(atNS));
 
 			// select '/.at.test'
 			ATObject test = atNS.impl_invokeAccessor(atNS, AGSymbol.jAlloc("test"), NATTable.EMPTY);

@@ -51,7 +51,7 @@ public class AGAsyncMessageCreation extends AGMessageCreation implements ATAsync
 	}
 	
 	protected ATMessage createMessage(ATContext ctx, ATSymbol selector, ATTable evaluatedArgs, ATTable annotations) throws InterpreterException {
-		return OBJLexicalRoot._INSTANCE_.base_actor().base_createMessage(selector, evaluatedArgs, annotations);
+		return OBJLexicalRoot._INSTANCE_.base_reflectOnActor().base_createMessage(selector, evaluatedArgs, annotations);
 	}
 	
 	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs, ATExpression quotedAnnotations) {

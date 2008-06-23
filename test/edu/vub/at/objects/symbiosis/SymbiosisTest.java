@@ -219,19 +219,19 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testWorkingInstanceInvocation() {
 		try {
 			// def result := atTestObject.gettertest(); assert(42 == result)
-			ATObject result = atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("gettertest"), NATTable.EMPTY);
+			ATObject result = atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("gettertest"), NATTable.EMPTY);
 			assertEquals(TEST_OBJECT_INIT, result.asNativeNumber().javaValue);
 			
 			// result := atTestObject.settertest(1); assert(result == nil); assert(atTestObject.xtest == 1)
-			result = atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("settertest"), NATTable.atValue(new ATObject[] { NATNumber.ONE }));
+			result = atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("settertest"), NATTable.atValue(new ATObject[] { NATNumber.ONE }));
 			assertEquals(Evaluator.getNil(), result);
 			assertEquals(1, jTestObject.xtest);
 			// result := atTestObject.xtest
-			result = atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("xtest"), NATTable.EMPTY);
+			result = atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("xtest"), NATTable.EMPTY);
 			assertEquals(NATNumber.ONE, result);
 			
 			// atTestObject.identitytest(atTestObject) == atTestObject
-			assertTrue(atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("identitytest"),
+			assertTrue(atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("identitytest"),
 					                           NATTable.atValue(new ATObject[] { atTestObject })).asNativeBoolean().javaValue);
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -246,15 +246,15 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// def result := atTestClass.prefix("Hello, "); assert("Hello, " + ytest == result)
 			String txt = "Hello, ";
 			NATText prefix = NATText.atValue(txt);
-			ATObject result = atTestClass.meta_invoke(atTestClass, AGSymbol.jAlloc("prefix"), NATTable.atValue(new ATObject[] { prefix }));
+			ATObject result = atTestClass.impl_invoke(atTestClass, AGSymbol.jAlloc("prefix"), NATTable.atValue(new ATObject[] { prefix }));
 			assertEquals(txt + ytest, result.asNativeText().javaValue);
 			
 			// result := atTestClass.ytest; assert(result == ytest);
-			result = atTestClass.meta_invoke(atTestClass, AGSymbol.jAlloc("ytest"), NATTable.EMPTY);
+			result = atTestClass.impl_invoke(atTestClass, AGSymbol.jAlloc("ytest"), NATTable.EMPTY);
 			assertEquals(ytest, result.asNativeText().javaValue);
 			
 			// atTestClass.ytest := "Hello, "; assert(ytest == "Hello, ")
-			result = atTestClass.meta_invoke(atTestClass, AGAssignmentSymbol.jAlloc("ytest:="), NATTable.of(prefix));
+			result = atTestClass.impl_invoke(atTestClass, AGAssignmentSymbol.jAlloc("ytest:="), NATTable.of(prefix));
 			assertEquals(prefix, result);
 			assertEquals(txt, ytest);
 		} catch (InterpreterException e) {
@@ -267,7 +267,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testFaultyArity() {
 		try {
-			atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("gettertest"), NATTable.atValue(new ATObject[] { Evaluator.getNil() }));
+			atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("gettertest"), NATTable.atValue(new ATObject[] { Evaluator.getNil() }));
 			fail("Expected an arity mismatch exception");
 		} catch(XArityMismatch e) {
 			// expected exception: success
@@ -281,7 +281,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testIllegalArgs() {
 		try {
-			atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("settertest"), NATTable.atValue(new ATObject[] { NATFraction.atValue(0.1) }));
+			atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("settertest"), NATTable.atValue(new ATObject[] { NATFraction.atValue(0.1) }));
 			fail("Expected an illegal argument exception");
 		} catch(XTypeMismatch e) {
 			// Java expects an int, so AT expects a native number, but is given a native fraction
@@ -300,7 +300,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testIllegalAssignment() {
 		try {
-			atTestClass.meta_invoke(atTestClass,
+			atTestClass.impl_invoke(atTestClass,
 					AGAssignmentSymbol.jAlloc("TEST_OBJECT_INIT:="), NATTable.of(NATNumber.atValue(0)));
 			fail("Expected an illegal assignment exception");
 		} catch(XSelectorNotFound e) {
@@ -315,7 +315,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	 */
 	public void testVarArgInvocation() {
 		try {
-			ATObject result = atTestObject.meta_invoke(atTestObject,
+			ATObject result = atTestObject.impl_invoke(atTestObject,
 													AGSymbol.jAlloc("overloadedvararg"),
 													NATTable.atValue(new ATObject[] { NATNumber.ZERO, NATNumber.ONE }));
 			assertEquals(Evaluator.getNil(), result);
@@ -331,17 +331,17 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testOverloadedInvWithOneMatch() {
 		try {
 			// invokes overloadedtest(int)
-			ATObject result = atTestObject.meta_invoke(atTestObject,
+			ATObject result = atTestObject.impl_invoke(atTestObject,
 													AGSymbol.jAlloc("overloadedtest"),
 													NATTable.atValue(new ATObject[] { NATNumber.ZERO }));
 			assertEquals("(int)", result.asNativeText().javaValue);
 			// invokes overloadedtest(SymbiosisTest)
-			result = atTestObject.meta_invoke(atTestObject,
+			result = atTestObject.impl_invoke(atTestObject,
 											AGSymbol.jAlloc("overloadedtest"),
 											NATTable.atValue(new ATObject[] { atTestObject }));
 			assertEquals("(SymbiosisTest)", result.asNativeText().javaValue);
 			// invokes overloadedtest()
-			result = atTestObject.meta_invoke(atTestObject,
+			result = atTestObject.impl_invoke(atTestObject,
 											AGSymbol.jAlloc("overloadedtest"),
 											NATTable.EMPTY);
 			assertEquals("()", result.asNativeText().javaValue);
@@ -356,7 +356,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testOverloadedInvWithMultipleMatches() {
 		try {
 			// invokes overloadedmatch2(Object|SymbiosisTest) => error
-			atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("overloadedmatch2"),
+			atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("overloadedmatch2"),
 											     NATTable.atValue(new ATObject[] { atTestObject }));
 			fail("Expected a symbiosis exception");
 		} catch (XSymbiosisFailure e) {
@@ -372,7 +372,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testOverloadedInvWithNoMatch() {
 		try {
 			// invokes overloadedtest(NATObject) => error
-			atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("overloadedtest"),
+			atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("overloadedtest"),
 											     NATTable.atValue(new ATObject[] { new NATObject() }));
 			fail("Expected a symbiosis exception");
 		} catch (XSymbiosisFailure e) {
@@ -388,7 +388,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 	public void testNonExistentMethod() {
 		try {
 			// invokes foo(1) => error
-			atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("foo"),
+			atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("foo"),
 											     NATTable.atValue(new ATObject[] { NATNumber.ONE }));
 			fail("Expected a selector not found exception");
 		} catch (XSelectorNotFound e) {
@@ -458,7 +458,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 		try {
 			// invokes overloadedmatch2(SymbiosisTest) via explicit casting
 			ATClosure method = atTestObject.meta_select(atTestObject, AGSymbol.jAlloc("overloadedmatch2"));
-			ATClosure castedMethod = method.meta_invoke(method, AGSymbol.jAlloc("cast"), NATTable.atValue(new ATObject[] { atTestClass })).asClosure();
+			ATClosure castedMethod = method.impl_invoke(method, AGSymbol.jAlloc("cast"), NATTable.atValue(new ATObject[] { atTestClass })).asClosure();
 			castedMethod.base_apply(NATTable.atValue(new ATObject[] { atTestObject }));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -492,13 +492,13 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// (reflect: atTestObject).defineField("x", 1)
 			atTestObject.meta_defineField(AGSymbol.jAlloc("x"), NATNumber.ONE);
 			// assert(atTestObject.x == 1)
-			assertEquals(NATNumber.ONE, atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("x"), NATTable.EMPTY));
+			assertEquals(NATNumber.ONE, atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("x"), NATTable.EMPTY));
 			
 			// (reflect: atTestObject).addMethod(<method:"foo",[x],{x}>)
 			ATMethod foo = evalAndReturn("def foo(x) { x }; &foo").asClosure().base_method();
 			atTestObject.meta_addMethod(foo);
 			// assert(atTestObject.foo(0) == 0)
-			assertEquals(NATNumber.ZERO, atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("foo"),
+			assertEquals(NATNumber.ZERO, atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("foo"),
 					NATTable.atValue(new ATObject[] { NATNumber.ZERO })));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
@@ -548,7 +548,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			atTestClass.meta_addMethod(get);
 			// assert(atTestObject.xtest == atTestObject.get())
 			assertEquals(atTestObject.impl_invokeAccessor(atTestObject, AGSymbol.jAlloc("xtest"), NATTable.EMPTY),
-					     atTestObject.meta_invoke(atTestObject, AGSymbol.jAlloc("get"), NATTable.EMPTY));
+					     atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("get"), NATTable.EMPTY));
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -583,7 +583,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			// def instance := atTestClass.new(1)
 			ATObject instance = atTestClass.meta_newInstance(NATTable.atValue(new ATObject[] { NATNumber.ONE }));
 			assertEquals(JavaObject.class, instance.getClass());
-			assertEquals(NATNumber.ONE, instance.meta_invoke(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY));
+			assertEquals(NATNumber.ONE, instance.impl_invoke(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY));
 			
 			Object realInstance = instance.asJavaObjectUnderSymbiosis().getWrappedObject();
 			assertEquals(SymbiosisTest.class, realInstance.getClass());
@@ -688,7 +688,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 			atTestClass.meta_addMethod(newClo.base_method());
 			
 			// def instance := atTestClass.customNew(10, 11)
-			ATObject instance = atTestClass.meta_invoke(atTestClass, AGSymbol.jAlloc("customNew"),
+			ATObject instance = atTestClass.impl_invoke(atTestClass, AGSymbol.jAlloc("customNew"),
 					NATTable.atValue(new ATObject[] { NATNumber.atValue(10), NATNumber.atValue(11) }));
 			
 			assertEquals(10, instance.impl_invokeAccessor(instance, AGSymbol.jAlloc("xtest"), NATTable.EMPTY).asNativeNumber().javaValue);
@@ -723,7 +723,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 		ATObject eduVubAtObjectsSymbiosisPkg = new JavaPackage("edu.vub.at.objects.symbiosis.");
 
 		// load the class manually: invoke pkg.class("lowercaseClassTest")
-		ATObject cls = eduVubAtObjectsSymbiosisPkg.meta_invoke(
+		ATObject cls = eduVubAtObjectsSymbiosisPkg.impl_invoke(
 				eduVubAtObjectsSymbiosisPkg,
 				AGSymbol.jAlloc("class"),
 				NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("lowercaseClassTest") }));
@@ -751,7 +751,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 		// def fooPkg := jLobby.foo;
 		ATObject fooPkg = jLobby_.impl_invokeAccessor(jLobby_, AGSymbol.jAlloc("foo"), NATTable.EMPTY);
 		// def BarPkg := foo.package(`Bar);
-		ATObject BarPkg = fooPkg.meta_invoke(fooPkg,
+		ATObject BarPkg = fooPkg.impl_invoke(fooPkg,
 										   AGSymbol.jAlloc("package"),
 										   NATTable.atValue(new ATObject[] { AGSymbol.jAlloc("Bar") }));
 		assertEquals(JavaPackage.class, BarPkg.getClass());
@@ -776,7 +776,7 @@ public class SymbiosisTest extends AmbientTalkTest {
 		// def jStringBuffer := jLobby.java.lang.StringBuffer;
 		ATObject jStringBuffer = JavaClass.wrapperFor(StringBuffer.class);
 		// jStringBuffer.new(10);
-		jStringBuffer.meta_invoke(jStringBuffer, AGSymbol.jAlloc("new"),
+		jStringBuffer.impl_invoke(jStringBuffer, AGSymbol.jAlloc("new"),
 				                  NATTable.atValue(new ATObject[] { NATNumber.atValue(10) }));
 	}
 	

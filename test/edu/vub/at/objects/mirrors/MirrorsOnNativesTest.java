@@ -27,8 +27,8 @@ public class MirrorsOnNativesTest extends AmbientTalkTest {
 	}
 	
 	public void testInvocation() {
-		evalAndCompareTo("mirrorOn1.invoke(mirrorOn1.base, `+, [2])", "3");
-		evalAndTestException("mirrorOn1.invoke(mirrorOn1.base, `foo, [2])", XSelectorNotFound.class);
+		evalAndCompareTo("mirrorOn1.invoke(mirrorOn1.base, .+(2))", "3");
+		evalAndTestException("mirrorOn1.invoke(mirrorOn1.base, .foo(2))", XSelectorNotFound.class);
 	}
 	
 	public void testRespondsTo() {

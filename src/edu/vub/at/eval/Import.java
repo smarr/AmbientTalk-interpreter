@@ -350,7 +350,7 @@ public final class Import {
 		public DelegateMethod asNativeDelegateMethod() { return this; }
 		
 		public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
-			return delegate_.meta_invoke(ctx.base_receiver(), origMethodName_, args);
+			return delegate_.impl_invoke(ctx.base_receiver(), origMethodName_, args);
 		}
 		
 		public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {

@@ -223,12 +223,12 @@ public class MirageTest extends AmbientTalkTest {
 				"	};" +
 				"" +
 				"	mirror: {" +
-				"		def invoke(receiver, selector, args) {" +
-				"			echo: (spaces() + \"Invocation of method \" + selector + \" with arguments \" + args + \" on \" + receiver + \"(\" + super.base + \")\");" +
+				"		def invoke(receiver, inv) {" +
+				"			echo: (spaces() + \"Invocation of method \" + inv.selector + \" with arguments \" + inv.arguments + \" on \" + receiver + \"(\" + super.base + \")\");" +
 				"			indentLevel := indentLevel + 1;" +
-				"			def result := super^invoke(receiver, selector, args);" +
+				"			def result := super^invoke(receiver, inv);" +
 				"			indentLevel := indentLevel - 1;" +
-				"			echo: (spaces() + \"Invocation of method \" + selector + \" yielded \" + result );" +
+				"			echo: (spaces() + \"Invocation of method \" + inv.selector + \" yielded \" + result );" +
 				"			result;" +
 				"		}" +
 				"	};" +

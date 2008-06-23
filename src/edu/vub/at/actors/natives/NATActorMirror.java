@@ -27,8 +27,6 @@
  */
 package edu.vub.at.actors.natives;
 
-import java.util.LinkedList;
-
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATLetter;
@@ -53,10 +51,10 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.NATTypeTag;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.util.logging.Logging;
+
+import java.util.LinkedList;
 
 /**
  * The NATActorMirror class implements the concurrency model of ambienttalk. It continually
@@ -259,16 +257,29 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
 	/**
-	 * def replaceMirror: protocol
+	 * def becomeMirroredBy: protocol
 	 *  => returns the old installed protocol
 	 * 
-	 * @see ATActorMirror#base_replaceMirror_(ATClosure)
+	 * @see ATActorMirror#base_becomeMirroredBy_(ATClosure)
 	 */
-	public ATObject base_replaceMirror_(ATActorMirror newActorMirror) throws InterpreterException {
+	public ATObject base_becomeMirroredBy_(ATActorMirror newActorMirror) throws InterpreterException {
 		ELActor myEventLoop = ELActor.currentActor();
-		ATActorMirror oldMirror = myEventLoop.getActorMirror();
+		ATActorMirror oldMirror = myEventLoop.getImplicitActorMirror();
 		myEventLoop.setActorMirror(newActorMirror);
 		return oldMirror;
+	}
+	
+	/**
+	 * def getExplicitActorMirror()
+	 *  => return an explicit actor mirror for the current actor.
+	 * 
+	 * The default implementation uses the actor's implicit mirror as the
+	 * default explicit mirror.
+	 * 
+	 * @see ATActorMirror#base_getExplicitActorMirror()
+	 */
+	public ATActorMirror base_getExplicitActorMirror() throws InterpreterException {
+		return ELActor.currentActor().getImplicitActorMirror();
 	}
 	
 	/**
