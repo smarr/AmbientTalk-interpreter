@@ -587,7 +587,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
-	 * The <tt>when: farReference disconnected: listener</tt> construct.
+	 * The <tt>whenever: farReference disconnected: listener</tt> construct.
 	 * When the far reference is broken due to network disconnections, triggers the zero-arity listener
 	 * closure. It is possible to register listeners on local far references. These may trigger if the
 	 * local actor takes its object offline. In this case, these listeners will trigger as well.
@@ -597,13 +597,13 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a subscription object whose <tt>cancel</tt> method can be used to cancel future
 	 * notifications of the listener.
 	 */
-	public ATObject base_when_disconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
+	public ATObject base_whenever_disconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
 		farReference.asNativeFarReference().addDisconnectionListener(listener);
 		return new NATFarReference.NATDisconnectionSubscription(farReference.asNativeFarReference(), listener);
 	}
 	
 	/**
-	 * The <tt>when: farReference reconnected: listener</tt> construct.
+	 * The <tt>whenever: farReference reconnected: listener</tt> construct.
 	 * When the remote reference is reinstated after a network disconnection, trigger the zero-arity
 	 * listener. Although it is allowed to register these listeners on local far references,
 	 * these are normally not invoked because the only possibility for a local far ref to become
@@ -614,7 +614,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * @return a subscription object whose <tt>cancel</tt> method can be used to cancel future
 	 * notifications of the listener.
 	 */
-	public ATObject base_when_reconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
+	public ATObject base_whenever_reconnected_(ATFarReference farReference, ATClosure listener) throws InterpreterException {
 		farReference.asNativeFarReference().addReconnectionListener(listener);
 		return new NATFarReference.NATReconnectionSubscription(farReference.asNativeFarReference(), listener);
 	}
