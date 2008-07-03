@@ -27,15 +27,20 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.PrimitiveMethod;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 /**
  * NATField implements a causally connected field of an object. Rather than storing
@@ -103,6 +108,44 @@ public class NATField extends NATByRef implements ATField {
 	
     public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._FIELD_);
+    }
+    
+    public ATMethod base_accessor() throws InterpreterException {
+    	return accessorForField(this);
+    }
+    
+    public ATMethod base_mutator() throws InterpreterException {
+    	return mutatorForField(this);
+    }
+    
+    public static ATMethod accessorForField(final ATField f) throws InterpreterException {
+    	return new PrimitiveMethod(f.base_name(), NATTable.EMPTY, new PrimitiveMethod.PrimitiveBody() {
+    		public ATObject meta_eval(ATContext ctx) throws InterpreterException {
+    			return f.base_readField();
+    		}
+    		public NATText meta_print() throws InterpreterException {
+    			return NATText.atValue(f.base_readField().toString());
+    		}    		
+    	}) {
+    		public NATText meta_print() throws InterpreterException {
+    			return NATText.atValue("<accessor method for:"+f.base_name()+">");
+    		}   	
+    	};
+    }
+    
+    public static ATMethod mutatorForField(final ATField f) throws InterpreterException {
+    	return new PrimitiveMethod(f.base_name().asAssignmentSymbol(), NATTable.of(AGSymbol.jAlloc("v")), new PrimitiveMethod.PrimitiveBody() {
+    		public ATObject meta_eval(ATContext ctx) throws InterpreterException {
+    			return f.base_writeField(ctx.base_lexicalScope().impl_callField(AGSymbol.jAlloc("v")));
+    		}
+    		public NATText meta_print() throws InterpreterException {
+    			return NATText.atValue(""+f.base_name()+" := v");
+    		}
+    	}) {
+    		public NATText meta_print() throws InterpreterException {
+    			return NATText.atValue("<mutator method for:"+f.base_name()+">");
+    		}   	
+    	};
     }
 
 }

@@ -246,6 +246,10 @@ public final class NATMirrorRoot extends NATByCopy implements ATObject {
 	public ATNil base_addMethod(ATMethod method) throws InterpreterException {
 		return base_base().magic_addMethod(method);
 	}
+	
+	public ATNil base_addSlot(ATMethod slot) throws InterpreterException {
+		return base_base().magic_addSlot(slot);
+	}
 
 	public ATNil base_defineField(ATSymbol name, ATObject value) throws InterpreterException {
 		return base_base().magic_defineField(name, value);
@@ -274,6 +278,10 @@ public final class NATMirrorRoot extends NATByCopy implements ATObject {
 	public ATMethod base_grabMethod(ATSymbol methodName) throws InterpreterException {
 		return base_base().magic_grabMethod(methodName);
 	}
+	
+	public ATMethod base_grabSlot(ATSymbol methodName) throws InterpreterException {
+		return base_base().magic_grabSlot(methodName);
+	}
 
 	public ATObject base_invoke(ATObject receiver, ATMethodInvocation inv) throws InterpreterException {
 		return base_base().magic_invoke(receiver, inv);
@@ -297,6 +305,10 @@ public final class NATMirrorRoot extends NATByCopy implements ATObject {
 
 	public ATTable base_listMethods() throws InterpreterException {
 		return base_base().magic_listMethods();
+	}
+	
+	public ATTable base_listSlots() throws InterpreterException {
+		return base_base().magic_listSlots();
 	}
 
 	public ATObject base_newInstance(ATTable initargs) throws InterpreterException {

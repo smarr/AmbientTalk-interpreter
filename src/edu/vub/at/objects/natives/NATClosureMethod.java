@@ -36,6 +36,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
+import edu.vub.at.objects.grammar.ATDefExternalMethod;
 import edu.vub.at.objects.grammar.ATSymbol;
 
 /**
@@ -49,7 +50,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
  * object to which they are added), but their values for 'self' and 'super' will act as if the method
  * was actually defined within the object itself.
  * 
- * See the description of the ATDefExternalMethod interface for more information.
+ * See the description of the {@link ATDefExternalMethod} interface for more information.
  * 
  * @author tvcutsem
  */
@@ -118,7 +119,8 @@ public class NATClosureMethod extends NATByRef implements ATMethod {
 	}
 	
 	/**
-	 * When wrapping a closure method, return a closure that is bound to the given lexical scope.
+	 * When wrapping a closure method, return a closure that is bound to my own lexical scope.
+	 * The lexical scope passed to wrap is ignored.
 	 */
 	public ATClosure base_wrap(ATObject lexicalScope, ATObject dynamicReceiver) throws InterpreterException {
 		return method_.base_wrap(lexicalScope_, dynamicReceiver);

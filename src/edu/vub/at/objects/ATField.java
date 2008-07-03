@@ -66,4 +66,16 @@ public interface ATField extends ATObject {
 	 */
 	public ATObject base_writeField(ATObject newValue) throws InterpreterException;
 
+	/**
+	 * @return an accessor method (slot) that, upon invocation, reads this field's value.
+	 */
+    public ATMethod base_accessor() throws InterpreterException;
+
+	/**
+	 * @return a mutator method (slot) that, upon invocation, sets this field's value
+	 * to its single argument.
+	 */
+    public ATMethod base_mutator() throws InterpreterException;
+
+	
 }

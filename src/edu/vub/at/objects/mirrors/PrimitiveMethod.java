@@ -36,6 +36,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATMethod;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
@@ -43,10 +44,10 @@ import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 /**
  * A primitive method is the equivalent of a NativeClosure but for methods rather
  * than closures. The advantage of PrimtiveMethods is that their base_apply method
- * gives access to both arguments as well as to the runtime context in that contains
+ * gives access to both arguments as well as to the runtime context that contains
  * the lexical environment in which they were defined.
  * 
- * Example primitive methods are '==', 'new' and 'init' implemented in NATObject.
+ * Example primitive methods are '==', '!=', 'new' and 'init' implemented by {@link NATNil}.
  *
  * Primitive methods should implement this method's base_apply method or invoke the
  * constructor taking a PrimitiveBody parameter and implement that class's meta_eval
@@ -91,6 +92,10 @@ public class PrimitiveMethod extends NATMethod {
 			return this;
 		}
 		
+	}
+
+	public PrimitiveMethod(ATSymbol name, ATTable formals, PrimitiveBody body, ATTable annotations) {
+		super(name, formals, body, annotations);
 	}
 	
 	public PrimitiveMethod(ATSymbol name, ATTable formals, PrimitiveBody body) {

@@ -31,11 +31,13 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATField;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByRef;
+import edu.vub.at.objects.natives.NATField;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -128,5 +130,13 @@ public class NativeField extends NATByRef implements ATField {
 	public ATField asField() {
 		return this;
 	}
+
+    public ATMethod base_accessor() throws InterpreterException {
+    	return NATField.accessorForField(this);
+    }
+    
+    public ATMethod base_mutator() throws InterpreterException {
+    	return NATField.mutatorForField(this);
+    }
 	
 }

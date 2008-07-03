@@ -259,23 +259,38 @@ public class NATMirage extends NATObject {
 		}
 	}
 
+	
+	public ATObject magic_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
+		return super.meta_doesNotUnderstand(selector);
+	}
+	
+	
 	public ATNil magic_addField(ATField field) throws InterpreterException {
 		return super.meta_addField(field);
 	}
 
-
-	public ATObject magic_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
-		return super.meta_doesNotUnderstand(selector);
-	}
-
-
+	
 	public ATField magic_grabField(ATSymbol selector) throws InterpreterException {
 		return super.meta_grabField(selector);
 	}
 
-
+	
 	public ATTable magic_listFields() throws InterpreterException {
 		return super.meta_listFields();
+	}
+	
+	public ATNil magic_addSlot(ATMethod slot) throws InterpreterException {
+		return super.meta_addSlot(slot);
+	}
+
+	
+	public ATMethod magic_grabSlot(ATSymbol selector) throws InterpreterException {
+		return super.meta_grabSlot(selector);
+	}
+
+	
+	public ATTable magic_listSlots() throws InterpreterException {
+		return super.meta_listSlots();
 	}
 
 
@@ -423,15 +438,6 @@ public class NATMirage extends NATObject {
 		return Evaluator.getNil();
 	}
 
-
-	public ATClosure meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
-		return mirror_.impl_invoke(
-				mirror_,
-				AGSymbol.jAlloc("doesNotUnderstand"),
-				NATTable.atValue(new ATObject[] { selector })).asClosure();
-	}
-
-
 	public ATField meta_grabField(ATSymbol selector) throws InterpreterException {
 		return mirror_.impl_invoke(
 				mirror_,
@@ -445,6 +451,36 @@ public class NATMirage extends NATObject {
 				mirror_,
 				AGSymbol.jAlloc("listFields"),
 				NATTable.EMPTY).asTable();
+	}
+	
+	public ATNil meta_addSlot(ATMethod slot) throws InterpreterException {
+		mirror_.impl_invoke(
+				mirror_,
+				AGSymbol.jAlloc("addSlot"),
+				NATTable.atValue(new ATObject[] { slot }));
+		return Evaluator.getNil();
+	}
+
+	public ATMethod meta_grabSlot(ATSymbol selector) throws InterpreterException {
+		return mirror_.impl_invoke(
+				mirror_,
+				AGSymbol.jAlloc("grabSlot"),
+				NATTable.atValue(new ATObject[] { selector })).asMethod();
+	}
+
+
+	public ATTable meta_listSlots() throws InterpreterException {
+		return mirror_.impl_invoke(
+				mirror_,
+				AGSymbol.jAlloc("listSlots"),
+				NATTable.EMPTY).asTable();
+	}
+
+	public ATClosure meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
+		return mirror_.impl_invoke(
+				mirror_,
+				AGSymbol.jAlloc("doesNotUnderstand"),
+				NATTable.atValue(new ATObject[] { selector })).asClosure();
 	}
 
 

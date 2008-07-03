@@ -565,6 +565,67 @@ public interface ATObject extends ATConversions {
     public ATTable meta_listMethods() throws InterpreterException;
 
     /**
+     * This structural meta-level operation adds a slot object to the receiver mirror's
+     * base object. An object cannot contain two or more slots with the same name.
+     * 
+     * A slot is either a method or a closure. A closure serves to encapsulate access to
+     * or mutation of a field.
+     * 
+     * Care must be taken with closures when the object to which they are added is
+     * cloned or instantiated: the closure will be shared between clones!
+     * <p>
+     * As an example, here is how to add a read-only field <tt>foo</tt> initialized
+     * to <tt>5</tt> to an object <tt>obj</tt>:
+     * <pre>
+     * def [accessor,mutator] := /.at.lang.values.createFieldSlot(`foo, 5);
+     * (reflect: obj).addSlot(accessor);
+     * </pre>
+     * 
+     * @param slot the method representing the slot to be added
+     * to the receiver's base object
+     * @return nil
+     * @throws XDuplicateSlot if the base object already has a slot with the
+     * same name as the new slot
+     */
+    public ATNil meta_addSlot(ATMethod slot) throws InterpreterException;
+
+    /**
+     * This structural meta-level operation allows the metaprogrammer to reify a
+     * slot of the receiver mirror's base object. Hence, unlike <tt>select</tt>
+     * and <tt>lookup</tt>, <tt>grabSlot</tt> returns a <i>slot object</i> rather
+     * than the <i>value</i> bound to the slot. For example: one could express
+     * <code>obj.super := val</code> at the meta-level as:
+     * 
+     * <pre>
+     * def superMutator := (reflect: obj).grabSlot(`super:=);
+     * superMutator(val);
+     * </pre>
+     *
+     * Another important difference between <tt>select</tt>, <tt>lookup</tt> and
+     * <tt>grabSlot</tt> is that <tt>grabSlot</tt> only considers the slots
+     * <i>local</i> to the receiver's base object. Slots of lexical or dynamic
+     * parent objects are <i>not</i> considered.
+     *
+     * @param selector a symbol representing the name of the slot to select.
+     * @return a method representing the selected slot.
+     * @throws XUndefinedSlot if the field cannot be found within the receiver's
+     * base object.
+     */
+    public ATMethod meta_grabSlot(ATSymbol selector) throws InterpreterException;
+
+    /**
+     * This structural meta-level operation allows access to all of the
+     * slots defined on the receiver mirror's base object. Note that
+     * this method only returns the base object's <i>locally</i> defined
+     * slots. Slots from parent objects are not returned.
+     * 
+     * @see ATObject#meta_grabSlot(ATSymbol) for details about the returned
+     * slot objects. 
+     * @return a table of slot objects (of type {@link ATMethod}).
+     */
+    public ATTable meta_listSlots() throws InterpreterException;
+    
+    /**
      * This structural meta-level operation returns whether or not
      * the receiver mirror's base object is an <i>extension</i> of its
      * parent object.
@@ -596,7 +657,7 @@ public interface ATObject extends ATConversions {
      * <b>IS-A</b> link or not.
      */
     public ATBoolean meta_isExtensionOfParent() throws InterpreterException;
-
+    
     /* ------------------------------------------
       * -- Abstract Grammar evaluation protocol --
       * ------------------------------------------ */

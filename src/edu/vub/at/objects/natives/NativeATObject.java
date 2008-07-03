@@ -73,6 +73,8 @@ import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaMethod;
 import edu.vub.at.objects.symbiosis.JavaObject;
@@ -197,6 +199,46 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 
     public ATTable meta_listMethods() throws InterpreterException {
     	return NATTable.atValue(Reflection.downBaseLevelMethods(this));
+    }
+    
+    public ATNil meta_addSlot(ATMethod method) throws InterpreterException {
+    	return this.meta_addMethod(method);
+    }
+    
+    public ATMethod meta_grabSlot(ATSymbol methodName) throws InterpreterException {
+        try {
+        	return this.meta_grabMethod(methodName);
+        } catch(XSelectorNotFound e) {
+        	e.catchOnlyIfSelectorEquals(methodName);
+        	if (methodName.isAssignmentSymbol()) {
+            	ATField mutator = this.meta_grabField(methodName.asAssignmentSymbol().base_fieldName());
+            	return mutator.base_mutator();
+        	} else {
+            	ATField accessor = this.meta_grabField(methodName);
+            	return accessor.base_accessor();
+        	}
+        }
+    }
+    
+    public ATTable meta_listSlots() throws InterpreterException {
+    	ATObject[] fields = this.meta_listFields().asNativeTable().elements_;
+    	ATObject[] methods = this.meta_listMethods().asNativeTable().elements_;
+    	
+    	int fieldLength = fields.length * 2;
+    	ATObject[] slots = new ATObject[fieldLength + methods.length];
+    	int i = 0;
+    	// add field accessors and mutators
+    	for (; i < fieldLength ; i+=2) {
+    		ATField field = (ATField) fields[i/2];
+    		slots[i] = field.base_accessor();
+        	slots[i+1] = field.base_mutator();
+    	}
+    	// add regular methods
+    	for (; i < fieldLength + methods.length ; i++) {
+    		slots[i] = methods[i - fieldLength];
+    	}
+    	
+    	return NATTable.atValue(slots);
     }
 
     /* ---------------------------------
