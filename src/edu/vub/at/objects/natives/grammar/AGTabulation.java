@@ -28,14 +28,12 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XIllegalIndex;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATTabulation;
+import edu.vub.at.objects.natives.NATMethodInvocation;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -66,14 +64,14 @@ public final class AGTabulation extends AGExpression implements ATTabulation {
 	 * @return the value of the indexed table slot.
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATTable tab = tblExp_.meta_eval(ctx).asTable();
-		ATNumber idx = null;
-		try {
-			idx = idxExp_.meta_eval(ctx).asNumber();
-		} catch (XTypeMismatch e) {
-			throw new XIllegalIndex(e.getMessage());
-		}
-		return tab.base_at(idx);
+		ATObject col = tblExp_.meta_eval(ctx);
+		ATObject idx = idxExp_.meta_eval(ctx);
+
+		return col.meta_invoke(col, 
+				new NATMethodInvocation(
+						AGSymbol.jAlloc("at"), 
+						NATTable.of(idx),
+						NATTable.EMPTY));
 	}
 
 	/**

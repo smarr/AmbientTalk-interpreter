@@ -28,14 +28,12 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XIllegalIndex;
-import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignTable;
 import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.natives.NATMethodInvocation;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
 /**
@@ -72,16 +70,15 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 	 * @return the value stored in the table
 	 */
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
-		ATTable tab = tblExp_.meta_eval(ctx).asTable();
-		ATNumber idx = null;
-		try {
-			idx = idxExp_.meta_eval(ctx).asNumber();
-		} catch (XTypeMismatch e) {
-			throw new XIllegalIndex(e.getMessage());
-		}
+		ATObject col = tblExp_.meta_eval(ctx);
+		ATObject idx = idxExp_.meta_eval(ctx);
 		ATObject val = valExp_.meta_eval(ctx);
-		tab.base_atPut(idx, val);
-		return val;
+
+		return col.meta_invoke(col, 
+				new NATMethodInvocation(
+						AGSymbol.jAlloc("atPut"), 
+						NATTable.of(idx, val),
+						NATTable.EMPTY));
 	}
 
 	/**
