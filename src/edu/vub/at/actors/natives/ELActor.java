@@ -28,9 +28,6 @@
 package edu.vub.at.actors.natives;
 
 
-import java.lang.reflect.Method;
-import java.util.EventListener;
-
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
@@ -59,6 +56,9 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.symbiosis.Symbiosis;
 import edu.vub.at.util.logging.Logging;
+
+import java.lang.reflect.Method;
+import java.util.EventListener;
 
 /**
  * An instance of the class ELActor represents a programmer-defined
@@ -464,12 +464,11 @@ public class ELActor extends EventLoop {
 		}
 	}
 	
-	
 	/**
 	 * This method should only be used for purposes of unit testing. It allows
 	 * arbitary code to be scheduled by external threads such as unit testing frameworks.
 	 */
-	public Object sync_event_performTest(final Callable c) throws Exception {
+	public Object sync_event_performTest(Callable c) throws Exception {
 		return (ATObject) receiveAndWait("performTest("+c+")", c);
 	}
 	
