@@ -348,11 +348,10 @@ public class ELActor extends EventLoop {
 			public void process(Object myActorMirror) {
 				try {
 					ATObject result = mirror_.base_serve();
-					// TODO what to do with return value?
 					Logging.Actor_LOG.debug(mirror_ + ": serve() returned " + result);
 				} catch (InterpreterException e) {
-					// TODO what to do with exception?
-					e.printAmbientTalkStackTrace(System.err);
+					System.out.println(">>> Exception in actor " + myActorMirror + ": "+e.getMessage());
+					e.printAmbientTalkStackTrace(System.out);
 					Logging.Actor_LOG.error(mirror_ + ": serve() failed ", e);
 				}
 			}
@@ -362,14 +361,13 @@ public class ELActor extends EventLoop {
 	private void performAccept(ATObject receiver, ATAsyncMessage msg) {
 		try {
 			ATObject result = mirror_.base_receive(receiver, msg);
-			// TODO what to do with return value?
 			Logging.Actor_LOG.debug(mirror_ + ": scheduling "+ msg + " returned " + result);
 			
 			// signal a serve event for every message that is accepted
 			event_serve();
 		} catch (InterpreterException e) {
-			// TODO what to do with exception?
-			e.printAmbientTalkStackTrace(System.err);
+			System.out.println(">>> Exception in actor " + getImplicitActorMirror() + ": "+e.getMessage());
+			e.printAmbientTalkStackTrace(System.out);
 			Logging.Actor_LOG.error(mirror_ + ": scheduling "+ msg + " failed ", e);
 		}
 	}
@@ -393,7 +391,8 @@ public class ELActor extends EventLoop {
 				try {
 					Reflection.downInvocation(principal, method, args);
 				} catch (InterpreterException e) {
-					e.printAmbientTalkStackTrace(System.err);
+					System.out.println(">>> Exception in actor " + actorMirror + ": "+e.getMessage());
+					e.printAmbientTalkStackTrace(System.out);
 					Logging.Actor_LOG.error("asynchronous symbiotic invocation of "+method.getName()+" failed", e);
 				}
 			}
