@@ -100,8 +100,8 @@ public class DistributionTest extends TestCase {
 				NATParser.parse("DistributionTest#setUpConnectionObservers()",
 						"deftype Service; \n" +
 						"when: Service discovered: { | ref |" +
-						"  when: ref disconnected: { success(); }; \n" +
-						"  when: ref reconnected:  { success(); }; \n" +
+						"  whenever: ref disconnected: { success(); }; \n" +
+						"  whenever: ref reconnected:  { success(); }; \n" +
 						// explicitly triggering success, although we are not testing service discovery
 						// allows to minimize the waiting time until we can go offline
 						"  success(); " +
@@ -269,7 +269,7 @@ public class DistributionTest extends TestCase {
 	}
 		
 	/**
-	 * This test uses the when: disconnected: to detect when a far reference has become
+	 * This test uses the whenever: disconnected: to detect when a far reference has become
 	 * disconnected. We distinguish between two tests, depending on the role of the device
 	 * that falls away. If the provider disconnects, the subscriber hosting the far reference
 	 * is notified of this event through by the distribution layer.
@@ -314,7 +314,7 @@ public class DistributionTest extends TestCase {
 	}
 	
 	/**
-	 * This test uses the when: disconnected: to detect when a far reference has become
+	 * This test uses the whenever: disconnected: to detect when a far reference has become
 	 * disconnected. We distinguish between two tests, depending on the role of the device
 	 * that goes offline.
 	 * 
@@ -372,7 +372,7 @@ public class DistributionTest extends TestCase {
 						"deftype Service; \n" +
 						"when: Service discovered: { | ref | \n" +
 						"  far := ref; \n" +
-						"  when: ref disconnected: { \n" +
+						"  whenever: ref disconnected: { \n" +
 						"    messages := retract: ref; \n" +
 						"    success(); \n" +
 						"  }; \n" +

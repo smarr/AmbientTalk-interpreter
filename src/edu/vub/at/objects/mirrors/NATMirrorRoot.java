@@ -176,7 +176,13 @@ public final class NATMirrorRoot extends NATByCopy implements ATObject {
     	return NATText.atValue("<mirror on: "+base_+">");
     }
     
-	
+    public ATObject meta_pass() throws InterpreterException {
+    	if ((base_.meta_isTaggedAs(NativeTypeTags._ISOLATE_)).asNativeBoolean().javaValue) {//.atValue()isFlagSet(_IS_ISOLATE_FLAG_)) {
+    		return this;
+    	} else {
+    		return super.meta_pass();
+    	}
+    }
 	/**
 	 * The read-only field containing the mirror's base-level mirage.
 	 */
