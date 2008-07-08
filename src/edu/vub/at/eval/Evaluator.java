@@ -36,6 +36,8 @@ import java.util.LinkedList;
 import org.apache.regexp.RE;
 import org.apache.regexp.REProgram;
 
+import edu.vub.at.actors.natives.ELActor;
+import edu.vub.at.actors.natives.NATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XAmbienttalk;
 import edu.vub.at.objects.ATContext;
@@ -412,4 +414,26 @@ public final class Evaluator {
 			return new XJavaException(exc);
 		}
 	}
+	
+	/**
+	 * Performs <code>closure&lt;-apply(arguments)@[]</code>
+	 */
+	public static ATObject trigger(ATObject closure, ATTable arguments) throws InterpreterException {
+		return closure.meta_receive(
+				new NATAsyncMessage(Evaluator._APPLY_,
+							        NATTable.of(arguments),
+							        NATTable.EMPTY));
+	}
+	
+	/**
+	 * Performs <code>closure&lt;-apply(arguments)@[]</code>
+	 * Used when the {@link ELActor} owner is known.
+	 */
+	public static void trigger(ELActor owner, ATObject closure, ATTable arguments) throws InterpreterException {
+		owner.acceptSelfSend(closure,
+				new NATAsyncMessage(Evaluator._APPLY_,
+							        NATTable.of(arguments),
+							        NATTable.EMPTY));
+	}
+	
 }

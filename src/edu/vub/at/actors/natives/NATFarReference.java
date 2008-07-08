@@ -145,8 +145,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		if (!connected_) {
 			try {
 				// listener<-apply([])
-				owner_.acceptSelfSend(listener, new NATAsyncMessage(
-						Evaluator._APPLY_, NATTable.of(NATTable.EMPTY), NATTable.EMPTY));
+				Evaluator.trigger(owner_, listener, NATTable.EMPTY);
 			} catch (InterpreterException e) {
 				Logging.RemoteRef_LOG.error(
 						"error invoking when:disconnected: listener", e);
@@ -439,10 +438,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
     private void triggerListener(ATObject listener, String type) {
 		try {
 			// listener<-apply([ [] ])
-			owner_.acceptSelfSend(listener,
-					new NATAsyncMessage(Evaluator._APPLY_,
-							            NATTable.of(NATTable.EMPTY),
-							            NATTable.EMPTY));
+			Evaluator.trigger(owner_, listener, NATTable.EMPTY);
 		} catch (InterpreterException e) {
 			Logging.RemoteRef_LOG.error("error invoking " + type +" listener", e);
 		}

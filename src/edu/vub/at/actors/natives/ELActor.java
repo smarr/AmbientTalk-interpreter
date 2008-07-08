@@ -495,10 +495,7 @@ public class ELActor extends EventLoop {
 					if (discoveredType.base_isSubtypeOf(requiredType).asNativeBoolean().javaValue) {
 						ATObject remoteService = remoteServicePkt.unpack();
 						// myhandler<-apply([remoteService])@[]
-						myHandler.meta_receive(
-							new NATAsyncMessage(Evaluator._APPLY_,
-								NATTable.of(NATTable.of(remoteService)),
-								NATTable.EMPTY));
+						Evaluator.trigger(myHandler, NATTable.of(remoteService));
 					}
 				} catch (XIOProblem e) {
 					Logging.Actor_LOG.error("Error deserializing joined types or services: ", e.getCause());
