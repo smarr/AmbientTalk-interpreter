@@ -805,14 +805,11 @@ public interface ATObject extends ATConversions {
      * is by default pointer-equality (i.e. objects are equal only
      * if they are identical).
      * 
-     * This is a primitive method, present by default in every AmbientTalk
-     * object but redefinable by the programmer.
-     * 
      * @return by default, true if the parameter object and this object are identical,
      * false otherwise.
      */
-    public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException;
-
+    // public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException;
+    
     /**
      * The object instantiation method. Note that in class-based OO languages,
      * this method is usually at the level of the <i>class</i>. In AmbientTalk,

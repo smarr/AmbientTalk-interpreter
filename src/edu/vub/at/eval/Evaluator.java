@@ -41,6 +41,7 @@ import edu.vub.at.actors.natives.NATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XAmbienttalk;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMirrorRoot;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.NATMirrorRoot;
@@ -325,7 +326,7 @@ public final class Evaluator {
     /**
      * The default mirror root, with an empty base-level object
      */
-	private static NATMirrorRoot createMirrorRoot() {
+	private static ATMirrorRoot createMirrorRoot() {
 		return new NATMirrorRoot();
 	}
 	

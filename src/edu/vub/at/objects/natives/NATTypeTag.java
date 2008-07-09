@@ -158,7 +158,7 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 	 */
     public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
     	if (comparand.isTypeTag()) {
-    		return comparand.asTypeTag().base_typeName().base__opeql__opeql_(typeName_);
+    		return NATBoolean.atValue(comparand.asTypeTag().base_typeName().equals(typeName_));
     	} else {
     		return NATBoolean._FALSE_;
     	}

@@ -250,7 +250,7 @@ public class NATMirage extends NATObject {
 	 * self-sends are replaced by static super-sends, such that the native implementation
 	 * of the impl methods can be reused.
 	 */
-	public ATObject magic_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
+	public ATClosure magic_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
 		//return super.meta_select(receiver, selector);
 		if (selector.isAssignmentSymbol()) {
 			return super.impl_selectMutator(receiver, selector.asAssignmentSymbol());
@@ -260,7 +260,7 @@ public class NATMirage extends NATObject {
 	}
 
 	
-	public ATObject magic_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
+	public ATClosure magic_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		return super.meta_doesNotUnderstand(selector);
 	}
 	

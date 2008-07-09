@@ -355,13 +355,8 @@ public final class Import {
 		
 		public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
 			if (other.isNativeDelegateMethod()) {
-				final DelegateMethod m = other.asNativeDelegateMethod();
-				return (m.origMethodName_.base__opeql__opeql_(origMethodName_).base_and_(
-						new NativeClosure(this) {
-							public ATObject base_apply(ATTable args) throws InterpreterException {
-								return m.delegate_.base__opeql__opeql_(delegate_);
-							}
-						}));
+				DelegateMethod m = other.asNativeDelegateMethod();
+				return NATBoolean.atValue(m.origMethodName_.equals(origMethodName_) && m.delegate_.equals(delegate_));
 			} else {
 				return NATBoolean._FALSE_;
 			}

@@ -78,7 +78,7 @@ public class XSelectorNotFound extends InterpreterException {
 	 * lookup, the exception handler should invoke this method to ensure that he is dealing with the right exception.
 	 */
 	public void catchOnlyIfSelectorEquals(ATSymbol sym) throws InterpreterException {
-		if (!selector_.base__opeql__opeql_(sym).asNativeBoolean().javaValue) {
+		if (!selector_.equals(sym)) {
 			throw this;
 		}
 	}

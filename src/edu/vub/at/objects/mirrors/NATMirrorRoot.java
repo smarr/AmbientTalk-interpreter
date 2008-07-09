@@ -33,10 +33,12 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATMethodInvocation;
+import edu.vub.at.objects.ATMirrorRoot;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -80,7 +82,7 @@ import java.io.IOException;
  * 
  * @author tvcutsem, smostinc
  */
-public final class NATMirrorRoot extends NATByCopy implements ATObject {
+public final class NATMirrorRoot extends NATByCopy implements ATMirrorRoot {
 	
 	// The name of the field that points to the base_level representation of a custom mirror
 	public static final AGSymbol _BASE_NAME_ = AGSymbol.jAlloc("base");
@@ -261,7 +263,7 @@ public final class NATMirrorRoot extends NATByCopy implements ATObject {
 		return base_base().magic_defineField(name, value);
 	}
 
-	public ATObject base_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
+	public ATClosure base_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		return base_base().magic_doesNotUnderstand(selector);
 	}
 
@@ -333,7 +335,7 @@ public final class NATMirrorRoot extends NATByCopy implements ATObject {
 		return base_base().magic_respondsTo(atSelector);
 	}
 
-	public ATObject base_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
+	public ATClosure base_select(ATObject receiver, ATSymbol selector) throws InterpreterException {
 		return base_base().magic_select(receiver, selector);
 	}
 

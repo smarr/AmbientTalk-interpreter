@@ -124,7 +124,7 @@ public class NATIntrospectiveMirror extends NATByRef {
 	
 	public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
 		if (other.isNativeIntrospectiveMirror()) {
-			return principal_.base__opeql__opeql_(other.asNativeIntrospectiveMirror().principal_);
+			return NATBoolean.atValue(principal_.equals(other.asNativeIntrospectiveMirror().principal_));
 		} else {
 			return NATBoolean._FALSE_;
 		}

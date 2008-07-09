@@ -230,7 +230,7 @@ public final class NATTable extends AGExpression implements ATTable {
 	
 	public ATBoolean base_contains(ATObject obj) throws InterpreterException {
 		for (int i = 0; i < elements_.length; i++) {
-			if (obj.base__opeql__opeql_(elements_[i]).asNativeBoolean().javaValue) {
+			if (obj.equals(elements_[i])) {
 				return NATBoolean._TRUE_;
 			}
 		}

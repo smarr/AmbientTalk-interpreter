@@ -31,8 +31,9 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATExpression;
 
 /**
- * the native object representing 'nil' implements this interface.
- * The type ATNil is a subtype of ATObject.
+ * The methods understood by the native <tt>nil</tt> object.
+ * All other objects in the system delegate to <tt>nil</tt> eventually. Hence,
+ * <tt>nil</tt>'s methods may be invoked on all objects in the system.
  * 
  * @author tvcutsem
  */
@@ -44,4 +45,27 @@ public interface ATNil extends ATObject, ATExpression {
 	 */
 	public ATBoolean base__opnot__opeql_(ATObject other) throws InterpreterException;
 	
+    /**
+     * The identity operator. In AmbientTalk, equality of objects
+     * is by default pointer-equality (i.e. objects are equal only
+     * if they are identical).
+     * 
+     * @return by default, true if the parameter object and this object are identical,
+     * false otherwise.
+     */
+    public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException;
+    
+    /**
+     * This method is invoked when a new instance of the object is created
+     * using {@link this#base_new(ATObject[])}. The default implementation
+     * does nothing, but can be overridden to re-initialize the cloned
+     * instance.
+     */
+    public ATObject base_init(ATObject[] initargs) throws InterpreterException;
+    
+    /**
+     * Creates a new instance (a clone) of the receiver and initialises it
+     * by invoking its {@link this#base_init(ATObject[])} method.
+     */
+    public ATObject base_new(ATObject[] initargs) throws InterpreterException;
 }

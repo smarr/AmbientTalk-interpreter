@@ -110,8 +110,8 @@ public class CoercionTest extends AmbientTalkTest {
 		assertTrue(unwrapped.equals(coercedObject));
 		assertTrue(coercedObject.equals(unwrapped));
 		// they should be AmbientTalk-equals
-		assertTrue(unwrapped.base__opeql__opeql_(coercedObject).asNativeBoolean().javaValue);
-		assertTrue(coercedObject.base__opeql__opeql_(unwrapped).asNativeBoolean().javaValue);
+		assertTrue(unwrapped.equals(coercedObject));
+		assertTrue(coercedObject.equals(unwrapped));
 		// their hashcodes should be equal as well
 		assertTrue(unwrapped.hashCode() == coercedObject.hashCode());
 	}

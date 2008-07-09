@@ -38,6 +38,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -161,7 +162,9 @@ public class NATNil extends NATObject implements ATNil {
 				throw new XArityMismatch("!=", 1, arity);
 			}
 			ATObject other = arguments.base_at(NATNumber.ONE);
-			return ctx.base_receiver().base__opeql__opeql_(other).base_not();
+			// return ctx.receiver == other
+			return ctx.base_receiver().meta_invoke(
+					ctx.base_receiver(), new NATMethodInvocation(_EQL_NAME_, NATTable.of(other), NATTable.EMPTY)).asBoolean().base_not();
 		}
 	};
 	
@@ -186,6 +189,26 @@ public class NATNil extends NATObject implements ATNil {
 		methodDictionary_.put(_NEW_NAME_, _PRIM_NEW_);
 		methodDictionary_.put(_INI_NAME_, _PRIM_INI_);
 		methodDictionary_.put(_NEQ_NAME_, _PRIM_NEQ_);
+	}
+	
+    /**
+     * The identity operator. In AmbientTalk, equality of objects
+     * is by default pointer-equality (i.e. objects are equal only
+     * if they are identical).
+     * 
+     * @return by default, true if the parameter object and this object are identical,
+     * false otherwise.
+     */
+    public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
+    	return this.meta_invoke(this, new NATMethodInvocation(_EQL_NAME_, NATTable.of(other), NATTable.EMPTY)).asBoolean();
+    }
+    
+	public ATObject base_init(ATObject[] initargs) throws InterpreterException {
+    	return this.meta_invoke(this, new NATMethodInvocation(_INI_NAME_, NATTable.atValue(initargs), NATTable.EMPTY));
+	}
+
+	public ATObject base_new(ATObject[] initargs) throws InterpreterException {
+    	return this.meta_invoke(this, new NATMethodInvocation(_NEW_NAME_, NATTable.atValue(initargs), NATTable.EMPTY));
 	}
 	
 	public ATBoolean base__opnot__opeql_(ATObject other) throws InterpreterException {
