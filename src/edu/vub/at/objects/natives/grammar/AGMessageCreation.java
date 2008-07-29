@@ -40,6 +40,8 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.Set;
+
 /**
  * The common superclass of AGAsyncMessageCreation and AGMethodInvocationCreation.
  * This class serves as a common repository for both kinds of first-class message AG elements.
@@ -134,5 +136,21 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 	 * for a given selector, evaluated arguments and annotation
 	 */
 	protected abstract ATMessage createMessage(ATContext ctx, ATSymbol selector, ATTable evaluatedArgs, ATTable annotations) throws InterpreterException;
+	
+	/**
+	 * FV(.|<-|^selector(args) @ anns) = FV(args) U FV(anns)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvArgs = arguments_.impl_freeVariables();
+		fvArgs.addAll(annotations_.impl_freeVariables());
+		return fvArgs;
+	}
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = selector_.impl_quotedFreeVariables();
+		qfv.addAll(arguments_.impl_quotedFreeVariables());
+		qfv.addAll(annotations_.impl_quotedFreeVariables());
+		return qfv;
+	}
 	
 }

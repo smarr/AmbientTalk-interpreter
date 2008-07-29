@@ -31,7 +31,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import org.apache.regexp.RE;
 import org.apache.regexp.REProgram;
@@ -217,6 +219,36 @@ public final class Evaluator {
 	}
 	
 	/**
+	 * Given a set and a formal parameter list:
+	 * <ul>
+	 *   <li>first removes from the set all variable names declared in the parameterlist.
+	 *   <li>then adds to the set all free variables found in optional variable expressions.
+	 *   
+	 *   For example, applied to the parameterlist <tt>f(x,y := z + 1, @ rest)</tt>, the variables
+	 *   <tt>x, y</tt> and <tt>rest</tt> would be removed from the set and the variable
+	 *   <tt>z</tt> would be added to the set.
+	 * </ul>
+	 */
+	public static void processFreeVariables(Set freeVars, ATTable paramlist) throws InterpreterException {
+		HashSet toAdd = new HashSet();
+		ATObject[] params = paramlist.asNativeTable().elements_;
+		for (int i = 0; i < params.length; i++) {
+			if (params[i].isSymbol()) {
+				// Mandatory arguments, e.g. x
+				freeVars.remove(params[i].asSymbol());
+			} else if (params[i].isVariableAssignment()) {
+				// Optional arguments, e.g. x := 5
+				freeVars.remove(params[i].asVariableAssignment().base_name());
+				toAdd.addAll(params[i].asVariableAssignment().base_valueExpression().impl_freeVariables());
+			} else if (params[i].isSplice()) {
+				// Rest arguments, e.g. @x
+				freeVars.remove(params[i].asSplice().base_expression().asSymbol());
+			}
+		}
+		freeVars.addAll(toAdd);
+	}
+	
+	/**
 	 * Returns the raw contents of a file in a String (using this JVM's default character encoding)
 	 */
 	public static String loadContentOfFile(File file) throws IOException {
@@ -381,6 +413,19 @@ public final class Evaluator {
 	}
 	
 	// UTILITY METHODS
+	
+	/**
+	 * Truncate a given string up to the given maxLength.
+	 * An ellipsis is appended to truncated strings.
+	 * Note that the ellipsis may cause the string to have length up to maxLength + 3
+	 */
+	public static final String trunc(String toTruncate, int maxLength) {
+		if (toTruncate.length() > maxLength) {
+			return toTruncate.substring(0, maxLength) + "...";
+		} else {
+			return toTruncate;
+		}
+	}
 	
 	/**
 	 * Returns the unqualified name of a class.

@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalIndex;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -34,18 +35,22 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefTable;
+import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author tvc
  *
  * The native implementation of a table definition AG element.
  */
-public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
+public final class AGDefTable extends AGDefinition implements ATDefTable {
 
 	private final ATSymbol tblName_;
 	private final ATExpression sizExp_;
@@ -118,6 +123,33 @@ public final class AGDefTable extends NATAbstractGrammar implements ATDefTable {
 				tblName_.meta_print().javaValue + "[" +
 				sizExp_.meta_print().javaValue + "] { " +
 				initExp_.meta_print().javaValue + "}");
+	}
+	
+	/**
+	 * IV(def t[idx] { body }) = { t }
+	 */
+	public Set impl_introducedVariables() throws InterpreterException {
+		Set singleton = new HashSet();
+		singleton.add(tblName_);
+		return singleton;
+	}
+
+	/**
+	 * FV(def t[idx] { body }) = FV(idx) U (FV(body) \ { t })
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvBody = initExp_.impl_freeVariables();
+		fvBody.remove(tblName_);
+		fvBody.addAll(sizExp_.impl_freeVariables());
+		return fvBody;
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = sizExp_.impl_quotedFreeVariables();
+		qfv.addAll(initExp_.impl_quotedFreeVariables());
+		qfv.addAll(tblName_.impl_quotedFreeVariables());
+		return qfv;
 	}
 
 }

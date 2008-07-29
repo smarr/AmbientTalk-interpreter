@@ -36,6 +36,8 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.Set;
+
 /**
  * @author tvc
  *
@@ -76,6 +78,18 @@ public class AGSplice extends AGExpression implements ATSplice {
 	
 	public ATSplice asSplice() throws XTypeMismatch {
 		return this;
+	}
+	
+	/**
+	 * FV(@exp) = FV(exp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		return splExp_.impl_freeVariables();
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		return splExp_.impl_quotedFreeVariables();
 	}
 
 }

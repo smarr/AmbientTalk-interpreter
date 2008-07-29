@@ -31,6 +31,9 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author tvc
  *
@@ -65,6 +68,13 @@ public final class AGSelf extends AGSymbol {
 	 */
 	public ATObject meta_resolve() throws InterpreterException {
 		return _INSTANCE_;
+	}
+	
+	/**
+	 * FV(self) = { }
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+        return new HashSet();
 	}
 	
 }

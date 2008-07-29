@@ -36,6 +36,7 @@ import edu.vub.at.actors.natives.Packet;
 import edu.vub.at.actors.net.OBJNetwork;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XUnassignableField;
 import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATAbstractGrammar;
@@ -55,7 +56,14 @@ import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NATMirrorRoot;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.parser.NATParser;
+import edu.vub.at.util.logging.Logging;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The singleton instance of this class represents the lexical root of an actor.
@@ -510,9 +518,52 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_actor_(ATClosure closure) throws InterpreterException {
 		ATMethod method = closure.base_method();
-		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-				method.base_parameters(),
-				closure.base_context());
+		ATTable copiedBindings;
+
+		// if no variables were specified to pass along to the new actor, calculate the
+		// set of free variables for the actor
+		if (method.base_parameters().base_isEmpty().asNativeBoolean().javaValue) {
+			List varnames = new LinkedList();
+			List evaluatedParams = new LinkedList();
+			
+			// calculate the set of free variables of the initialization expression
+			Set freeVars = method.base_bodyExpression().impl_freeVariables();
+			// add all these free variables manually as fields to a custom 
+			Iterator it = freeVars.iterator();
+			while (it.hasNext()) {
+				ATSymbol freeVar = (ATSymbol) it.next();
+				
+				// extra check to weed out special variables like "super" and variables available in the lexical root
+				if (! (Evaluator.getGlobalLexicalScope().meta_respondsTo(freeVar).asNativeBoolean().javaValue
+				      || OBJLexicalRoot._INSTANCE_.meta_respondsTo(freeVar).asNativeBoolean().javaValue)) {
+
+					// lookup the variable in the lexical scope
+					try {
+						ATClosure accessor = closure.base_context().base_lexicalScope().impl_lookup(freeVar);
+						// only add the variable if it refers to a field, rather than to a method
+						if (accessor instanceof NativeClosure.Accessor) {
+							varnames.add(freeVar);
+							evaluatedParams.add(accessor.base_apply(NATTable.EMPTY));
+						}
+					} catch(XUndefinedSlot exc) {
+						// silently ignore lexically free variables which cannot be found
+						// the assumption is that these variables will be bound by means of
+						// import statements
+						Logging.Actor_LOG.warn("Undefined lexically free var while constructing actor: "+exc.getFieldName());
+					}
+				}
+			}
+			copiedBindings = NATTable.atValue((ATObject[]) evaluatedParams.toArray(new ATObject[evaluatedParams.size()]));
+			method = new NATMethod(method.base_name(),
+					               // replace the empty parameterlist by the list of free variables
+					               NATTable.atValue((ATObject[]) varnames.toArray(new ATSymbol[varnames.size()])),
+					               method.base_bodyExpression(),
+					               method.base_annotations());
+		} else {
+			copiedBindings = Evaluator.evalMandatoryPars(
+					method.base_parameters(),
+					closure.base_context());
+		}
 		
 		Packet serializedBindings = new Packet("actor-bindings", copiedBindings);
 		Packet serializedInitCode = new Packet("actor-initcode", method);

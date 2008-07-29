@@ -267,7 +267,13 @@ public class ELActor extends EventLoop {
 					ATMethod initCode = initcodePkt.unpack().asMethod();					
 					
 					// initialize the behaviour using the parameters and the code
-					initCode.base_applyInScope(params, new NATContext(behaviour_, behaviour_));
+					try {
+						initCode.base_applyInScope(params, new NATContext(behaviour_, behaviour_));
+					} catch (InterpreterException e) {
+						System.out.println(">>> Exception while creating actor " + Evaluator.trunc(initCode.base_bodyExpression().toString(),20) + ":\n"+e.getMessage());
+						e.printAmbientTalkStackTrace(System.out);
+						Logging.Actor_LOG.error(behaviour_ + ": could not initialize actor behaviour", e);
+					}
 				} catch (InterpreterException e) {
 					Logging.Actor_LOG.error(behaviour_ + ": could not initialize actor behaviour", e);
 				}

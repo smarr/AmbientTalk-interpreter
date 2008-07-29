@@ -41,6 +41,8 @@ public final class XUndefinedSlot extends InterpreterException {
 
 	private static final long serialVersionUID = -219804926254934101L;
 
+	private final String fieldName_;
+	
 	/**
 	 * Creates an XUndefinedSlot exception with a given message and slot name.
 	 * @param message "method" or "field" depending on whether the lexical lookup algorithm was currently considering the method dictionary or the state vector of an object 
@@ -48,7 +50,10 @@ public final class XUndefinedSlot extends InterpreterException {
 	 */
 	public XUndefinedSlot(String message, String fieldName) {
 		super("Undefined " + message + ": " + fieldName);
+		fieldName_ = fieldName;
 	}
+	
+	public String getFieldName() { return fieldName_; }
 
 	public ATTypeTag getType() {
 		return NativeTypeTags._UNDEFINEDSLOT_;

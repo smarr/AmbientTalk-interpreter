@@ -34,6 +34,9 @@ import edu.vub.at.objects.grammar.ATQuote;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author tvc
  *
@@ -74,6 +77,21 @@ public final class AGQuote extends AGExpression implements ATQuote {
 	
 	public ATQuote asQuote() throws InterpreterException {
 		return this;
+	}
+	
+	/**
+	 * FV(`exp) = FV_in_unquoted_expressions(exp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		return stmt_.impl_quotedFreeVariables();
+	}
+	
+	/**
+	 * The expression `( `(x + #(y)) ) has no free variables.
+	 * It is assumed that the inner quotation is returned bare (without expansion)
+	 */
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		return new HashSet();
 	}
 
 }

@@ -49,6 +49,7 @@ import edu.vub.at.objects.natives.TestFieldMap;
 import edu.vub.at.objects.natives.TypeTagTest;
 import edu.vub.at.objects.natives.UniformAccessTest;
 import edu.vub.at.objects.natives.grammar.TestEval;
+import edu.vub.at.objects.natives.grammar.TestFreeVariableCapturing;
 import edu.vub.at.objects.natives.grammar.TestParameterBinding;
 import edu.vub.at.objects.symbiosis.SymbiosisTest;
 
@@ -84,6 +85,7 @@ public class InterpreterTests {
 		suite.addTestSuite(SymbiosisTest.class);
 		suite.addTestSuite(CustomFieldsTest.class);
 		suite.addTestSuite(TestParameterBinding.class);
+		suite.addTestSuite(TestFreeVariableCapturing.class);
 		suite.addTestSuite(SerializationTest.class);
 		suite.addTestSuite(TypeTagTest.class);
 		suite.addTestSuite(UniformAccessTest.class);

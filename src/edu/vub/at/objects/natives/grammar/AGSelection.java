@@ -35,6 +35,9 @@ import edu.vub.at.objects.grammar.ATSelection;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * The native implementation of a selection AG element <tt>o.&m</tt>.
  * @author tvcutsem
@@ -78,6 +81,20 @@ public final class AGSelection extends AGExpression implements ATSelection {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(rcvExp_.meta_print().javaValue + ".&" + selector_.meta_print().javaValue);
+	}
+	
+	/**
+	 * FV(rcvExp.&selector) = FV(rcvExp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		return rcvExp_.impl_freeVariables();
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = rcvExp_.impl_quotedFreeVariables();
+		qfv.addAll(selector_.impl_quotedFreeVariables());
+		return qfv;
 	}
 
 }

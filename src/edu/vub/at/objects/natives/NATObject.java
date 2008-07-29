@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Vector;
 
 import edu.vub.at.actors.ATActorMirror;
@@ -42,8 +43,11 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.XUndefinedSlot;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -338,10 +342,52 @@ public class NATObject extends NATCallframe implements ATObject {
 	 *  - the lexically inherited fields for the object (the parameters of the closure)
 	 */
 	public void initializeWithCode(ATClosure code) throws InterpreterException {
-		NATTable copiedBindings = Evaluator.evalMandatoryPars(
-				code.base_method().base_parameters(),
-				code.base_context());
-		code.base_applyInScope(copiedBindings, this);
+		ATMethod method = code.base_method();
+		
+		// if this object is an isolate and no lexical vars were specified to capture,
+		// calculate the set of free variables automatically
+		if (this.isFlagSet(_IS_ISOLATE_FLAG_) &&
+			method.base_parameters().base_isEmpty().asNativeBoolean().javaValue) {
+			
+			// calculate the set of free variables of the initialization expression
+			Set freeVars = method.base_bodyExpression().impl_freeVariables();
+			
+			// add all these free variables manually as fields to the new isolate
+			Iterator it = freeVars.iterator();
+			while (it.hasNext()) {
+				ATSymbol freeVar = (ATSymbol) it.next();
+				// extra check to weed out special variables like "super" and variables available in the lexical root
+				if (! (Evaluator.getGlobalLexicalScope().meta_respondsTo(freeVar).asNativeBoolean().javaValue
+				      || OBJLexicalRoot._INSTANCE_.meta_respondsTo(freeVar).asNativeBoolean().javaValue)) {
+					
+					// lookup the variable in the lexical scope
+					ATClosure accessor = code.base_context().base_lexicalScope().impl_lookup(freeVar);
+					// only add the variable if it refers to a field, rather than to a method
+					if (accessor instanceof NativeClosure.Accessor) {
+						try {
+							this.meta_defineField(freeVar, code.base_context().base_lexicalScope().impl_callField(freeVar));
+						} catch(XUndefinedSlot exc) {
+							// silently ignore lexically free variables which cannot be found
+							// the assumption is that these variables will be bound by means of
+							// import statements
+							Logging.Actor_LOG.warn("Undefined lexically free var while constructing isolate: "+exc.getFieldName());
+						}
+					}
+				}
+			}
+			
+			// run the initialization code
+			code.base_applyInScope(NATTable.EMPTY, this);
+			
+		} else {
+			// for all mandatory parameters, evaluate the parameter
+			// in the current context
+			ATTable copiedBindings = Evaluator.evalMandatoryPars(
+					method.base_parameters(),
+					code.base_context());
+			// apply the initialization code to the evaluated parameter list
+			code.base_applyInScope(copiedBindings, this);	
+		}
 	}
 
 	/**
@@ -480,13 +526,31 @@ public class NATObject extends NATCallframe implements ATObject {
 		return NATTable.atValue((ATObject[]) methods.toArray(new ATObject[methods.size()]));
 	}
 	
+	/**
+	 * The printed representation of an object summarizes its slots and type tags.
+	 */
 	public NATText meta_print() throws InterpreterException {
-		if (typeTags_.length == 0) {
-			return NATText.atValue("<object:"+this.hashCode()+">");
-		} else {
-			return NATText.atValue("<object:"+this.hashCode()+
-					               Evaluator.printElements(typeTags_, "[", ",", "]").javaValue+">");
+		StringBuffer out = new StringBuffer("<obj:{");
+
+		ATObject[] slots = this.meta_listSlots().asNativeTable().elements_;
+		
+		if (slots.length > 0) {
+			out.append(slots[0].asMethod().base_name().toString());
+			for (int i = 1; i < slots.length; i++) {
+				out.append(",").append(slots[i].asMethod().base_name().toString());
+			}
 		}
+		if (typeTags_.length > 0) {
+			out.append("}@[");
+			out.append(typeTags_[0].base_typeName().toString());
+			for (int i = 1; i < typeTags_.length; i++) {
+				out.append(",").append(typeTags_[i].base_typeName().toString());
+			}
+			out.append("]");
+		} else {
+			out.append("}");
+		}
+		return NATText.atValue(Evaluator.trunc(out.toString(),50)+">");
 	}
 	
 	public boolean isCallFrame() {
@@ -657,7 +721,7 @@ public class NATObject extends NATCallframe implements ATObject {
     public ATTypeTag asTypeTag() throws InterpreterException { return (ATTypeTag) coerce(NativeTypeTags._TYPETAG_, ATTypeTag.class); }
 	
 	public ATBegin asBegin() throws InterpreterException { return (ATBegin) coerce(NativeTypeTags._BEGIN_, ATBegin.class); }
-	public ATStatement asStatement() throws InterpreterException { return (ATStatement) coerce(NativeTypeTags._STATEMENT_, ATStatement.class); }
+	public ATAbstractGrammar asAbstractGrammar() throws InterpreterException { return (ATAbstractGrammar) coerce(NativeTypeTags._ABSTRACTGRAMMAR_, ATAbstractGrammar.class); }
     public ATUnquoteSplice asUnquoteSplice() throws InterpreterException { return (ATUnquoteSplice) coerce(NativeTypeTags._UQSPLICE_, ATUnquoteSplice.class); }
     public ATSymbol asSymbol() throws InterpreterException { return (ATSymbol) coerce(NativeTypeTags._SYMBOL_, ATSymbol.class); }
     public ATSplice asSplice() throws InterpreterException { return (ATSplice) coerce(NativeTypeTags._SPLICE_, ATSplice.class); }

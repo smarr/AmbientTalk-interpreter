@@ -30,12 +30,18 @@ package edu.vub.at.objects.natives.grammar;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
+import edu.vub.at.objects.grammar.ATStatement;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * AGBegin represents the abstract grammar element of a list of statements.
@@ -47,6 +53,9 @@ import edu.vub.at.objects.natives.NATText;
 public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	
 	private final ATTable statements_;
+	
+	// contains a cached version of the expression's free variables
+	private Set freeVars_;
 	
 	public AGBegin(ATTable statements) {
 	  statements_ = statements;
@@ -91,6 +100,33 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	
 	public ATBegin asBegin() throws XTypeMismatch {
 		return this;
+	}
+	
+	/**
+	 * FV({ stmt1; stmt2; ... }) = FV(stmt1) U FV(stmt2) U ... \ (IV(stmt1) U IV(stmt2) U ...) }
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		if (freeVars_ == null) {
+			freeVars_ = new HashSet();
+			final Set boundVars = new HashSet();
+			statements_.base_each_(new NativeClosure(this) {
+				public ATObject base_apply(ATTable args) throws InterpreterException {
+					ATAbstractGrammar stmt = this.get(args, 1).asAbstractGrammar();
+					freeVars_.addAll(stmt.impl_freeVariables());
+					if (stmt.isDefinition()) {
+						boundVars.addAll(stmt.asDefinition().impl_introducedVariables());					
+					}
+					return stmt;
+				}
+			});
+			freeVars_.removeAll(boundVars);
+		}
+		return freeVars_;
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		return statements_.impl_quotedFreeVariables();
 	}
 
 }

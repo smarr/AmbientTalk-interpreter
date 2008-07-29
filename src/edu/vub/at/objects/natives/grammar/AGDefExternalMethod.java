@@ -38,6 +38,7 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefExternalMethod;
+import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosureMethod;
@@ -45,12 +46,15 @@ import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * The native implementation of an external method definition abstract grammar element.
  * 
  * @author tvcutsem
  */
-public final class AGDefExternalMethod extends NATAbstractGrammar implements ATDefExternalMethod {
+public final class AGDefExternalMethod extends AGDefinition implements ATDefExternalMethod {
 
 	private final ATSymbol		rcvNam_;
 	private final ATSymbol		selectorExp_;
@@ -161,4 +165,32 @@ public final class AGDefExternalMethod extends NATAbstractGrammar implements ATD
 				" { " + bodyStmts_.meta_print().javaValue + " }");
 	}
 
+	/**
+	 * IV(def o.m(args) @ anns { body }) = { }
+	 */
+	public Set impl_introducedVariables() throws InterpreterException {
+		return new HashSet();
+	}
+
+	/**
+	 * FV(def o.m(args) @ anns { body }) =
+	 *   { o } U FV(anns) U FV(optionalArgExps) U (FV(body) \ { args }) 
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvBody = bodyStmts_.impl_freeVariables();
+		Evaluator.processFreeVariables(fvBody, argumentExps_);
+		fvBody.add(rcvNam_);
+		fvBody.addAll(annotationExps_.impl_freeVariables());
+		return fvBody;
+	}
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = argumentExps_.impl_quotedFreeVariables();
+		qfv.addAll(bodyStmts_.impl_quotedFreeVariables());
+		qfv.addAll(annotationExps_.impl_quotedFreeVariables());
+		qfv.addAll(rcvNam_.impl_quotedFreeVariables());
+		qfv.addAll(selectorExp_.impl_quotedFreeVariables());
+		return qfv;
+	}
+	
 }

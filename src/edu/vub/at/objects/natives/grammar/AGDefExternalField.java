@@ -27,21 +27,26 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATDefExternalField;
+import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents the abstract grammar for defining external fields.
  *   
  *  @author tvcutsem
  */
-public class AGDefExternalField extends NATAbstractGrammar implements ATDefExternalField {
+public class AGDefExternalField extends AGDefinition implements ATDefExternalField {
 
 	private final ATSymbol rcvNam_;
 	private final ATSymbol name_;
@@ -88,6 +93,30 @@ public class AGDefExternalField extends NATAbstractGrammar implements ATDefExter
 		return NATText.atValue("def " + rcvNam_.meta_print().javaValue
 				+ "." + name_.meta_print().javaValue
 				+ " := " + valueExp_.meta_print().javaValue);
+	}
+	
+	/**
+	 * IV(def o.x := val) = { }
+	 */
+	public Set impl_introducedVariables() throws InterpreterException {
+		return new HashSet();
+	}
+
+	/**
+	 * FV(def o.x := val) = FV(val) U { o }
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvValueExp = valueExp_.impl_freeVariables();
+		fvValueExp.add(rcvNam_);
+		return fvValueExp;
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = valueExp_.impl_quotedFreeVariables();
+		qfv.addAll(rcvNam_.impl_quotedFreeVariables());
+		qfv.addAll(name_.impl_quotedFreeVariables());
+		return qfv;
 	}
 	
 }

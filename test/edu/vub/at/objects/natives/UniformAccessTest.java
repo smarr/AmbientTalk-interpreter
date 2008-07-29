@@ -114,13 +114,13 @@ public class UniformAccessTest extends AmbientTalkTest {
 		evalAndCompareTo("len()", atThree_);
 		
 		// selection gives up to date info, not stale one recorded at selection time
-		// first we select an accessor for the receiver exp of an invocation
-		evalAndReturn("def x := `(o.m()); \n" +
-				      "def receiver := x.&receiverExpression");
-		// subsequently assign the receiver expression with a new value
-		evalAndReturn("x.receiverExpression := `object");
+		// first we select an accessor for an object attribute
+		evalAndReturn("def x := object: { def val := 0 }; \n" +
+				      "def attribute := x.&val");
+		// subsequently assign the attribute to a new value
+		evalAndReturn("x.val := 1");
 		// finally assert that the new value is correctly reported
-		evalAndCompareTo("receiver()", AGSymbol.jAlloc("object"));
+		evalAndCompareTo("attribute()", NATNumber.ONE);
 	}
 	
 	/**
@@ -140,14 +140,14 @@ public class UniformAccessTest extends AmbientTalkTest {
 		evalAndCompareTo("abs()", NATNumber.ONE);
 		evalAndCompareTo("len()", atThree_);
 		
-		// lookup gives up to date info, not stale one recorded at lookup time
-		// first we create an accessor for the receiver exp of an invocation
-		evalAndReturn("def x := `(o.m()); \n" +
-				      "def receiver := withScope: x do: { &receiverExpression }");
-		// subsequently assign the receiver expression with a new value
-		evalAndReturn("x.receiverExpression := `object");
+		// selection gives up to date info, not stale one recorded at selection time
+		// first we select an accessor for an object attribute
+		evalAndReturn("def x := object: { def val := 0 }; \n" +
+				      "def attribute := withScope: x do: { &val }");
+		// subsequently assign the attribute to a new value
+		evalAndReturn("x.val := 1");
 		// finally assert that the new value is correctly reported
-		evalAndCompareTo("receiver()", AGSymbol.jAlloc("object"));
+		evalAndCompareTo("attribute()", NATNumber.ONE);
 	}
 	
 	/**
@@ -159,30 +159,6 @@ public class UniformAccessTest extends AmbientTalkTest {
 		// there is no implicit mutator for nullary methods
 		evalAndTestException("withScope: testobj do: { &m:= }", XUnassignableField.class);
 		evalAndCompareTo("withScope: testobj do: { &c:= }", "<native closure:c:=>");
-	}
-	
-	/**
-	 * The correctness of assignments on native data types is verified by the four previous tests in
-	 * the course of testing whether the returned accessors return up to date information rather than
-	 * stale one recored when the accessor was created.
-	 * 
-	 * This test does not rely on the correct functioning of the accessor but instead manually checks 
-	 * the output of the implementation-level accessor and is therefore complementary to the previous
-	 * tests as it allows determining whether the semantics of assignment or of the created accessor
-	 * are incorrect.
-	 */
-	public void testAssignmentOnNatives() throws InterpreterException {
-		AGMethodInvocationCreation msgExp = new AGMethodInvocationCreation(
-				/* selector = */	atM_, 
-				/* arguments = */	NATTable.EMPTY, 
-				/* annotations = */	NATTable.EMPTY);
-		AGMessageSend sendExp= new AGMessageSend(
-				/* receiver = */	atX_,
-				/* message = */		msgExp);
-		ctx_.base_lexicalScope().meta_defineField(AGSymbol.jAlloc("sendExp"), sendExp);
-
-		evalAndReturn("sendExp.receiverExpression := `y");
-		assertEquals(sendExp.base_receiverExpression(), atY_); 
 	}
 
 	/**

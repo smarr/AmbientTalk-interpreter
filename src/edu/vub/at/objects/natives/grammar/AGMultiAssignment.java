@@ -36,6 +36,9 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMultiAssignment;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author tvc
  *
@@ -82,6 +85,37 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(parameters_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
+	}
+	
+	/**
+	 * FV([var1, var2 := exp1, @ rest] := exp2) =
+	 *   { var1, var2, rest } U FV(exp1) U FV(exp2)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+        Set fvValExp = valueExp_.impl_freeVariables();
+        
+		ATObject[] params = parameters_.asNativeTable().elements_;
+		for (int i = 0; i < params.length; i++) {
+			if (params[i].isSymbol()) {
+				// Mandatory arguments, e.g. x
+				fvValExp.add(params[i].asSymbol());				
+			} else if (params[i].isVariableAssignment()) {
+				// Optional args or rest args
+				// Note: for optional args, both assigned var and free vars
+				// of the initialization expression are considered free vars
+				fvValExp.addAll(params[i].asExpression().impl_freeVariables());
+			} else if (params[i].isSplice()) {
+				fvValExp.add(params[i].asSplice().base_expression().asSymbol());
+			}
+		}
+        return fvValExp;
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = parameters_.impl_quotedFreeVariables();
+		qfv.addAll(valueExp_.impl_quotedFreeVariables());
+		return qfv;
 	}
 
 }

@@ -35,10 +35,14 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATUnquote;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * The native implementation of an unquotation AG element.
+ * Example: <tt>#(x+1)</tt>
  *
- * @author tvc
+ * @author tvcutsem
  */
 public class AGUnquote extends AGExpression implements ATUnquote {
 
@@ -70,6 +74,21 @@ public class AGUnquote extends AGExpression implements ATUnquote {
 
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("#("+ unqExp_.meta_print().javaValue + ")");
+	}
+	
+	/**
+	 * FV(#exp) = FV(exp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		return unqExp_.impl_freeVariables();
+	}
+	
+	/**
+	 * Turn unquotation back into quotation.
+	 * E.g. `(x + #(y)) => y is considered a free variable
+	 */
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		return this.impl_freeVariables();
 	}
 	
 }

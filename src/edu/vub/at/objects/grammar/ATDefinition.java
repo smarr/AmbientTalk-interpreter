@@ -27,12 +27,21 @@
  */
 package edu.vub.at.objects.grammar;
 
+import edu.vub.at.exceptions.InterpreterException;
+
+import java.util.Set;
+
 /**
- * ATDefinition is the common interface of all definition AG nodes.
- * It is used for documentation/classification purposes.
+ * This is the common interface to all definition AG nodes.
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public interface ATDefinition extends ATStatement {
 
+	/**
+	 * @return the set of variable names introduced by this definition
+	 * (elements of the set are of type {@link ATSymbol}).
+	 */
+	public abstract Set impl_introducedVariables() throws InterpreterException;
+	
 }

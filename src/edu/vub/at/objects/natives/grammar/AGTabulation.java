@@ -36,10 +36,13 @@ import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.Set;
+
 /**
- * @author tvc
- *
- * The native implementation of a tabulaton AG element.
+ * The native implementation of a tabulation AG element.
+ * Example: <tt>(o.tab)[x+1]</tt>
+ * 
+ * @author tvcutsem
  */
 public final class AGTabulation extends AGExpression implements ATTabulation {
 
@@ -87,6 +90,22 @@ public final class AGTabulation extends AGExpression implements ATTabulation {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(tblExp_.meta_print().javaValue + "[" +
 				              idxExp_.meta_print().javaValue + "]");
+	}
+	
+	/**
+	 * FV(tblExp[idxExp]) = FV(tblExp) U FV(idxExp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvTblExp = tblExp_.impl_freeVariables();
+		fvTblExp.addAll(idxExp_.impl_freeVariables());
+		return fvTblExp;
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = tblExp_.impl_quotedFreeVariables();
+		qfv.addAll(idxExp_.impl_quotedFreeVariables());
+		return qfv;
 	}
 	
 }

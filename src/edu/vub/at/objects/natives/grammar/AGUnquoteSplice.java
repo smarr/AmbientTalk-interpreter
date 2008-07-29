@@ -36,10 +36,13 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.Set;
+
 /**
- * @author tvc
- *
  * The native implementation of an unquote-splice AG element.
+ * Example: <tt>#@[1,2,3]</tt>
+ * 
+ * @author tvcutsem
  */
 public class AGUnquoteSplice extends AGExpression implements ATUnquoteSplice {
 
@@ -83,6 +86,21 @@ public class AGUnquoteSplice extends AGExpression implements ATUnquoteSplice {
 	
 	public ATUnquoteSplice asUnquoteSplice() {
 		return this;
+	}
+	
+	/**
+	 * FV(#@exp) = FV(exp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		return uqsExp_.impl_freeVariables();
+	}
+	
+	/**
+	 * Turn unquotation back into quotation.
+	 * E.g. `(x + #@y) => y is considered a free variable.
+	 */
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		return this.impl_freeVariables();
 	}
 
 }

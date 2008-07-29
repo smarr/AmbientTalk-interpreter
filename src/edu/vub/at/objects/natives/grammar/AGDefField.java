@@ -31,9 +31,13 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATDefField;
+import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author tvc
@@ -43,7 +47,7 @@ import edu.vub.at.objects.natives.NATText;
  *   <tt>x := 5</tt>
  *   <tt>+ := "foo"</tt>
  */
-public final class AGDefField extends NATAbstractGrammar implements ATDefField {
+public final class AGDefField extends AGDefinition implements ATDefField {
 
 	private final ATSymbol name_;
 	private final ATExpression valueExp_;
@@ -80,6 +84,31 @@ public final class AGDefField extends NATAbstractGrammar implements ATDefField {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("def " + name_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
+	}
+	
+	/**
+	 * IV(def x := val) = { x }
+	 */
+	public Set impl_introducedVariables() throws InterpreterException {
+		HashSet singleton = new HashSet();
+		singleton.add(name_);
+		return singleton;
+	}
+	
+	/**
+	 * FV(def var := exp) = FV(exp) \ { var }
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvValueExp = valueExp_.impl_freeVariables();
+		fvValueExp.remove(name_);
+		return fvValueExp;
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = valueExp_.impl_quotedFreeVariables();
+		qfv.addAll(name_.impl_quotedFreeVariables());
+		return qfv;
 	}
 
 }

@@ -37,7 +37,7 @@ import edu.vub.at.objects.grammar.ATExpression;
  * 
  * @author tvcutsem
  */
-public interface ATNil extends ATObject, ATExpression {
+public interface ATNil extends ATObject {
 
 	/**
 	 * The <tt>!=</tt> operator which returns <tt>false</tt> only if

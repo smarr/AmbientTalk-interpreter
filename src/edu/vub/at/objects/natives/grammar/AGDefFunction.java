@@ -37,6 +37,7 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefMethod;
+import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATClosure;
@@ -44,13 +45,16 @@ import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * The native implementation of a function definition abstract grammar element.
  * This AG element covers both method and closure definition.
  * 
  * @author tvc
  */
-public final class AGDefFunction extends NATAbstractGrammar implements ATDefMethod {
+public final class AGDefFunction extends AGDefinition implements ATDefMethod {
 
 	private final ATSymbol selectorExp_;
 	private final ATTable argumentExps_;
@@ -158,5 +162,35 @@ public final class AGDefFunction extends NATAbstractGrammar implements ATDefMeth
     public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._METHOD_DEFINITION_, NativeTypeTags._ISOLATE_);
     }
+    
+	/**
+	 * IV(def f(args) @ annotations { body }) = { f }
+	 */
+	public Set impl_introducedVariables() throws InterpreterException {
+		Set singleton = new HashSet();
+		singleton.add(selectorExp_);
+		return singleton;
+	}
+
+	/**
+	 * FV(def f(args) @ annotations { body })
+	 *   = FV(annotations) U FV(optionalArgExps) U (FV(body) \ { args } \ { f })
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvBody = bodyStmts_.impl_freeVariables();
+		fvBody.remove(selectorExp_);
+		Evaluator.processFreeVariables(fvBody, argumentExps_);
+		fvBody.addAll(annotationExps_.impl_freeVariables());
+		return fvBody;
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = selectorExp_.impl_quotedFreeVariables();
+		qfv.addAll(argumentExps_.impl_quotedFreeVariables());
+		qfv.addAll(bodyStmts_.impl_quotedFreeVariables());
+		qfv.addAll(annotationExps_.impl_quotedFreeVariables());
+		return qfv;
+	}
 
 }

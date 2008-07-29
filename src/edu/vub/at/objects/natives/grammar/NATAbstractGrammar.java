@@ -29,10 +29,15 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATTable;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author tvc
@@ -52,5 +57,5 @@ public abstract class NATAbstractGrammar extends NATByCopy implements ATAbstract
     public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._ABSTRACTGRAMMAR_, NativeTypeTags._ISOLATE_);
     }
-	
+    
 }

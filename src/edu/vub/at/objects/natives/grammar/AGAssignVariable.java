@@ -38,6 +38,8 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.Set;
+
 /**
  * The native implementation of a variable assignment AG element.
  *  
@@ -96,4 +98,20 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
     public ATAssignVariable asVariableAssignment() throws XTypeMismatch {
         return this;
     }
+    
+	/**
+	 * FV(var := valExp) = { var } U FV(valExp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvValExp = valueExp_.impl_freeVariables();
+		fvValExp.add(variableName_);
+		return fvValExp;
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = valueExp_.impl_quotedFreeVariables();
+		qfv.addAll(variableName_.impl_quotedFreeVariables());
+		return qfv;
+	}
 }

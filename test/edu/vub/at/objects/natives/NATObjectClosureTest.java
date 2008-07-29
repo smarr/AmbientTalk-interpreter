@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.AmbientTalkTestCase;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -94,10 +95,6 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 			// Is the current value of super consistent with our expectations
 			assertEquals(super_, ctx.base_lexicalScope().impl_call(NATObject._SUPER_NAME_, NATTable.EMPTY));
 
-			return this;
-		}
-		
-		public ATStatement asStatement() {
 			return this;
 		}
 		
@@ -328,16 +325,17 @@ public class NATObjectClosureTest extends AmbientTalkTest {
 				"  def scope := \"child\"; \n" +
 				"}; \n" +
 				// isolates have no scope transfer
+				"def fail(msg) { system.println(msg); /*provoke an exception*/ (object: { }).foobar() };\n" +
 				"def extender := isolate: {" +
 				"  def scope := \"extender\"; \n" +
 				"  def extend(object) {" +
 				"    def object.method(invoker) { \n" +
-				"      if: !(self.scope == invoker.scope) then: { fail() }; \n" +
-				"      if: !(self       == invoker) then: { fail() }; \n" +
+				"      if: !(self.scope == invoker.scope) then: { fail(\"A\") }; \n" +
+				"      if: !(self       == invoker) then: { fail(\"B\") }; \n" +
 				
 				// without prefix : use lexical binding
-				"      if: !(scope      == \"extender\") then: { fail() }; \n" +
-				"      if: !(super      == object.super) then: { fail() }; \n" +
+				"      if: !(scope      == \"extender\") then: { fail(\"C\") }; \n" +
+				"      if: !(super      == object.super) then: { fail(\"D\") }; \n" +
 				"    }; \n" +
 				"  }; \n" +
 				"}; \n" +

@@ -39,6 +39,9 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageSend;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author tvc
  *
@@ -46,7 +49,7 @@ import edu.vub.at.objects.natives.NATText;
  */
 public final class AGMessageSend extends AGExpression implements ATMessageSend {
 
-	private ATExpression rcvExp_;
+	private final ATExpression rcvExp_;
 	private final ATExpression message_;
 	
 	public AGMessageSend(ATExpression rcv, ATExpression msg) {
@@ -55,11 +58,6 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	}
 	
 	public ATExpression base_receiverExpression() { return rcvExp_; }
-	
-	public ATNil base_receiverExpression__opeql_(ATExpression rcv) { 
-		rcvExp_ = rcv;
-		return Evaluator.getNil();
-	}
 
 	public ATExpression base_messageExpression() { return message_; }
 
@@ -100,6 +98,22 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(rcvExp_.meta_print().javaValue +
 				               ((message_.isMessageCreation()) ? "" : "<+") + message_.meta_print().javaValue);
+	}
+	
+	/**
+	 * FV(objExp <+ msgExp) = FV(objExp) U FV(msgExp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+        Set fvObjExp = rcvExp_.impl_freeVariables();
+        fvObjExp.addAll(message_.impl_freeVariables());
+        return fvObjExp;
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = rcvExp_.impl_quotedFreeVariables();
+		qfv.addAll(message_.impl_quotedFreeVariables());
+		return qfv;
 	}
 
 }

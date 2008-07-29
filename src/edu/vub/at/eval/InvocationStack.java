@@ -28,6 +28,7 @@
 package edu.vub.at.eval;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -68,11 +69,11 @@ public final class InvocationStack implements Cloneable, Serializable {
 	}
 	
 	private static class InvocationFrame implements Serializable {
-		public final ATExpression invocation;
+		public final ATAbstractGrammar invocation;
 		public final ATObject receiver;
 		public final ATTable arguments;
 		
-		public InvocationFrame(ATExpression inv, ATObject rcvr, ATTable args) {
+		public InvocationFrame(ATAbstractGrammar inv, ATObject rcvr, ATTable args) {
 			invocation = inv;
 			receiver = rcvr;
 			arguments = args;
@@ -89,11 +90,11 @@ public final class InvocationStack implements Cloneable, Serializable {
 		invocationStack_ = initstack;
 	}
 	
-	public void methodInvoked(ATExpression methodInvocation, ATObject receiver, ATTable args) throws InterpreterException {
+	public void methodInvoked(ATAbstractGrammar methodInvocation, ATObject receiver, ATTable args) throws InterpreterException {
 		invocationStack_.push(new InvocationFrame(methodInvocation, receiver, args));
 	}
 	
-	public void functionCalled(ATExpression funCall, ATClosure fun, ATTable evaluatedArgs) {
+	public void functionCalled(ATAbstractGrammar funCall, ATClosure fun, ATTable evaluatedArgs) {
 		invocationStack_.push(new InvocationFrame(funCall, fun, evaluatedArgs));
 	}
 	

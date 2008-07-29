@@ -39,10 +39,12 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.Set;
+
 /**
  * The native implementation of an application AG element.
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public final class AGApplication extends AGExpression implements ATApplication {
 
@@ -107,6 +109,21 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(funExp_.meta_print().javaValue + Evaluator.printAsList(arguments_).javaValue);
+	}
+	
+	/**
+	 * FV(fExp(args)) = FV(fExp) U FV(args)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvFunExp = funExp_.impl_freeVariables();
+		fvFunExp.addAll(arguments_.impl_freeVariables());
+		return fvFunExp;
+	}
+
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set fvFunExp = funExp_.impl_quotedFreeVariables();
+		fvFunExp.addAll(arguments_.impl_quotedFreeVariables());
+		return fvFunExp;
 	}
 
 }

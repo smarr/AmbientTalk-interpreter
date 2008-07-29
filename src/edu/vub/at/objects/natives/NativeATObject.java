@@ -27,10 +27,6 @@
  */
 package edu.vub.at.objects.natives;
 
-import java.io.InvalidObjectException;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
@@ -44,6 +40,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -73,12 +70,16 @@ import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
-import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaMethod;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.util.logging.Logging;
+
+import java.io.InvalidObjectException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * This class implements default semantics for all test and conversion methods.
@@ -375,6 +376,10 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     public boolean isSplice() throws InterpreterException {
         return false;
     }
+
+    public boolean isDefinition() throws InterpreterException {
+        return false;
+    }
     
     public boolean isMessageCreation() throws InterpreterException {
     	return false;
@@ -485,8 +490,8 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     
     // Conversions for abstract grammar elements
 
-    public ATStatement asStatement() throws InterpreterException {
-        throw new XTypeMismatch(ATStatement.class, this);
+    public ATAbstractGrammar asAbstractGrammar() throws InterpreterException {
+        return this;
     }
 
     public ATDefinition asDefinition() throws InterpreterException {
@@ -986,7 +991,18 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     		}
     	}
     }
+    
+	public ATTable base_freeVariables() throws InterpreterException {
+		Set freeVars = this.impl_freeVariables();
+		ATSymbol[] tbl = (ATSymbol[]) freeVars.toArray(new ATSymbol[freeVars.size()]);
+		return NATTable.atValue(tbl);
+	}
+    
+	/** FV(nativeObj) = { } */
+    public Set impl_freeVariables() throws InterpreterException { return new HashSet(); }
 	
+	public Set impl_quotedFreeVariables() throws InterpreterException { return new HashSet(); }
+    
 	/** native objects have no fields */
 	protected boolean hasLocalField(ATSymbol sym) throws InterpreterException {
 		return false;

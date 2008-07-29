@@ -35,6 +35,9 @@ import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * AGUnquoteSymbol is a class encapsulating an unquoted expression in a position where the 
  * grammar of the language prescribes the presence of an { @link edu.vub.at.objects.grammar.ATSymbol}.
@@ -95,4 +98,5 @@ public final class AGUnquoteSymbol extends AGUnquote implements ATSymbol {
 	public AGAssignmentSymbol asAssignmentSymbol() throws InterpreterException {
 		throw new XIllegalUnquote(unqExp_);
 	}
+	
 }

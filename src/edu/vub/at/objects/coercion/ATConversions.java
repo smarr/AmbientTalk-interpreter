@@ -35,6 +35,7 @@ import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.eval.Import.DelegateMethod;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
@@ -99,6 +100,10 @@ public interface ATConversions {
 	 */
 	public boolean isSplice() throws InterpreterException;
 	/**
+	 * Used to distinguish definitions in statement lists
+	 */
+	public boolean isDefinition() throws InterpreterException;
+	/**
 	 * Used in message send expressions to print, to check between <tt><+</tt> and
 	 * <tt>./^/<-</tt> operators.
 	 */
@@ -132,7 +137,7 @@ public interface ATConversions {
 	
 	// Abstract Grammar Elements
 	
-	public ATStatement  		asStatement() throws InterpreterException;
+	public ATAbstractGrammar	asAbstractGrammar() throws InterpreterException;
 	public ATDefinition 		asDefinition() throws InterpreterException;
 	public ATExpression 		asExpression() throws InterpreterException;
 	public ATBegin      		asBegin() throws InterpreterException;
@@ -141,7 +146,7 @@ public interface ATConversions {
 	public ATUnquoteSplice 		asUnquoteSplice() throws InterpreterException;
 	public ATAssignVariable 	asVariableAssignment() throws InterpreterException;
 	public ATSplice 			asSplice() throws InterpreterException;
-
+	
 	// Native Value Elements
 	
 	// The isNative / asNative type-casting protocol is crucial for correct

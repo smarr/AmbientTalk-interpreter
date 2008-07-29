@@ -36,6 +36,8 @@ import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.Set;
+
 /**
  * The native implementation of a table assignment AG element.
  * 
@@ -96,6 +98,24 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 		return NATText.atValue(tblExp_.meta_print().javaValue + "[" +
 				idxExp_.meta_print().javaValue + "] := " +
 				valExp_.meta_print().javaValue);
+	}
+	
+
+	/**
+	 * FV(tblExp[idxExp] := valExp) = FV(tblExp) U FV(idxExp) U FV(valExp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvTblExp = tblExp_.impl_freeVariables();
+		fvTblExp.addAll(idxExp_.impl_freeVariables());
+		fvTblExp.addAll(valExp_.impl_freeVariables());
+		return fvTblExp;
+	}
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = tblExp_.impl_quotedFreeVariables();
+		qfv.addAll(idxExp_.impl_quotedFreeVariables());
+		qfv.addAll(valExp_.impl_quotedFreeVariables());
+		return qfv;
 	}
 
 }

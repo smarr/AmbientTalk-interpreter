@@ -37,6 +37,8 @@ import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATText;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author tvcutsem
@@ -146,6 +148,23 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	 */
 	public ATObject meta_resolve() throws InterpreterException {
 		return jAlloc(txt_);
+	}
+	
+	/**
+	 * FV(nam) = { nam }
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+        HashSet singleton = new HashSet();
+        singleton.add(this);
+        return singleton;
+	}
+	
+	/**
+	 * Within a quoted expression, a variable reference is not considered
+	 * a free variable, e.g. `(x)
+	 */
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		return new HashSet();
 	}
 
 }

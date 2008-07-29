@@ -34,8 +34,12 @@ import edu.vub.at.objects.grammar.ATLookup;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * The native implementation of a lexical lookup AG element.
+ * Example: <tt>&foo</tt>
  * 
  * @author smostinc
  */
@@ -72,6 +76,19 @@ public final class AGLookup extends AGExpression implements ATLookup {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("&" + selector_.meta_print().javaValue);
+	}
+	
+	/**
+	 * FV(&nam) = { nam }
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+        HashSet singleton = new HashSet();
+        singleton.add(selector_);
+        return singleton;
+	}
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		return selector_.impl_quotedFreeVariables();
 	}
 
 }

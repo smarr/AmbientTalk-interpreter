@@ -40,6 +40,7 @@ import edu.vub.at.objects.natives.NATText;
 
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 
 /**
  *  The public interface to a native import AST component, which is of the form:
@@ -151,6 +152,21 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 			throw new XIllegalArgument("Alias binding of import statement is not a table of size two: " + aliasBinding.meta_print().javaValue);
 		}
 		buff.append(binding[0].meta_print().javaValue).append(" := ").append(binding[1].meta_print().javaValue);
+	}
+	
+	/**
+	 * FV(import objExp alias nam1 := nam2 exclude nam3) = FV(objExp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+        return importedObjectExp_.impl_freeVariables();
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = importedObjectExp_.impl_quotedFreeVariables();
+		qfv.addAll(aliasDeclarations_.impl_quotedFreeVariables());
+		qfv.addAll(excludesDeclarations_.impl_quotedFreeVariables());
+		return qfv;
 	}
 	
 }

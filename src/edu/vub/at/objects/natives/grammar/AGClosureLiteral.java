@@ -40,6 +40,8 @@ import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.Set;
+
 /**
  * The native implementation of a literal closure AG element.
  * 
@@ -103,6 +105,21 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 			                       body_.meta_print().javaValue+"}");
 					}
 				}).asNativeText();
+	}
+	
+	/**
+	 * FV({ |args| body }) = FV(optionalArgExps) U (FV(body) \ { args })
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvBody = body_.impl_freeVariables();
+		Evaluator.processFreeVariables(fvBody, arguments_);
+		return fvBody;
+	}
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = arguments_.impl_quotedFreeVariables();
+		qfv.addAll(body_.impl_quotedFreeVariables());
+		return qfv;
 	}
 	
 }

@@ -49,12 +49,6 @@ public interface ATMessageSend extends ATExpression {
 	public ATExpression base_receiverExpression();
 	
 	/**
-	 * @param rcv the new receiver
-	 * @return nil
-	 */
-	public ATNil base_receiverExpression__opeql_(ATExpression rcv);
-	
-	/**
 	 * The message to be sent must be an AmbientTalk expression that evaluates
 	 * to a message.
 	 * Example: <code>`(f().m()).getMessageExpression() == `(.m())</code>

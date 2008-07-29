@@ -37,6 +37,8 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 
+import java.util.Set;
+
 /**
  * The native implementation of a field assignment AG element.
  *  
@@ -97,4 +99,21 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 		return NATText.atValue(rcvExp_.meta_print().javaValue + "." + fieldName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
 
+	/**
+	 * FV(rcvexp.x := exp) = FV(rcvexp) U { x } U FV(exp)
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvRcvExp = rcvExp_.impl_freeVariables();
+		fvRcvExp.addAll(valueExp_.impl_freeVariables());
+		fvRcvExp.add(fieldName_);
+		return fvRcvExp;
+	}
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set fvRcvExp = rcvExp_.impl_quotedFreeVariables();
+		fvRcvExp.addAll(fieldName_.impl_quotedFreeVariables());
+		fvRcvExp.addAll(valueExp_.impl_quotedFreeVariables());
+		return fvRcvExp;
+	}
+	
 }

@@ -31,15 +31,16 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.natives.NATTable;
 
 /**
- * @author tvc
- *
  * The common interface of all AGExpression abstract grammar elements.
+ * 
+ * @author tvcutsem
  */
 public abstract class AGExpression extends NATAbstractGrammar implements ATExpression {
-
+	
 	public ATExpression asExpression() { return this; }
 
     public ATTable meta_typeTags() throws InterpreterException {

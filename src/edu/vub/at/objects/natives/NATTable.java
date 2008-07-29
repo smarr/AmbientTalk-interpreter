@@ -42,7 +42,9 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -307,6 +309,25 @@ public final class NATTable extends AGExpression implements ATTable {
 			return NATTable.EMPTY;
 		else
 			return this;
+	}
+	
+	/**
+	 * FV([exp1, exp2, ...]) = FV(exp1) U FV(exp2) U ...
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+        HashSet freeVars = new HashSet();
+        for (int i = 0; i < elements_.length; i++) {
+			freeVars.addAll(elements_[i].asExpression().impl_freeVariables());
+		}
+        return freeVars;
+	}
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+        HashSet freeVars = new HashSet();
+        for (int i = 0; i < elements_.length; i++) {
+			freeVars.addAll(elements_[i].asExpression().impl_quotedFreeVariables());
+		}
+        return freeVars;
 	}
 	
 }

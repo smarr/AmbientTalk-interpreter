@@ -27,21 +27,26 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.eval.PartialBinder;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMultiDefinition;
 import edu.vub.at.objects.natives.NATText;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author tvc
  *
  * The native implementation of a multiple definition AG element.
  */
-public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefinition {
+public class AGMultiDefinition extends AGDefinition implements ATMultiDefinition {
 
 	private final ATTable parameters_;
 	private final ATExpression valueExp_;
@@ -82,6 +87,42 @@ public class AGMultiDefinition extends NATAbstractGrammar implements ATMultiDefi
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("def " + parameters_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
+	}
+
+	/**
+	 * IV(def [v1, v2 := exp, @ rest] := exp) = { v1, v2, rest }
+	 */
+	public Set impl_introducedVariables() throws InterpreterException {
+		Set introducedVariables = new HashSet();
+		ATObject[] params = parameters_.asNativeTable().elements_;
+		for (int i = 0; i < params.length; i++) {
+			if (params[i].isSymbol()) {
+				// Mandatory arguments, e.g. x
+				introducedVariables.add(params[i].asSymbol());
+			} else if (params[i].isVariableAssignment()) {
+				// Optional arguments, e.g. x := 5
+				introducedVariables.add(params[i].asVariableAssignment().base_name());
+			} else if (params[i].isSplice()) {
+				// Rest arguments, e.g. @x
+				introducedVariables.add(params[i].asSplice().base_expression().asSymbol());
+			}
+		}
+		return introducedVariables;
+	}
+
+	/**
+	 * FV(def [v1, v2 := exp1, @ rest] := exp2) = FV(exp1) U (FV(exp2) \ { f1,f2 })
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvValueExp = valueExp_.impl_freeVariables();
+		Evaluator.processFreeVariables(fvValueExp, parameters_);
+		return fvValueExp;
+	}
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = parameters_.impl_quotedFreeVariables();
+		qfv.addAll(valueExp_.impl_quotedFreeVariables());
+		return qfv;
 	}
 
 }

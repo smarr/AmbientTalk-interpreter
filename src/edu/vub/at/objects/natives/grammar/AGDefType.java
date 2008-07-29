@@ -34,11 +34,15 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.grammar.ATDefType;
+import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.NATTypeTag;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The native AST node for the code:
@@ -47,7 +51,7 @@ import edu.vub.at.objects.natives.NATTypeTag;
  *
  * @author tvcutsem
  */
-public final class AGDefType extends NATAbstractGrammar implements ATDefType {
+public final class AGDefType extends AGDefinition implements ATDefType {
 
 	private final ATSymbol typeName_;
 	private final ATTable parentTypeExpressions_;
@@ -101,6 +105,33 @@ public final class AGDefType extends NATAbstractGrammar implements ATDefType {
 			return NATText.atValue("deftype " + typeName_.meta_print().javaValue + " <: " +
 					Evaluator.printElements(parentTypeExpressions_.asNativeTable(), "", ",", "").javaValue);
 		}
+	}
+	
+	public ATDefinition asDefinition() { return this; }
+
+	/**
+	 * IV(deftype nam <: exps) = { T1 }
+	 */
+	public Set impl_introducedVariables() throws InterpreterException {
+		Set singleton = new HashSet();
+		singleton.add(typeName_);
+		return singleton;
+	}
+
+	/**
+	 * FV(deftype nam <: exps) = FV(exps) \ { nam }
+	 */
+	public Set impl_freeVariables() throws InterpreterException {
+		Set fvParentType = parentTypeExpressions_.impl_freeVariables();
+		fvParentType.remove(typeName_);
+		return fvParentType;
+	}
+	
+	
+	public Set impl_quotedFreeVariables() throws InterpreterException {
+		Set qfv = parentTypeExpressions_.impl_quotedFreeVariables();
+		qfv.addAll(typeName_.impl_quotedFreeVariables());
+		return qfv;
 	}
 	
 }

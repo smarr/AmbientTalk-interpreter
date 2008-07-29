@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ATParsetree.java created on Jul 23, 2006 at 11:17:27 AM
+ * AGDefinition.java created on 29 jul 2008 at 14:42:21
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,40 +25,29 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects;
+package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.grammar.ATDefinition;
+import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.NativeATObject;
 
 import java.util.Set;
 
-
 /**
- * ATAbstractGrammar contains all methods to be understood by any parsetree element
- * in the ambienttalk/2 programming language. As the parsetree is a first-class
- * entity (it can be manipulated in the language using the MOP) parsetree elements
- * are also ATObjects.
+ * Common superclass for all definitional statements in the abstract grammar tree.
  * 
- * @author smostinc
+ * @author tvcutsem
  */
-public interface ATAbstractGrammar extends ATObject {
-	
+public abstract class AGDefinition extends NATAbstractGrammar implements ATDefinition {
+
+	public boolean isDefinition() { return true; }
+	public ATDefinition asDefinition() { return this; }
+
 	/**
-	 * Return a table of {@link ATSymbol} objects representing
-	 * the set of free variables of the Abstract Grammar expression.
+	 * My subclasses have to provide their own implementation for this, they cannot
+	 * reuse the default implementation of {@link NativeATObject}
 	 */
-	public ATTable base_freeVariables() throws InterpreterException;
+	public abstract Set impl_introducedVariables() throws InterpreterException;
 	
-	/**
-	 * @return the free variables of this abstract grammar element
-	 * as a set (whose elements are of type {@link ATSymbol}).
-	 */
-	public abstract Set impl_freeVariables() throws InterpreterException;
-	
-	/**
-     * Should return the set of free variables contained within this AG element,
-     * given that the AG element appears in the context of a quoted expression.
-	 * @return a set of elements of type {@link ATSymbol}).
-	 */
-	public abstract Set impl_quotedFreeVariables() throws InterpreterException;
 }
