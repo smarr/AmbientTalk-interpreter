@@ -518,13 +518,14 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 */
 	public ATObject base_actor_(ATClosure closure) throws InterpreterException {
 		ATMethod method = closure.base_method();
-		ATTable copiedBindings;
+		ATObject copiedBindings;
 
 		// if no variables were specified to pass along to the new actor, calculate the
 		// set of free variables for the actor
 		if (method.base_parameters().base_isEmpty().asNativeBoolean().javaValue) {
-			List varnames = new LinkedList();
-			List evaluatedParams = new LinkedList();
+			// introduce a private scope object that will hold copies
+			// of the lexically free variables of the actor
+			copiedBindings = new NATObject(new ATTypeTag[] { NativeTypeTags._ISOLATE_ });
 			
 			// calculate the set of free variables of the initialization expression
 			Set freeVars = method.base_bodyExpression().impl_freeVariables();
@@ -542,8 +543,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 						ATClosure accessor = closure.base_context().base_lexicalScope().impl_lookup(freeVar);
 						// only add the variable if it refers to a field, rather than to a method
 						if (accessor instanceof NativeClosure.Accessor) {
-							varnames.add(freeVar);
-							evaluatedParams.add(accessor.base_apply(NATTable.EMPTY));
+							copiedBindings.meta_defineField(freeVar, accessor.base_apply(NATTable.EMPTY));
 						}
 					} catch(XUndefinedSlot exc) {
 						// silently ignore lexically free variables which cannot be found
@@ -553,12 +553,6 @@ public final class OBJLexicalRoot extends NATByCopy {
 					}
 				}
 			}
-			copiedBindings = NATTable.atValue((ATObject[]) evaluatedParams.toArray(new ATObject[evaluatedParams.size()]));
-			method = new NATMethod(method.base_name(),
-					               // replace the empty parameterlist by the list of free variables
-					               NATTable.atValue((ATObject[]) varnames.toArray(new ATSymbol[varnames.size()])),
-					               method.base_bodyExpression(),
-					               method.base_annotations());
 		} else {
 			copiedBindings = Evaluator.evalMandatoryPars(
 					method.base_parameters(),

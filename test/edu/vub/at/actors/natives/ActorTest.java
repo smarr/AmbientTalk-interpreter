@@ -28,6 +28,8 @@
 package edu.vub.at.actors.natives;
 
 import edu.vub.at.AmbientTalkTest;
+import edu.vub.at.eval.Evaluator;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.objects.ATObject;
 
 /**
@@ -54,16 +56,12 @@ public class ActorTest extends AmbientTalkTest {
 
 		assertEquals(NATLocalFarRef.class, behaviour.getClass());
 
-		// TODO: does not work because async messages return no value
-		//assertEquals(NATNumber.ONE, evalAndReturn("<-m()").base_asAsyncMessage().base_sendTo(behaviour, NATNil._INSTANCE_));
+		assertEquals(Evaluator.getNil(), evalAndReturn("<-m()").asMessage().base_sendTo(behaviour, Evaluator.getNil()));
 	}
 	
-	public void testActorMessageReception() throws Exception {
-
-	}
-	
-	public void testProtocolInstallation() throws Exception {
-
+	public void testNoSyncAccessOnFarRefs() throws Exception {
+		evalAndTestException("def a := actor: { def m(); def x; }; a.m()", XIllegalOperation.class);
+		evalAndTestException("a.x", XIllegalOperation.class);
 	}
 	
 }

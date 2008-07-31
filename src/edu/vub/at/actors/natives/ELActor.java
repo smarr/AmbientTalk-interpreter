@@ -45,6 +45,7 @@ import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -122,7 +123,7 @@ public class ELActor extends EventLoop {
 	 * This object is created when the actor is initialized: i.e. it is the passed
 	 * version of the isolate that was passed to the actor: primitive by the creating actor.
 	 */
-	private ATObject behaviour_;
+	private NATObject behaviour_;
 	
 	public ELActor(ATActorMirror mirror, ELVirtualMachine host) {
 		super("actor " + mirror.toString());
@@ -155,10 +156,6 @@ public class ELActor extends EventLoop {
 	
 	public ELVirtualMachine getHost() {
 		return host_;
-	}
-
-	public ATObject getBehaviour() {
-		return behaviour_;
 	}
 	
 	public ActorID getActorID() {
@@ -251,7 +248,7 @@ public class ELActor extends EventLoop {
 					behaviour_ = new NATObject();
 					
 					// pass far ref to behaviour to creator actor who is waiting for this
-					future.resolve(receptionists_.exportObject(behaviour_));
+					future.resolve(receptionists_.exportObject(behaviour_,"behaviour of "+byMyself));
 					
 					// !! WARNING: the following code is also duplicated in
 					// ELDiscoveryActor's event_init. If this code is modified, don't
@@ -263,18 +260,29 @@ public class ELActor extends EventLoop {
 					// go on to initialize the root and all lexically visible fields
 					initRootObject();
 
-					ATTable params = parametersPkt.unpack().asTable();
+					ATObject params = parametersPkt.unpack();
 					ATMethod initCode = initcodePkt.unpack().asMethod();					
+				
+					if (!params.isTable()) {
+						// actor initialized as actor: { ... } => free vars automatically added to a private lexical scope
+						// in this case, params refers to an object that will play the role of lexical scope of the actor's behaviour
+						behaviour_.setLexicalParent(params);
+						params = NATTable.EMPTY;
+					}/* else {
+						// actor initialized as actor: { |vars| ... } => vars become publicly accessible in the actor
+					}*/
 					
 					// initialize the behaviour using the parameters and the code
 					try {
-						initCode.base_applyInScope(params, new NATContext(behaviour_, behaviour_));
+						initCode.base_applyInScope(params.asTable(), new NATContext(behaviour_, behaviour_));
 					} catch (InterpreterException e) {
-						System.out.println(">>> Exception while creating actor " + Evaluator.trunc(initCode.base_bodyExpression().toString(),20) + ":\n"+e.getMessage());
+						System.out.println(">>> Exception while initializing actor " + Evaluator.trunc(initCode.base_bodyExpression().toString(),20) + ":\n"+e.getMessage());
 						e.printAmbientTalkStackTrace(System.out);
 						Logging.Actor_LOG.error(behaviour_ + ": could not initialize actor behaviour", e);
 					}
 				} catch (InterpreterException e) {
+					System.out.println(">>> Exception while creating actor: " + e.getMessage());
+					e.printAmbientTalkStackTrace(System.out);
 					Logging.Actor_LOG.error(behaviour_ + ": could not initialize actor behaviour", e);
 				}
 			}

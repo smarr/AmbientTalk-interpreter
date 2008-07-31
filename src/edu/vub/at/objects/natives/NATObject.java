@@ -27,30 +27,19 @@
  */
 package edu.vub.at.objects.natives;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.Vector;
-
 import edu.vub.at.actors.ATActorMirror;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.ATLetter;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XDuplicateSlot;
-import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
-import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMessage;
@@ -67,14 +56,19 @@ import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATSplice;
-import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.NativeClosure;
-import edu.vub.at.objects.mirrors.PrimitiveMethod;
-import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.Vector;
 
 /**
  * Native implementation of a default ambienttalk object.
@@ -183,16 +177,6 @@ public class NATObject extends NATCallframe implements ATObject {
 	/* ------------------
 	 * -- Constructors --
 	 * ------------------ */
-	
-	/**
-	 * Creates an object tagged with the at.types.Isolate type.
-	 * Such an object is called an isolate because:
-	 *  - it has no access to an enclosing lexical scope (except for the root lexical scope)
-	 *  - it can therefore be passed by copy
-	 */
-	public static NATObject createIsolate() {
-		return new NATObject(new ATTypeTag[] { NativeTypeTags._ISOLATE_ });
-	}
 	
 	/**
 	 * Constructs a new AmbientTalk object whose lexical parent is the
@@ -352,6 +336,11 @@ public class NATObject extends NATCallframe implements ATObject {
 			// calculate the set of free variables of the initialization expression
 			Set freeVars = method.base_bodyExpression().impl_freeVariables();
 			
+			// introduce a private scope object that will hold copies
+			// of the lexically free variables of the isolate
+			ATObject scope = new NATObject(Evaluator.getGlobalLexicalScope(), new ATTypeTag[] { NativeTypeTags._ISOLATE_ });
+			this.lexicalParent_ = scope;
+			
 			// add all these free variables manually as fields to the new isolate
 			Iterator it = freeVars.iterator();
 			while (it.hasNext()) {
@@ -365,7 +354,7 @@ public class NATObject extends NATCallframe implements ATObject {
 					// only add the variable if it refers to a field, rather than to a method
 					if (accessor instanceof NativeClosure.Accessor) {
 						try {
-							this.meta_defineField(freeVar, code.base_context().base_lexicalScope().impl_callField(freeVar));
+							scope.meta_defineField(freeVar, code.base_context().base_lexicalScope().impl_callField(freeVar));
 						} catch(XUndefinedSlot exc) {
 							// silently ignore lexically free variables which cannot be found
 							// the assumption is that these variables will be bound by means of
@@ -664,8 +653,11 @@ public class NATObject extends NATCallframe implements ATObject {
      */
     public ATObject meta_resolve() throws InterpreterException {
     	if (isFlagSet(_IS_ISOLATE_FLAG_)) {
-    		// re-bind to the new local global lexical root
-    		lexicalParent_ = Evaluator.getGlobalLexicalScope();
+    		// if my lexical parent is now remote, re-bind to the new local global lexical root
+    		// (objects with an isolate as their lexical parent keep the isolate instead)
+    		if (lexicalParent_.isFarReference()) {
+        		lexicalParent_ = Evaluator.getGlobalLexicalScope();    			
+    		}
     		return this;
     	} else {
     		return super.meta_resolve();
@@ -837,6 +829,10 @@ public class NATObject extends NATCallframe implements ATObject {
 			}
 		}
 		return (ATMethod[]) methods.toArray(new ATMethod[methods.size()]);
+	}
+
+	public void setLexicalParent(ATObject newLexParent) {
+		lexicalParent_ = newLexParent;
 	}
 	
 }

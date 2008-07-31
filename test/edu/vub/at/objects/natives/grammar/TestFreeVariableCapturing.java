@@ -29,6 +29,7 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.AmbientTalkTest;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATObject;
@@ -168,6 +169,11 @@ public class TestFreeVariableCapturing extends AmbientTalkTest {
 		// global variables and functions should be automatically removed
 		ensurePresent("isolate:", "!", "false", freeVarsOf("isolate: { !false }"));
 		evalAndCompareTo("(isolate: { def myNot(b) { !b } }).myNot(true)","false");
+		
+		// automatically imported free variables are 'private' to the isolate
+		// and thus not publicly accessible
+		evalAndTestException("def outer2 := 42; def i3 := isolate: { def m() { outer2 } }; i3.outer2", XSelectorNotFound.class);
+		evalAndCompareTo("i3.m()", "42");
 	}
 	
 	public void testActorWithAutomaticLexicalScope() throws InterpreterException {

@@ -51,6 +51,7 @@ import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.NativeATObject;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.grammar.AGSplice;
@@ -338,6 +339,20 @@ public final class Evaluator {
 	 */
 	private static NATObject createGlobalLexicalScope() {
 		NATObject root = new NATObject(OBJLexicalRoot._INSTANCE_);
+		/*	public ATObject meta_pass() throws InterpreterException {
+				return new NATObject(OBJLexicalRoot._INSTANCE_) {
+					public ATObject meta_pass() throws InterpreterException {
+						return this;
+					}
+					public ATObject meta_resolve() throws InterpreterException {
+						return Evaluator.getGlobalLexicalScope();
+					}
+					public NATText meta_print() throws InterpreterException {
+						return NATText.atValue("<serialized lexical root>");
+					}
+				};
+			}
+		};*/
 		return root;
 	}
 	

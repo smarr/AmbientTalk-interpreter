@@ -249,6 +249,13 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		}
 		throw new XIllegalOperation("Cannot invoke " + atSelector + " on far reference " + this);
 	}
+	
+	public ATObject meta_invokeField(ATObject receiver, ATSymbol selector) throws InterpreterException {
+		if (selector.equals(NATNil._EQL_NAME_)) {
+			return super.meta_invokeField(receiver, selector);
+		}
+		throw new XIllegalOperation("Cannot synchronously access " + selector + " on far reference " + this);
+	}
 
 	/**
 	 * @return true if and only if the far object is queried for responses to basic operations such as ==
@@ -401,7 +408,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
      * ---------------------- */
 	
 	public NATText meta_print() throws InterpreterException {
-		return NATText.atValue("<far ref to:"+objectId_.getDescription()+">");
+		return NATText.atValue("<far ref:"+objectId_.getDescription()+">");
 	}
 	
     /* --------------------

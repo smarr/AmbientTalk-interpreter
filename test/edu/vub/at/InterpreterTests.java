@@ -30,6 +30,8 @@ package edu.vub.at;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+
+import edu.vub.at.actors.natives.ActorTest;
 import edu.vub.at.actors.natives.SerializationTest;
 import edu.vub.at.objects.mirrors.CoercionTest;
 import edu.vub.at.objects.mirrors.InvocationTest;
@@ -90,6 +92,7 @@ public class InterpreterTests {
 		suite.addTestSuite(TypeTagTest.class);
 		suite.addTestSuite(UniformAccessTest.class);
 		suite.addTestSuite(CoercionTest.class);
+		suite.addTestSuite(ActorTest.class);
 		//$JUnit-END$
 		return suite;
 	}

@@ -118,10 +118,11 @@ public class ReceptionistsSet {
 	 * can be distributed to other actors. Only near references may be exported.
 	 * 
 	 * @param object - the local object to export to the outside world
+	 * @param description - a globally human-readable meaningful description of the object
 	 * @return a local remote reference denoting the local object
 	 * @throws XIllegalOperation - if object is a far reference
 	 */
-	public NATLocalFarRef exportObject(ATObject object) throws InterpreterException {
+	public NATLocalFarRef exportObject(ATObject object, String description) throws InterpreterException {
 		if (object.isNativeFarReference()) {
 			throw new XIllegalOperation("Cannot export a far reference to " + object);
 		}
@@ -139,7 +140,7 @@ public class ReceptionistsSet {
 			
 			// create a new unique ID for the exported object, but make sure that the unique identity
 			// remembers the VM id and actor ID from which the object originated
-			objId = new ATObjectID(currentVM.getGUID(), owner_.getActorID(), object.toString());
+			objId = new ATObjectID(currentVM.getGUID(), owner_.getActorID(), description);
 			
 			exportedObjectsTable_.put(objId, object);
 			exportedObjectIds_.put(object, objId);
@@ -150,6 +151,10 @@ public class ReceptionistsSet {
 		ATTypeTag[] types = new ATTypeTag[origTypes.length];
 		System.arraycopy(origTypes, 0, types, 0, origTypes.length);
 		return createLocalFarRef(owner_, objId, types);
+	}
+	
+	public NATLocalFarRef exportObject(ATObject object) throws InterpreterException {
+		return exportObject(object, object.toString());
 	}
 	
 	/**
