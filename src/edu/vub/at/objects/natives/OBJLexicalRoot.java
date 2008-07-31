@@ -525,7 +525,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 		if (method.base_parameters().base_isEmpty().asNativeBoolean().javaValue) {
 			// introduce a private scope object that will hold copies
 			// of the lexically free variables of the actor
-			copiedBindings = new NATObject(new ATTypeTag[] { NativeTypeTags._ISOLATE_ });
+			copiedBindings = new NATObject(OBJLexicalRoot._INSTANCE_, new ATTypeTag[] { NativeTypeTags._ISOLATE_ });
 			
 			// calculate the set of free variables of the initialization expression
 			Set freeVars = method.base_bodyExpression().impl_freeVariables();

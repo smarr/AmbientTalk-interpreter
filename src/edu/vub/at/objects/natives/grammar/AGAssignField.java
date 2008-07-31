@@ -100,12 +100,11 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 	}
 
 	/**
-	 * FV(rcvexp.x := exp) = FV(rcvexp) U { x } U FV(exp)
+	 * FV(rcvexp.x := exp) = FV(rcvexp) U FV(exp)
 	 */
 	public Set impl_freeVariables() throws InterpreterException {
 		Set fvRcvExp = rcvExp_.impl_freeVariables();
 		fvRcvExp.addAll(valueExp_.impl_freeVariables());
-		fvRcvExp.add(fieldName_);
 		return fvRcvExp;
 	}
 	

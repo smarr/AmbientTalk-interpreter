@@ -347,20 +347,19 @@ public class NATObject extends NATCallframe implements ATObject {
 				ATSymbol freeVar = (ATSymbol) it.next();
 				// extra check to weed out special variables like "super" and variables available in the lexical root
 				if (! (Evaluator.getGlobalLexicalScope().meta_respondsTo(freeVar).asNativeBoolean().javaValue
-				      || OBJLexicalRoot._INSTANCE_.meta_respondsTo(freeVar).asNativeBoolean().javaValue)) {
-					
-					// lookup the variable in the lexical scope
-					ATClosure accessor = code.base_context().base_lexicalScope().impl_lookup(freeVar);
-					// only add the variable if it refers to a field, rather than to a method
-					if (accessor instanceof NativeClosure.Accessor) {
-						try {
-							scope.meta_defineField(freeVar, code.base_context().base_lexicalScope().impl_callField(freeVar));
-						} catch(XUndefinedSlot exc) {
-							// silently ignore lexically free variables which cannot be found
-							// the assumption is that these variables will be bound by means of
-							// import statements
-							Logging.Actor_LOG.warn("Undefined lexically free var while constructing isolate: "+exc.getFieldName());
+						|| OBJLexicalRoot._INSTANCE_.meta_respondsTo(freeVar).asNativeBoolean().javaValue)) {
+					try {
+						// lookup the variable in the lexical scope
+						ATClosure accessor = code.base_context().base_lexicalScope().impl_lookup(freeVar);
+						// only add the variable if it refers to a field, rather than to a method
+						if (accessor instanceof NativeClosure.Accessor) {
+							scope.meta_defineField(freeVar, accessor.base_apply(NATTable.EMPTY));
 						}
+					} catch(XUndefinedSlot exc) {
+						// silently ignore lexically free variables which cannot be found
+						// the assumption is that these variables will be bound by means of
+						// import statements
+						Logging.Actor_LOG.warn("Undefined lexically free var while constructing isolate: "+exc.getFieldName());
 					}
 				}
 			}

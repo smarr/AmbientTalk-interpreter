@@ -182,5 +182,29 @@ public class TestFreeVariableCapturing extends AmbientTalkTest {
 		// global variables and functions should be automatically removed
 		evalAndCompareTo("(actor: { def myNot(b) { !b } })<-myNot(true)","nil");
 	}
+	
+	/**
+	 * Following a bug in the free variable deduction algorithm...
+	 * The variable 'focus' was wrongly flagged as a free variable of the below code snippet.
+	 */
+	public void testIsolateComplexExample() throws InterpreterException {
+		Set fv = freeVarsOf("def focussed := false;" +
+				  "def handleMouseClicked(event) {" +
+				  "  def hand := event.source;" +
+				  "  def currentFocused := hand.focus;" +
+				  "  if: (nil.!=(currentFocused).and:({ currentFocused.!=(self) })) then: {" +
+				  "    currentFocused.focussed := false" +
+				  "  };" +
+				  "  if: self.focussed then: {" +
+				  "    self.focussed := false;" +
+				  "    hand.focus := nil" +
+				  "  } else: {" +
+				  "    self.focussed := true;" +
+				  "    hand.focus := self" +
+				  "  }" +
+				  "}");
+		assertFalse(fv.contains(AGSymbol.jAlloc("focus")));
+		ensurePresent(new String[] { "nil", "if:then:else:", "true", "if:then:", "false" }, fv);
+	};
 
 }

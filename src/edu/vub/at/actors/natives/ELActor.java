@@ -266,6 +266,7 @@ public class ELActor extends EventLoop {
 					if (!params.isTable()) {
 						// actor initialized as actor: { ... } => free vars automatically added to a private lexical scope
 						// in this case, params refers to an object that will play the role of lexical scope of the actor's behaviour
+						params.asAmbientTalkObject().setLexicalParent(Evaluator.getGlobalLexicalScope());
 						behaviour_.setLexicalParent(params);
 						params = NATTable.EMPTY;
 					}/* else {
