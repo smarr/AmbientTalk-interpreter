@@ -528,17 +528,19 @@ public class NATObject extends NATCallframe implements ATObject {
 				out.append(",").append(slots[i].asMethod().base_name().toString());
 			}
 		}
+		
+		String slotnames = Evaluator.trunc(out.toString(),30);		
 		if (typeTags_.length > 0) {
-			out.append("}@[");
+			out = new StringBuffer("}@[");
 			out.append(typeTags_[0].base_typeName().toString());
 			for (int i = 1; i < typeTags_.length; i++) {
 				out.append(",").append(typeTags_[i].base_typeName().toString());
 			}
 			out.append("]");
+			return NATText.atValue(slotnames+out.toString()+">");
 		} else {
-			out.append("}");
+			return NATText.atValue(slotnames+"}>");
 		}
-		return NATText.atValue(Evaluator.trunc(out.toString(),50)+">");
 	}
 	
 	public boolean isCallFrame() {
