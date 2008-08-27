@@ -47,6 +47,7 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
  * JavaMethod is a wrapper class encapsulating one or more java.lang.reflect.Method objects.
@@ -65,18 +66,19 @@ public final class JavaMethod extends NATByRef implements ATMethod {
 	
 	public JavaMethod(Method[] choices) {
 		// assertion
-		if (choices.length == 0) { throw new RuntimeException("assertion failed"); }
+		if (choices.length == 0) { throw new RuntimeException("assertion failed: JavaMethod initialized with 0 methods"); }
 		choices_ = choices;
 	}
 	
 	public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
 		ATObject wrapper = ctx.base_receiver();
 		Object receiver;
-		if (wrapper.isJavaObjectUnderSymbiosis()) {
-			receiver = wrapper.asJavaObjectUnderSymbiosis().getWrappedObject();
-		} else {
-			// static invocations do not require a receiver
+		
+		// if the method is static, the receiver can be null
+		if ((choices_[0].getModifiers() & Modifier.STATIC) != 0) {
 			receiver = null;
+		} else {
+			receiver = Symbiosis.ambientTalkToJava(wrapper, choices_[0].getDeclaringClass());
 		}
 		return Symbiosis.symbioticInvocation(wrapper, receiver, choices_[0].getName(), this, arguments.asNativeTable().elements_);
 	}

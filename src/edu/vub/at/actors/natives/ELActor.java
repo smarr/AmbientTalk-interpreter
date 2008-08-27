@@ -475,7 +475,12 @@ public class ELActor extends EventLoop {
 				}
 			});
 		} catch (Exception e) {
-			throw (InterpreterException) e;
+			if (e instanceof InterpreterException) {
+				throw (InterpreterException) e;
+			} else {
+				Logging.Actor_LOG.fatal("Unexpected Java exception: "+e.getMessage(), e);
+				throw new RuntimeException("Unexpected exception: "+e);
+			}
 		}
 	}
 	
