@@ -518,7 +518,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	 * The printed representation of an object summarizes its slots and type tags.
 	 */
 	public NATText meta_print() throws InterpreterException {
-		StringBuffer out = new StringBuffer("<obj:{");
+		StringBuffer out = new StringBuffer("<obj:"+this.hashCode()+"{");
 
 		ATObject[] slots = this.meta_listSlots().asNativeTable().elements_;
 		
@@ -529,7 +529,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			}
 		}
 		
-		String slotnames = Evaluator.trunc(out.toString(),30);		
+		String slotnames = Evaluator.trunc(out.toString(),40);		
 		if (typeTags_.length > 0) {
 			out = new StringBuffer("}@[");
 			out.append(typeTags_[0].base_typeName().toString());
