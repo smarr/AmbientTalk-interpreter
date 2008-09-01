@@ -520,7 +520,14 @@ public class NATObject extends NATCallframe implements ATObject {
 	public NATText meta_print() throws InterpreterException {
 		StringBuffer out = new StringBuffer("<obj:"+this.hashCode()+"{");
 
-		ATObject[] slots = this.meta_listSlots().asNativeTable().elements_;
+		// (reflect: self).listSlots.filter: { |slot| !(slot.name == `super).or: { slot.name == `super:= }) }
+		ATObject[] slots = this.meta_listSlots().base_filter_(new NativeClosure(this) {
+			public ATObject base_apply(ATTable args) throws InterpreterException {
+				String name = args.base_at(NATNumber.ONE).asMethod().base_name().toString();
+				return NATBoolean.atValue(!(name.equals("super") || name.equals("super:=")));
+			}
+		}).asNativeTable().elements_;
+		
 		
 		if (slots.length > 0) {
 			out.append(slots[0].asMethod().base_name().toString());
