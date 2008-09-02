@@ -52,5 +52,21 @@ public class TestFieldMap extends AmbientTalkTestCase {
 		assertEquals(7, map_.get(AGSymbol.jAlloc("b")));
 		assertEquals(-1, map_.get(AGSymbol.jAlloc("c")));
 	}
+	
+	public void testRemoval() {
+		assertEquals(2, map_.get(AGSymbol.jAlloc("z")));
+		assertEquals(2, map_.remove(AGSymbol.jAlloc("z")));
+
+		assertEquals(0, map_.get(AGSymbol.jAlloc("x")));
+		assertEquals(1, map_.get(AGSymbol.jAlloc("y")));
+		assertEquals(-1, map_.get(AGSymbol.jAlloc("z")));
+		assertEquals(2, map_.get(AGSymbol.jAlloc("u")));
+		assertEquals(3, map_.get(AGSymbol.jAlloc("v")));
+		assertEquals(4, map_.get(AGSymbol.jAlloc("w")));
+		assertEquals(5, map_.get(AGSymbol.jAlloc("a")));
+		assertEquals(6, map_.get(AGSymbol.jAlloc("b")));
+		
+		assertEquals(-1, map_.remove(AGSymbol.jAlloc("foo")));
+	}
 
 }

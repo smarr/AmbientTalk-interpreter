@@ -472,7 +472,9 @@ public interface ATObject extends ATConversions {
      *     def name := nam;
      *     def readField() { val };
      *     def writeField(newVal) { nil };
-     *   }
+     *     def accessor() { (&readField).method };
+     *     def mutator() { (&writeField).method };
+     *   } taggedAs: [/.at.types.Field]
      * };
      * (reflect: obj).addField(makeConstantField(`foo, 5));
      * </pre>
@@ -624,6 +626,18 @@ public interface ATObject extends ATConversions {
      * @return a table of slot objects (of type {@link ATMethod}).
      */
     public ATTable meta_listSlots() throws InterpreterException;
+    
+    /**
+     * This structural meta-level operation removes a slot from the
+     * object. Note that this method only removes slots that are
+     * <i>locally</i> defined in the object.
+     * 
+     * @param selector the name of the slot to remove
+     * @return the value to which the slot was previously bound
+     * (e.g. a value or a method object)
+     * @throws XSelectorNotFound if no slot with the given name is found in the object
+     */
+    public ATObject meta_removeSlot(ATSymbol selector) throws InterpreterException;
     
     /**
      * This structural meta-level operation returns whether or not

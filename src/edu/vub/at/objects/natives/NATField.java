@@ -68,13 +68,7 @@ public class NATField extends NATByRef implements ATField {
 	}
 
 	public ATObject base_readField() throws InterpreterException {
-		try {
-			return host_.meta_invokeField(host_, name_);
-		} catch (XSelectorNotFound e) {
-			e.catchOnlyIfSelectorEquals(name_);
-			// Since the field was selected from the receiver, it should always be found
-			throw new XIllegalOperation("Incorrectly initialised field accessed", e);
-		}
+		return host_.meta_invokeField(host_, name_);
 	}
 
 	public ATObject base_writeField(ATObject newValue) throws InterpreterException {

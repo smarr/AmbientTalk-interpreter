@@ -291,6 +291,10 @@ public final class NATMirrorRoot extends NATByCopy implements ATMirrorRoot {
 		return base_base().magic_grabSlot(methodName);
 	}
 
+    public ATObject meta_removeSlot(ATSymbol selector) throws InterpreterException {
+    	return base_base().magic_removeSlot(selector);
+    }
+	
 	public ATObject base_invoke(ATObject receiver, ATMethodInvocation inv) throws InterpreterException {
 		return base_base().magic_invoke(receiver, inv);
 	}

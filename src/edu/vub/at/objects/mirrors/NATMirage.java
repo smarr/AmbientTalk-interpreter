@@ -288,6 +288,9 @@ public class NATMirage extends NATObject {
 		return super.meta_grabSlot(selector);
 	}
 
+	public ATObject magic_removeSlot(ATSymbol selector) throws InterpreterException {
+		return super.meta_removeSlot(selector);
+	}
 	
 	public ATTable magic_listSlots() throws InterpreterException {
 		return super.meta_listSlots();
@@ -475,6 +478,13 @@ public class NATMirage extends NATObject {
 				AGSymbol.jAlloc("listSlots"),
 				NATTable.EMPTY).asTable();
 	}
+	
+    public ATObject meta_removeSlot(ATSymbol selector) throws InterpreterException {
+		return mirror_.impl_invoke(
+				mirror_,
+				AGSymbol.jAlloc("removeSlot"),
+				NATTable.of(selector));
+    }
 
 	public ATClosure meta_doesNotUnderstand(ATSymbol selector) throws InterpreterException {
 		return mirror_.impl_invoke(

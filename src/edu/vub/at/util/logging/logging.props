@@ -7,6 +7,6 @@
 at.eventloops=WARN
 at.eventloops.actors=WARN
 at.eventloops.remoterefs=DEBUG
-at.eventloops.vm=DEBUG
+at.eventloops.vm=WARN
 at.init=INFO
 at.network=WARN

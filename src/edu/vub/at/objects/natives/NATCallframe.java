@@ -40,6 +40,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NativeClosure;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -181,6 +182,10 @@ public class NATCallframe extends NATByRef implements ATObject {
 
 	public ATMethod meta_grabMethod(ATSymbol selector) throws InterpreterException {
 		throw new XSelectorNotFound(selector, this);
+	}
+	
+	public ATObject meta_removeSlot(ATSymbol selector) throws InterpreterException {
+		return this.removeLocalField(selector);
 	}
 
 	public ATTable meta_listFields() throws InterpreterException {
@@ -329,6 +334,33 @@ public class NATCallframe extends NATByRef implements ATObject {
 			if (fld != null) {
 				fld.base_writeField(value);
 				// ok
+			} else {
+				// fail
+				throw new XSelectorNotFound(selector, this);
+			}
+		}
+	}
+	
+	/**
+	 * Remove a given field if it exists.
+	 * @param selector the field to be removed
+	 * @return the value to which the field was bound
+	 * @throws XSelectorNotFound if the field could not be found
+	 */
+	protected ATObject removeLocalField(ATSymbol selector) throws InterpreterException {
+		int index = variableMap_.remove(selector);
+		if (index != -1) {
+			// field exists, remove from state vector as well
+			ATObject val = (ATObject) stateVector_.get(index);
+			stateVector_.removeElementAt(index);
+			// ok
+			return val;
+		} else {
+			ATField fld = getLocalCustomField(selector);
+			if (fld != null) {
+				customFields_.remove(fld);
+				// ok
+				return fld.base_readField();
 			} else {
 				// fail
 				throw new XSelectorNotFound(selector, this);

@@ -33,10 +33,13 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XAmbienttalk;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
@@ -346,5 +349,45 @@ public class MirrorTest extends AmbientTalkTest {
 		} catch (XSelectorNotFound e) {
 			assertEquals(e.getSelector(), AGSymbol.jAlloc("selct"));
 		}
+	}
+	
+	public void testMethodSlotRemoval() throws InterpreterException {
+		ATSymbol m_sym = AGSymbol.jAlloc("m");
+		ATObject obj = evalAndReturn("def removalObj := object: { def m(); }");
+		assertTrue(obj.meta_respondsTo(m_sym).asNativeBoolean().javaValue);
+		assertEquals(3, obj.meta_listSlots().base_length().asNativeNumber().javaValue);
+		ATMethod slotVal = obj.meta_removeSlot(m_sym).asMethod();
+		assertEquals(m_sym, slotVal.base_name());
+		evalAndTestException("removalObj.m()", XSelectorNotFound.class);
+		assertEquals(2, obj.meta_listSlots().base_length().asNativeNumber().javaValue);
+	}
+	
+	public void testFieldSlotRemoval() throws InterpreterException {
+		ATSymbol x_sym = AGSymbol.jAlloc("x");
+		ATObject obj = evalAndReturn("def removalObj := object: { def x := 1; }");
+		assertTrue(obj.meta_respondsTo(x_sym).asNativeBoolean().javaValue);
+		assertEquals(4, obj.meta_listSlots().base_length().asNativeNumber().javaValue);
+		assertEquals(NATNumber.ONE, obj.meta_removeSlot(x_sym));
+		evalAndTestException("removalObj.x", XSelectorNotFound.class);
+		assertEquals(2, obj.meta_listSlots().base_length().asNativeNumber().javaValue);
+	}
+	
+	public void testCustomFieldSlotRemoval() throws InterpreterException {
+		ATSymbol x_sym = AGSymbol.jAlloc("x");
+		ATObject obj = evalAndReturn("def removalObj := object: { }");
+		obj.meta_addField(evalAndReturn("" +
+				"deftype Field;" +
+				"object: {" +
+				"  def name := `x;" +
+				"  def readField() { 1 };" +
+				"  def writeField(newx) { };" +
+				"  def accessor() { (&readField).method };" +
+				"  def mutator() { (&writeField).method };" +
+				"} taggedAs: [Field]").asField());
+		assertTrue(obj.meta_respondsTo(x_sym).asNativeBoolean().javaValue);
+		assertEquals(4, obj.meta_listSlots().base_length().asNativeNumber().javaValue);
+		assertEquals(NATNumber.ONE, obj.meta_removeSlot(x_sym));
+		evalAndTestException("removalObj.x", XSelectorNotFound.class);
+		assertEquals(2, obj.meta_listSlots().base_length().asNativeNumber().javaValue);
 	}
 }

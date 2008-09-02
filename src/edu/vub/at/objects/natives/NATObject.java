@@ -514,6 +514,20 @@ public class NATObject extends NATCallframe implements ATObject {
 		return NATTable.atValue((ATObject[]) methods.toArray(new ATObject[methods.size()]));
 	}
 	
+	public ATObject meta_removeSlot(ATSymbol selector) throws InterpreterException {
+		if (this.hasLocalField(selector)) {
+			if (this.isFlagSet(_SHARE_MAP_FLAG_)) {
+				// copy the variable map
+				variableMap_ = variableMap_.copy();
+				// set the 'shares map' flag to false
+				unsetFlag(_SHARE_MAP_FLAG_);
+			}
+			return this.removeLocalField(selector);
+		} else {
+			return this.removeLocalMethod(selector);
+		}
+	}
+	
 	/**
 	 * The printed representation of an object summarizes its slots and type tags.
 	 */
@@ -762,11 +776,27 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
 	protected ATMethod getLocalMethod(ATSymbol selector) throws InterpreterException {
-		ATMethod result = ((ATObject) methodDictionary_.get(selector)).asMethod();
+		ATObject result = (ATObject) methodDictionary_.get(selector);
 		if(result == null) {
 			throw new XSelectorNotFound(selector, this);
 		} else {
-			return result;
+			return result.asMethod();
+		}
+	}
+	
+	protected ATMethod removeLocalMethod(ATSymbol selector) throws InterpreterException {
+		ATObject result = (ATObject) methodDictionary_.get(selector);
+		if (result == null) {
+			throw new XSelectorNotFound(selector, this);
+		} else {
+			// if the method dictionary is shared between clones...
+			if (this.isFlagSet(_SHARE_DCT_FLAG_)) {
+				// create a private shallow copy and flag that we're no longer sharing
+				methodDictionary_ = (MethodDictionary) methodDictionary_.clone();
+				this.unsetFlag(_SHARE_DCT_FLAG_);
+			}
+			methodDictionary_.remove(selector);
+			return result.asMethod();
 		}
 	}
 	

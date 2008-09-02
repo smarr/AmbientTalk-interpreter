@@ -106,6 +106,22 @@ public final class FieldMap implements Serializable {
 	}
 	
 	/**
+	 * Remove the given name from the field map.
+	 * @param nam the name of the field to be removed
+	 * @return the index of the removed field or -1 if the field cannot be found.
+	 */
+	public int remove(ATSymbol nam) {		
+		int namIdx = findName(nam);
+		if (namIdx >= 0) {
+			for (int i = namIdx; i < free_ - 1; i++) {
+				varNames_[i] = varNames_[i+1];
+			}
+			free_--;
+		}
+		return namIdx;
+	}
+	
+	/**
 	 * Returns all field names.
 	 * @return an array of the field names stored in the map.
 	 */
@@ -164,6 +180,17 @@ public final class FieldMap implements Serializable {
 				return i;
 		}
 		return -1;
+	}
+	
+	public String toString() {
+		StringBuffer buff = new StringBuffer("FieldMap{");
+		if (free_ > 0) {
+			buff.append(varNames_[0].toString()+":0");
+			for (int i = 1; i < free_; i++) {
+				buff.append(",").append(varNames_[i].toString()+":"+i);
+			}
+		}
+		return buff.append("}").toString();
 	}
 
 }

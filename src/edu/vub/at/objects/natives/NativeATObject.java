@@ -193,6 +193,10 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     public ATMethod meta_grabMethod(ATSymbol methodName) throws InterpreterException {
         return Reflection.downBaseLevelMethod(this, methodName);
     }
+    
+    public ATObject meta_removeSlot(ATSymbol selector) throws InterpreterException {
+		throw new XIllegalOperation("Cannot remove slot "+selector+" from native object "+this);
+    }
 
     public ATTable meta_listFields() throws InterpreterException {
     	return NATTable.EMPTY;
