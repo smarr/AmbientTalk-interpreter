@@ -609,6 +609,18 @@ public interface ATMirrorRoot extends ATObject {
    public ATTable base_listSlots() throws InterpreterException;
    
    /**
+    * This structural meta-level operation removes a slot from the
+    * object. Note that this method only removes slots that are
+    * <i>locally</i> defined in the object.
+    * 
+    * @param selector the name of the slot to remove
+    * @return the value to which the slot was previously bound
+    * (e.g. a value or a method object)
+    * @throws XSelectorNotFound if no slot with the given name is found in the object
+    */
+   public ATObject base_removeSlot(ATSymbol selector) throws InterpreterException;
+   
+   /**
     * This structural meta-level operation returns whether or not
     * the receiver mirror's base object is an <i>extension</i> of its
     * parent object.

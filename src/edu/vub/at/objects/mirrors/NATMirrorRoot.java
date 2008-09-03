@@ -322,6 +322,10 @@ public final class NATMirrorRoot extends NATByCopy implements ATMirrorRoot {
 	public ATTable base_listSlots() throws InterpreterException {
 		return base_base().magic_listSlots();
 	}
+	
+	public ATObject base_removeSlot(ATSymbol selector) throws InterpreterException {
+		return base_base().magic_removeSlot(selector);
+	}
 
 	public ATObject base_newInstance(ATTable initargs) throws InterpreterException {
 		return base_base().magic_newInstance(initargs);
