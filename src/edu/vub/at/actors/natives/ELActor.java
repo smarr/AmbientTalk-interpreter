@@ -58,6 +58,7 @@ import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.symbiosis.Symbiosis;
 import edu.vub.at.util.logging.Logging;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.EventListener;
 
@@ -453,6 +454,41 @@ public class ELActor extends EventLoop {
 				} else {
 					// return the proper value immediately
 					return Symbiosis.ambientTalkToJava(result, targetType);
+				}
+			}
+		});
+	}
+	
+	/**
+	 * This method is invoked by a coercer in order to schedule a symbiotic invocation
+	 * of a method from java.lang.Object from the Java world, which should be synchronous
+	 * to the Java thread, but which
+	 * must be scheduled asynchronously to comply with the AT/2 actor model.
+	 * 
+	 * The future returned by this method makes the calling (Java) thread <b>block</b> upon
+	 * accessing its value, waiting until the actor has processed the symbiotic invocation.
+	 * 
+	 * Note: the parameter meth must be a method declared on the class java.lang.Object
+	 * (i.e. toString, hashCode and equals). The invocation is simply forwarded directly
+	 * to the principal with no conversion to an AmbientTalk invocation.
+	 * 
+	 * @param principal the AmbientTalk object owned by this actor on which to invoke the method
+	 * @param meth the Java method that was symbiotically invoked on the principal
+	 * @param args the arguments to the Java method call, already converted into AmbientTalk values
+	 * @return a Java future that is resolved with the result of the symbiotic invocation
+	 * @throws Exception if the symbiotic invocation fails
+	 */
+	public BlockingFuture sync_event_symbioticForwardInvocation(final ATObject principal, final Method meth, final Object[] args) throws Exception {
+		return receiveAndReturnFuture("syncSymbioticInv of " + meth.getName(), new Callable() {
+			public Object call(Object actorMirror) throws Exception {
+				try {
+					return meth.invoke(principal, args);		
+				} catch (InvocationTargetException e) {
+					if (e instanceof Exception) { 
+						throw (Exception) e.getTargetException();
+					} else {
+						throw e;
+					}
 				}
 			}
 		});

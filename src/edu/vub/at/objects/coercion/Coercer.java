@@ -145,10 +145,25 @@ public final class Coercer implements InvocationHandler, Serializable {
 		// similarly, handle any native AT methods by simply forwarding them to the native AT object
 		if (methodImplementor == Object.class || methodImplementor == ATObject.class) {
 			// invoke these methods on the principal rather than on the proxy
-			try {
-				return method.invoke(principal_, arguments);
-			} catch (InvocationTargetException e) {
-				throw e.getTargetException();
+			if (Thread.currentThread() != wrappingThread_) {
+				if (Thread.currentThread() instanceof EventProcessor) {
+					// another event loop has direct access to this object, this means
+					// an AT object has been shared between actors via Java, signal an error
+					throw new XIllegalOperation("Detected illegal invocation of "+method.getName()+": sharing via Java level of object " + principal_);
+				}
+				
+				ELActor owningActor = (ELActor) EventLoop.toEventLoop(wrappingThread_);
+				
+				// synchronous symbiotic invocation
+				BlockingFuture future = owningActor.sync_event_symbioticForwardInvocation(principal_, method, arguments);
+				return future.get();
+			} else {
+				// immediate symbiotic invocation
+				try {
+					return method.invoke(principal_, arguments);
+				} catch (InvocationTargetException e) {
+					throw e.getTargetException();
+				}	
 			}
 		} else {
 			
