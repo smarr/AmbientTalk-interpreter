@@ -38,7 +38,6 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATClosure;
@@ -46,10 +45,14 @@ import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -67,9 +70,6 @@ public final class Import {
 			  // prepare the default names to exclude
 			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._SUPER_NAME_); // skip 'super', present in all objects
 			_DEFAULT_EXCLUDED_SLOTS_.add(Evaluator._CURNS_SYM_); // sip '~', present in all namespaces
-			_DEFAULT_EXCLUDED_SLOTS_.add(NATNil._EQL_NAME_); // skip '==', present in all objects via nil
-			_DEFAULT_EXCLUDED_SLOTS_.add(NATNil._INI_NAME_); // skip 'init', present in all objects via nil
-			_DEFAULT_EXCLUDED_SLOTS_.add(NATNil._NEW_NAME_); // skip 'new', present in all objects via nil
 		}
 		return _DEFAULT_EXCLUDED_SLOTS_;
 	}
@@ -199,6 +199,10 @@ public final class Import {
 
 		// stores all conflicting symbols, initialized lazily
 		Vector conflicts = null;
+		
+
+		// remember all the aliases I still have to define
+		Hashtable aliasedNamesToDefine = (Hashtable) aliases.clone();
 
 		// the alias to be used for defining the new fields or methods
 		ATSymbol alias;
@@ -214,6 +218,9 @@ public final class Import {
 				if (alias == null) {
 					// no alias, use the original name
 					alias = field.base_name();
+				} else {
+					// processed an aliased field, remove name from the aliases left to process
+					aliasedNamesToDefine.remove(field.base_name());
 				}
 				
 				try {
@@ -240,18 +247,19 @@ public final class Import {
 			for (int i = 0; i < methods.length; i++) {
 				ATSymbol origMethodName = methods[i].base_name();
 
-				// filter out exluded methods, such as primitive methods like '==', 'new' and 'init'
+				// filter out exluded methods
 				if (exclude.contains(origMethodName)) {
-					// if these primitives would not be filtered out, they would override
-					// the primitives of the host object, which is usually unwanted and could
-					// lead to subtle bugs w.r.t. comparison and instance creation.
 					continue;
-				}	
+				}
 				// check whether the method needs to be aliased
 				alias = (ATSymbol) aliases.get(origMethodName);
 				if (alias == null) {
 					// no alias, use the original name
 					alias = origMethodName;
+				} else {
+					// processed an aliased method, remove name from the aliases left to process
+					// so that we don't have to manually add it later
+					aliasedNamesToDefine.remove(origMethodName);
 				}
 
 				// def alias(@args) { importedObject^origMethodName(@args) }
@@ -306,6 +314,40 @@ public final class Import {
 				}
 			}
 			
+		}
+		
+		/*
+		 * Now, define delegate methods for all aliased names mentioned in the import statement
+		 * which were not added automatically because they were not present in either the
+		 * listTransitiveFields or listTransitiveMethods arrays. This may happen in situations such as:
+		 * 
+		 *   import T alias init := initFoo; // where T does not explicitly define 'init'
+		 * 
+		 * In this case, listTransitiveMethods does not include 'init' (because it is inherited from nil)
+		 * so it will simply be skipped and no delegate will be generated for it.
+		 */
+		if (!aliasedNamesToDefine.isEmpty()) {
+			// not all aliases have been processed
+			Set entries = aliasedNamesToDefine.entrySet();
+			for (Iterator it = entries.iterator(); it.hasNext();) {
+				Map.Entry entry = (Map.Entry) it.next();
+				ATSymbol origName = (ATSymbol) entry.getKey();
+				ATSymbol aliasedName = (ATSymbol) entry.getValue();
+				DelegateMethod delegate = new DelegateMethod(aliasedName, origName, sourceObject);
+				try {
+					if (hostObject.isCallFrame()) {
+						NATClosure clo = new NATClosure(delegate, ctx);
+						hostObject.meta_defineField(aliasedName, clo);
+					} else {
+						hostObject.meta_addMethod(delegate);
+					}
+				} catch(XDuplicateSlot e) {
+					if (conflicts == null) {
+						conflicts = new Vector(1);
+					}
+					conflicts.add(e.getSlotName());
+				}
+			}	
 		}
 
 		if (conflicts == null) {
@@ -364,6 +406,10 @@ public final class Import {
 		
 		public ATTable base_annotations() throws InterpreterException {
 			return delegate_.meta_select(delegate_, origMethodName_).base_method().base_annotations();
+		}
+		
+		public NATText meta_print() throws InterpreterException {
+			return NATText.atValue("<delegate meth:"+super.base_name()+">");
 		}
 		
 	}
