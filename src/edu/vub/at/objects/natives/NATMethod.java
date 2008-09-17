@@ -162,7 +162,9 @@ public class NATMethod extends NATByCopy implements ATMethod {
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._METHOD_, NativeTypeTags._ISOLATE_);
+    	return NATTable.atValue(NATTable.collate(
+    			new ATObject[] { NativeTypeTags._METHOD_, NativeTypeTags._ISOLATE_ },
+    			annotations_.asNativeTable().elements_));
     }
 
 }

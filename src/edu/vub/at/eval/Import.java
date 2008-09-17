@@ -37,6 +37,7 @@ import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.NATBoolean;
@@ -251,6 +252,12 @@ public final class Import {
 				if (exclude.contains(origMethodName)) {
 					continue;
 				}
+				
+				// automatically filter out methods tagged as @Required
+				if (methods[i].meta_isTaggedAs(NativeTypeTags._REQUIRED_).asNativeBoolean().javaValue) {
+					continue;
+				}
+				
 				// check whether the method needs to be aliased
 				alias = (ATSymbol) aliases.get(origMethodName);
 				if (alias == null) {

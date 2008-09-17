@@ -223,4 +223,11 @@ public final class NativeTypeTags {
 //deftype ObjectOffline <: Exception;
     public final static NATTypeTag _OBJECTOFFLINE_ = NATTypeTag.atValue("ObjectOffline", _EXCEPTION_);
 
+    // misc
+    
+
+  //deftype Required;
+    public final static NATTypeTag _REQUIRED_ = NATTypeTag.atValue("Required");
+
+    
 }
