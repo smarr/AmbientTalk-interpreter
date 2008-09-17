@@ -225,7 +225,7 @@ public final class Import {
 				
 				try {
 					hostObject.meta_defineField(alias, field.base_readField());
-				} catch(XDuplicateSlot e) {
+				} catch(XDuplicateSlot e) {					
 					if (conflicts == null) {
 						conflicts = new Vector(1);
 					}
@@ -290,16 +290,9 @@ public final class Import {
 				 * to the current value, but this is OK given that the method is added to a call frame
 				 * which is 'selfless'.
 				 */
-
+				
+				DelegateMethod delegate = new DelegateMethod(alias, origMethodName, sourceObject);
 				try {
-					/*(hostObject.isCallFrame()) {
-						NATClosure clo = new NATClosure(delegate, ctx.base_withLexicalEnvironment(delegateScope));
-						hostObject.meta_defineField(origMethodName, clo);
-					} else {
-						hostObject.meta_addMethod(new DelegateMethod(delegateScope, delegate));
-					}*/
-					DelegateMethod delegate = new DelegateMethod(alias, origMethodName, sourceObject);
-					
 					if (hostObject.isCallFrame()) {
 						NATClosure clo = new NATClosure(delegate, ctx);
 						hostObject.meta_defineField(alias, clo);
@@ -307,10 +300,14 @@ public final class Import {
 						hostObject.meta_addMethod(delegate);
 					}
 				} catch(XDuplicateSlot e) {
-					if (conflicts == null) {
-						conflicts = new Vector(1);
+					// check whether the added method equals the already present method
+					// if they are equal, we do not need to raise a conflict
+					if (!hostObject.meta_grabMethod(alias).equals(delegate)) {
+						if (conflicts == null) {
+							conflicts = new Vector(1);
+						}
+						conflicts.add(e.getSlotName());	
 					}
-					conflicts.add(e.getSlotName());
 				}
 			}
 			
@@ -342,10 +339,14 @@ public final class Import {
 						hostObject.meta_addMethod(delegate);
 					}
 				} catch(XDuplicateSlot e) {
-					if (conflicts == null) {
-						conflicts = new Vector(1);
+					// check whether the added method equals the already present method
+					// if they are equal, we do not need to raise a conflict
+					if (!hostObject.meta_grabMethod(aliasedName).equals(delegate)) {
+						if (conflicts == null) {
+							conflicts = new Vector(1);
+						}
+						conflicts.add(e.getSlotName());	
 					}
-					conflicts.add(e.getSlotName());
 				}
 			}	
 		}
@@ -398,7 +399,18 @@ public final class Import {
 		public ATBoolean base__opeql__opeql_(ATObject other) throws InterpreterException {
 			if (other.isNativeDelegateMethod()) {
 				DelegateMethod m = other.asNativeDelegateMethod();
-				return NATBoolean.atValue(m.origMethodName_.equals(origMethodName_) && m.delegate_.equals(delegate_));
+				if (m.origMethodName_.equals(origMethodName_) && m.delegate_.equals(delegate_)) {
+					return NATBoolean._TRUE_;
+				} else {
+					// if the names and/or delegate does not match, the methods may still be equal
+					// after dereferencing one of the two delegates (since equality is defined
+					// asymmetrically, we need to first check whether A == B and if that fails whether B == A)
+					if (this.base__opeql__opeql_(m.delegate_.meta_grabMethod(m.origMethodName_)).asNativeBoolean().javaValue) {
+						return NATBoolean._TRUE_;
+					} else {
+						return m.base__opeql__opeql_(delegate_.meta_grabMethod(origMethodName_));
+					}
+				}
 			} else {
 				return NATBoolean._FALSE_;
 			}
