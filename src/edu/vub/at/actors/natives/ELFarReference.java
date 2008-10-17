@@ -35,7 +35,6 @@ import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.eventloops.EventQueue;
 import edu.vub.at.actors.id.ATObjectID;
-import edu.vub.at.actors.net.ConnectionListener;
 import edu.vub.at.actors.net.cmd.CMDTransmitATMessage;
 import edu.vub.at.actors.net.comm.Address;
 import edu.vub.at.actors.net.comm.CommunicationBus;
@@ -68,7 +67,7 @@ import edu.vub.at.util.logging.Logging;
  * 
  * @author tvcutsem
  */
-public final class ELFarReference extends EventLoop implements ConnectionListener {
+public final class ELFarReference extends EventLoop {
 	
 	/**
 	 * When the {@link ELActor} owning this far reference wants to reify the event queue
@@ -116,13 +115,13 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 	//	farRef_ = new WeakReference(ref);
 		destination_ = destination;
 		owner_ = owner;
-		
-		connected_ = true;
-		// register the remote reference with the MembershipNotifier to keep track
-		// of the state of the connection with the remote VM
-		owner_.getHost().connectionManager_.addConnectionListener(destination_.getVirtualMachineId(), this);
-		
+		connected_ = true;		
 		dispatcher_ = owner_.getHost().communicationBus_;
+	}
+	
+	public synchronized void setConnected(boolean newState){
+		connected_ = newState;
+		this.notify();
 	}
 	
 	/**
@@ -284,42 +283,6 @@ public final class ELFarReference extends EventLoop implements ConnectionListene
 		}
 			
 		return NATTable.atValue(messages);
-	}
-	
-	public ATObjectID getDestination() {
-		return destination_;
-	}
-	
-	/* ========================================================
-	 * == Implementation of the ConnectionListener interface ==
-	 * ========================================================
-	 */
-
-	public synchronized void connected() {
-		// sanity check: don't connect  twice
-		if (!connected_) {
-			Logging.RemoteRef_LOG.info(this + ": reconnected to " + destination_);
-			connected_ = true;
-			this.notify();
-			farRef_.notifyConnected();	
-		}
-	}
-
-	public synchronized void disconnected() {
-		// sanity check: don't disconnect twice
-		if (connected_) {
-			// Will only take effect when next trying to send a message
-			// If currently sending, the message will time out first.
-			Logging.RemoteRef_LOG.info(this + ": disconnected from " + destination_);
-			connected_ = false;
-			farRef_.notifyDisconnected();	
-		}
-	}
-	
-	public synchronized void takenOffline(){
-		Logging.RemoteRef_LOG.info( this + ": remote object taken offline");
-		connected_ = false;
-		farRef_.notifyTakenOffline();
 	}
 	
 	/**

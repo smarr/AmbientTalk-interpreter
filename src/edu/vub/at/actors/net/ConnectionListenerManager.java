@@ -29,7 +29,7 @@ package edu.vub.at.actors.net;
 
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.id.VirtualMachineID;
-import edu.vub.at.actors.natives.ELFarReference;
+import edu.vub.at.actors.natives.NATFarReference;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.MultiMap;
 
@@ -69,7 +69,6 @@ public class ConnectionListenerManager {
 	 * @param listener - a listener which will be notified whenever the said address connects or disconnects
 	 */
 	public synchronized void addConnectionListener(VirtualMachineID virtualMachine, ConnectionListener listener) {
-		//connectionListeners_.put(virtualMachine, listener);
 		connectionListeners_.put(virtualMachine, new WeakReference(listener));
 	}
 	
@@ -154,8 +153,8 @@ public class ConnectionListenerManager {
 				WeakReference pooled = (WeakReference) i.next();
 				if (pooled != null) {
 					ConnectionListener listener = (ConnectionListener) pooled.get();
-					if (listener instanceof ELFarReference) {
-						ATObjectID destination = ((ELFarReference)listener).getDestination();
+					if (listener instanceof NATFarReference) {
+						ATObjectID destination = ((NATFarReference)listener).getObjectId();
 						if (destination.equals(objId)){
 							listener.takenOffline();
 							//The entry on the table is removed so that the remote far reference is never 

@@ -64,4 +64,8 @@ public class NATRemoteFarRef extends NATFarReference {
 	protected void finalize() throws Throwable{
 		sendLoop_.stopProcessing();
 	}
+	
+	protected synchronized void notifyStateToSendLoop(boolean state){
+		sendLoop_.setConnected(state);
+	}
 }

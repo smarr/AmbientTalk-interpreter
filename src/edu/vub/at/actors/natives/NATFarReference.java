@@ -30,6 +30,7 @@ package edu.vub.at.actors.natives;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.net.ConnectionListener;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -83,7 +84,7 @@ import java.util.Vector;
  * @author tvcutsem
  * @author smostinc
  */
-public abstract class NATFarReference extends NATByCopy implements ATFarReference {
+public abstract class NATFarReference extends NATByCopy implements ATFarReference, ConnectionListener {
 	
 	// encodes the identity of the far object pointed at
 	private final ATObjectID objectId_;
@@ -106,6 +107,9 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		objectId_ = objectId;
 		connected_ = true;
 		owner_ = owner;	
+		//register the far reference with the MembershipNotifier to keep track
+		// of the state of the connection with the remote VM
+		owner_.getHost().connectionManager_.addConnectionListener(objectId_.getVirtualMachineId(), this);
 	}
 	
 	public ATObjectID getObjectId() {
@@ -135,6 +139,48 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
     public ATFarReference asFarReference() throws XTypeMismatch {
   	    return this;
   	}
+    
+	/* ========================================================
+	 * == Implementation of the ConnectionListener interface ==
+	 * ========================================================
+	 */
+    
+    public synchronized void connected() {
+		// sanity check: don't connect  twice
+		if (!connected_) {
+			connected_ = true;
+			notifyStateToSendLoop(true);
+			//this.notify();
+			notifyConnected();	
+		}
+	}
+
+	public synchronized void disconnected() {
+		// sanity check: don't disconnect twice
+		if (connected_) {
+			// Will only take effect when next trying to send a message
+			// If currently sending, the message will time out first.
+			connected_ = false;
+			notifyStateToSendLoop(false);
+			notifyDisconnected();	
+		}
+	}
+	
+	public synchronized void takenOffline(){
+		connected_ = false;
+		notifyStateToSendLoop(false);
+		notifyTakenOffline();
+	}
+	
+	protected synchronized void notifyStateToSendLoop(boolean state){
+		// by default doesn't transmit state
+		// overriden by NATRemoteFarReference
+		// to notify the change of state to the send loop
+	}
+    		
+	/**
+	 * Methods for registration and notification of disconnection, reconection, takenOffline listeners.
+	 */		
 		
 	public synchronized void addDisconnectionListener(ATObject listener) {
 		if (disconnectedListeners_ == null) {
@@ -185,9 +231,9 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		}
 	}
 	
-	public synchronized void notifyConnected() {	
-		connected_= true;
+	public synchronized void notifyConnected() {
 		if (reconnectedListeners_ != null) {
+			Logging.RemoteRef_LOG.info("notifyConnected for " + this.toString());
 			for (Iterator reconnectedIter = reconnectedListeners_.iterator(); reconnectedIter.hasNext();) {
 				triggerListener((ATObject) reconnectedIter.next(), "when:reconnected:");
 			}	
@@ -195,8 +241,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	}
 	
 	public synchronized void notifyDisconnected(){
-		connected_ = false;
 		if (disconnectedListeners_ != null) {
+			Logging.RemoteRef_LOG.info("notifyDisconnected for " + this.toString());
 			for (Iterator disconnectedIter = disconnectedListeners_.iterator(); disconnectedIter.hasNext();) {
 				triggerListener((ATObject) disconnectedIter.next(), "when:disconnected:");
 			}	
@@ -209,7 +255,6 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * Thus, all disconnectedlisteners and takenOfflineListeners are notified.
 	 */
 	public synchronized void notifyTakenOffline(){
-		connected_ = false;
 		if (takenOfflineListeners_ != null) {
 			for (Iterator expiredIter = takenOfflineListeners_.iterator(); expiredIter.hasNext();) {
 				triggerListener((ATObject) expiredIter.next(), "when:takenOffline:");
@@ -435,7 +480,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		} else {
 			return NATBoolean._FALSE_;
 		}
-	}
+	}    		
 
 	/**
      * Performs listener&lt;-apply([ [] ])
@@ -461,8 +506,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_, NATTable.EMPTY).asNativeFarReference();
-					if(reference instanceof NATRemoteFarRef) {
-						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
+					if(reference instanceof NATFarReference) {
+						NATFarReference remote = (NATRemoteFarRef)reference;
 						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_, NATTable.EMPTY);
 						remote.removeDisconnectionListener(handler);
 					}
@@ -485,8 +530,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
-					if(reference instanceof NATRemoteFarRef) {
-						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
+					if(reference instanceof NATFarReference) {
+						NATFarReference remote = (NATFarReference)reference;
 						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_,NATTable.EMPTY);
 						remote.removeReconnectionListener(handler);
 					}
@@ -509,8 +554,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
-					if(reference instanceof NATRemoteFarRef) {
-						NATRemoteFarRef remote = (NATRemoteFarRef)reference;
+					if(reference instanceof NATFarReference) {
+						NATFarReference remote = (NATFarReference)reference;
 						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_,NATTable.EMPTY);
 						remote.removeTakenOfflineListener(handler);
 					}

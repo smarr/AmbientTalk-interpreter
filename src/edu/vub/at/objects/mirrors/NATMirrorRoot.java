@@ -45,7 +45,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
-import edu.vub.at.objects.natives.NATByCopy;
+import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
@@ -82,8 +82,8 @@ import java.io.IOException;
  * 
  * @author tvcutsem, smostinc
  */
-public final class NATMirrorRoot extends NATByCopy implements ATMirrorRoot {
-	
+public final class NATMirrorRoot extends NATByRef implements ATMirrorRoot {
+
 	// The name of the field that points to the base_level representation of a custom mirror
 	public static final AGSymbol _BASE_NAME_ = AGSymbol.jAlloc("base");
 	
@@ -179,12 +179,17 @@ public final class NATMirrorRoot extends NATByCopy implements ATMirrorRoot {
     }
     
     public ATObject meta_pass() throws InterpreterException {
-    	if ((base_.meta_isTaggedAs(NativeTypeTags._ISOLATE_)).asNativeBoolean().javaValue) {//.atValue()isFlagSet(_IS_ISOLATE_FLAG_)) {
+    	if ((base_.meta_isTaggedAs(NativeTypeTags._ISOLATE_)).asNativeBoolean().javaValue) {
     		return this;
     	} else {
     		return super.meta_pass();
     	}
     }
+    
+	public ATObject meta_resolve() throws InterpreterException {
+		return this;
+	}
+	
 	/**
 	 * The read-only field containing the mirror's base-level mirage.
 	 */

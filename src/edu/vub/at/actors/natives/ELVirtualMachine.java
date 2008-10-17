@@ -138,7 +138,7 @@ public final class ELVirtualMachine extends EventLoop {
 	}
 	
 	public ELVirtualMachine getHost() { return this; }
-
+	
 	/**
 	 * An event loop handles events by dispatching to the event itself.
 	 */
@@ -253,6 +253,8 @@ public final class ELVirtualMachine extends EventLoop {
 		 this.receive( new Event("objectTakenOffline(" + objId +")") {
 			 public void process(Object myself){
 				 if ( receiver == null){
+					 //notify myself in case local remote references in this machine register a listener
+					 connectionManager_.notifyObjectTakenOffline(objId);
 					 //broadcast to other virtual machines that an object has gone offline.
 					 new CMDObjectTakenOffline(objId).broadcast(communicationBus_);
 				 } else{
