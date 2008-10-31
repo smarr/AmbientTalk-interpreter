@@ -111,7 +111,7 @@ public final class NATMirrorRoot extends NATByRef implements ATMirrorRoot {
 	 * @param base the base field value of the original mirror root from which
 	 * this new one will be cloned.
 	 */
-	private NATMirrorRoot(NATMirage base) {
+	protected NATMirrorRoot(NATMirage base) {
 		base_ = base;
 	};
 

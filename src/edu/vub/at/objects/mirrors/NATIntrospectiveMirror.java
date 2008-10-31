@@ -27,8 +27,11 @@
  */
 package edu.vub.at.objects.mirrors;
 
+import edu.vub.at.actors.net.OBJNetwork;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
+import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
@@ -39,6 +42,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByRef;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
@@ -81,9 +85,22 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * @return either an introspective mirror (if the passed object is native), otherwise
 	 * a custom intercessive mirror.
 	 */
-	public static final ATObject atValue(ATObject objectRepresentation) throws XTypeMismatch {
+	public static final ATObject atValue(ATObject objectRepresentation) throws XTypeMismatch, XIllegalOperation {
 		if (objectRepresentation.isMirage()) {
-			return objectRepresentation.asMirage().getMirror();
+			ATObject mirror = objectRepresentation.asMirage().getMirror();
+			if (mirror.equals(Evaluator.getNil())) {
+				// this case is triggered if an introspective mirror is being created
+				// for a new, empty, mirage object. Example:
+				//   object: {} mirroredBy: (reflect: (object:{}))
+				// (here, reflect: (object:{}) returns an introspective mirror)
+				//
+				// Since mirages must be mirrored by intercessive mirrors, we simply return
+				// a new instance of the defaultMirror (since introspective mirrors
+				// encapsulate 'default' semantics anyway)
+				return new NATMirrorRoot(objectRepresentation.asMirage());
+			} else {
+				return mirror;
+			}
 		} else {
 			return new NATIntrospectiveMirror(objectRepresentation);
 		}
@@ -161,7 +178,7 @@ public class NATIntrospectiveMirror extends NATByRef {
 	 * ------------------------------------ */
 
 	/**
-	 * This method allows re-initialise a mirror object. However, since the link from a 
+	 * This method makes a new mirror object. However, since the link from a 
 	 * mirror to its base object is immutable, this results in contacting the mirror
 	 * factory, to create a (new) mirror for the requested object.
 	 * @param initargs  an ATObject[] containing as its first element the object that needs to be reflects upon
@@ -173,13 +190,6 @@ public class NATIntrospectiveMirror extends NATByRef {
 			throw new XArityMismatch("init method of mirror", 1, len);
 		ATObject reflectee = initargs.base_at(NATNumber.ONE);
 		return atValue(reflectee);
-		/*ATObject[] initargs = init.asNativeTable().elements_;
-		if(initargs.length != 1) {
-			ATObject reflectee = initargs[0];
-			return atValue(reflectee);
-		} else {
-			throw new XArityMismatch("init", 1, initargs.length);
-		}*/
 	}
 	
 	/* ---------------------------------
