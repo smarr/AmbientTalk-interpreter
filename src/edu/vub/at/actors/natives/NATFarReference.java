@@ -507,7 +507,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_, NATTable.EMPTY).asNativeFarReference();
 					if(reference instanceof NATFarReference) {
-						NATFarReference remote = (NATRemoteFarRef)reference;
+						NATFarReference remote = (NATFarReference)reference;
 						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_, NATTable.EMPTY);
 						remote.removeDisconnectionListener(handler);
 					}
