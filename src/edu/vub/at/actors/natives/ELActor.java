@@ -307,8 +307,6 @@ public class ELActor extends EventLoop {
 		// The receiver is always a local object, receive has
 		// already been invoked.
     	mirror_.base_schedule(receiver, msg);
-    	// signal a serve event for every message that is accepted
-    	this.event_serve();
 	}
 	
 	/**

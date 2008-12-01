@@ -372,6 +372,8 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	public ATObject base_schedule(ATObject receiver, ATAsyncMessage message) throws InterpreterException {
 		NATLetter letter = new NATLetter(inbox_, receiver, message);
 		inbox_.addFirst(letter);
+    	// signal a serve event for every message that is scheduled
+    	myActor_.event_serve();
 		return letter;
 	}
 

@@ -108,6 +108,9 @@ public interface ATActorMirror extends ATObject {
 	
 	/**
 	 * This mechanism allows for changing the scheduling semantics of the actor's inbox.
+	 * Note: this method is responsible for calling the <tt>serve()</tt> method for each
+	 * scheduled message, which should be executed at a later point in time.
+	 * 
 	 * @return a letter, which can be canceled again
 	 */
 	public ATObject base_schedule(ATObject receiver, ATAsyncMessage message) throws InterpreterException;
