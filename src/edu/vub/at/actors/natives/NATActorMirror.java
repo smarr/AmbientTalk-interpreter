@@ -70,6 +70,9 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	
 	// INSTANCE VARIABLES
 	
+	// the actor mirror refers directly to its ELActor because
+	// using ELActor.currentActor is slower
+	private ELActor myActor_;
 	private final ELDiscoveryActor discoveryActor_;
 	
 	/**
@@ -79,6 +82,11 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 */
 	public NATActorMirror(ELVirtualMachine host) {
 		discoveryActor_ = host.discoveryActor_;
+	}
+	
+	/** set the mirror's base actor instance */
+	protected void setActor(ELActor myActor) {
+		myActor_ = myActor;
 	}
 	
     /* ------------------------------------------
@@ -161,7 +169,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
 	public ATObject base_provide(final ATTypeTag topic, final ATObject service) throws InterpreterException {
-		Publication pub = new Publication(ELActor.currentActor(),
+		Publication pub = new Publication(myActor_,
 				                          new Packet(topic),
 				                          new Packet(service));
 		discoveryActor_.event_servicePublished(pub);
@@ -169,7 +177,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
 	public ATObject base_require(final ATTypeTag topic, final ATClosure handler, ATBoolean isPermanent) throws InterpreterException {
-		Subscription sub = new Subscription(ELActor.currentActor(),
+		Subscription sub = new Subscription(myActor_,
 				                            new Packet(topic),
 				                            new Packet(handler),
 				                            isPermanent.asNativeBoolean().javaValue);
@@ -178,8 +186,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 
 	public ATTable base_listPublications() throws InterpreterException {
-		ELActor myEventLoop = ELActor.currentActor();
-		Publication[] pubs = discoveryActor_.sync_event_listPublications(myEventLoop);
+		Publication[] pubs = discoveryActor_.sync_event_listPublications(myActor_);
         NATPublication[] natpubs = new NATPublication[pubs.length];
         for(int i = 0; i < pubs.length; i++) {
         	Publication pub = pubs[i];
@@ -193,8 +200,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 
 	public ATTable base_listSubscriptions() throws InterpreterException {
-		ELActor myEventLoop = ELActor.currentActor();
-		Subscription[] subs = discoveryActor_.sync_event_listSubscriptions(myEventLoop);
+		Subscription[] subs = discoveryActor_.sync_event_listSubscriptions(myActor_);
 		NATSubscription[] natsubs = new NATSubscription[subs.length];
         for(int i = 0; i < subs.length; i++) {
         	Subscription sub = subs[i];
@@ -263,9 +269,8 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 * @see ATActorMirror#base_becomeMirroredBy_(ATClosure)
 	 */
 	public ATObject base_becomeMirroredBy_(ATActorMirror newActorMirror) throws InterpreterException {
-		ELActor myEventLoop = ELActor.currentActor();
-		ATActorMirror oldMirror = myEventLoop.getImplicitActorMirror();
-		myEventLoop.setActorMirror(newActorMirror);
+		ATActorMirror oldMirror = myActor_.getImplicitActorMirror();
+		myActor_.setActorMirror(newActorMirror);
 		return oldMirror;
 	}
 	
@@ -279,7 +284,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 * @see ATActorMirror#base_getExplicitActorMirror()
 	 */
 	public ATActorMirror base_getExplicitActorMirror() throws InterpreterException {
-		return ELActor.currentActor().getImplicitActorMirror();
+		return myActor_.getImplicitActorMirror();
 	}
 	
 	/**
@@ -309,7 +314,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 */
 	public ATObject base_createReference(ATObject object) throws InterpreterException {
 		// receptionist set will check whether ATObject is really local to me
-		return ELActor.currentActor().receptionists_.exportObject(object);
+		return myActor_.receptionists_.exportObject(object);
 	}
 	
     public ATActorMirror asActorMirror() throws XTypeMismatch {

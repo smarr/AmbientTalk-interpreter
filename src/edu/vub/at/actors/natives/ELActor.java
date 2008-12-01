@@ -138,7 +138,9 @@ public class ELActor extends EventLoop {
 	protected ELActor(ELVirtualMachine host) {
 		super("discovery actor");
 		id_ = new ActorID();
-		mirror_ = new NATActorMirror(host);
+		NATActorMirror mirror = new NATActorMirror(host);
+		mirror.setActor(this);
+		mirror_ = mirror;
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
 	}
@@ -380,7 +382,7 @@ public class ELActor extends EventLoop {
 			Logging.Actor_LOG.debug(mirror_ + ": scheduling "+ msg + " returned " + result);
 			
 			// signal a serve event for every message that is accepted
-			event_serve();
+			// event_serve();
 		} catch (InterpreterException e) {
 			System.out.println(">>> Exception in actor " + getImplicitActorMirror() + ": "+e.getMessage());
 			e.printAmbientTalkStackTrace(System.out);

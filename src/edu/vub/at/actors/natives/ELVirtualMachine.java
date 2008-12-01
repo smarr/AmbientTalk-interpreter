@@ -294,7 +294,9 @@ public final class ELVirtualMachine extends EventLoop {
 			                          Packet initcodePkt) throws InterpreterException {
 		
 		BlockingFuture future = new BlockingFuture();
-		ELActor processor = new ELActor(new NATActorMirror(this), this);
+		NATActorMirror mirror = new NATActorMirror(this);
+		ELActor processor = new ELActor(mirror, this);
+		mirror.setActor(processor); // make mirror refer to the created actor
 		
 		// lock the localActors_ table first to ensure addition is
 		// atomic w.r.t. lookup in getActor
