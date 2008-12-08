@@ -102,6 +102,7 @@ public final class ELVirtualMachine extends EventLoop {
 	 */
 	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields, String groupName) {
 		super("virtual machine");
+		this.start();
 		
 		// used to initialize actors
 		initialisationCode_ = initCode;

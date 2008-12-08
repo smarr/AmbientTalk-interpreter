@@ -110,6 +110,7 @@ public final class ELFarReference extends EventLoop {
 		
 	public ELFarReference(ATObjectID destination, ELActor owner, NATRemoteFarRef ref) {
 		super("far reference " + destination);
+		this.start();
 		
 		farRef_ = ref;
 	//	farRef_ = new WeakReference(ref);

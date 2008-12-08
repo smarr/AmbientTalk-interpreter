@@ -128,6 +128,7 @@ public class ELActor extends EventLoop {
 	
 	public ELActor(ATActorMirror mirror, ELVirtualMachine host) {
 		super("actor " + mirror.toString());
+		this.start();
 		id_ = new ActorID();
 		mirror_ = mirror;
 		host_ = host;
@@ -137,6 +138,7 @@ public class ELActor extends EventLoop {
 	/** constructor dedicated to initialization of discovery actor */
 	protected ELActor(ELVirtualMachine host) {
 		super("discovery actor");
+		this.start();
 		id_ = new ActorID();
 		NATActorMirror mirror = new NATActorMirror(host);
 		mirror.setActor(this);

@@ -69,6 +69,9 @@ public abstract class EventLoop {
 	
 	/**
 	 * Constructs a new event loop with the default processing behaviour.
+	 * Note: the creator must explicitly call {@link this#start()} to start
+	 * the event loop!
+	 * 
 	 * @param name used for debugging purposes
 	 */
 	public EventLoop(String name) {
@@ -77,7 +80,13 @@ public abstract class EventLoop {
 		name_ = name;
 		
 		processor_ = new EventProcessor();
-	    processor_.start();
+	}
+	
+	/**
+	 * Starts the execution of this event loop.
+	 */
+	public void start() {
+		processor_.start();
 	}
 		
 	public String toString() {
