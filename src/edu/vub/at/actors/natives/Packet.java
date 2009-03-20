@@ -51,7 +51,7 @@ import java.io.Serializable;
  */
 public class Packet implements Serializable {
 	
-	private final byte[]	payload_;
+    private final byte[]	payload_;
 	private final String	description_;
 
 	public Packet(String description, ATObject object) throws XIOProblem {
@@ -92,6 +92,11 @@ public class Packet implements Serializable {
 		} 
 	}
 	
+	/**
+	 * Beware: the same object serialized into 2 different packets results in
+	 * 2 non-equal packets. It is NOT the case that
+	 * <code>new Packet(o).equals(new Packet(o))</code>
+	 */
 	public boolean equals(Object other) {
 		return ((other instanceof Packet) &&
 				((Packet) other).payload_.equals(payload_));
