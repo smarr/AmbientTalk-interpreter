@@ -172,4 +172,54 @@ public class ConnectionListenerManager {
 		}
 	}
 	
+	/**
+	 * Notify all connection listeners registered on the given remote object
+	 */
+	public synchronized void notifyObjectDisconnected(ATObjectID objId){
+		//notify only the connectionlisteners for this objId
+		Set listeners = (Set)connectionListeners_.get(objId.getVirtualMachineId());
+		if (listeners != null) {
+			for (Iterator i = listeners.iterator(); i.hasNext();) {
+				WeakReference pooled = (WeakReference) i.next();
+				if (pooled != null) {
+					ConnectionListener listener = (ConnectionListener) pooled.get();
+					if (listener instanceof NATFarReference) {
+						ATObjectID destination = ((NATFarReference)listener).getObjectId();
+						if (destination.equals(objId)){
+							listener.disconnected();
+						}
+					} else {
+						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.
+						i.remove();
+					}
+				}	
+			}
+		}
+	}
+	
+	/**
+	 * Notify all connection listeners registered on the given remote object
+	 */
+	public synchronized void notifyObjectReconnected(ATObjectID objId){
+		//notify only the connectionlisteners for this objId
+		Set listeners = (Set)connectionListeners_.get(objId.getVirtualMachineId());
+		if (listeners != null) {
+			for (Iterator i = listeners.iterator(); i.hasNext();) {
+				WeakReference pooled = (WeakReference) i.next();
+				if (pooled != null) {
+					ConnectionListener listener = (ConnectionListener) pooled.get();
+					if (listener instanceof NATFarReference) {
+						ATObjectID destination = ((NATFarReference)listener).getObjectId();
+						if (destination.equals(objId)){
+							listener.connected();
+						}
+					} else {
+						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.
+						i.remove();
+					}
+				}	
+			}
+		}
+	}
+	
 }

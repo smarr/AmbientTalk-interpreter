@@ -27,6 +27,7 @@
  */
 package edu.vub.at.actors.natives;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -147,6 +148,48 @@ public final class ELDiscoveryActor extends ELActor {
 		this.receive(new Event("cancelPublication("+pub.providedTypeTag_+")") {
 			public void process(Object myself) {
 				discoveryManager_.deleteLocalPublication(pub);
+			}
+		});
+	}
+	
+	/**
+	 * This event is fired whenever a service
+	 * offer is being disconnected. In this case, the discovery manager ensures that the 
+	 * object is no longer discoverable to new clients.
+	 * 
+	 * @param obj - the object whose publications should be disconnected
+	 */
+	public void event_disconnectPublications(final ATObject obj) {
+		this.receive(new Event("disconnectPublications("+obj+")") {
+			public void process(Object myself) {
+				discoveryManager_.disconnectLocalPublications(obj);
+				// XXX no notification here?
+			}
+		});
+	}
+	
+	/**
+	 * This event is fired to reconnect disconnected publications. The discovery manager
+	 * will make the object discoverable to new clients. All other VMs are signaled the re-publication
+	 * of publications associated with this object.
+	 * 
+	 * @param obj
+	 */
+	public void event_reconnectPublications(final ATObject obj) {
+		this.receive(new Event("reconnectPublications("+obj+")") {
+			public void process(Object myself) {
+				Set matchingPubs = discoveryManager_.reconnectLocalPublications(obj);
+				for (Iterator iter = matchingPubs.iterator(); iter.hasNext();) {
+					Publication pub = (Publication) iter.next();
+					try {
+						pub.deserializedTopic_ = pub.providedTypeTag_.unpack().asTypeTag();
+						discoveryManager_.addLocalPublication(pub);
+						// broadcast the new publication to all currently connected VMs
+						new CMDProvideService(pub.providedTypeTag_, pub.exportedService_).send(host_.communicationBus_);
+					} catch (InterpreterException e) {
+						Logging.VirtualMachine_LOG.error("error while publishing service " + pub.providedTypeTag_,e);
+					}
+				}
 			}
 		});
 	}

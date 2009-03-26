@@ -1308,6 +1308,18 @@ public final class OBJLexicalRoot extends NATByCopy {
 		ELActor.currentActor().takeOffline(object);
 		return Evaluator.getNil();
 	 }
+
+	/**
+	 * The <tt>disconnect:</tt> construct. 
+	 * When an object is manually disconnected, remote clients
+	 * will percieve this as if the object was physically disconnected.
+	 * This allows per-object disconnects rather than per-actor disconnects.
+	 * 
+	 * @return a disconnected object whose <tt>reconnect</tt> method can be used to reconnect (and re-publish) the disconnected object.
+	 */
+	 public ATObject base_disconnect_ (ATObject object) throws InterpreterException{
+		 return ELActor.currentActor().disconnect(object);
+	 }
 	
 	/* -------------------
 	 * -- Type Support -

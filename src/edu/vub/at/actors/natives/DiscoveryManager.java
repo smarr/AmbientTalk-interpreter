@@ -29,6 +29,7 @@ package edu.vub.at.actors.natives;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATTable;
@@ -54,11 +55,17 @@ public final class DiscoveryManager {
 		public final ELActor providerActor_;
 		public final Packet providedTypeTag_;
 		public final Packet exportedService_;
+		public final transient ATObject serviceObject_; // not to be serialized
 		public ATTypeTag deserializedTopic_;
-		public Publication(ELActor provider, Packet type, Packet exportedService) {
+		public Publication(ELActor provider, Packet type, Packet exportedService, ATObject obj) {
 			providerActor_ = provider;
 			providedTypeTag_ = type;
 			exportedService_ = exportedService;
+			serviceObject_ = obj;
+		}
+		
+		public boolean publishes(ATObject object) throws XIOProblem {
+			return (serviceObject_.equals(object));
 		}
 	}
 	
@@ -86,12 +93,19 @@ public final class DiscoveryManager {
 	private final LinkedList publications_;
 	
 	/**
+	 * A list of disconnected Publication objects that represent locally 
+	 * exported service objects which were manually disconnected.
+	 */
+	private final LinkedList disconnectedPublications_;
+	
+	/**
 	 * A list of Subscription objects that represent local subscription handlers.
 	 */
 	private final LinkedList subscriptions_;
 	
 	public DiscoveryManager() {
 		publications_ = new LinkedList();
+		disconnectedPublications_ = new LinkedList();
 		subscriptions_ = new LinkedList();
 	}
 	
@@ -112,6 +126,57 @@ public final class DiscoveryManager {
 	 */
 	public void deleteLocalPublication(Publication pub) {
 		publications_.remove(pub);
+	}
+	
+	/**
+	 * Remove publications for a given object from the publications list,
+	 * and store them in a separate list. They can be reconnected afterwards.
+	 * @param obj whose publications will be disconnected
+	 */
+	public void disconnectLocalPublications(ATObject obj) {
+		HashSet matchingPubs = new HashSet();
+		for (Iterator iter = publications_.iterator(); iter.hasNext();) {
+			Publication pub = (Publication) iter.next();
+			try {
+				if (pub.publishes(obj)) {
+					matchingPubs.add(pub);
+				}
+			} catch (InterpreterException e) {
+				Logging.Actor_LOG.error("error matching types while querying local publications:",e);
+			}
+		}
+		for (Iterator iter = matchingPubs.iterator(); iter.hasNext();) {
+			Publication pub = (Publication) iter.next();
+			disconnectedPublications_.add(pub);
+			publications_.remove(pub);
+		}
+		Logging.Actor_LOG.debug("disconnected "+matchingPubs.size()+" publications.");
+	}
+	
+	/**
+	 * Place disconnected publications back in the publications list.
+	 * @param obj for which disconnected publications are reconnected
+	 * @return Set of all reconnected publications
+	 */
+	public Set reconnectLocalPublications(ATObject obj) {
+		HashSet matchingPubs = new HashSet();
+		for (Iterator iter = disconnectedPublications_.iterator(); iter.hasNext();) {
+			Publication pub = (Publication) iter.next();
+			try {
+				if (pub.publishes(obj)) {
+					matchingPubs.add(pub);
+				}
+			} catch (InterpreterException e) {
+				Logging.Actor_LOG.error("error matching types while querying local publications:",e);
+			}
+		}
+		for (Iterator iter = matchingPubs.iterator(); iter.hasNext();) {
+			Publication pub = (Publication) iter.next();
+			disconnectedPublications_.remove(pub);
+			addLocalPublication(pub);
+		}
+		Logging.Actor_LOG.debug("reconnected "+matchingPubs.size()+" publications");
+		return matchingPubs;
 	}
 	
 	/**

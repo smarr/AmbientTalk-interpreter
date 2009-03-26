@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * ConnectionListener.java created on Feb 16, 2007 at 1:58:01 PM
+ * XObjectDisconnected.java created on 20-mrt-2009 at 01:26:18
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,24 +25,44 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.actors.net;
+package edu.vub.at.exceptions;
+
+import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 
 /**
+ * An XObjectDisconnected exception is raised when an object ID cannot be resolved to a local
+ * object because it has been disconnected previously.
  * 
- * A ConnectionListener is registered with a MembershipNotifier instance and listens for
- * changes in the connection state with a particular remote virtual machine. Whenever the
- * observed remote machine connects or disconnects, or one of its remote objects is taken offline, 
- * the listener is notified using the corresponding method.
  *
- * @author smostinc
- * @author tvcutsem
+ * @author kpinte
  */
-public interface ConnectionListener {
+public final class XObjectDisconnected extends InterpreterException {
 
-	public void connected();
+	private static final long serialVersionUID = 6375019957677138861L;
+
+	ATObjectID objectId_;
 	
-	public void disconnected();
+	/**
+	 * Constructor signaling that a particular object id could not be resolved by the 
+	 * destination actor since the object was previously disconnected.
+	 * @param id the object id which failed to resolve to local object
+	 */
+	public XObjectDisconnected(ATObjectID id) {
+		super("Asked for an object id that was disconnected: " + id);
+		objectId_ = id;
+	}
 	
-	public void takenOffline();
+	public ATTypeTag getType() {
+		return NativeTypeTags._OBJECTOFFLINE_;
+	}
+	
+	/**
+	 * @return the object id which failed to resolve to local object
+	 */
+	public ATObjectID getObjectId(){
+		return objectId_;
+	}
 
 }

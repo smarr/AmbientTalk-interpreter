@@ -170,8 +170,9 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	
 	public ATObject base_provide(final ATTypeTag topic, final ATObject service) throws InterpreterException {
 		Publication pub = new Publication(myActor_,
-				                          new Packet(topic),
-				                          new Packet(service));
+				new Packet(topic),
+				new Packet(service),
+				service);
 		discoveryActor_.event_servicePublished(pub);
 		return new NATPublication(discoveryActor_, topic, service, pub);
 	}

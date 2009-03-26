@@ -37,6 +37,8 @@ import edu.vub.at.actors.net.ConnectionListenerManager;
 import edu.vub.at.actors.net.VMAddressBook;
 import edu.vub.at.actors.net.cmd.CMDHandshake;
 import edu.vub.at.actors.net.cmd.CMDObjectTakenOffline;
+import edu.vub.at.actors.net.cmd.CMDObjectDisconnected;
+import edu.vub.at.actors.net.cmd.CMDObjectReconnected;
 import edu.vub.at.actors.net.comm.Address;
 import edu.vub.at.actors.net.comm.CommunicationBus;
 import edu.vub.at.actors.net.comm.NetworkException;
@@ -263,6 +265,42 @@ public final class ELVirtualMachine extends EventLoop {
 					 new CMDObjectTakenOffline(objId).send(communicationBus_, receiver);
 				 }
 				 
+			 }
+		 });
+	}
+	
+	/**
+	 * Event that signals the manual disconnect of a previously exported and 
+	 * object on this VM.
+	 */
+	public void event_objectDisconnected(final ATObjectID objId, final Address receiver) {
+		 this.receive( new Event("objectDisconnected(" + objId +")") {
+			 public void process(Object myself){
+				 if (receiver == null){
+					 //notify myself in case local remote references in this machine register a listener
+					 connectionManager_.notifyObjectDisconnected(objId);
+					 //broadcast to other virtual machines that an object has disconnected.
+					 new CMDObjectDisconnected(objId).broadcast(communicationBus_);
+				 } else{
+					 //sending to a known virtual machine in response to an XObjectDisconnected exception.
+					 new CMDObjectDisconnected(objId).send(communicationBus_, receiver);
+				 }
+				 
+			 }
+		 });
+	}
+	
+	/**
+	 * Event that signals the manual reconnect of a previously exported and 
+	 * disconnected object on this VM.
+	 */
+	public void event_objectReconnected(final ATObjectID objId) {
+		 this.receive( new Event("objectReconnected(" + objId +")") {
+			 public void process(Object myself){
+				//notify myself in case local remote references in this machine register a listener
+				connectionManager_.notifyObjectReconnected(objId);
+				//broadcast to other virtual machines that an object has reconnected.
+				new CMDObjectReconnected(objId).broadcast(communicationBus_); 
 			 }
 		 });
 	}

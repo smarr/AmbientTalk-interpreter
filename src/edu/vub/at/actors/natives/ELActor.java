@@ -43,6 +43,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XClassNotFound;
 import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XIllegalOperation;
+import edu.vub.at.exceptions.XObjectDisconnected;
 import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATContext;
@@ -182,20 +183,31 @@ public class ELActor extends EventLoop {
 	}
 	
 	/**
+	 * Disconnects a given remote object such that it is no longer remotely accessible.
+	 * @param object a **far?** reference to the object to disconnect
+	 * @throws XIllegalOperation if the passed object is not part of the export table - i.e. non-remotely accessible.
+	 */
+	public ATObject disconnect(final ATObject object) throws InterpreterException {
+		// receptionist set will check whether ATObject is really remote to me
+		return receptionists_.disconnect(object);
+	}
+	
+	/**
 	 * Resolve the given object id into a local reference. There are three cases to
 	 * consider:
 	 *  A) The given id designates an object local to this actor: the returned object
 	 *     will be a **near** reference to the object (i.e. the object itself)
 	 *  B) The given id designates a far (non-local) object that lives in the same
-	 *     address space as this actor: the returned object wil be a **far** reference
+	 *     address space as this actor: the returned object will be a **far** reference
 	 *     to the object.
 	 *  C) The given id designates a far object that lives on a remote machine: the
 	 *     returned object will be a **far** and **remote** reference to the object.
 	 *     
 	 * @param id the identifier of the object to resolve
 	 * @return a near or far reference to the object, depending on where the designated object lives
+	 * @throws XObjectDisconnected 
 	 */
-	public ATObject resolve(ATObjectID id, ATTypeTag[] types) throws XObjectOffline {
+	public ATObject resolve(ATObjectID id, ATTypeTag[] types) throws XObjectOffline, XObjectDisconnected {
 		return receptionists_.resolveObject(id, types);
 	}
 	
@@ -329,7 +341,10 @@ public class ELActor extends EventLoop {
 			  } catch (XObjectOffline e) {
 				 host_.event_objectTakenOffline(e.getObjectId(), sender);
 				Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
-			  }  catch (InterpreterException e) {
+			  } catch (XObjectDisconnected e) {
+					 host_.event_objectDisconnected(e.getObjectId(), sender);
+					Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
+			  } catch (InterpreterException e) {
 				Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
 			  } 
 		    }
@@ -353,6 +368,9 @@ public class ELActor extends EventLoop {
 				performAccept(receiver, msg);
 			  } catch (XObjectOffline e) {
 				  ref.notifyTakenOffline();
+				  Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
+			  }  catch (XObjectDisconnected e) {
+				  ref.notifyDisconnected();
 				  Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
 			  } catch (InterpreterException e) {
 				  Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
