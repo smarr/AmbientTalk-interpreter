@@ -31,8 +31,12 @@ import edu.vub.at.util.logging.Logging;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 
 /**
  * This thread is responsible for opening up a {@link ServerSocket} connection that listens
@@ -64,7 +68,7 @@ public class MasterConnectionThread extends Thread {
 	 * exception is raised, this thread will <b>not</b> have started.
 	 */
 	public Address startServing(String onNetwork) throws IOException {
-		InetAddress myAddress = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress());
+		InetAddress myAddress = InetAddress.getByName(getCurrentEnvironmentNetworkIp());
 		listenSocket_ = new ServerSocket(0, 50, myAddress); // create a socket that will listen on any free port
 		this.start();
 		return new Address(myAddress, listenSocket_.getLocalPort(), onNetwork);
@@ -125,6 +129,36 @@ public class MasterConnectionThread extends Thread {
 			Logging.Network_LOG.debug(toString() + " shutting down.");
 		}
 	}
+	
+    /**
+     * @return the current environment's IP address, taking into account the Internet connection to any of the available
+     * machine's Network interfaces. Examples of the outputs can be in octet or in IPV6 format.
+     * Based on source code by Marcello de Sales (marcello.sales@gmail.com)
+     * from <tt>http://www.jguru.com/faq/view.jsp?EID=15835</tt> (adapted from Java 1.5 to 1.4)
+     */
+    private static String getCurrentEnvironmentNetworkIp() {
+        try {
+        	Enumeration netInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (netInterfaces.hasMoreElements()) {
+                NetworkInterface ni = (NetworkInterface) netInterfaces.nextElement();
+                Enumeration address = ni.getInetAddresses();
+                while (address.hasMoreElements()) {
+                    InetAddress addr = (InetAddress) address.nextElement();
+                    if (!addr.isLoopbackAddress() && addr.isSiteLocalAddress()
+                            && !(addr.getHostAddress().indexOf(":") > -1)) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException e) { }
+        
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            return "127.0.0.1";
+        }
+    }
+
 	
 	public String toString() {
 		return super.getName();
