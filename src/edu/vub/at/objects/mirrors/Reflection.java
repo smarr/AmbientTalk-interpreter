@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.JavaConstructor;
 import edu.vub.at.objects.symbiosis.Symbiosis;
@@ -219,7 +220,8 @@ public final class Reflection {
 	 * Depending on the prefix of the invoked Java method selector, the following translation should occur:
 	 *  - obj.base_selector(args) => obj.meta_invoke(obj, selector, args)
 	 *  - obj.base_selector() => obj.meta_invokeField(obj, selector)
-	 *  - obj.meta_selector(args) => obj.meta_selector(args)
+	 *  - obj.meta_selector(args) => either obj.meta_selector(args) if selector is understood natively
+	 *  							or (reflect: obj).meta_selector(args) otherwise
 	 *  - obj.selector(args) => either obj.selector(args) if selector is understood natively
 	 *                          or     obj.meta_invoke(obj, selector, args) otherwise
 	 *  - obj.selector() => obj.meta_invokeField(obj, selector)
@@ -237,8 +239,19 @@ public final class Reflection {
 				return atRcvr.impl_invoke(atRcvr, downBaseLevelSelector(jSelector), NATTable.atValue(jArgs));	
 			}
 		} else if (jSelector.startsWith(Reflection._META_PREFIX_)) {
-			// obj.meta_selector(args) => obj.meta_selector(args)
-			return JavaInterfaceAdaptor.invokeNativeATMethod(jMethod, atRcvr, jArgs);
+			if (jMethod.getDeclaringClass().isInstance(atRcvr)) {
+			  // obj.meta_selector(args) => obj.meta_selector(args)
+			  return JavaInterfaceAdaptor.invokeNativeATMethod(jMethod, atRcvr, jArgs);
+			} else {
+				ATObject mirror = OBJLexicalRoot._INSTANCE_.base_reflect_(atRcvr);
+				if (jArgs.length == 0) {
+				    // obj.selector() => (reflect: obj).meta_invokeField(obj, selector)
+				    return mirror.meta_invokeField(mirror, downMetaLevelSelector(jSelector));
+				} else {
+				    // obj.selector(args) => (reflect: obj).meta_invoke(obj, selector, args)
+				    return mirror.impl_invoke(mirror, downMetaLevelSelector(jSelector), NATTable.atValue(jArgs));	
+				}
+			}
 		} else {
 			// atRcvr can respond to the given method natively
 			if (jMethod.getDeclaringClass().isInstance(atRcvr)) {

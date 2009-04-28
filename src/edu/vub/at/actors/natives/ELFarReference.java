@@ -200,6 +200,10 @@ public final class ELFarReference extends EventLoop {
 	 */
 	private class TransmissionEvent extends Event {
 		public final Packet serializedMessage_;
+		// an original message is a pair of [ATObject receiver, ATAsyncMessage message]
+		// used to be able to retract a message without involving 
+		// serialization/desearialization because sometimes o != resolve(pass(o))
+		public final ATTable originalMessage_;
 		
 		// Called by ELActor
 		
@@ -209,6 +213,7 @@ public final class ELFarReference extends EventLoop {
 		public TransmissionEvent(ATTable pair) throws XIOProblem {
 			super("transmit("+pair+")");
 			serializedMessage_ = new Packet(pair.toString(), pair);
+			originalMessage_ = pair;
 		}
 		
 		/**
@@ -280,7 +285,9 @@ public final class ELFarReference extends EventLoop {
 		
 		for(int i = 0; i < events.size(); i++) {
 			TransmissionEvent current = (TransmissionEvent)events.get(i);
-			messages[i] = current.serializedMessage_.unpack();
+			// hand out the original version of the message prior to serialization.
+			ATObject[] pair = current.originalMessage_.asNativeTable().elements_;
+			messages[i] = pair[1].asAsyncMessage();
 		}
 			
 		return NATTable.atValue(messages);
@@ -320,7 +327,7 @@ public final class ELFarReference extends EventLoop {
 					}
 				}
 			}
-
+			
 			if (outboxFuture_ != null) {
 				handleRetractRequest();
 			} else { // if(!eventQueue_.isEmpty()) {
