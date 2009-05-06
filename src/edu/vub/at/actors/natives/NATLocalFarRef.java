@@ -27,9 +27,13 @@
  */
 package edu.vub.at.actors.natives;
 
+import java.util.Iterator;
+import java.util.Vector;
+
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATTable;
@@ -46,22 +50,64 @@ public class NATLocalFarRef extends NATFarReference {
 
 	/** when serializing a far reference, the event loop stays home */
 	private transient final ELActor farObjectHost_;
+	private transient Vector outboxOfOriginalMessages_;
+	private transient Vector outboxOfSerializedMessages_;
 	
-	public NATLocalFarRef(ELActor farObjectHost, ATObjectID objectId, ATTypeTag[] types, ELActor myHost) {
-		super(objectId, types, myHost);
+	public NATLocalFarRef(ELActor farObjectHost, ATObjectID objectId, ATTypeTag[] types, ELActor myHost, boolean isConnected) {
+		super(objectId, types, myHost, isConnected);
 		farObjectHost_ = farObjectHost;
 	}
 
 	protected void transmit(ATAsyncMessage passedMessage) throws InterpreterException {
-		farObjectHost_.event_localAccept(this, new Packet(passedMessage.toString(),
-				                                          NATTable.of(this, passedMessage)));
+		Packet serializedMessage = new Packet(passedMessage.toString(),
+				NATTable.of(this, passedMessage));
+		
+		synchronized (this) {
+			if (!connected_) {
+				//a local far reference buffers messages when it gets (software) disconnected.
+				//note that a local far reference will never be hardware disconnected.
+				if (outboxOfOriginalMessages_ == null) {
+					outboxOfOriginalMessages_ = new Vector(2);
+					outboxOfSerializedMessages_ = new Vector(2);
+				}
+				outboxOfOriginalMessages_.add(passedMessage);
+				outboxOfSerializedMessages_.add(serializedMessage);
+			} else{
+				farObjectHost_.event_localAccept(this, serializedMessage);
+			}; 
+		}
+	}
+	
+	//called to notify connected/disconnected
+	protected synchronized void notifyStateToSendLoop(boolean state){
+		//if notifying reconnection, flush the outbox
+		if (state) {
+		  if (outboxOfSerializedMessages_ != null && !outboxOfSerializedMessages_.isEmpty()) {
+			  for (Iterator Iter = outboxOfSerializedMessages_.iterator(); Iter.hasNext();) {
+				 farObjectHost_.event_localAccept(this, (Packet) Iter.next());
+			  }
+			  // empty the outbox
+			  outboxOfOriginalMessages_.clear();
+			  outboxOfSerializedMessages_.clear();
+		  }
+		}
 	}
 	
 	/**
-	 * The 'outbox' of a far reference to a local actor is always empty.
+	 * The 'outbox' of a far reference to a local actor is normally empty, except if
+	 * the local far reference was disconnected by means of a 'soft disconnect'.
 	 */
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {
-		return NATTable.EMPTY;
+		if (outboxOfOriginalMessages_ != null && !outboxOfOriginalMessages_.isEmpty()) {
+	        ATObject[] messages = new ATObject[outboxOfOriginalMessages_.size()];
+	        outboxOfOriginalMessages_.toArray(messages);
+	        // empty both outboxes
+			outboxOfOriginalMessages_.clear();
+			outboxOfSerializedMessages_.clear();
+			return NATTable.atValue(messages);	
+		} else {
+			return NATTable.EMPTY;		
+		}
 	}
 	
 	public ELActor getFarHost() {

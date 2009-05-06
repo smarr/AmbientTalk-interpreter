@@ -27,12 +27,14 @@
  */
 package edu.vub.at.actors.natives;
 
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Hashtable;
+
 import edu.vub.at.actors.id.ATObjectID;
-import edu.vub.at.actors.natives.DiscoveryManager.Publication;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
-import edu.vub.at.exceptions.XObjectDisconnected;
 import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -42,11 +44,6 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.util.logging.Logging;
-
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Hashtable;
 
 /**
  * An NATActorMirror's ReceptionistsSet keeps a mapping between identifiers and local objects
@@ -64,7 +61,7 @@ public class ReceptionistsSet {
 	private final HashMap exportedObjectsTable_;
 	
 	/** object id (ATObjectID) -> local disconnected object (ATObject) */
-	private final HashMap disconnectedObjectsTable_;
+	//private final HashMap disconnectedObjectsTable_;
 
 	
 	/**
@@ -95,12 +92,12 @@ public class ReceptionistsSet {
 		owner_ = forActor;
 		exportedObjectsTable_ = new HashMap();
 		exportedObjectIds_ = new HashMap();
-		disconnectedObjectsTable_ = new HashMap();
+	//	disconnectedObjectsTable_ = new HashMap();
 		remoteReferences_ = new Hashtable();
 		farReferences_ = new Hashtable();
 	}
 	
-	private NATRemoteFarRef createRemoteFarRef(ATObjectID objectId, ATTypeTag[] types) {
+	private NATRemoteFarRef createRemoteFarRef(ATObjectID objectId, ATTypeTag[] types, boolean isConnected) {
 		NATRemoteFarRef farref;
 		WeakReference pooled = (WeakReference) remoteReferences_.get(objectId);
 		if (pooled != null) {
@@ -109,12 +106,12 @@ public class ReceptionistsSet {
 				return farref;
 			}
 		}
-		farref = new NATRemoteFarRef(objectId, owner_, types);
+		farref = new NATRemoteFarRef(objectId, owner_, types, isConnected);
 		remoteReferences_.put(objectId, new WeakReference(farref));
 		return farref;
 	}
 	
-	private NATLocalFarRef createLocalFarRef(ELActor actor, ATObjectID objectId, ATTypeTag[] types) {
+	private NATLocalFarRef createLocalFarRef(ELActor actor, ATObjectID objectId, ATTypeTag[] types, boolean isConnected) {
 		NATLocalFarRef farref;
 		WeakReference pooled = (WeakReference) farReferences_.get(objectId);
 		if (pooled != null) {
@@ -124,7 +121,7 @@ public class ReceptionistsSet {
 			}
 		}
 
-		farref = new NATLocalFarRef(actor, objectId, types, owner_);
+		farref = new NATLocalFarRef(actor, objectId, types, owner_, isConnected);
 		farReferences_.put(objectId, new WeakReference(farref));
 		return farref;
 	}
@@ -166,7 +163,7 @@ public class ReceptionistsSet {
 		ATObject[] origTypes = object.meta_typeTags().asNativeTable().elements_;
 		ATTypeTag[] types = new ATTypeTag[origTypes.length];
 		System.arraycopy(origTypes, 0, types, 0, origTypes.length);
-		return createLocalFarRef(owner_, objId, types);
+		return createLocalFarRef(owner_, objId, types, true);
 	}
 	
 	public NATLocalFarRef exportObject(ATObject object) throws InterpreterException {
@@ -185,7 +182,7 @@ public class ReceptionistsSet {
 			exportedObjectsTable_.remove(objId);
 			exportedObjectIds_.remove(object);
 			// also remove from disconnected table:
-			disconnectedObjectsTable_.remove(objId);
+		//	disconnectedObjectsTable_.remove(objId);
 			
 			//notify the rest of VM that this object was taken offline
 			owner_.getHost().event_objectTakenOffline(objId, null);
@@ -213,9 +210,9 @@ public class ReceptionistsSet {
 			meta_defineField(_RECONNECT_, 	new NativeClosure(this) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					//exportObject(object, objectId.getDescription());
-					exportedObjectsTable_.put(objectId, object);
-					exportedObjectIds_.put(object, objectId);
-					disconnectedObjectsTable_.remove(objectId);
+					//exportedObjectsTable_.put(objectId, object);
+					//exportedObjectIds_.put(object, objectId);
+					//disconnectedObjectsTable_.remove(objectId);
 					owner_.getHost().discoveryActor_.event_reconnectPublications(object);
 					owner_.getHost().event_objectReconnected(objectId);
 					return Evaluator.getNil();
@@ -237,17 +234,26 @@ public class ReceptionistsSet {
 		if (exportedObjectIds_.containsKey(object)) {
 			ATObjectID objId = (ATObjectID) exportedObjectIds_.get(object);
 			NATDisconnected disco = new NATDisconnected(object, objId);
-			exportedObjectsTable_.remove(objId);
-			exportedObjectIds_.remove(object);
-			disconnectedObjectsTable_.put(objId, object);
+		//exportedObjectsTable_.remove(objId);
+		//exportedObjectIds_.remove(object);
+		//disconnectedObjectsTable_.put(objId, object);
 			//notify the rest of VM that this object was taken offline
 			owner_.getHost().discoveryActor_.event_disconnectPublications(object);
 			owner_.getHost().event_objectDisconnected(objId, null);
 			return disco;
 		} else{
-			//the object was not previously exported or it has already been disconnected
-			//I don't know the objectId => throw XIllegalOperation
-			throw new XIllegalOperation("Cannot disconnect an object that is not online: " + object);
+			//check whether the object to disconnect is a far reference.
+			if(object instanceof NATFarReference) {
+				NATFarReference reference = (NATFarReference)object;
+				ATObjectID objId = reference.getObjectId();
+				owner_.getHost().connectionManager_.notifyObjectDisconnected(objId);
+				NATDisconnected disco = new NATDisconnected(object, objId);
+				return disco;
+			} else{
+			  //the object was not previously exported or it has already been disconnected
+			  //I don't know the objectId => throw XIllegalOperation
+			  throw new XIllegalOperation("Cannot disconnect an object that is not online: " + object);
+			};
 		}
 	}
 	
@@ -257,31 +263,30 @@ public class ReceptionistsSet {
 	 * @param objectId the identifier of the remote object
 	 * @return either the local object corresponding to that identifier, or a far reference designating the id
 	 * @throws XObjectOffline if the object was not found locally
-	 * @throws XObjectDisconnected if object was disconnected
 	 */
-	public ATObject resolveObject(ATObjectID objectId, ATTypeTag[] types) throws XObjectOffline, XObjectDisconnected {
+	public ATObject resolveObject(ATObjectID objectId, ATTypeTag[] types, boolean isConnected) throws XObjectOffline {
 		if (objectId.getActorId().equals(owner_.getActorID())) { // does objectId denote a local object?
 			
 			// object should be found in this actor
 			ATObject localObject = (ATObject) exportedObjectsTable_.get(objectId);
 			if (localObject == null) {
-				localObject = (ATObject) disconnectedObjectsTable_.get(objectId);
-				if (localObject == null) {
+				//localObject = (ATObject) disconnectedObjectsTable_.get(objectId);
+				//if (localObject == null) {
 					throw new XObjectOffline(objectId); // could not find the object locally
-				} else {
+			/*	} else {
 					throw new XObjectDisconnected(objectId);
-				}
+				}*/
 			} else {
 				return localObject; // far ref now resolved to near ref
 			}
 			
 		} else if (objectId.isRemote()) { // the resolved object is not local
 			// the designated object does not live in this VM
-			return createRemoteFarRef(objectId, types);
+			return createRemoteFarRef(objectId, types, isConnected);
 		} else {
 			// the designated object lives in the same VM as this actor
 			ELActor localActor = owner_.getHost().getActor(objectId.getActorId());
-			return createLocalFarRef(localActor, objectId, types);
+			return createLocalFarRef(localActor, objectId, types, isConnected);
 		}
 	}
 	

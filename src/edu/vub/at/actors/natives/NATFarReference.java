@@ -27,6 +27,9 @@
  */
 package edu.vub.at.actors.natives;
 
+import java.util.Iterator;
+import java.util.Vector;
+
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.id.ATObjectID;
@@ -41,7 +44,6 @@ import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
-import edu.vub.at.objects.ATMethodInvocation;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -57,9 +59,6 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
-
-import java.util.Iterator;
-import java.util.Vector;
 
 /**
  * 
@@ -92,20 +91,23 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	// the types with which the remote object is tagged + the FarReference type
 	private final ATTypeTag[] types_;
 
+	// the state of connectivity of the far reference
+	// note that this variable is not transient, it will be passed when the ref is
+	// parameter-passed such that the passed ref is initialized in the correct state
+    protected boolean connected_;
+	
 	private transient Vector disconnectedListeners_; // lazy initialization
 	private transient Vector reconnectedListeners_; // lazy initialization
 	private transient Vector takenOfflineListeners_; // lazy initialization
-    private transient boolean connected_;
     private final transient ELActor owner_;
 	
-	protected NATFarReference(ATObjectID objectId, ATTypeTag[] types, ELActor owner) {
-
+	protected NATFarReference(ATObjectID objectId, ATTypeTag[] types, ELActor owner, boolean isConnected) {
 		int size = types.length;
 	    types_ = new ATTypeTag[size + 1];
 	    if (size>0) System.arraycopy(types, 0, types_, 0, size);
 	    types_[size] = NativeTypeTags._FARREF_;
 		objectId_ = objectId;
-		connected_ = true;
+		connected_ = isConnected;
 		owner_ = owner;	
 		//register the far reference with the MembershipNotifier to keep track
 		// of the state of the connection with the remote VM
@@ -172,11 +174,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		notifyTakenOffline();
 	}
 	
-	protected synchronized void notifyStateToSendLoop(boolean state){
-		// by default doesn't transmit state
-		// overriden by NATRemoteFarReference
-		// to notify the change of state to the send loop
-	}
+	protected abstract void notifyStateToSendLoop(boolean state);
     		
 	/**
 	 * Methods for registration and notification of disconnection, reconection, takenOffline listeners.
@@ -269,7 +267,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 */
 	public ATObject meta_resolve() throws InterpreterException, XObjectOffline {
 		// it may be that the once local target object is now remote!
-		return ELActor.currentActor().resolve(objectId_, types_);
+		return ELActor.currentActor().resolve(objectId_, types_, connected_);
 	}
 
 	/* ------------------------------

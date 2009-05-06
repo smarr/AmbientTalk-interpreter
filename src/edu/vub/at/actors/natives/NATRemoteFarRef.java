@@ -48,9 +48,9 @@ public class NATRemoteFarRef extends NATFarReference {
 	 */
 	private transient final ELFarReference sendLoop_;
 
-	public NATRemoteFarRef(ATObjectID objectId, ELActor hostActor, ATTypeTag[] types) {
-		super(objectId, types, hostActor);
-		sendLoop_ = new ELFarReference(objectId, hostActor, this);
+	public NATRemoteFarRef(ATObjectID objectId, ELActor hostActor, ATTypeTag[] types, boolean isConnected) {
+		super(objectId, types, hostActor, isConnected);
+		sendLoop_ = new ELFarReference(objectId, hostActor, this, isConnected);
 	}
 	
 	protected void transmit(ATAsyncMessage message) throws InterpreterException {

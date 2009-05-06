@@ -108,16 +108,17 @@ public final class ELFarReference extends EventLoop {
 	 */
 	private boolean connected_;
 		
-	public ELFarReference(ATObjectID destination, ELActor owner, NATRemoteFarRef ref) {
+	public ELFarReference(ATObjectID destination, ELActor owner, NATRemoteFarRef ref, boolean isConnected) {
 		super("far reference " + destination);
-		this.start();
 		
 		farRef_ = ref;
 	//	farRef_ = new WeakReference(ref);
 		destination_ = destination;
 		owner_ = owner;
-		connected_ = true;		
+		connected_ = isConnected;		
 		dispatcher_ = owner_.getHost().communicationBus_;
+		
+		this.start();
 	}
 	
 	public synchronized void setConnected(boolean newState){

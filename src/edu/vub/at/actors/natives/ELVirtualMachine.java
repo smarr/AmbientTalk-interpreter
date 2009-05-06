@@ -282,6 +282,7 @@ public final class ELVirtualMachine extends EventLoop {
 					 //broadcast to other virtual machines that an object has disconnected.
 					 new CMDObjectDisconnected(objId).broadcast(communicationBus_);
 				 } else{
+					 //TODO!!
 					 //sending to a known virtual machine in response to an XObjectDisconnected exception.
 					 new CMDObjectDisconnected(objId).send(communicationBus_, receiver);
 				 }
