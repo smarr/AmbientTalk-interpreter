@@ -273,20 +273,13 @@ public final class ELVirtualMachine extends EventLoop {
 	 * Event that signals the manual disconnect of a previously exported and 
 	 * object on this VM.
 	 */
-	public void event_objectDisconnected(final ATObjectID objId, final Address receiver) {
+	public void event_objectDisconnected(final ATObjectID objId) {
 		 this.receive( new Event("objectDisconnected(" + objId +")") {
 			 public void process(Object myself){
-				 if (receiver == null){
-					 //notify myself in case local remote references in this machine register a listener
-					 connectionManager_.notifyObjectDisconnected(objId);
-					 //broadcast to other virtual machines that an object has disconnected.
-					 new CMDObjectDisconnected(objId).broadcast(communicationBus_);
-				 } else{
-					 //TODO!!
-					 //sending to a known virtual machine in response to an XObjectDisconnected exception.
-					 new CMDObjectDisconnected(objId).send(communicationBus_, receiver);
-				 }
-				 
+				 //notify myself in case local remote references in this machine register a listener
+				 connectionManager_.notifyObjectDisconnected(objId);
+				 //broadcast to other virtual machines that an object has disconnected.
+				 new CMDObjectDisconnected(objId).broadcast(communicationBus_);
 			 }
 		 });
 	}

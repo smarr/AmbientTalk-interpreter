@@ -27,15 +27,16 @@
  */
 package edu.vub.at.actors.net;
 
-import edu.vub.at.actors.id.ATObjectID;
-import edu.vub.at.actors.id.VirtualMachineID;
-import edu.vub.at.actors.natives.NATFarReference;
-import edu.vub.at.util.logging.Logging;
-import edu.vub.util.MultiMap;
-
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Set;
+
+import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.id.VirtualMachineID;
+import edu.vub.at.actors.natives.NATFarReference;
+import edu.vub.at.actors.natives.NATLocalFarRef;
+import edu.vub.at.util.logging.Logging;
+import edu.vub.util.MultiMap;
 
 /**
  * An instance of this class manages disconnection and reconnection subscriptions and
@@ -109,7 +110,8 @@ public class ConnectionListenerManager {
 				WeakReference pooled = (WeakReference) i.next();
 				if (pooled != null) {
 					ConnectionListener listener = (ConnectionListener) pooled.get();
-					if (listener != null){
+					if (listener != null && !(listener instanceof NATLocalFarRef)){ 
+						//do not notify hardware connections on local far references
 						listener.connected();
 					}else{
 						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.
@@ -131,7 +133,8 @@ public class ConnectionListenerManager {
 				WeakReference pooled = (WeakReference) i.next();
 				if (pooled != null) {
 					ConnectionListener listener = (ConnectionListener) pooled.get();
-					if (listener != null){
+					if (listener != null && !(listener instanceof NATLocalFarRef)){
+						//do not notify hardware disconnections on local far references
 						listener.disconnected();
 					}else{
 						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.
@@ -153,20 +156,23 @@ public class ConnectionListenerManager {
 				WeakReference pooled = (WeakReference) i.next();
 				if (pooled != null) {
 					ConnectionListener listener = (ConnectionListener) pooled.get();
-					if (listener instanceof NATFarReference) {
-						ATObjectID destination = ((NATFarReference)listener).getObjectId();
-						if (destination.equals(objId)){
-							listener.takenOffline();
-							//The entry on the table is removed so that the remote far reference is never 
-							//notified when the vmid hosting the offline object becomes (un)reachable.
-							//In fact, the reference doesn't care about the such notifications because 
-							//an offline object will never become online.
-							i.remove();
+					if (listener != null){
+						if (listener instanceof NATFarReference) {
+							ATObjectID destination = ((NATFarReference)listener).getObjectId();
+							if (destination.equals(objId)){
+								listener.takenOffline();
+								//The entry on the table is removed so that the remote far reference is never 
+								//notified when the vmid hosting the offline object becomes (un)reachable.
+								//In fact, the reference doesn't care about the such notifications because 
+								//an offline object will never become online.
+								i.remove();
+							}
 						}
 					}else{
 						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.
 						i.remove();
 					}
+		
 				}	
 			}
 		}
@@ -183,10 +189,12 @@ public class ConnectionListenerManager {
 				WeakReference pooled = (WeakReference) i.next();
 				if (pooled != null) {
 					ConnectionListener listener = (ConnectionListener) pooled.get();
-					if (listener instanceof NATFarReference) {
-						ATObjectID destination = ((NATFarReference)listener).getObjectId();
-						if (destination.equals(objId)){
-							listener.disconnected();
+					if (listener != null){
+						if (listener instanceof NATFarReference) {
+							ATObjectID destination = ((NATFarReference)listener).getObjectId();
+							if (destination.equals(objId)){
+								listener.disconnected();
+							}
 						}
 					} else {
 						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.
@@ -208,10 +216,12 @@ public class ConnectionListenerManager {
 				WeakReference pooled = (WeakReference) i.next();
 				if (pooled != null) {
 					ConnectionListener listener = (ConnectionListener) pooled.get();
-					if (listener instanceof NATFarReference) {
-						ATObjectID destination = ((NATFarReference)listener).getObjectId();
-						if (destination.equals(objId)){
-							listener.connected();
+					if (listener != null){
+						if (listener instanceof NATFarReference) {
+							ATObjectID destination = ((NATFarReference)listener).getObjectId();
+							if (destination.equals(objId)){
+								listener.connected();
+							}
 						}
 					} else {
 						// the listener referenced by the WeakReference was already gced => remove the pointer to WeakReference.

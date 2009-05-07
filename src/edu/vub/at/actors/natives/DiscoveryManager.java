@@ -154,11 +154,11 @@ public final class DiscoveryManager {
 	}
 	
 	/**
-	 * Place disconnected publications back in the publications list.
-	 * @param obj for which disconnected publications are reconnected
-	 * @return Set of all reconnected publications
+	 * Get disconnected publications back in the publications list.
+	 * @param obj which has disconnected publications
+	 * @return Set of all publications to reconnect
 	 */
-	public Set reconnectLocalPublications(ATObject obj) {
+	public Set getLocalDisconnectedPublications(ATObject obj) {
 		HashSet matchingPubs = new HashSet();
 		for (Iterator iter = disconnectedPublications_.iterator(); iter.hasNext();) {
 			Publication pub = (Publication) iter.next();
@@ -173,9 +173,7 @@ public final class DiscoveryManager {
 		for (Iterator iter = matchingPubs.iterator(); iter.hasNext();) {
 			Publication pub = (Publication) iter.next();
 			disconnectedPublications_.remove(pub);
-			addLocalPublication(pub);
 		}
-		Logging.Actor_LOG.debug("reconnected "+matchingPubs.size()+" publications");
 		return matchingPubs;
 	}
 	

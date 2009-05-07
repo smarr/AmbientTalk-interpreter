@@ -35,7 +35,7 @@ import edu.vub.at.actors.net.comm.CommunicationBus;
 /**
  * A CMDObjectTakenOfflineSoft command is sent asynchronously to all connected VMs when 
  * an actor on the sender VM takes one of its objects offline. Connected VMs are notified
- * of this event so that they can check if they had a far remote reference to the offline object.
+ * of this event so that they can check if they had a far reference to the disconnected object.
  * 
  * SENDER: the VM that disconnects an object
  * RECEIVER: all connected VMs 

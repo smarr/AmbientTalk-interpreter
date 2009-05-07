@@ -178,16 +178,19 @@ public final class ELDiscoveryActor extends ELActor {
 	public void event_reconnectPublications(final ATObject obj) {
 		this.receive(new Event("reconnectPublications("+obj+")") {
 			public void process(Object myself) {
-				Set matchingPubs = discoveryManager_.reconnectLocalPublications(obj);
+				Set matchingPubs = discoveryManager_.getLocalDisconnectedPublications(obj);
+				// broadcast the new publication to all currently connected VMs
 				for (Iterator iter = matchingPubs.iterator(); iter.hasNext();) {
 					Publication pub = (Publication) iter.next();
 					try {
 						pub.deserializedTopic_ = pub.providedTypeTag_.unpack().asTypeTag();
+						// put disconnected publications back in the local publications list.
 						discoveryManager_.addLocalPublication(pub);
 						// broadcast the new publication to all currently connected VMs
 						new CMDProvideService(pub.providedTypeTag_, pub.exportedService_).send(host_.communicationBus_);
+						Logging.VirtualMachine_LOG.debug("reconnected "+matchingPubs.size()+" publications");
 					} catch (InterpreterException e) {
-						Logging.VirtualMachine_LOG.error("error while publishing service " + pub.providedTypeTag_,e);
+						Logging.VirtualMachine_LOG.error("error while publishing service " + pub.providedTypeTag_ + "of a reconnected object " + obj,e );
 					}
 				}
 			}
