@@ -231,7 +231,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	
 	public synchronized void notifyConnected() {
 		if (reconnectedListeners_ != null) {
-			Logging.RemoteRef_LOG.info("notifyConnected for " + this.toString());
+			Logging.RemoteRef_LOG.debug("notifyConnected for " + this.toString());
 			for (Iterator reconnectedIter = reconnectedListeners_.iterator(); reconnectedIter.hasNext();) {
 				triggerListener((ATObject) reconnectedIter.next(), "when:reconnected:");
 			}	
@@ -240,7 +240,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	
 	public synchronized void notifyDisconnected(){
 		if (disconnectedListeners_ != null) {
-			Logging.RemoteRef_LOG.info("notifyDisconnected for " + this.toString());
+			Logging.RemoteRef_LOG.debug("notifyDisconnected for " + this.toString());
 			for (Iterator disconnectedIter = disconnectedListeners_.iterator(); disconnectedIter.hasNext();) {
 				triggerListener((ATObject) disconnectedIter.next(), "when:disconnected:");
 			}	
