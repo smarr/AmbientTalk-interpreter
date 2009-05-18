@@ -169,4 +169,29 @@ public interface ATNumber extends ATNumeric {
 	 */
 	public ATNumber base__opdiv__opmns_(ATNumber nbr) throws InterpreterException;
 	
+	/**
+	 * Converts an AmbientTalk number representing a time period in milliseconds
+	 * into a Java long representing the same time period in milliseconds.
+	 * 
+	 * @return a Java long representation of self.
+	 */
+	public long base_millisec() throws InterpreterException;
+	
+	/**
+	 * Converts an AmbientTalk number representing a time period in seconds
+	 * into a Java long * 1000 representing a time period in milliseconds.
+	 * 
+	 * @return a Java long representation of self * 1000.
+	 */
+	public long base_seconds() throws InterpreterException;
+	
+	/**
+	 * Converts an AmbientTalk number representing a minute time period
+	 * into a Java long * 1000 * 60 representing a
+	 * millisecond time period.
+	 * 
+	 * @return a Java long representation of self * 1000 * 60.
+	 */
+	public long base_minutes() throws InterpreterException;
+	
 }
