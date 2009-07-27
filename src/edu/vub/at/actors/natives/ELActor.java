@@ -531,6 +531,33 @@ public class ELActor extends EventLoop {
 	}
 	
 	/**
+	 * This method should only be used for purposes such as the IAT shell or unit testing.
+	 * It allows an external thread to make this actor evaluate an arbitrary expression and to
+	 * print that expression (into a String).
+	 * 
+	 * @param ast an abstract syntax tree to be evaluated by the receiving actor (in the
+	 * scope of its behaviour).
+	 * @return the printed result of the evaluation as a String
+	 * @throws InterpreterException if the evaluation fails
+	 */
+	public String sync_event_evalAndPrint(final ATAbstractGrammar ast) throws InterpreterException {
+		try {
+			return (String) receiveAndWait("nativeEval("+ast+")", new Callable() {
+				public Object call(Object inActor) throws Exception {
+				    return OBJLexicalRoot._INSTANCE_.base_eval_in_(ast, behaviour_).toString();
+				}
+			});
+		} catch (Exception e) {
+			if (e instanceof InterpreterException) {
+				throw (InterpreterException) e;
+			} else {
+				Logging.Actor_LOG.fatal("Unexpected Java exception: "+e.getMessage(), e);
+				throw new RuntimeException("Unexpected exception: "+e);
+			}
+		}
+	}
+	
+	/**
 	 * This method should only be used for purposes of unit testing. It allows
 	 * arbitary code to be scheduled by external threads such as unit testing frameworks.
 	 */
