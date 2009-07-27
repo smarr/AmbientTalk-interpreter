@@ -70,7 +70,7 @@ public final class Import {
 			_DEFAULT_EXCLUDED_SLOTS_ = new HashSet();
 			  // prepare the default names to exclude
 			_DEFAULT_EXCLUDED_SLOTS_.add(NATObject._SUPER_NAME_); // skip 'super', present in all objects
-			_DEFAULT_EXCLUDED_SLOTS_.add(Evaluator._CURNS_SYM_); // sip '~', present in all namespaces
+			_DEFAULT_EXCLUDED_SLOTS_.add(Evaluator._CURNS_SYM_); // skip '~', present in all namespaces
 		}
 		return _DEFAULT_EXCLUDED_SLOTS_;
 	}
@@ -238,7 +238,7 @@ public final class Import {
 		// define the delegate methods
 		ATMethod[] methods = NATObject.listTransitiveMethods(sourceObject);
 		
-		if (methods.length > 0) {
+		// if (methods.length > 0) {
 			
             // create the lexical scope for the delegate method invocation by hand
 			// NATCallframe delegateScope = new NATCallframe(hostObject);
@@ -316,7 +316,7 @@ public final class Import {
 						conflicts.add(e.getSlotName());	
 					}
 				}
-			}
+			// } // end if
 			
 		}
 		
