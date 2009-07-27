@@ -240,7 +240,7 @@ public class ReceptionistsSet {
 			  //the object was not previously exported or it has already been disconnected
 			  //I don't know the objectId => throw XIllegalOperation
 			  throw new XIllegalOperation("Cannot disconnect object: " + object);
-			};
+			}
 		}
 	}
 	
