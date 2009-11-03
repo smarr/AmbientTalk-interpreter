@@ -152,11 +152,7 @@ public class MasterConnectionThread extends Thread {
             }
         } catch (SocketException e) { }
         
-        try {
-            return InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            return "127.0.0.1";
-        }
+        return "127.0.0.1";
     }
 
 	

@@ -99,7 +99,7 @@ public class MulticastServerThread extends Thread {
 					
 					// if socket not yet initialized, create a new one
 					if (socket_ == null) {
-						socket_ = new MulticastSocket(MC_PORT);
+						socket_ = new MulticastSocket(MC_PORT); //egb remove this
 					}
 					
 					// send a UDP packet containing the address
