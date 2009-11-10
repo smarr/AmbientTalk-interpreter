@@ -194,7 +194,6 @@ public class ReceptionistsSet {
 	 * }
 	 */
 	public class NATDisconnected extends NATObject {
-		// geen static want owner is niet static?
 		private final AGSymbol _OBJECT_ = AGSymbol.jAlloc("object");
 		private final AGSymbol _RECONNECT_ = AGSymbol.jAlloc("reconnect");
 		public NATDisconnected(final ATObject object, final ATObjectID objectId) throws InterpreterException {
@@ -236,10 +235,10 @@ public class ReceptionistsSet {
 				// 'disconnect' event, neither disconnect publications.
 				owner_.getHost().connectionManager_.notifyObjectDisconnected(objId);
 				return disco;
-			} else{
+			} else{ 
 			  //the object was not previously exported or it has already been disconnected
 			  //I don't know the objectId => throw XIllegalOperation
-			  throw new XIllegalOperation("Cannot disconnect object: " + object);
+			  throw new XIllegalOperation("Attempt to disconnect neither a local exported object nor a far reference: "+object);
 			}
 		}
 	}

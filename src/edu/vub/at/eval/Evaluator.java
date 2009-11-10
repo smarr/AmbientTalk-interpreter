@@ -27,6 +27,31 @@
  */
 package edu.vub.at.eval;
 
+import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.natives.ELActor;
+import edu.vub.at.actors.natives.NATAsyncMessage;
+import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XAmbienttalk;
+import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMirrorRoot;
+import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.mirrors.NATMirrorRoot;
+import edu.vub.at.objects.natives.NATException;
+import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATObject;
+import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
+import edu.vub.at.objects.natives.grammar.AGSplice;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.symbiosis.JavaObject;
+import edu.vub.at.objects.symbiosis.JavaPackage;
+import edu.vub.at.objects.symbiosis.XJavaException;
+import edu.vub.at.util.logging.Logging;
+import edu.vub.util.Regexp;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,30 +62,6 @@ import java.util.Set;
 
 import org.apache.regexp.RE;
 import org.apache.regexp.REProgram;
-
-import edu.vub.at.actors.natives.ELActor;
-import edu.vub.at.actors.natives.NATAsyncMessage;
-import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.exceptions.XAmbienttalk;
-import edu.vub.at.objects.ATContext;
-import edu.vub.at.objects.ATMirrorRoot;
-import edu.vub.at.objects.ATObject;
-import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.mirrors.NATMirrorRoot;
-import edu.vub.at.objects.natives.NATException;
-import edu.vub.at.objects.natives.NATObject;
-import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.NATText;
-import edu.vub.at.objects.natives.NativeATObject;
-import edu.vub.at.objects.natives.OBJLexicalRoot;
-import edu.vub.at.objects.natives.NATNil;
-import edu.vub.at.objects.natives.grammar.AGSplice;
-import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.objects.symbiosis.JavaObject;
-import edu.vub.at.objects.symbiosis.JavaPackage;
-import edu.vub.at.objects.symbiosis.XJavaException;
-import edu.vub.at.util.logging.Logging;
-import edu.vub.util.Regexp;
 
 /**
  * The Evaluator class serves as a repository for auxiliary evaluation methods.
@@ -478,6 +479,9 @@ public final class Evaluator {
 	
 	/**
 	 * Performs <code>closure&lt;-apply(arguments)@[]</code>
+	 * This method must be invoked by the Event Loop that owns the far reference.
+	 * 
+	 * @param closure an {@link ATFarReference} to an {@link ATClosure}.
 	 */
 	public static ATObject trigger(ATObject closure, ATTable arguments) throws InterpreterException {
 		return closure.meta_receive(
@@ -488,13 +492,21 @@ public final class Evaluator {
 	
 	/**
 	 * Performs <code>closure&lt;-apply(arguments)@[]</code>
-	 * Used when the {@link ELActor} owner is known.
+	 * Used when the {@link ELActor} owner of the closure is known.
+	 * @param closure either a closure or a far reference to a closure.
+	 * @param type a description of the type of event handler (used for debugging only)
 	 */
-	public static void trigger(ELActor owner, ATObject closure, ATTable arguments) throws InterpreterException {
-		owner.acceptSelfSend(closure,
-				new NATAsyncMessage(Evaluator._APPLY_,
-							        NATTable.of(arguments),
-							        NATTable.EMPTY));
+	public static void trigger(ELActor owner, ATObject closure, ATTable arguments, String type) {
+		// PREVIOUS BUG: owner.acceptSelfSend calls owner.mirror_.base_schedule(...), which may run
+		// arbitrary AmbientTalk code. However, this method may be invoked by non-actor
+		// threads (such as the ELVirtualMachine when notifying when:disconnected: listeners)
+		// therefore, we now ask the actor to perform the call to acceptSelfSend itself,
+		// by means of an event_trigger event
+		//owner.acceptSelfSend(closure,
+		//		new NATAsyncMessage(Evaluator._APPLY_,
+		//					        NATTable.of(arguments),
+		//					        NATTable.EMPTY));
+		owner.event_trigger(closure, arguments, type);
 	}
 	
 }

@@ -315,7 +315,7 @@ public final class ELFarReference extends EventLoop {
 	 * 
 	 * Note that while executing, the event loop takes a lock on itself!
 	 * This synchronizes event processing with state transition notifications
-	 * via the {@link #connected()} and {@link #disconnected()} methods.
+	 * via the {@link #setConnected(boolean)} method.
 	 */
 	protected void execute() {
 		synchronized (this) {

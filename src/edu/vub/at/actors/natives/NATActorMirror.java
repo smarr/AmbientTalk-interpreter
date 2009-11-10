@@ -39,6 +39,7 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
@@ -47,6 +48,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATByRef;
+import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
@@ -339,7 +341,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	 *   def cancel() { //cancel the delivery of the letter }
 	 * }
 	 */
-	public static class NATLetter extends NATObject {
+	public static class NATLetter extends NATObject implements ATLetter {
 		private static final AGSymbol _RCVR_ = AGSymbol.jAlloc("receiver");
 		private static final AGSymbol _MSG_ = AGSymbol.jAlloc("message");
 		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
@@ -356,6 +358,17 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		}
 		public NATText meta_print() throws InterpreterException {
 			return NATText.atValue("<letter:"+impl_invokeAccessor(this, _MSG_, NATTable.EMPTY)+">");
+		}
+
+		public ATLetter asLetter() { return this; }
+		public ATObject base_cancel() throws InterpreterException {
+			return this.meta_invoke(this, new NATMethodInvocation(_CANCEL_, NATTable.EMPTY, NATTable.EMPTY));
+		}
+		public ATAsyncMessage base_message() throws InterpreterException {
+			return this.meta_invokeField(this, _MSG_).asAsyncMessage();
+		}
+		public ATObject base_receiver() throws InterpreterException {
+			return this.meta_invokeField(this, _RCVR_);
 		}
 	}
 

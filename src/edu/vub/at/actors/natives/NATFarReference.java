@@ -176,9 +176,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	
 	protected abstract void notifyStateToSendLoop(boolean state);
     		
-	/**
-	 * Methods for registration and notification of disconnection, reconection, takenOffline listeners.
-	 */		
+	// Methods for registration and notification of disconnection, reconnection, takenOffline listeners.		
 		
 	public synchronized void addDisconnectionListener(ATObject listener) {
 		if (disconnectedListeners_ == null) {
@@ -187,13 +185,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		disconnectedListeners_.add(listener);
 		
 		if (!connected_) {
-			try {
-				// listener<-apply([])
-				Evaluator.trigger(owner_, listener, NATTable.EMPTY);
-			} catch (InterpreterException e) {
-				Logging.RemoteRef_LOG.error(
-						"error invoking when:disconnected: listener", e);
-			}
+			triggerListener(listener, "when:disconnected:");
 		}
 	}
 	
@@ -486,12 +478,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
      * @param type the kind of listener, used for logging/debugging purposes only
      */
     private void triggerListener(ATObject listener, String type) {
-		try {
-			// listener<-apply([ [] ])
-			Evaluator.trigger(owner_, listener, NATTable.EMPTY);
-		} catch (InterpreterException e) {
-			Logging.RemoteRef_LOG.error("error invoking " + type +" listener", e);
-		}
+		// listener<-apply([ [] ])
+		Evaluator.trigger(owner_, listener, NATTable.EMPTY, type);
     }
     
 	public static class NATDisconnectionSubscription extends NATObject {
@@ -506,8 +494,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_, NATTable.EMPTY).asNativeFarReference();
 					if(reference instanceof NATFarReference) {
 						NATFarReference remote = (NATFarReference)reference;
-						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_, NATTable.EMPTY);
-						remote.removeDisconnectionListener(handler);
+						ATObject handler = scope_.impl_callField(_HANDLER_);
+						remote.removeDisconnectionListener(handler.asClosure());
 					}
 					return Evaluator.getNil();
 				}
@@ -530,8 +518,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
 					if(reference instanceof NATFarReference) {
 						NATFarReference remote = (NATFarReference)reference;
-						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_,NATTable.EMPTY);
-						remote.removeReconnectionListener(handler);
+						ATObject handler = scope_.impl_callField(_HANDLER_);
+						remote.removeReconnectionListener(handler.asClosure());
 					}
 					return Evaluator.getNil();
 				}
@@ -554,8 +542,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
 					if(reference instanceof NATFarReference) {
 						NATFarReference remote = (NATFarReference)reference;
-						ATObject handler = scope_.impl_invokeAccessor(scope_, _HANDLER_,NATTable.EMPTY);
-						remote.removeTakenOfflineListener(handler);
+						ATObject handler = scope_.impl_callField(_HANDLER_);
+						remote.removeTakenOfflineListener(handler.asClosure());
 					}
 					return Evaluator.getNil();
 				}

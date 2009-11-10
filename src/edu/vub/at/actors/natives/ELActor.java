@@ -49,8 +49,10 @@ import edu.vub.at.exceptions.XIOProblem;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.natives.NATContext;
@@ -170,8 +172,8 @@ public class ELActor extends EventLoop {
 	}
 	
 	/**
-	 * Takes offline a given remote object such that it is no longer remotely accessible.
-	 * @param object a **far?** reference to the object to export
+	 * Takes offline a given local object such that it is no longer remotely accessible.
+	 * @param object a near reference to the local object to unexport
 	 * @throws XIllegalOperation if the passed object is not part of the export table - i.e. non-remotely accessible.
 	 */
 	public void takeOffline(ATObject object) throws InterpreterException {
@@ -180,8 +182,8 @@ public class ELActor extends EventLoop {
 	}
 	
 	/**
-	 * Disconnects a given remote object such that it is no longer remotely accessible.
-	 * @param object a **far?** reference to the object to disconnect
+	 * Disconnects a given local object such that it is no longer remotely accessible.
+	 * @param object a near reference to the local object to disconnect
 	 * @throws XIllegalOperation if the passed object is not part of the export table - i.e. non-remotely accessible.
 	 */
 	public ATObject disconnect(final ATObject object) throws InterpreterException {
@@ -310,6 +312,9 @@ public class ELActor extends EventLoop {
 	 * 
 	 * When an actor receives an asynchronous message for a given receiver, it delegates control
 	 * to the message itself by means of the message's <tt>process</tt> method.
+	 * 
+	 * This method should only be invoked directly this actor's event loop thread.
+	 * 
 	 * @throws InterpreterException 
 	 */
 	public void acceptSelfSend(final ATObject receiver, final ATAsyncMessage msg) throws InterpreterException {
@@ -317,6 +322,27 @@ public class ELActor extends EventLoop {
 		// The receiver is always a local object, receive has
 		// already been invoked.
     	mirror_.base_schedule(receiver, msg);
+	}
+	
+	/**
+	 * This method makes the actor perform:
+	 * <code>closure&lt;-apply(arguments)@[]</code>
+	 * This receiver actor must be the owner of the closure.
+	 */
+	public void event_trigger(final ATObject closure, final ATTable arguments, final String type) {
+		final ELActor owner = this;
+		receive(new Event("trigger("+closure+")") {
+			public void process(Object myActorMirror) {
+				try {
+					owner.acceptSelfSend(closure,
+							       new NATAsyncMessage(Evaluator._APPLY_,
+										               NATTable.of(arguments),
+										               NATTable.EMPTY));
+				} catch (InterpreterException e) {
+					Logging.Actor_LOG.error(myActorMirror + ": error triggering "+ type + " handler with args " + arguments, e);
+				}	
+			}
+		});
 	}
 	
 	/**

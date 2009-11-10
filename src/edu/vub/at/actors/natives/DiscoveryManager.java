@@ -27,9 +27,11 @@
  */
 package edu.vub.at.actors.natives;
 
+import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIOProblem;
+import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATTable;
@@ -333,6 +335,8 @@ public final class DiscoveryManager {
 
 	/**
 	 * Performs <code>handler&lt;-apply([ service ])@[]</code>
+	 * 
+	 * @param handler normally a far reference to a closure.
 	 */
 	private void notify(ATObject handler, ATObject service) {
 		Logging.VirtualMachine_LOG.debug("notifying: "+handler+"<-(["+service+"])");

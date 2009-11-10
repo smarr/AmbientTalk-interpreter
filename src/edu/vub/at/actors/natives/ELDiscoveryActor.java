@@ -163,7 +163,6 @@ public final class ELDiscoveryActor extends ELActor {
 		this.receive(new Event("disconnectPublications("+obj+")") {
 			public void process(Object myself) {
 				discoveryManager_.disconnectLocalPublications(obj);
-				// XXX no notification here?
 			}
 		});
 	}

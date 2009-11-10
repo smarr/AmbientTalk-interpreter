@@ -181,7 +181,7 @@ public class ConnectionListenerManager {
 	/**
 	 * Notify all connection listeners registered on the given remote object
 	 */
-	public synchronized void notifyObjectDisconnected(ATObjectID objId){
+	public synchronized void notifyObjectDisconnected(ATObjectID objId){		
 		//notify only the connectionlisteners for this objId
 		Set listeners = (Set)connectionListeners_.get(objId.getVirtualMachineId());
 		if (listeners != null) {
