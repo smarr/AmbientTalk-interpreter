@@ -73,6 +73,7 @@ import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaMethod;
 import edu.vub.at.objects.symbiosis.JavaObject;
+import edu.vub.at.parser.SourceLocation;
 import edu.vub.at.util.logging.Logging;
 
 import java.io.InvalidObjectException;
@@ -1007,6 +1008,9 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 	
 	public Set impl_quotedFreeVariables() throws InterpreterException { return new HashSet(); }
     
+    public SourceLocation impl_getLocation() { return null; }
+    public void impl_setLocation(SourceLocation loc) { }
+	
 	/** native objects have no fields */
 	protected boolean hasLocalField(ATSymbol sym) throws InterpreterException {
 		return false;

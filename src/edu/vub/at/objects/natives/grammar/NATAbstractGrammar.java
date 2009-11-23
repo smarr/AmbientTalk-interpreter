@@ -29,18 +29,14 @@ package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
-import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
-import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATTable;
-
-import java.util.HashSet;
-import java.util.Set;
+import edu.vub.at.parser.SourceLocation;
 
 /**
- * @author tvc
+ * @author tvcutsem
  *
  * NATAbstractGrammar is the common superclass of all native ambienttalk objects
  * that represent abstract grammar parse tree elements. That is, any object that
@@ -48,8 +44,9 @@ import java.util.Set;
  */
 public abstract class NATAbstractGrammar extends NATByCopy implements ATAbstractGrammar {
 
-	// This is an empty superclass used only for proper documentation and
-	// to identify which native objects can be output by the parser.
+    private SourceLocation loc_;
+    public SourceLocation impl_getLocation() { return loc_; }
+    public void impl_setLocation(SourceLocation loc) { loc_ = loc; }
 	
 	// subclasses of NATAbstractGrammar will override meta_eval and meta_quote as appropriate,
 	// except for the literal grammar elements which can inherit the self-evaluating behaviour of NATNil.

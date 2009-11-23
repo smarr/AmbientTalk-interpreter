@@ -128,7 +128,6 @@ public final class AGDefFunction extends AGDefinition implements ATDefMethod {
 				preprocessedMethod_ = theAnnotation.base_annotateMethod(preprocessedMethod_);
 			}
 		}
-		
 		ATObject current = ctx.base_lexicalScope();
 		if (current.isCallFrame()) {
 			NATClosure clo = new NATClosure(preprocessedMethod_, ctx);

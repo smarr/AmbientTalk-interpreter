@@ -50,6 +50,7 @@ import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
+import edu.vub.at.parser.SourceLocation;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;

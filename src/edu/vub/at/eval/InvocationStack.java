@@ -32,7 +32,7 @@ import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.parser.SourceLocation;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -78,6 +78,12 @@ public final class InvocationStack implements Cloneable, Serializable {
 			receiver = rcvr;
 			arguments = args;
 		}
+		
+		public String toString() {
+			SourceLocation loc = invocation.impl_getLocation();
+			return Evaluator.toString(invocation) +
+			         ((loc == null) ? "  (unknown source)" : "  (" + loc + ")");
+		}
 	}
 	
 	private final Stack invocationStack_;
@@ -120,7 +126,7 @@ public final class InvocationStack implements Cloneable, Serializable {
 			while (i.hasNext()) { i.next(); } // skip to last element
 			while(i.hasPrevious()) { // traverse stack top to bottom
 				InvocationFrame frame = (InvocationFrame) i.previous();
-				s.println("at "+Evaluator.toString(frame.invocation));
+				s.println("at "+frame);
 			}
 		}
 	}
@@ -133,7 +139,7 @@ public final class InvocationStack implements Cloneable, Serializable {
 			while (i.hasNext()) { i.next(); } // skip to last element
 			while(i.hasPrevious()) { // traverse stack top to bottom
 				InvocationFrame frame = (InvocationFrame) i.previous();
-				s.println("at "+Evaluator.toString(frame.invocation));
+				s.println("at "+frame);
 			}
 		}
 	}

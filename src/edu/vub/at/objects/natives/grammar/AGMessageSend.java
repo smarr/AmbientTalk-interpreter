@@ -27,19 +27,17 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
-import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageSend;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.parser.SourceLocation;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -92,7 +90,7 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	 */
 	public ATObject meta_quote(ATContext ctx) throws InterpreterException {
 		return new AGMessageSend(rcvExp_.meta_quote(ctx).asExpression(),
-				                message_.meta_quote(ctx).asExpression());
+				                 message_.meta_quote(ctx).asExpression());
 	}
 	
 	public NATText meta_print() throws InterpreterException {

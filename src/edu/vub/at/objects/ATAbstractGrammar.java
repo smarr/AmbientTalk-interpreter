@@ -29,6 +29,7 @@ package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.parser.SourceLocation;
 
 import java.util.Set;
 
@@ -61,4 +62,11 @@ public interface ATAbstractGrammar extends ATObject {
 	 * @return a set of elements of type {@link ATSymbol}).
 	 */
 	public abstract Set impl_quotedFreeVariables() throws InterpreterException;
+
+	/**
+	 * @return the source location of this AG element or null if not set.
+	 */
+	public abstract SourceLocation impl_getLocation();
+	public abstract void impl_setLocation(SourceLocation loc);
+
 }
