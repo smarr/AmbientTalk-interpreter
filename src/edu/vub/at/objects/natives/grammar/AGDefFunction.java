@@ -118,7 +118,9 @@ public final class AGDefFunction extends AGDefinition implements ATDefMethod {
 				annotationTable = NATTable.of(oneOrMoreAnnotation);
 			}
 			
-			preprocessedMethod_ = new NATMethod(selectorExp_, argumentExps_, bodyStmts_, annotationTable);
+			NATMethod preprocessedMethod = new NATMethod(selectorExp_, argumentExps_, bodyStmts_, annotationTable);
+			preprocessedMethod.impl_setLocation(this.impl_getLocation());
+			preprocessedMethod_ = preprocessedMethod;
 			
 			ATObject[] annotations = annotationTable.asNativeTable().elements_;
 			

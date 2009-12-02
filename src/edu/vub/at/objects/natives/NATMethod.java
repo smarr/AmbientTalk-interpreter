@@ -39,6 +39,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
+import edu.vub.at.parser.SourceLocation;
 import edu.vub.at.util.logging.Logging;
 
 /**
@@ -92,7 +93,10 @@ public class NATMethod extends NATByCopy implements ATMethod {
 	}
 
 	public ATClosure base_wrap(ATObject lexicalScope, ATObject dynamicReceiver) throws InterpreterException {
-		return new NATClosure(this, lexicalScope, dynamicReceiver);
+		NATClosure clo = new NATClosure(this, lexicalScope, dynamicReceiver);
+		// make the closure inherit its source location from this method
+		clo.impl_setLocation(this.impl_getLocation());
+		return clo;
 	}
 	
 	public ATSymbol base_name() {

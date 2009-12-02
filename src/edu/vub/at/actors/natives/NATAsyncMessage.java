@@ -49,6 +49,7 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.parser.SourceLocation;
 
 import java.util.LinkedList;
 import java.util.Vector;
@@ -140,7 +141,10 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
      */
     public ATObject prim_process(ATAsyncMessage self, ATObject receiver) throws InterpreterException {
     	// receiver is not necessarily equal to base_receiver() anymore
-    	return receiver.meta_invoke(receiver, new NATMethodInvocation(self.base_selector(), self.base_arguments(), self.meta_typeTags()));
+    	NATMethodInvocation inv = new NATMethodInvocation(self.base_selector(), self.base_arguments(), self.meta_typeTags());
+    	// inherit source code location
+    	inv.impl_setLocation(self.impl_getLocation());
+    	return receiver.meta_invoke(receiver, inv);
     }
 
     /**
@@ -161,5 +165,5 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     public ATAsyncMessage asAsyncMessage() throws XTypeMismatch {
   	    return this;
   	}
-
+    
 }

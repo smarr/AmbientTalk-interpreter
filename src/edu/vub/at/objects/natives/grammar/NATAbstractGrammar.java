@@ -33,7 +33,6 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.parser.SourceLocation;
 
 /**
  * @author tvcutsem
@@ -43,10 +42,6 @@ import edu.vub.at.parser.SourceLocation;
  * can be returned as part of the AST produced by the native parser.
  */
 public abstract class NATAbstractGrammar extends NATByCopy implements ATAbstractGrammar {
-
-    private SourceLocation loc_;
-    public SourceLocation impl_getLocation() { return loc_; }
-    public void impl_setLocation(SourceLocation loc) { loc_ = loc; }
 	
 	// subclasses of NATAbstractGrammar will override meta_eval and meta_quote as appropriate,
 	// except for the literal grammar elements which can inherit the self-evaluating behaviour of NATNil.

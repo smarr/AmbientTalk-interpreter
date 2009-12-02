@@ -1,0 +1,14 @@
+[ {
+  "$" : [ "org.ref_send.log.Returned", "org.ref_send.log.Sent", "org.ref_send.log.Event" ],
+  "anchor" : {
+    "number" : 0,
+    "turn" : {
+      "loop" : "testLoop",
+      "number" : 0
+    }
+  },
+  "message" : "theMessage",
+  "trace" : {
+    "calls" : [ ]
+  }
+} ]

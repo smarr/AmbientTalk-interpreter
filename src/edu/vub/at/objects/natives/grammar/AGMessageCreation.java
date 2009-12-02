@@ -91,10 +91,13 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 	public ATObject meta_eval(ATContext ctx) throws InterpreterException {
 		NATTable evaluatedArgs = Evaluator.evaluateArguments(arguments_.asNativeTable(), ctx);
 		ATObject annotations = annotations_.meta_eval(ctx);
-		return this.createMessage(ctx,
+		ATMessage msg = this.createMessage(ctx,
 				                  selector_,
 				                  evaluatedArgs,
 				                  (annotations.isTable()) ? annotations.asTable() : NATTable.of(annotations));
+	    // make the first-class message object inherit its source location from this AST node
+	    msg.impl_setLocation(this.impl_getLocation());
+	    return msg;
 	}
 	
 	/**

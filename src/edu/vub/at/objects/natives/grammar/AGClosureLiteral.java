@@ -78,6 +78,7 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 		// so at runtime the block would have never been evaluated (but quoted instead)
 		if (preprocessedMethod_ == null) {
 			preprocessedMethod_ = new NATMethod(Evaluator._LAMBDA_, arguments_, body_, NATTable.EMPTY);
+			preprocessedMethod_.impl_setLocation(this.impl_getLocation());
 		}
 		return new NATClosure(preprocessedMethod_, ctx);
 	}

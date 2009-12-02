@@ -33,12 +33,17 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.parser.SourceLocation;
+import edu.vub.at.trace.CallSite;
+import edu.vub.at.trace.Trace;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.Stack;
+import java.util.Vector;
 
 /**
  * An InvocationStack instance represents the stack of method invocations and function applications
@@ -88,7 +93,7 @@ public final class InvocationStack implements Cloneable, Serializable {
 	
 	private final Stack invocationStack_;
 	
-	private InvocationStack() {
+	protected InvocationStack() {
 		invocationStack_ = new Stack();
 	}
 	
@@ -146,6 +151,40 @@ public final class InvocationStack implements Cloneable, Serializable {
 	
 	public Object clone() {
 		return new InvocationStack((Stack) invocationStack_.clone());
+	}
+	
+	/**
+	 * Generate a stack trace that can be processed by a post-mortem
+	 * debugger such as Causeway.
+	 */
+	public Trace generateTrace(Set sourceFilter) {
+		Vector callsites = new Vector(invocationStack_.size());
+		// iterator loops from bottom to top by default
+		ListIterator i = invocationStack_.listIterator();
+		
+		while (i.hasNext()) { i.next(); } // skip to last element
+		Loop: while(i.hasPrevious()) { // traverse stack top to bottom
+			InvocationFrame frame = (InvocationFrame) i.previous();
+			SourceLocation loc = frame.invocation.impl_getLocation();
+			String source = null;
+			int[][] span = null;
+			if (loc != null) {
+			  source = loc.fileName;
+			  
+			  // if (sourceFilter.contains(source)) { continue Loop; }
+			  for (Iterator filterIt = sourceFilter.iterator(); filterIt.hasNext();) {
+				String filteredFileName = (String) filterIt.next();
+				if (source.endsWith(filteredFileName)) {
+					continue Loop; // skip this file
+				}
+			}
+			  
+			  span = new int[][] { new int[] { loc.line, loc.column } };
+			}
+			String name = frame.invocation.toString();
+			callsites.add(new CallSite(name, source, span));
+		}
+		return new Trace((CallSite[]) callsites.toArray(new CallSite[callsites.size()]));
 	}
 	
 }

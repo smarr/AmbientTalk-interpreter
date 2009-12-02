@@ -1,0 +1,22 @@
+[ {
+  "$" : [ "org.ref_send.log.Problem", "org.ref_send.log.Event" ],
+  "anchor" : {
+    "number" : 0,
+    "turn" : {
+      "loop" : "testLoop",
+      "number" : 0
+    }
+  },
+  "text" : "theProblem caused by Illegal index: theCause",
+  "reason" : {
+      "type" : "XIllegalOperation",
+      "message" : "theProblem caused by Illegal index: theCause",
+      "cause" : {
+        "type" : "XIllegalIndex",
+        "message" : "Illegal index: theCause"
+      }
+  },
+  "trace" : {
+    "calls" : [ ]
+  }
+} ]

@@ -43,11 +43,14 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NATMirrorRoot;
 import edu.vub.at.objects.natives.NATCallframe;
+import edu.vub.at.objects.natives.NATMessage;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.NativeATObject;
+import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
+import edu.vub.at.parser.SourceLocation;
 
 /**
  * ATObject represents the public interface common to any AmbientTalk/2 object.
@@ -1054,4 +1057,19 @@ public interface ATObject extends ATConversions {
      */
     public ATBoolean impl_identityEquals(ATObject other) throws InterpreterException;
     
+    /**
+     * @return the source location attached to this AmbientTalk object, or nil
+     * if none is present. This field is normally only set for instances of
+     * {@link NATAbstractGrammar}, although some non-AG elements such as
+     * {@link NATMessage} inherit their source location from their corresponding
+     * AG element.
+     */
+    public SourceLocation impl_getLocation();
+    
+    /**
+     * Attach a source location to this AmbientTalk object.
+     * @param loc the source location
+     */
+    public void impl_setLocation(SourceLocation loc);
+        
 }

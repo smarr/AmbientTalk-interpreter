@@ -53,6 +53,19 @@ public abstract class InterpreterException extends Exception {
 	private final Throwable cause_;
 
 	/**
+	 * Constructs a new ad hoc InterpreterException instance for
+	 * a given type tag, with a given message.
+	 */
+	public static InterpreterException forType(final ATTypeTag tag, final String msg) {
+		return new InterpreterException(msg) {
+			@Override
+			public ATTypeTag getType() {
+				return tag;
+			}
+		};
+	}
+	
+	/**
 	 * Default constructor which only captures the AmbientTalk invocation stack.
 	 */
 	public InterpreterException() {
@@ -97,6 +110,12 @@ public abstract class InterpreterException extends Exception {
 		runtimeStack_ = InvocationStack.captureInvocationStack();
 	}
 
+	/**
+	 * @return the stack trace at the time this exception was raised
+	 */
+	public InvocationStack getAmbientTalkStackTrace() {
+		return runtimeStack_;
+	}
 	
 	/**
 	 * @param out

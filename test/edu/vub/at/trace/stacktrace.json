@@ -1,0 +1,21 @@
+[ {
+  "$" : [ "org.ref_send.log.Comment", "org.ref_send.log.Event" ],
+  "anchor" : {
+    "number" : 0,
+    "turn" : {
+      "loop" : "testLoop",
+      "number" : 0
+    }
+  },
+  "text" : "theComment",
+  "trace" : {
+    "calls" : [ {
+      "name" : ".name(arg)",
+      "source" : "foo.at",
+      "span" : [ [ 42, 0 ] ]
+    }, {
+      "name" : ".name(arg)",
+      "source" : "unknown source"
+    } ]
+  }
+} ]
