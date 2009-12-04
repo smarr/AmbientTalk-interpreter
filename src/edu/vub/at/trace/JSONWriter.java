@@ -77,30 +77,25 @@ import java.io.Writer;
  * writeString() twice in succession will throw a {@link NullPointerException}.
  * </p>
  */
-public final class
-JSONWriter {
+public final class JSONWriter {
     static private final String newLine = "\r\n";
     static private final String tab = "  ";
 
-    static private final class
-    Prize<T> {
-        private T value;
+    static private final class Prize {
+        private Object value;
 
-        protected
-        Prize(final T value) {
+        protected Prize(final Object value) {
             this.value = value;
         }
 
-        protected T
-        claim() {
-            final T r = value;
+        protected Object claim() {
+            final Object r = value;
             value = null;
             return r;
         }
     }
 
-    static private final class
-    Milestone {
+    static private final class Milestone {
         private boolean marked;
 
         protected
@@ -117,14 +112,14 @@ JSONWriter {
 
     private final boolean top;          // Is this the top level JSON container?
     private final String indent;        // indentation for this JSON value
-    private final Prize<Writer> output; // claimed by 1st called output method
+    // Prize<Writer> output;
+    private final Prize output;         // claimed by 1st called output method
     private final Milestone written;    // marked after output method is done  
 
-    private
-    JSONWriter(final boolean top, final String indent, final Writer out) {
+    private JSONWriter(final boolean top, final String indent, final Writer out) {
         this.top = top;
         this.indent = indent;
-        output = new Prize<Writer>(out);
+        output = new Prize(out);
         written = new Milestone(null == out);
     }
     
@@ -132,19 +127,16 @@ JSONWriter {
      * Constructs a JSON writer.
      * @param out   UTF-8 output stream
      */
-    static public JSONWriter
-    make(final Writer out) { return new JSONWriter(true, "", out); }
+    static public JSONWriter make(final Writer out) { return new JSONWriter(true, "", out); }
 
     /**
      * @return <code>true</code> if a single JSON value was successfully
      *         written, else <code>false</code>
      */
-    public boolean
-    isWritten() { return written.is(); }
+    public boolean isWritten() { return written.is(); }
 
-    public ObjectWriter
-    startObject() throws IOException {
-        final Writer out = output.claim();
+    public ObjectWriter startObject() throws IOException {
+        final Writer out = (Writer) output.claim();
         out.write('{');
         return new ObjectWriter(out);
     }
@@ -152,8 +144,7 @@ JSONWriter {
     /**
      * A JSON <em>object</em> writer.
      */
-    public final class
-    ObjectWriter {
+    public final class ObjectWriter {
         static private final String comma = "," + newLine;
 
         private final String inset;         // indentation for each member
@@ -162,16 +153,14 @@ JSONWriter {
         private       JSONWriter member;    // most recent member started, or
                                             // null if object is finished
 
-        protected
-        ObjectWriter(final Writer out) {
+        protected ObjectWriter(final Writer out) {
             inset = indent + tab;
             this.out = out;
             prefix = newLine;
             member = new JSONWriter(false, inset, null);
         }
 
-        public void
-        finish() throws IOException {
+        public void finish() throws IOException {
             if (!member.isWritten()) { throw new NullPointerException(); }
 
             member = null;      // prevent future calls to this object
@@ -182,8 +171,7 @@ JSONWriter {
             written.mark();     // mark the containing value successful
         }
 
-        public JSONWriter
-        startMember(final String name) throws IOException {
+        public JSONWriter startMember(final String name) throws IOException {
             if (!member.isWritten()) { throw new NullPointerException(); }
 
             member = new JSONWriter(false, inset, out); // prevent calls until
@@ -212,9 +200,8 @@ JSONWriter {
          */
     }
 
-    public ArrayWriter
-    startArray() throws IOException {
-        final Writer out = output.claim();
+    public ArrayWriter startArray() throws IOException {
+        final Writer out = (Writer) output.claim();
         out.write('[');
         return new ArrayWriter(out);
     }
@@ -222,8 +209,7 @@ JSONWriter {
     /**
      * A JSON <em>array</em> writer.
      */
-    public final class
-    ArrayWriter {
+    public final class ArrayWriter {
         static private final String comma = ", ";
 
         private final String inset;         // indentation for each element
@@ -232,16 +218,14 @@ JSONWriter {
         private       JSONWriter element;   // most recent element started, or
                                             // null if array is finished
 
-        protected
-        ArrayWriter(final Writer out) {
+        protected ArrayWriter(final Writer out) {
             inset = indent + tab;
             this.out = out;
             prefix = " ";
             element = new JSONWriter(false, inset, null);
         }
 
-        public void
-        finish() throws IOException {
+        public void finish() throws IOException {
             if (!element.isWritten()) { throw new NullPointerException(); }
 
             element = null;     // prevent future calls to this object
@@ -264,7 +248,7 @@ JSONWriter {
 
     public void
     writeLink(final String URL) throws IOException {
-        final Writer out = output.claim();
+        final Writer out = (Writer) output.claim();
         out.write("{ \"@\" : ");
         writeStringTo(URL, out);
         out.write(" }");
@@ -318,7 +302,7 @@ JSONWriter {
     
     private void
     writePrimitive(final String value) throws IOException {
-        final Writer out = output.claim();
+        final Writer out = (Writer) output.claim();
         if (top) {
             out.write("{ \"=\" : ");
             out.write(value);
@@ -332,7 +316,7 @@ JSONWriter {
 
     public void
     writeString(final String value) throws IOException {
-        final Writer out = output.claim();
+        final Writer out = (Writer) output.claim();
         if (top) {
             out.write("{ \"=\" : ");
             writeStringTo(value, out);

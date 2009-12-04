@@ -58,7 +58,6 @@ public abstract class InterpreterException extends Exception {
 	 */
 	public static InterpreterException forType(final ATTypeTag tag, final String msg) {
 		return new InterpreterException(msg) {
-			@Override
 			public ATTypeTag getType() {
 				return tag;
 			}

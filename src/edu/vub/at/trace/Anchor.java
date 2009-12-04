@@ -36,7 +36,7 @@ import java.io.Serializable;
 /**
  * A marker for a point in an event loop turn where an event originated.
  */
-public class Anchor implements Comparable<Anchor>, Serializable {
+public class Anchor implements Comparable, Serializable {
     static private final long serialVersionUID = 1L;
 
     /**
@@ -76,10 +76,11 @@ public class Anchor implements Comparable<Anchor>, Serializable {
 
     // java.lang.Comparable interface
     
-    public int compareTo(final Anchor o) {
-        final int major = turn.compareTo(o.turn);
+    public int compareTo(final Object o) {
+    	if (!(o instanceof Anchor)) { throw new IllegalArgumentException(); };
+        final int major = turn.compareTo(((Anchor)o).turn);
         if (0 != major) { return major; }
-        final long minor = number - o.number;
+        final long minor = number - ((Anchor)o).number;
         return minor < 0L ? -1 : minor == 0L ? 0 : 1;
     }
     

@@ -36,7 +36,7 @@ import java.io.Serializable;
 /**
  * An event loop turn identifier.
  */
-public final class Turn implements Comparable<Turn>, Serializable {
+public final class Turn implements Comparable, Serializable {
     static private final long serialVersionUID = 1L;
 
     /**
@@ -75,7 +75,9 @@ public final class Turn implements Comparable<Turn>, Serializable {
     
     // java.lang.Comparable interface
 
-    public int compareTo(final Turn o) {
+    public int compareTo(final Object obj) {
+    	if (!(obj instanceof Turn)) { throw new IllegalArgumentException(); }
+    	Turn o = (Turn) obj;
         if (!(null != loop ? loop.equals(o.loop) : null == o.loop)) {
             throw new RuntimeException();
         }
