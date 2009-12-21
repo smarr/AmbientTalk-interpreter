@@ -93,7 +93,7 @@ public class Tracer {
      * Logs a comment.
      * @param text  comment text
      * 
-     * { "$"      : [ "org.ref_send.log.Comment", "org.ref_send.log.Event" ]
+     * { "class"      : [ "org.ref_send.log.Comment", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "text"   : text }
@@ -115,7 +115,7 @@ public class Tracer {
      * Logs an exception.
      * @param reason    problem reason
      * 
-     * { "$"      : [ "org.ref_send.log.Problem", "org.ref_send.log.Event" ]
+     * { "class"      : [ "org.ref_send.log.Problem", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "text"   : text
@@ -143,7 +143,7 @@ public class Tracer {
      * @param message   message identifier
      * @param message   a letter identifying an asynchronously sent AmbientTalk message
      * 
-     * { "$"      : [ "org.ref_send.log.Got", "org.ref_send.log.Event" ]
+     * { "class"      : [ "org.ref_send.log.Got", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "message" : message }
@@ -175,7 +175,7 @@ public class Tracer {
      * Logs a message send.
      * @param message   sent message identifier
      * 
-     * { "$"      : [ "org.ref_send.log.Sent", "org.ref_send.log.Event" ]
+     * { "class"      : [ "org.ref_send.log.Sent", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "message": message }
@@ -198,7 +198,7 @@ public class Tracer {
      * Logs sending of a return value.
      * @param message   return message identifier
      * 
-     * { "$"      : [ "org.ref_send.log.Returned", "org.ref_send.log.Sent", "org.ref_send.log.Event" ]
+     * { "class"      : [ "org.ref_send.log.Returned", "org.ref_send.log.Sent", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "message": message }
@@ -222,7 +222,7 @@ public class Tracer {
      * @param message   message identifier
      * @param condition condition identifier
      * 
-     * { "$"      : [ "org.ref_send.log.SentIf", "org.ref_send.log.Sent", "org.ref_send.log.Event" ]
+     * { "class"      : [ "org.ref_send.log.SentIf", "org.ref_send.log.Sent", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "message": message
@@ -247,7 +247,7 @@ public class Tracer {
      * Logs resolution of a promise.
      * @param condition condition identifier
      * 
-     * { "$"      : [ "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
+     * { "class"      : [ "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "condition" : condition }
@@ -271,7 +271,7 @@ public class Tracer {
      * Logs fulfillment of a promise.
      * @param condition condition identifier
      * 
-     * { "$"      : [ "org.ref_send.log.Fulfilled", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
+     * { "class"      : [ "org.ref_send.log.Fulfilled", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "condition" : condition }
@@ -295,7 +295,7 @@ public class Tracer {
      * Logs rejection of a promise.
      * @param condition condition identifier
      * 
-     * { "$"      : [ "org.ref_send.log.Rejected", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
+     * { "class"      : [ "org.ref_send.log.Rejected", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "condition" : condition
@@ -321,7 +321,7 @@ public class Tracer {
      * Logs progress towards fulfillment of a promise.
      * @param condition condition identifier
      * 
-     * { "$"      : [ "org.ref_send.log.Progressed", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
+     * { "class"      : [ "org.ref_send.log.Progressed", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "condition" : condition }
@@ -399,7 +399,7 @@ public class Tracer {
     }
     
     private static void writeClassAndAnchor(JSONWriter.ObjectWriter json, String[] classNames, Anchor anchor) throws IOException {
-    	JSONWriter.ArrayWriter classes = json.startMember("$").startArray();
+    	JSONWriter.ArrayWriter classes = json.startMember("class").startArray();
     	for (int i = 0; i < classNames.length; i++) {
         	classes.startElement().writeString("org.ref_send.log."+classNames[i]);
 		}
