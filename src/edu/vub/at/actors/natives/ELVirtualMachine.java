@@ -65,6 +65,7 @@ import java.util.Hashtable;
 public final class ELVirtualMachine extends EventLoop {
 	
 	public static final String _DEFAULT_GROUP_NAME_ = "AmbientTalk";
+	public static final String _DEFAULT_IP_ADDRESS_ = "0.0.0.0";
 		
 	/** startup parameter to the VM: the code of the init.at file to use */
 	private final ATAbstractGrammar initialisationCode_;
@@ -102,7 +103,7 @@ public final class ELVirtualMachine extends EventLoop {
 	 * @param fields are all of the fields that should be present in each new created actor (e.g. the 'system' object of IAT)
 	 * @param groupName is the name of the overlay network to join
 	 */
-	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields, String groupName) {
+	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields, String groupName, String ipAddress) {
 		super("virtual machine");
 		this.start();
 		
@@ -121,7 +122,7 @@ public final class ELVirtualMachine extends EventLoop {
 		
 		// initialize the message dispatcher using a JChannel
 		connectionManager_ = new ConnectionListenerManager();
-		communicationBus_ = new CommunicationBus(this, groupName);
+		communicationBus_ = new CommunicationBus(this, groupName, ipAddress);
 		
 		Logging.VirtualMachine_LOG.info(this + ": VM created on network " + groupName);
 	}

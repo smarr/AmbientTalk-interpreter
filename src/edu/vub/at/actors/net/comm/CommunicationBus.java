@@ -107,6 +107,8 @@ public class CommunicationBus {
 	
 	/** the name of the overlay network in which to discover AmbientTalk VMs */
 	private final String groupName_;
+	/** the ip address to which connect or ELVirtualMachine._DEFAULT_IP_ADDRESS_ if not specified*/
+	private final String ipAddress_;
 	
 	/** if non-null, the communication bus is connected to the network */
 	private volatile Address networkAddress_;
@@ -203,13 +205,21 @@ public class CommunicationBus {
 		
 	}
 	
-	public CommunicationBus(ELVirtualMachine host, String ambientTalkNetworkName) {
+	public CommunicationBus(ELVirtualMachine host, String ambientTalkNetworkName, String ipAddress) {
 		host_ = host;
 		groupName_ = ambientTalkNetworkName;
+		ipAddress_ = ipAddress;
 		addressToConnection_ = new HashMap();
 		timeoutDetectorTimer_ = new Timer(true); // create a daemon timer
 	}
 	
+	public String getIpAddress() {
+		return ipAddress_;
+	}
+	
+	public String getGroupName(){
+		return groupName_;
+	}
 	/**
 	 * Tries to connect the communication bus to the underlying network.
 	 * @throws IOException if no server socket could be created to listen
@@ -224,7 +234,7 @@ public class CommunicationBus {
 		
 		masterConnectionThread_ = new MasterConnectionThread(this);
 		try {
-			networkAddress_ = masterConnectionThread_.startServing(groupName_);
+			networkAddress_ = masterConnectionThread_.startServing();
 		} catch (IOException e) {
 			masterConnectionThread_ = null;
 			throw new NetworkException("Could not connect to network:", e);

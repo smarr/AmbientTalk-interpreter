@@ -48,8 +48,8 @@ public class DistributionTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		virtual1_ = new ELVirtualMachine(Evaluator.getNil(), new SharedActorField[] { }, _TEST_GROUP_NAME_);
-		virtual2_ = new ELVirtualMachine(Evaluator.getNil(), new SharedActorField[] { }, _TEST_GROUP_NAME_);
+		virtual1_ = new ELVirtualMachine(Evaluator.getNil(), new SharedActorField[] { }, _TEST_GROUP_NAME_, ELVirtualMachine._DEFAULT_IP_ADDRESS_);
+		virtual2_ = new ELVirtualMachine(Evaluator.getNil(), new SharedActorField[] { }, _TEST_GROUP_NAME_, ELVirtualMachine._DEFAULT_IP_ADDRESS_);
 	}
 	
 	protected void tearDown() throws Exception {

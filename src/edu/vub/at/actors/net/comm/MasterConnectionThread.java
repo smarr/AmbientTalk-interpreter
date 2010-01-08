@@ -26,6 +26,7 @@
  */
 package edu.vub.at.actors.net.comm;
 
+import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.util.logging.Logging;
 
 import java.io.DataInputStream;
@@ -52,7 +53,7 @@ public class MasterConnectionThread extends Thread {
 	
 	private volatile boolean isActive_ = true;
 	
-	private final CommunicationBus communicationBus_;
+	private CommunicationBus communicationBus_;
 	
 	public MasterConnectionThread(CommunicationBus owner) {
 		super("MasterConnectionThread for " + owner);
@@ -67,11 +68,11 @@ public class MasterConnectionThread extends Thread {
 	 * @throws IOException if the local socket cannot be created. It is guaranteed that, if this
 	 * exception is raised, this thread will <b>not</b> have started.
 	 */
-	public Address startServing(String onNetwork) throws IOException {
-		InetAddress myAddress = InetAddress.getByName(getCurrentEnvironmentNetworkIp());
+	public Address startServing() throws IOException { 
+		InetAddress myAddress = InetAddress.getByName(getCurrentEnvironmentNetworkIp(communicationBus_.getIpAddress()));
 		listenSocket_ = new ServerSocket(0, 50, myAddress); // create a socket that will listen on any free port
 		this.start();
-		return new Address(myAddress, listenSocket_.getLocalPort(), onNetwork);
+		return new Address(myAddress, listenSocket_.getLocalPort(), communicationBus_.getGroupName());
 	}
 
 	public void stopServing() {
@@ -131,28 +132,46 @@ public class MasterConnectionThread extends Thread {
 	}
 	
     /**
+     * @param ipAddress is the ip address to which connect or ELVirtualMachine._DEFAULT_IP_ADDRESS_ 
+     * if it was not specified. In the later case a valid IP address is calculated. 
      * @return the current environment's IP address, taking into account the Internet connection to any of the available
      * machine's Network interfaces. Examples of the outputs can be in octet or in IPV6 format.
      * Based on source code by Marcello de Sales (marcello.sales@gmail.com)
      * from <tt>http://www.jguru.com/faq/view.jsp?EID=15835</tt> (adapted from Java 1.5 to 1.4)
+     * 
+     * Main change on code: !addr.isSiteLocalAddress() test removed because of inconsistencies in 
+     * linux and Android platforms when running under a private network configuration.
+     * This change implies that devices connected to a private and public network interface,
+     * getCurrentEnvironmentNetworkIp returns the first one found in the network interfaces 
+     * which may not be the desired one. For those cases it is recommended to use 
+     * -ip iat option to pass the desired IP address directly.
      */
-    private static String getCurrentEnvironmentNetworkIp() {
-        try {
-        	Enumeration netInterfaces = NetworkInterface.getNetworkInterfaces();
-            while (netInterfaces.hasMoreElements()) {
-                NetworkInterface ni = (NetworkInterface) netInterfaces.nextElement();
-                Enumeration address = ni.getInetAddresses();
-                while (address.hasMoreElements()) {
-                    InetAddress addr = (InetAddress) address.nextElement();
-                    if (!addr.isLoopbackAddress() && addr.isSiteLocalAddress()
-                            && !(addr.getHostAddress().indexOf(":") > -1)) {
-                        return addr.getHostAddress();
-                    }
-                }
-            }
-        } catch (SocketException e) { }
-        
-        return "127.0.0.1";
+    private static String getCurrentEnvironmentNetworkIp(String ipAddress) {
+    	if (ELVirtualMachine._DEFAULT_IP_ADDRESS_.equals(ipAddress)) {
+    		try {
+    			Enumeration netInterfaces = NetworkInterface.getNetworkInterfaces();
+    			while (netInterfaces.hasMoreElements()) {
+    				NetworkInterface ni = (NetworkInterface) netInterfaces.nextElement();
+    				Enumeration address = ni.getInetAddresses();
+    				while (address.hasMoreElements()) {
+    					InetAddress addr = (InetAddress) address.nextElement();
+    					// !addr.isSiteLocalAddress() removed, see note above.
+    					if (!addr.isLoopbackAddress() 
+                                && !(addr.getHostAddress().indexOf(":") > -1)) {
+                            return addr.getHostAddress();
+                        }
+    				}
+    			}
+    		} catch (SocketException e) { }
+
+    		try {
+    			return InetAddress.getLocalHost().getHostAddress();
+    		} catch (UnknownHostException e) {
+    			return "127.0.0.1";
+    		}
+    	} else{
+    		return ipAddress;
+    	}
     }
 
 	

@@ -90,7 +90,8 @@ public class ELActor extends EventLoop {
 				ELVirtualMachine host = new ELVirtualMachine(
 						Evaluator.getNil(),
 						new SharedActorField[] { },
-						ELVirtualMachine._DEFAULT_GROUP_NAME_);
+						ELVirtualMachine._DEFAULT_GROUP_NAME_,
+						ELVirtualMachine._DEFAULT_IP_ADDRESS_);
 				return host.createEmptyActor().getFarHost();
 			} catch (InterpreterException e) {
 				throw new RuntimeException("Failed to initialize default actor: " + e.getMessage());
