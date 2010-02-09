@@ -41,6 +41,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
+import java.lang.reflect.Proxy;
 
 /**
  * Packet instances are the serialized representation of AmbientTalk messages or other objects.
@@ -67,16 +68,14 @@ public class Packet implements Serializable {
 		this(object.toString(), object);
 	}
 	
+	/**
+	 * Deserialize this message using the class loader used for loading this class.
+	 * In 99% of all cases this will be the same as the system classloader, but not
+	 * in the Dalvik VM (used by Android).
+	 */
 	public ATObject unpack() throws InterpreterException {
-		try {
-			return (ATObject) deserialize(payload_);
-        } catch (SerializationException e) {
-          throw e.getWrappedException();
-		} catch (IOException e) {
-			throw new XIOProblem(e);
-		} catch (ClassNotFoundException e) {
-			throw new XClassNotFound(e.getMessage(), e);
-		} 
+		ClassLoader c = this.getClass().getClassLoader();
+		return unpackUsingClassLoader(c);
 	}
 	
 	/** deserialize this message, using a custom class loader to load the classes into the JVM */
@@ -136,6 +135,23 @@ public class Packet implements Serializable {
 		protected Class resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
 			return loader_.loadClass(desc.getName());
 		}
+		
+	    /**
+	     * Creates the proxy class that implements the interfaces specified in
+	     * {@code interfaceNames}.
+	     */
+	    protected Class resolveProxyClass(String[] interfaceNames)
+	            throws IOException, ClassNotFoundException {
+	        Class[] interfaces = new Class[interfaceNames.length];
+	        for (int i = 0; i < interfaceNames.length; i++) {
+	            interfaces[i] = Class.forName(interfaceNames[i], false, loader_);
+	        }
+	        try {
+	            return Proxy.getProxyClass(loader_, interfaces);
+	        } catch (IllegalArgumentException e) {
+	            throw new ClassNotFoundException(e.toString(), e);
+	        }
+	    }
 	}
 	
 	// deserialize and use the given class loader to try and load any missing classes
