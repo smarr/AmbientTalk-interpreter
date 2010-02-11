@@ -54,6 +54,7 @@ import edu.vub.at.objects.natives.grammar.TestEval;
 import edu.vub.at.objects.natives.grammar.TestFreeVariableCapturing;
 import edu.vub.at.objects.natives.grammar.TestParameterBinding;
 import edu.vub.at.objects.symbiosis.SymbiosisTest;
+import edu.vub.at.trace.TraceTest;
 
 /**
  * @author tvcutsem
@@ -93,6 +94,7 @@ public class InterpreterTests {
 		suite.addTestSuite(UniformAccessTest.class);
 		suite.addTestSuite(CoercionTest.class);
 		suite.addTestSuite(ActorTest.class);
+		suite.addTestSuite(TraceTest.class);
 		//$JUnit-END$
 		return suite;
 	}

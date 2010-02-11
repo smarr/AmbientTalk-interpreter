@@ -1,5 +1,5 @@
 [ {
-  "$" : [ "org.ref_send.log.Progressed", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ],
+  "class" : [ "org.ref_send.log.Progressed", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ],
   "anchor" : {
     "number" : 0,
     "turn" : {

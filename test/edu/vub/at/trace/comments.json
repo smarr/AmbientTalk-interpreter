@@ -1,5 +1,5 @@
 [ {
-  "$" : [ "org.ref_send.log.Comment", "org.ref_send.log.Event" ],
+  "class" : [ "org.ref_send.log.Comment", "org.ref_send.log.Event" ],
   "anchor" : {
     "number" : 0,
     "turn" : {
@@ -12,7 +12,7 @@
     "calls" : [ ]
   }
 }, {
-  "$" : [ "org.ref_send.log.Comment", "org.ref_send.log.Event" ],
+  "class" : [ "org.ref_send.log.Comment", "org.ref_send.log.Event" ],
   "anchor" : {
     "number" : 1,
     "turn" : {
