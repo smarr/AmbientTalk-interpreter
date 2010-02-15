@@ -37,6 +37,11 @@ import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.grammar.ATBegin;
+import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.grammar.ATStatement;
+import edu.vub.at.objects.natives.NATNil;
 import edu.vub.at.parser.SourceLocation;
 import edu.vub.at.util.logging.Logging;
 
@@ -198,7 +203,7 @@ public class Tracer {
      * Logs sending of a return value.
      * @param message   return message identifier
      * 
-     * { "class"      : [ "org.ref_send.log.Returned", "org.ref_send.log.Sent", "org.ref_send.log.Event" ]
+     * { "class"  : [ "org.ref_send.log.Returned", "org.ref_send.log.Sent", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "message": message }
@@ -270,20 +275,25 @@ public class Tracer {
     /**
      * Logs fulfillment of a promise.
      * @param condition condition identifier
+     * @param fromLetter an optional letter from which the value was derived
+     * If letter given, the last expr in the source of the method it denotes
+     * is prepended to the tracelog
      * 
      * { "class"      : [ "org.ref_send.log.Fulfilled", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
      *   "anchor" : ...
      *   "trace"  : ...
      *   "condition" : condition }
      */
-    public void fulfilled(final String condition) {
+    public void fulfilled(final String condition, final ATObject fromLetter) {
     	try {
 			JSONWriter.ObjectWriter json = out.startElement().startObject();
 			writeClassAndAnchor(json, new String[] { "Fulfilled", "Resolved" }, mark.apply());
 			json.startMember("condition").writeString(condition);
-			writeTrace(json, Tracer.traceHere(filteredSources));
+			writeTrace(json, (fromLetter.equals(Evaluator.getNil())) ?
+				Tracer.traceHere(filteredSources) :
+				Tracer.traceHereStartingWith(fromLetter.asLetter(), filteredSources));
 			json.finish();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			Logging.EventLoop_LOG.warn("Unable to log Causeway event", e);
 		}
     	
@@ -294,6 +304,10 @@ public class Tracer {
     /**
      * Logs rejection of a promise.
      * @param condition condition identifier
+     * @param fromLetter an optional letter from which the value was derived
+     * 
+     * If letter given, the last expr in the source of the method it denotes
+     * is prepended to the tracelog
      * 
      * { "class"      : [ "org.ref_send.log.Rejected", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
      *   "anchor" : ...
@@ -301,15 +315,17 @@ public class Tracer {
      *   "condition" : condition
      *   "reason" : reason }
      */
-    public void rejected(final String condition, final InterpreterException reason) {
+    public void rejected(final String condition, final InterpreterException reason, final ATObject fromLetter) {
     	try {
 			JSONWriter.ObjectWriter json = out.startElement().startObject();
 			writeClassAndAnchor(json, new String[] { "Rejected", "Resolved" }, mark.apply());
 			json.startMember("condition").writeString(condition);
 			writeException(json.startMember("reason"), reason);
-			writeTrace(json, Tracer.traceHere(filteredSources));
+			writeTrace(json, (fromLetter.equals(Evaluator.getNil())) ?
+					Tracer.traceHere(filteredSources) :
+					Tracer.traceHereStartingWith(fromLetter.asLetter(), filteredSources));
 			json.finish();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			Logging.EventLoop_LOG.warn("Unable to log Causeway event", e);
 		}
     	
@@ -364,14 +380,16 @@ public class Tracer {
     	
 		String name = "unprintable message";
 		ATClosure slot = null;
+		SourceLocation loc = null;
 		try {
 			ATAsyncMessage msg = letter.base_message();
 			name = msg.base_selector()+Evaluator.printAsList(msg.base_arguments()).javaValue;
 			ATObject rcvr = letter.base_receiver();
-			slot = rcvr.meta_select(rcvr, msg.base_selector());
+			loc = rcvr.impl_getSourceOf(msg.base_selector());
+			
+			//slot = rcvr.meta_select(rcvr, msg.base_selector());
+			//SourceLocation loc = (slot == null) ? null : slot.impl_getLocation();
 		} catch (InterpreterException e) {}
-
-		SourceLocation loc = (slot == null) ? null : slot.impl_getLocation();
 		
 		String source = null;
 		int[][] span = null;
@@ -392,7 +410,40 @@ public class Tracer {
     protected static Trace traceHere(java.util.Set sourceFilter) {
     	return InvocationStack.captureInvocationStack().generateTrace(sourceFilter);
     }
+
     
+    protected static Trace traceHereStartingWith(ATLetter letter, java.util.Set sourceFilter) {
+		String name = "unprintable message";
+		ATClosure slot = null;
+		SourceLocation loc = null;
+		try {
+			ATAsyncMessage msg = letter.base_message();
+			name = msg.base_selector()+Evaluator.printAsList(msg.base_arguments()).javaValue;
+			ATObject rcvr = letter.base_receiver();
+			slot = rcvr.meta_select(rcvr, letter.base_message().base_selector());
+			ATBegin expr = slot.base_method().base_bodyExpression();
+			if (expr.impl_getLocation() != null) {
+				ATTable stmts = expr.base_statements();
+				ATObject lastStatement = stmts.base_at(stmts.base_length());
+				loc = lastStatement.impl_getLocation();
+			}			
+		} catch (InterpreterException e) {}
+		
+		String source = null;
+		int[][] span = null;
+		if (loc != null) {
+          source = loc.fileName;
+		  span = new int[][] { new int[] { loc.line, loc.column } };
+		}
+		
+		Trace t = InvocationStack.captureInvocationStack().generateTrace(sourceFilter);
+		// now prepend the callsite identified by loc to the runtime stack
+		CallSite[] stack = t.calls;
+		CallSite[] stackPlusLetter = new CallSite[stack.length+1];
+		stackPlusLetter[0] = new CallSite(name, source, span);
+		System.arraycopy(stack, 0, stackPlusLetter, 1, stack.length);
+    	return new Trace(stackPlusLetter);	
+    }
 
     private static void writeClassAndAnchor(JSONWriter.ObjectWriter json, String className, Anchor anchor) throws IOException {
     	writeClassAndAnchor(json, new String[] { className }, anchor);
@@ -428,7 +479,7 @@ public class Tracer {
     private static void writeTrace(JSONWriter.ObjectWriter json, Trace trace) throws IOException {
     	trace.toJSON(json.startMember("trace"));
     }
-    
+        
     /**
      * { "type" : "Exception"
      *   "message" : "message"

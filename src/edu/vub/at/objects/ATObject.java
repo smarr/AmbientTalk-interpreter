@@ -1071,5 +1071,12 @@ public interface ATObject extends ATConversions {
      * @param loc the source location
      */
     public void impl_setLocation(SourceLocation loc);
+    
+    /**
+     * Queries a native object for the source location of one of its slots.
+     * @param sel the name of the slot to return the source position for.
+     * @return the source location or null if not found.
+     */
+    public SourceLocation impl_getSourceOf(ATSymbol sel) throws InterpreterException;
         
 }

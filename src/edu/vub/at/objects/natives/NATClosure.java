@@ -38,7 +38,9 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
+import edu.vub.at.parser.SourceLocation;
 
 /**
  * A NATClosure instance represents a first-class AmbientTalk closure.
@@ -229,5 +231,13 @@ public class NATClosure extends NATByRef implements ATClosure {
 	public ATObject meta_clone() throws InterpreterException {
 		return this;
 	}
+	
+    public SourceLocation impl_getSourceOf(ATSymbol sel) throws InterpreterException {
+    	if (sel == Evaluator._APPLY_) {
+    		return method_.impl_getLocation();
+    	} else {
+    		return super.impl_getLocation();
+    	}
+    }
     
 }
