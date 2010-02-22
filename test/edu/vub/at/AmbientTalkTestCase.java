@@ -59,6 +59,10 @@ public class AmbientTalkTestCase extends TestCase {
 		ctx_ = null;
 	}
 	
+	public void testDummy() {
+		// Avoid junit.framework.AssertionFailedError: No tests found
+	}
+	
 //	public void testUnitTestFramework() {
 //		try {
 //			evaluateInput("unit.fail: \"This test should fail.\"", ctx_);
