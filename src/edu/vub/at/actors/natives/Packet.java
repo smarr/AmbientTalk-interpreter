@@ -69,13 +69,23 @@ public class Packet implements Serializable {
 	}
 	
 	/**
-	 * Deserialize this message using the class loader used for loading this class.
-	 * In 99% of all cases this will be the same as the system classloader, but not
-	 * in the Dalvik VM (used by Android).
+	 * Deserialize this message using the default class loader. 
+	 * In 99% of all cases this is okay, but on the Dalvik VM (used by Android)
+	 * it needs a specific classloader (see comment).
 	 */
 	public ATObject unpack() throws InterpreterException {
-		ClassLoader c = this.getClass().getClassLoader();
-		return unpackUsingClassLoader(c);
+		// Uncomment this code for android
+		// ClassLoader c = this.getClass().getClassLoader();
+		// return unpackUsingClassLoader(c);
+		try {
+			return (ATObject) deserialize(payload_);
+        } catch (SerializationException e) {
+          throw e.getWrappedException();
+		} catch (IOException e) {
+			throw new XIOProblem(e);
+		} catch (ClassNotFoundException e) {
+			throw new XClassNotFound(e.getMessage(), e);
+		} 
 	}
 	
 	/** deserialize this message, using a custom class loader to load the classes into the JVM */
