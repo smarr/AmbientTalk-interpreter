@@ -105,7 +105,7 @@ public class TraceTest extends TestCase {
 	}
 	
 	public void testFulfilled() throws IOException {
-		log_.fulfilled("theCondition", Evaluator.getNil());
+		log_.fulfilled("theCondition", Evaluator.getNil(), Evaluator.getNil());
 		assertOutputEquals("fulfilled.json");
 	}
 	
@@ -132,7 +132,9 @@ public class TraceTest extends TestCase {
 	}
 	
 	public void testRejected() throws IOException {
-		log_.rejected("theCondition", new XIllegalOperation("theReason"), Evaluator.getNil());
+		log_.rejected("theCondition",
+				new XIllegalOperation("theReason"),
+				Evaluator.getNil(), Evaluator.getNil());
 		assertOutputEquals("rejected.json");
 	}
 	

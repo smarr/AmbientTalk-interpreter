@@ -60,6 +60,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.parser.SourceLocation;
 import edu.vub.at.util.logging.Logging;
 
 import java.io.IOException;
@@ -872,5 +873,20 @@ public class NATObject extends NATCallframe implements ATObject {
 	public void setLexicalParent(ATObject newLexParent) {
 		lexicalParent_ = newLexParent;
 	}
+	
+	// Debugging API:
+	
+    private SourceLocation loc_;
+    public SourceLocation impl_getLocation() { return loc_; }
+    public void impl_setLocation(SourceLocation loc) {
+    	// overriding the source location of an AmbientTalk object
+    	// is probably the sign of a bug: locations should be single-assignment
+    	// to prevent mutable shared-state. That is, loc_ is effectively 'final'
+    	if (loc_ == null) {
+        	loc_ = loc;  		
+    	} else {
+    		throw new RuntimeException("Trying to override source location of "+this.toString()+" from "+loc_+" to "+loc);
+    	}
+    }
 	
 }

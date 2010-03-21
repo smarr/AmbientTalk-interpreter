@@ -232,6 +232,20 @@ public class NATClosure extends NATByRef implements ATClosure {
 		return this;
 	}
 	
+	// Debugging API:
+	
+    private SourceLocation loc_;
+    public SourceLocation impl_getLocation() { return loc_; }
+    public void impl_setLocation(SourceLocation loc) {
+    	// overriding the source location of an AmbientTalk object
+    	// is probably the sign of a bug: locations should be single-assignment
+    	// to prevent mutable shared-state. That is, loc_ is effectively 'final'
+    	if (loc_ == null) {
+        	loc_ = loc;  		
+    	} else {
+    		throw new RuntimeException("Trying to override source location of "+this.toString()+" from "+loc_+" to "+loc);
+    	}
+    }
     public SourceLocation impl_getSourceOf(ATSymbol sel) throws InterpreterException {
     	if (sel == Evaluator._APPLY_) {
     		return method_.impl_getLocation();

@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.parser.SourceLocation;
 
 /**
  * @author tvcutsem
@@ -48,6 +49,22 @@ public abstract class NATAbstractGrammar extends NATByCopy implements ATAbstract
 	
     public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._ABSTRACTGRAMMAR_, NativeTypeTags._ISOLATE_);
+    }
+    
+    // AST nodes, like AmbientTalk objects, should have an assignable location,
+    // as long as the AST nodes are unique
+    
+    private SourceLocation loc_;
+    public SourceLocation impl_getLocation() { return loc_; }
+    public void impl_setLocation(SourceLocation loc) {
+    	// overriding the source location of an AG element
+    	// is probably the sign of a bug: locations should be single-assignment
+    	// to prevent mutable shared-state. That is, loc_ is effectively 'final'
+    	if (loc_ == null) {
+        	loc_ = loc;
+    	} else {
+    		throw new RuntimeException("Trying to override source location of "+this.toString()+" from "+loc_+" to "+loc);
+    	}
     }
     
 }

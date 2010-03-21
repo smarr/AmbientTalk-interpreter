@@ -181,5 +181,5 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 	
 	public static final NATTrue _TRUE_ = NATTrue._INSTANCE_;
 	public static final NATFalse _FALSE_ = NATFalse._INSTANCE_;
-
+	
 }

@@ -170,5 +170,20 @@ public class NATMethod extends NATByCopy implements ATMethod {
     			new ATObject[] { NativeTypeTags._METHOD_, NativeTypeTags._ISOLATE_ },
     			annotations_.asNativeTable().elements_));
     }
+    
+	// Debugging API:
+	
+    private SourceLocation loc_;
+    public SourceLocation impl_getLocation() { return loc_; }
+    public void impl_setLocation(SourceLocation loc) {
+    	// overriding the source location of an AmbientTalk object
+    	// is probably the sign of a bug: locations should be single-assignment
+    	// to prevent mutable shared-state. That is, loc_ is effectively 'final'
+    	if (loc_ == null) {
+        	loc_ = loc;  		
+    	} else {
+    		throw new RuntimeException("Trying to override source location of "+this.toString()+" from "+loc_+" to "+loc);
+    	}
+    }
 
 }

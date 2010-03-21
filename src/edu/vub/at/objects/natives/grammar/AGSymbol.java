@@ -35,6 +35,7 @@ import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.parser.SourceLocation;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -166,5 +167,10 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	public Set impl_quotedFreeVariables() throws InterpreterException {
 		return new HashSet();
 	}
+	
+	// since symbols are interned, they are shared among parse trees
+	// (even among actors!) so their source location is meaningless
+    public SourceLocation impl_getLocation() { return null; }
+    public void impl_setLocation(SourceLocation loc) {}
 
 }

@@ -41,6 +41,7 @@ import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGExpression;
+import edu.vub.at.parser.SourceLocation;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -56,9 +57,13 @@ import java.util.Vector;
  * 
  * @author tvcutsem
  */
-public final class NATTable extends AGExpression implements ATTable {
+public class NATTable extends AGExpression implements ATTable {
 
-	public final static NATTable EMPTY = new NATTable(new ATObject[] {});
+	public final static NATTable EMPTY = new NATTable(new ATObject[] {}) {
+		// since the empty table is shared, its source location is meaningless
+	    public SourceLocation impl_getLocation() { return null; }
+	    public void impl_setLocation(SourceLocation loc) {}
+	};
 	
 	public final ATObject[] elements_;
 	

@@ -36,6 +36,7 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.eval.InvocationStack;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATMessage;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.grammar.ATBegin;
@@ -275,8 +276,9 @@ public class Tracer {
     /**
      * Logs fulfillment of a promise.
      * @param condition condition identifier
-     * @param fromLetter an optional letter from which the value was derived
-     * If letter given, the last expr in the source of the method it denotes
+     * @param fromReceiver optional receiver object that fulfilled the message
+     * @param fromMessage optional message that was fulfilled
+     * If fromReceiver and fromMessage are given, the last expr in the source of the method it denotes
      * is prepended to the tracelog
      * 
      * { "class"      : [ "org.ref_send.log.Fulfilled", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
@@ -284,14 +286,14 @@ public class Tracer {
      *   "trace"  : ...
      *   "condition" : condition }
      */
-    public void fulfilled(final String condition, final ATObject fromLetter) {
+    public void fulfilled(final String condition, final ATObject fromReceiver, final ATObject fromMessage) {
     	try {
 			JSONWriter.ObjectWriter json = out.startElement().startObject();
 			writeClassAndAnchor(json, new String[] { "Fulfilled", "Resolved" }, mark.apply());
 			json.startMember("condition").writeString(condition);
-			writeTrace(json, (fromLetter.equals(Evaluator.getNil())) ?
+			writeTrace(json, (fromReceiver.equals(Evaluator.getNil())) ?
 				Tracer.traceHere(filteredSources) :
-				Tracer.traceHereStartingWith(fromLetter.asLetter(), filteredSources));
+				Tracer.traceHereStartingWith(fromReceiver, fromMessage.asMessage(), filteredSources));
 			json.finish();
 		} catch (Exception e) {
 			Logging.EventLoop_LOG.warn("Unable to log Causeway event", e);
@@ -304,9 +306,10 @@ public class Tracer {
     /**
      * Logs rejection of a promise.
      * @param condition condition identifier
-     * @param fromLetter an optional letter from which the value was derived
+     * @param fromReceiver an optional receiver object that rejected the message
+     * @param fromMessage optional message that was rejected
      * 
-     * If letter given, the last expr in the source of the method it denotes
+     * If fromReceiver and fromMessage are given, the last expr in the source of the method it denotes
      * is prepended to the tracelog
      * 
      * { "class"      : [ "org.ref_send.log.Rejected", "org.ref_send.log.Resolved", "org.ref_send.log.Event" ]
@@ -315,15 +318,15 @@ public class Tracer {
      *   "condition" : condition
      *   "reason" : reason }
      */
-    public void rejected(final String condition, final InterpreterException reason, final ATObject fromLetter) {
+    public void rejected(final String condition, final InterpreterException reason, final ATObject fromReceiver, final ATObject fromMessage) {
     	try {
 			JSONWriter.ObjectWriter json = out.startElement().startObject();
 			writeClassAndAnchor(json, new String[] { "Rejected", "Resolved" }, mark.apply());
 			json.startMember("condition").writeString(condition);
 			writeException(json.startMember("reason"), reason);
-			writeTrace(json, (fromLetter.equals(Evaluator.getNil())) ?
+			writeTrace(json, (fromReceiver.equals(Evaluator.getNil())) ?
 					Tracer.traceHere(filteredSources) :
-					Tracer.traceHereStartingWith(fromLetter.asLetter(), filteredSources));
+					Tracer.traceHereStartingWith(fromReceiver, fromMessage.asMessage(), filteredSources));
 			json.finish();
 		} catch (Exception e) {
 			Logging.EventLoop_LOG.warn("Unable to log Causeway event", e);
@@ -412,21 +415,14 @@ public class Tracer {
     }
 
     
-    protected static Trace traceHereStartingWith(ATLetter letter, java.util.Set sourceFilter) {
+    protected static Trace traceHereStartingWith(ATObject rcvr, ATMessage msg, java.util.Set sourceFilter) {
 		String name = "unprintable message";
 		ATClosure slot = null;
 		SourceLocation loc = null;
 		try {
-			ATAsyncMessage msg = letter.base_message();
 			name = msg.base_selector()+Evaluator.printAsList(msg.base_arguments()).javaValue;
-			ATObject rcvr = letter.base_receiver();
-			slot = rcvr.meta_select(rcvr, letter.base_message().base_selector());
-			ATBegin expr = slot.base_method().base_bodyExpression();
-			if (expr.impl_getLocation() != null) {
-				ATTable stmts = expr.base_statements();
-				ATObject lastStatement = stmts.base_at(stmts.base_length());
-				loc = lastStatement.impl_getLocation();
-			}			
+			slot = rcvr.meta_select(rcvr, msg.base_selector());
+			loc = slot.base_method().base_bodyExpression().impl_getLocation();	
 		} catch (InterpreterException e) {}
 		
 		String source = null;
