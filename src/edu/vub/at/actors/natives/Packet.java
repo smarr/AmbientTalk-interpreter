@@ -144,7 +144,11 @@ public class Packet implements Serializable {
 		}
 
 		protected Class resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-			return loader_.loadClass(desc.getName());
+			/* This does not work in the Sun Java 6 VM because of http://bugs.sun.com/view_bug.do?bug_id=6434149
+			 * Using the suggested workaround.
+			 */
+			// return loader_.loadClass(desc.getName());
+			return Class.forName(desc.getName(), false, loader_);
 		}
 		
 	    /**
