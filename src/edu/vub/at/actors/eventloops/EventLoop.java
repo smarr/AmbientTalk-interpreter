@@ -66,6 +66,8 @@ public abstract class EventLoop {
 	protected volatile boolean askedToStop_;
 	
 	private final String name_;
+
+	private static final String _ENV_AT_STACK_SIZE_ = "AT_STACK_SIZE";
 	
 	/**
 	 * Constructs a new event loop with the default processing behaviour.
@@ -78,8 +80,13 @@ public abstract class EventLoop {
 		eventQueue_ = new EventQueue();
 		askedToStop_ = false;
 		name_ = name;
-		
-		processor_ = new EventProcessor();
+
+		Integer stackSize = Integer.getInteger(System.getProperty(_ENV_AT_STACK_SIZE_));
+		if (stackSize != null) {
+			processor_ = new EventProcessor(stackSize);
+		} else{
+			processor_ = new EventProcessor();
+		}
 	}
 	
 	/**
@@ -258,7 +265,12 @@ public abstract class EventLoop {
 	 */
 	public final class EventProcessor extends Thread {
 		
-		protected EventProcessor() {
+		protected EventProcessor(int stackSize) {
+			super(new ThreadGroup("EventLoopGroup"), null, "Event Loop", stackSize);
+			setName(toString());
+		}
+		
+		protected EventProcessor(){
 			setName(toString());
 		}
 		
