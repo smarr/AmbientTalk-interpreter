@@ -63,6 +63,8 @@ public class NATTable extends AGExpression implements ATTable {
 		// since the empty table is shared, its source location is meaningless
 	    public SourceLocation impl_getLocation() { return null; }
 	    public void impl_setLocation(SourceLocation loc) {}
+	    
+	    static final long serialVersionUID = 4036096689737987809L;
 	};
 	
 	public final ATObject[] elements_;

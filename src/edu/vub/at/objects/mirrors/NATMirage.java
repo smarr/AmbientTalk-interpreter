@@ -66,7 +66,8 @@ import java.util.Vector;
  * @author smostinc
  */
 public class NATMirage extends NATObject {
-
+	static final long serialVersionUID = -6739674044103384328L;
+	
 	// Whenever this field is set, the object should be tested for the _MIRROR_ native type tag
 	private ATObject mirror_;
 	
