@@ -27,6 +27,8 @@
  */
 package edu.vub.at.actors.eventloops;
 
+import java.util.Properties;
+
 import edu.vub.at.util.logging.Logging;
 
 
@@ -81,7 +83,7 @@ public abstract class EventLoop {
 		askedToStop_ = false;
 		name_ = name;
 
-		Integer stackSize = Integer.getInteger(System.getProperty(_ENV_AT_STACK_SIZE_));
+		Integer stackSize = Integer.getInteger(_ENV_AT_STACK_SIZE_);
 		if (stackSize != null) {
 			processor_ = new EventProcessor(stackSize);
 		} else{
