@@ -85,7 +85,7 @@ public abstract class EventLoop {
 
 		Integer stackSize = Integer.getInteger(_ENV_AT_STACK_SIZE_);
 		if (stackSize != null) {
-			processor_ = new EventProcessor(stackSize);
+			processor_ = new EventProcessor(stackSize.intValue());
 		} else{
 			processor_ = new EventProcessor();
 		}
