@@ -361,8 +361,8 @@ public class ELActor extends EventLoop {
 				ATAsyncMessage msg = pair[1].asAsyncMessage();
 				performAccept(receiver, msg);
 			  } catch (XObjectOffline e) {
-				 host_.event_objectTakenOffline(e.getObjectId(), sender);
-				Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
+				host_.event_objectTakenOffline(e.getObjectId(), sender);
+				Logging.Actor_LOG.warn(mirror_ + ": could not process "+ serializedMessage + ", object offline: " + e.getObjectId());
 			  } catch (InterpreterException e) {
 				Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
 			  } 
@@ -387,7 +387,7 @@ public class ELActor extends EventLoop {
 				performAccept(receiver, msg);
 			  } catch (XObjectOffline e) {
 				  ref.notifyTakenOffline();
-				  Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
+				  Logging.Actor_LOG.warn(mirror_ + ": could not process "+ serializedMessage + ", object offline: " + e.getObjectId());
 			  } catch (InterpreterException e) {
 				  Logging.Actor_LOG.error(mirror_ + ": error unpacking "+ serializedMessage, e);
 			  } 
