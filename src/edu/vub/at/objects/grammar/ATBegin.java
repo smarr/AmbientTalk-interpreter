@@ -30,7 +30,7 @@ package edu.vub.at.objects.grammar;
 import edu.vub.at.objects.ATTable;
 
 /**
- * The public interface to a sequence of statements. The table encapsulated by ATBegin may not be empty.
+ * The public interface to a sequence of statements.
  * 
  * <p>
  * Example: <code>a; b; c</code>
@@ -43,9 +43,9 @@ import edu.vub.at.objects.ATTable;
 public interface ATBegin extends ATStatement {
 
 	/**
-	 * The statements table contains (al least) one or more expressions.
+	 * The statements table contains zero or more statements.
 	 * Example: <code>`{ x := 5; 1 + 2}.statements == `[x := 5, 1.+(2)]</code>
-	 * @return A non-empty table of expressions
+	 * @return A table of statements
 	 */
 	public ATTable base_statements();
 	

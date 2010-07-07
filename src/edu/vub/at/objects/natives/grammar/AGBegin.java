@@ -67,6 +67,7 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	 * 
 	 * AGBEGIN([statement | statements]).eval(ctx) = statement.eval(ctx) ; BEGIN(statements).eval(ctx)
 	 * AGBEGIN([statement]).eval(ctx) = statement.eval(ctx)
+	 * AGBEGIN([]).eval(ctx) = nil
 	 * 
 	 * Note that this implementation of begin is *not* tail-recursive.
 	 * Tail-recursion is made impossible because Java will not allow a return
