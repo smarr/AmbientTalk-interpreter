@@ -42,6 +42,7 @@ import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATHandler;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
@@ -54,16 +55,22 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.DirectNativeMethod;
+import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NATMirrorRoot;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.parser.NATParser;
 import edu.vub.at.util.logging.Logging;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The singleton instance of this class represents the lexical root of an actor.
@@ -1738,6 +1745,778 @@ public final class OBJLexicalRoot extends NATByCopy {
 
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("lexroot");
+	}
+	
+	/**
+	 * This hashmap stores all native top-level lexical methods.
+	 * It is populated when this class is loaded, and shared between all
+	 * AmbientTalk actors on this VM. This is safe, since {@link DirectNativeMethod}
+	 * instances are all immutable.
+	 */
+	private static final HashMap<String, ATMethod> _meths = new HashMap<String, ATMethod>();
+
+	static {
+		_meths.put("nil", new DirectNativeMethod("nil") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 0);
+				return _INSTANCE_.base_nil();
+			}
+		});
+		_meths.put("true", new DirectNativeMethod("true") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 0);
+				return _INSTANCE_.base_true();
+			}
+		});
+		_meths.put("false", new DirectNativeMethod("false") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 0);
+				return _INSTANCE_.base_false();
+			}
+		});
+		_meths.put("lobby", new DirectNativeMethod("lobby") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 0);
+				return _INSTANCE_.base_lobby();
+			}
+		});
+		_meths.put("/", _meths.get("lobby"));
+		_meths.put("root", new DirectNativeMethod("root") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 0);
+				return _INSTANCE_.base_root();
+			}
+		});
+		_meths.put("jlobby", new DirectNativeMethod("jlobby") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 0);
+				return _INSTANCE_.base_jlobby();
+			}
+		});
+		_meths.put("network", new DirectNativeMethod("network") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 0);
+				return _INSTANCE_.base_network();
+			}
+		});
+		_meths.put("defaultMirror", new DirectNativeMethod("defaultMirror") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 0);
+				return _INSTANCE_.base_defaultMirror();
+			}
+		});
+		_meths.put("if:then:", new DirectNativeMethod("if:then:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATBoolean cond = get(args, 1).asBoolean();
+				ATClosure consequent = get(args, 2).asClosure();
+				return _INSTANCE_.base_if_then_(cond, consequent);
+			}
+		});
+		_meths.put("if:then:else:", new DirectNativeMethod("if:then:else:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 3);
+				ATBoolean cond = get(args, 1).asBoolean();
+				ATClosure consequent = get(args, 2).asClosure();
+				ATClosure alternative = get(args, 3).asClosure();
+				return _INSTANCE_.base_if_then_else_(cond, consequent, alternative);
+			}
+		});
+		_meths.put("while:do:", new DirectNativeMethod("while:do:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATClosure condition = get(args, 1).asClosure();
+				ATClosure body = get(args, 2).asClosure();
+				return _INSTANCE_.base_while_do_(condition, body);
+			}
+		});
+		_meths.put("foreach:in:", new DirectNativeMethod("foreach:in:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATClosure body = get(args, 1).asClosure();
+				ATTable tab = get(args, 2).asTable();
+				return _INSTANCE_.base_foreach_in_(body, tab);
+			}
+		});
+		_meths.put("do:if:", new DirectNativeMethod("do:if:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATClosure body = get(args, 1).asClosure();
+				ATBoolean condition = get(args, 2).asBoolean();
+				return _INSTANCE_.base_do_if_(body, condition);
+			}
+		});
+		_meths.put("do:unless:", new DirectNativeMethod("do:unless:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATClosure body = get(args, 1).asClosure();
+				ATBoolean condition = get(args, 2).asBoolean();
+				return _INSTANCE_.base_do_unless_(body, condition);
+			}
+		});
+		_meths.put("let:", new DirectNativeMethod("let:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATClosure body = get(args, 1).asClosure();
+				return _INSTANCE_.base_let_(body);
+			}
+		});
+		_meths.put("actor:", new DirectNativeMethod("actor:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATClosure closure = get(args, 1).asClosure();
+				return _INSTANCE_.base_actor_(closure);
+			}
+		});
+		_meths.put("reflectOnActor", new DirectNativeMethod("reflectOnActor") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 0);
+				return _INSTANCE_.base_reflectOnActor();
+			}
+		});
+		_meths.put("export:as:", new DirectNativeMethod("export:as:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATObject object = get(args, 1);
+				ATTypeTag topic = get(args, 2).asTypeTag();
+				return _INSTANCE_.base_export_as_(object, topic);
+			}
+		});
+		_meths.put("when:discovered:", new DirectNativeMethod("when:discovered:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATTypeTag topic = get(args, 1).asTypeTag();
+				ATClosure handler = get(args, 2).asClosure();
+				return _INSTANCE_.base_when_discovered_(topic, handler);
+			}
+		});
+		_meths.put("whenever:discovered:", new DirectNativeMethod("whenever:discovered:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATTypeTag topic = get(args, 1).asTypeTag();
+				ATClosure handler = get(args, 2).asClosure();
+				return _INSTANCE_.base_whenever_discovered_(topic, handler);
+			}
+		});
+		_meths.put("whenever:disconnected:", new DirectNativeMethod("whenever:disconnected:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATFarReference farReference = get(args, 1).asFarReference();
+				ATClosure listener = get(args, 2).asClosure();
+				return _INSTANCE_.base_whenever_disconnected_(farReference, listener);
+			}
+		});
+		_meths.put("whenever:reconnected:", new DirectNativeMethod("whenever:reconnected:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATFarReference farReference = get(args, 1).asFarReference();
+				ATClosure listener = get(args, 2).asClosure();
+				return _INSTANCE_.base_whenever_reconnected_(farReference, listener);
+			}
+		});
+		_meths.put("when:takenOffline:", new DirectNativeMethod("when:takenOffline:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATFarReference farReference = get(args, 1).asFarReference();
+				ATClosure listener = get(args, 2).asClosure();
+				return _INSTANCE_.base_when_takenOffline_(farReference, listener);
+			}
+		});
+		_meths.put("retract:", new DirectNativeMethod("retract:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATFarReference farReference = get(args, 1).asFarReference();
+				return _INSTANCE_.base_retract_(farReference);
+			}
+		});
+		_meths.put("object:", new DirectNativeMethod("object:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATClosure code = get(args, 1).asClosure();
+				return _INSTANCE_.base_object_(code);
+			}
+		});
+		_meths.put("extend:with:", new DirectNativeMethod("extend:with:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATObject parent = get(args, 1);
+				ATClosure code = get(args, 2).asClosure();
+				return _INSTANCE_.base_extend_with_(parent, code);
+			}
+		});
+		_meths.put("extend:with:taggedAs:", new DirectNativeMethod("extend:with:taggedAs:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 3);
+				ATObject parent = get(args, 1);
+				ATClosure code = get(args, 2).asClosure();
+				ATTable types = get(args, 3).asTable();
+				return _INSTANCE_.base_extend_with_taggedAs_(parent, code, types);
+			}
+		});
+		_meths.put("extend:with:mirroredBy:", new DirectNativeMethod("extend:with:mirroredBy:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 3);
+				ATObject parent = get(args, 1);
+				ATClosure code = get(args, 2).asClosure();
+				ATObject mirror = get(args, 3);
+				return _INSTANCE_.base_extend_with_mirroredBy_(parent, code, mirror);
+			}
+		});
+		_meths.put("extend:with:taggedAs:mirroredBy:", new DirectNativeMethod("extend:with:taggedAs:mirroredBy:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 4);
+				ATObject parent = get(args, 1);
+				ATClosure code = get(args, 2).asClosure();
+				ATTable types = get(args, 3).asTable();
+				ATObject mirror = get(args, 4);
+				return _INSTANCE_.base_extend_with_taggedAs_mirroredBy_(parent, code, types, mirror);
+			}
+		});
+		_meths.put("share:with:", new DirectNativeMethod("share:with:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATObject parent = get(args, 1);
+				ATClosure code = get(args, 2).asClosure();
+				return _INSTANCE_.base_share_with_(parent, code);
+			}
+		});
+		_meths.put("share:with:taggedAs:", new DirectNativeMethod("share:with:taggedAs:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 3);
+				ATObject parent = get(args, 1);
+				ATClosure code = get(args, 2).asClosure();
+				ATTable types = get(args, 3).asTable();
+				return _INSTANCE_.base_share_with_taggedAs_(parent, code, types);
+			}
+		});
+		_meths.put("share:with:mirroredBy:", new DirectNativeMethod("share:with:mirroredBy:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 3);
+				ATObject parent = get(args, 1);
+				ATClosure code = get(args, 2).asClosure();
+				ATObject mirror = get(args, 3);
+				return _INSTANCE_.base_share_with_mirroredBy_(parent, code, mirror);
+			}
+		});
+		_meths.put("share:with:taggedAs:mirroredBy:", new DirectNativeMethod("share:with:taggedAs:mirroredBy:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 4);
+				ATObject parent = get(args, 1);
+				ATClosure code = get(args, 2).asClosure();
+				ATTable types = get(args, 3).asTable();
+				ATObject mirror = get(args, 4);
+				return _INSTANCE_.base_share_with_taggedAs_mirroredBy_(parent, code, types, mirror);
+			}
+		});
+		_meths.put("object:taggedAs:", new DirectNativeMethod("object:taggedAs:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATClosure code = get(args, 1).asClosure();
+				ATTable types = get(args, 2).asTable();
+				return _INSTANCE_.base_object_taggedAs_(code, types);
+			}
+		});
+		_meths.put("isolate:", new DirectNativeMethod("isolate:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATClosure code = get(args, 1).asClosure();
+				return _INSTANCE_.base_isolate_(code);
+			}
+		});
+		_meths.put("mirror:", new DirectNativeMethod("mirror:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATClosure code = get(args, 1).asClosure();
+				return _INSTANCE_.base_mirror_(code);
+			}
+		});
+		_meths.put("object:mirroredBy:", new DirectNativeMethod("object:mirroredBy:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATClosure code = get(args, 1).asClosure();
+				ATObject mirror = get(args, 2);
+				return _INSTANCE_.base_object_mirroredBy_(code, mirror);
+			}
+		});
+		_meths.put("object:taggedAs:mirroredBy:", new DirectNativeMethod("object:taggedAs:mirroredBy:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 3);
+				ATClosure code = get(args, 1).asClosure();
+				ATTable types = get(args, 2).asTable();
+				ATObject mirror = get(args, 3);
+				return _INSTANCE_.base_object_taggedAs_mirroredBy_(code, types, mirror);
+			}
+		});
+		_meths.put("object:childOf:extends:taggedAs:mirroredBy:", new DirectNativeMethod("object:childOf:extends:taggedAs:mirroredBy:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 5);
+				ATClosure code = get(args, 1).asClosure();
+				ATObject parent = get(args, 2);
+				ATBoolean parentType = get(args, 3).asBoolean();
+				ATTable types = get(args, 4).asTable();
+				ATObject mirror = get(args, 5);
+				return _INSTANCE_.base_object_childOf_extends_taggedAs_mirroredBy_(code, parent, parentType, types, mirror);
+			}
+		});
+		_meths.put("reflect:", new DirectNativeMethod("reflect:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATObject reflectee = get(args, 1);
+				return _INSTANCE_.base_reflect_(reflectee);
+			}
+		});
+		_meths.put("clone:", new DirectNativeMethod("clone:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATObject original = get(args, 1);
+				return _INSTANCE_.base_clone_(original);
+			}
+		});
+		_meths.put("takeOffline:", new DirectNativeMethod("takeOffline:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATObject object = get(args, 1);
+				return _INSTANCE_.base_takeOffline_(object);
+			}
+		});
+		_meths.put("disconnect:", new DirectNativeMethod("disconnect:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATObject object = get(args, 1);
+				return _INSTANCE_.base_disconnect_(object);
+			}
+		});
+		_meths.put("is:taggedAs:", new DirectNativeMethod("is:taggedAs:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATObject object = get(args, 1);
+				ATTypeTag type = get(args, 2).asTypeTag();
+				return _INSTANCE_.base_is_taggedAs_(object, type);
+			}
+		});
+		_meths.put("tagsOf:", new DirectNativeMethod("tagsOf:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATObject object = get(args, 1);
+				return _INSTANCE_.base_tagsOf_(object);
+			}
+		});
+		_meths.put("try:finally:", new DirectNativeMethod("try:finally:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATClosure finallyBlock = get(args, 2).asClosure();
+				return _INSTANCE_.base_try_finally_(tryBlock, finallyBlock);
+			}
+		});
+		_meths.put("try:usingHandlers:finally:", new DirectNativeMethod("try:usingHandlers:finally:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 3);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATTable exceptionHandlers = get(args, 2).asTable();
+				ATClosure finallyBlock = get(args, 3).asClosure();
+				return _INSTANCE_.base_try_usingHandlers_finally_(tryBlock, exceptionHandlers, finallyBlock);
+			}
+		});
+		_meths.put("try:usingHandlers:", new DirectNativeMethod("try:usingHandlers:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATTable exceptionHandlers = get(args, 2).asTable();
+				return _INSTANCE_.base_try_usingHandlers_(tryBlock, exceptionHandlers);
+			}
+		});
+		_meths.put("try:using:", new DirectNativeMethod("try:using:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATHandler handler = get(args, 2).asHandler();
+				return _INSTANCE_.base_try_using_(tryBlock, handler);
+			}
+		});
+		_meths.put("try:using:finally:", new DirectNativeMethod("try:using:finally:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 3);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATHandler handler = get(args, 2).asHandler();
+				ATClosure finallyBlock = get(args, 3).asClosure();
+				return _INSTANCE_.base_try_using_finally_(tryBlock, handler, finallyBlock);
+			}
+		});
+		_meths.put("try:using:using:", new DirectNativeMethod("try:using:using:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 3);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATHandler hdl1 = get(args, 2).asHandler();
+				ATHandler hdl2 = get(args, 3).asHandler();
+				return _INSTANCE_.base_try_using_using_(tryBlock, hdl1, hdl2);
+			}
+		});
+		_meths.put("try:using:using:finally:", new DirectNativeMethod("try:using:using:finally:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 4);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATHandler hdl1 = get(args, 2).asHandler();
+				ATHandler hdl2 = get(args, 3).asHandler();
+				ATClosure finallyBlock = get(args, 4).asClosure();
+				return _INSTANCE_.base_try_using_using_finally_(tryBlock, hdl1, hdl2, finallyBlock);
+			}
+		});
+		_meths.put("try:using:using:using:", new DirectNativeMethod("try:using:using:using:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 4);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATHandler hdl1 = get(args, 2).asHandler();
+				ATHandler hdl2 = get(args, 3).asHandler();
+				ATHandler hdl3 = get(args, 4).asHandler();
+				return _INSTANCE_.base_try_using_using_using_(tryBlock, hdl1, hdl2, hdl3);
+			}
+		});
+		_meths.put("try:using:using:using:finally:", new DirectNativeMethod("try:using:using:using:finally:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 5);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATHandler hdl1 = get(args, 2).asHandler();
+				ATHandler hdl2 = get(args, 3).asHandler();
+				ATHandler hdl3 = get(args, 4).asHandler();
+				ATClosure finallyBlock = get(args, 5).asClosure();
+				return _INSTANCE_.base_try_using_using_using_finally_(tryBlock, hdl1, hdl2, hdl3, finallyBlock);
+			}
+		});
+		_meths.put("try:catch:using:", new DirectNativeMethod("try:catch:using:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 3);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATTypeTag filter = get(args, 2).asTypeTag();
+				ATClosure replacementCode = get(args, 3).asClosure();
+				return _INSTANCE_.base_try_catch_using_(tryBlock, filter, replacementCode);
+			}
+		});
+		_meths.put("try:catch:using:finally:", new DirectNativeMethod("try:catch:using:finally:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 4);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATTypeTag filter = get(args, 2).asTypeTag();
+				ATClosure replacementCode = get(args, 3).asClosure();
+				ATClosure finallyBlock = get(args, 4).asClosure();
+				return _INSTANCE_.base_try_catch_using_finally_(tryBlock, filter, replacementCode, finallyBlock);
+			}
+		});
+		_meths.put("try:catch:using:catch:using:", new DirectNativeMethod("try:catch:using:catch:using:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 5);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATTypeTag filter1 = get(args, 2).asTypeTag();
+				ATClosure hdl1 = get(args, 3).asClosure();
+				ATTypeTag filter2 = get(args, 4).asTypeTag();
+				ATClosure hdl2 = get(args, 5).asClosure();
+				return _INSTANCE_.base_try_catch_using_catch_using_(tryBlock, filter1, hdl1, filter2, hdl2);
+			}
+		});
+		_meths.put("try:catch:using:catch:using:finally:", new DirectNativeMethod("try:catch:using:catch:using:finally:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 6);
+				ATClosure tryBlock = get(args, 1).asClosure();
+				ATTypeTag filter1 = get(args, 2).asTypeTag();
+				ATClosure hdl1 = get(args, 3).asClosure();
+				ATTypeTag filter2 = get(args, 4).asTypeTag();
+				ATClosure hdl2 = get(args, 5).asClosure();
+				ATClosure finallyBlock = get(args, 6).asClosure();
+				return _INSTANCE_.base_try_catch_using_catch_using_finally_(tryBlock, filter1, hdl1, filter2, hdl2, finallyBlock);
+			}
+		});
+		_meths.put("handle:with:", new DirectNativeMethod("handle:with:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATTypeTag filter = get(args, 1).asTypeTag();
+				ATClosure replacementCode = get(args, 2).asClosure();
+				return _INSTANCE_.base_handle_with_(filter, replacementCode);
+			}
+		});
+		_meths.put("raise:", new DirectNativeMethod("raise:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATObject anExceptionObject = get(args, 1);
+				return _INSTANCE_.base_raise_(anExceptionObject);
+			}
+		});
+		_meths.put("!", new DirectNativeMethod("!") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATBoolean b = get(args, 1).asBoolean();
+				return _INSTANCE_.base__opnot_(b);
+			}
+		});
+		_meths.put("-", new DirectNativeMethod("-") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATNumeric n = get(args, 1).asNativeNumeric();
+				return _INSTANCE_.base__opmns_(n);
+			}
+		});
+		_meths.put("+", new DirectNativeMethod("+") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATNumber n = get(args, 1).asNumber();
+				return _INSTANCE_.base__oppls_(n);
+			}
+		});
+		_meths.put("read:", new DirectNativeMethod("read:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATText source = get(args, 1).asNativeText();
+				return _INSTANCE_.base_read_(source);
+			}
+		});
+		_meths.put("eval:in:", new DirectNativeMethod("eval:in:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 2);
+				ATAbstractGrammar ast = get(args, 1).asAbstractGrammar();
+				ATObject obj = get(args, 2);
+				return _INSTANCE_.base_eval_in_(ast, obj);
+			}
+		});
+		_meths.put("print:", new DirectNativeMethod("print:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATObject obj = get(args, 1);
+				return _INSTANCE_.base_print_(obj);
+			}
+		});
+		_meths.put("==", new DirectNativeMethod("==") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATObject comparand = get(args, 1);
+				return _INSTANCE_.base__opeql__opeql_(comparand);
+			}
+		});
+	}
+	
+	/**
+	 * Overrides the default AmbientTalk native object behavior of extracting native
+	 * methods based on the 'base_' naming convention. Instead, the lexical root uses
+	 * an explicit hashmap of native methods. This is much faster than the default
+	 * behavior, which requires reflection.
+	 */
+	protected boolean hasLocalMethod(ATSymbol atSelector) throws InterpreterException {
+		if  (_meths.containsKey(atSelector.base_text().asNativeText().javaValue)) {
+			return true;
+		} else {
+			return super.hasLocalMethod(atSelector);
+		}
+	}
+
+	/**
+	 * @see OBJLexicalRoot#hasLocalMethod(ATSymbol)
+	 */
+	protected ATMethod getLocalMethod(ATSymbol selector) throws InterpreterException {
+		ATMethod val = _meths.get(selector.base_text().asNativeText().javaValue);
+		if (val == null) {
+			return super.getLocalMethod(selector);
+			//throw new XSelectorNotFound(selector, this);			
+		}
+		return val;
 	}
     
 }

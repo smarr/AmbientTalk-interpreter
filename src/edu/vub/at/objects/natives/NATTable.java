@@ -33,16 +33,20 @@ import edu.vub.at.exceptions.XIndexOutOfBounds;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.DirectNativeMethod;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 import edu.vub.at.parser.SourceLocation;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -59,6 +63,10 @@ import java.util.Vector;
  */
 public class NATTable extends AGExpression implements ATTable {
 
+	/**
+	 * The empty table. This instance is shared between all actors on this VM,
+	 * which is safe since it is an immutable object.
+	 */
 	public final static NATTable EMPTY = new NATTable(new ATObject[] {}) {
 		// since the empty table is shared, its source location is meaningless
 	    public SourceLocation impl_getLocation() { return null; }
@@ -335,6 +343,163 @@ public class NATTable extends AGExpression implements ATTable {
 			freeVars.addAll(elements_[i].asExpression().impl_quotedFreeVariables());
 		}
         return freeVars;
+	}
+	
+	/**
+	 * This hashmap stores all native methods of native AmbientTalk tables.
+	 * It is populated when this class is loaded, and shared between all
+	 * AmbientTalk actors on this VM. This is safe, since {@link DirectNativeMethod}
+	 * instances are all immutable.
+	 */
+	private static final HashMap<String, ATMethod> _meths = new HashMap<String, ATMethod>();
+	
+	// initialize NATTable methods
+	static {
+		_meths.put("length", new DirectNativeMethod("length") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 0);
+				return self.base_length();
+			}
+		});
+		_meths.put("at", new DirectNativeMethod("at") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 1);
+				ATNumber index = get(args, 1).asNumber();
+				return self.base_at(index);
+			}
+		});
+		_meths.put("atPut", new DirectNativeMethod("atPut") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 2);
+				ATNumber index = get(args, 1).asNumber();
+				ATObject value = get(args, 2);
+				return self.base_atPut(index, value);
+			}
+		});
+		_meths.put("isEmpty", new DirectNativeMethod("isEmpty") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 0);
+				return self.base_isEmpty();
+			}
+		});
+		_meths.put("each:", new DirectNativeMethod("each:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 1);
+				ATClosure clo = get(args, 1).asClosure();
+				return self.base_each_(clo);
+			}
+		});
+		_meths.put("map:", new DirectNativeMethod("map:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 1);
+				ATClosure clo = get(args, 1).asClosure();
+				return self.base_map_(clo);
+			}
+		});
+		_meths.put("inject:into:", new DirectNativeMethod("inject:into:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 2);
+				ATObject init = get(args, 1);
+				ATClosure clo = get(args, 2).asClosure();
+				return self.base_inject_into_(init, clo);
+			}
+		});
+		_meths.put("filter:", new DirectNativeMethod("filter:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 1);
+				ATClosure clo = get(args, 1).asClosure();
+				return self.base_filter_(clo);
+			}
+		});
+		_meths.put("find:", new DirectNativeMethod("find:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 1);
+				ATClosure clo = get(args, 1).asClosure();
+				return self.base_find_(clo);
+			}
+		});
+		_meths.put("contains", new DirectNativeMethod("contains") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 1);
+				ATObject obj = get(args, 1);
+				return self.base_contains(obj);
+			}
+		});
+		_meths.put("implode", new DirectNativeMethod("implode") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 0);
+				return self.base_implode();
+			}
+		});
+		_meths.put("join", new DirectNativeMethod("join") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 1);
+				ATText sep = get(args, 1).asNativeText();
+				return self.base_join(sep);
+			}
+		});
+		_meths.put("select", new DirectNativeMethod("select") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 2);
+				ATNumber first = get(args, 1).asNumber();
+				ATNumber last = get(args, 2).asNumber();
+				return self.base_select(first, last);
+			}
+		});
+		_meths.put("+", new DirectNativeMethod("+") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 1);
+				ATTable other = get(args, 1).asTable();
+				return self.base__oppls_(other);
+			}
+		});
+		_meths.put("==", new DirectNativeMethod("==") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATTable self = ctx.base_receiver().asNativeTable();
+				checkArity(args, 1);
+				ATObject other = get(args, 1);
+				return self.base__opeql__opeql_(other);
+			}
+		});
+	}
+	
+	/**
+	 * Overrides the default AmbientTalk native object behavior of extracting native
+	 * methods based on the 'base_' naming convention. Instead, native AT tables use
+	 * an explicit hashmap of native methods. This is much faster than the default
+	 * behavior, which requires reflection.
+	 */
+	protected boolean hasLocalMethod(ATSymbol atSelector) throws InterpreterException {
+		if  (_meths.containsKey(atSelector.base_text().asNativeText().javaValue)) {
+			return true;
+		} else {
+			return super.hasLocalMethod(atSelector);
+		}
+	}
+	
+	/**
+	 * @see NATTable#hasLocalMethod(ATSymbol)
+	 */
+	protected ATMethod getLocalMethod(ATSymbol selector) throws InterpreterException {
+		ATMethod val = _meths.get(selector.base_text().asNativeText().javaValue);
+		if (val == null) {
+			return super.getLocalMethod(selector);
+		}
+		return val;
 	}
 	
 }

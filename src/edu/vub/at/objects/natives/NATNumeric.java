@@ -27,15 +27,26 @@
  */
 package edu.vub.at.objects.natives;
 
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATFraction;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.DirectNativeMethod;
+import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
 import edu.vub.at.objects.natives.grammar.AGExpression;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A common superclass of both numbers and fractions to factor out common base-level behaviour.
@@ -143,6 +154,135 @@ public abstract class NATNumeric extends AGExpression implements ATNumeric {
 	 */
 	public ATBoolean base__opnot__opeql_(ATNumeric other) throws InterpreterException {
 		return NATBoolean.atValue(! this.base__opltx__opeql__opgtx_(other).equals(NATNumber.ZERO));
+	}
+	
+	/**
+	 * This hashmap stores all native methods of native AmbientTalk numerics.
+	 * It is populated when this class is loaded, and shared between all
+	 * AmbientTalk actors on this VM. This is safe, since {@link DirectNativeMethod}
+	 * instances are all immutable.
+	 */
+	private static final HashMap<String, ATMethod> _meths = new HashMap<String, ATMethod>();
+	
+	// initialize NATNumeric methods
+	static {
+		_meths.put("cos", new DirectNativeMethod("cos") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 0);
+				return self.base_cos();
+			}
+		});
+		_meths.put("sin", new DirectNativeMethod("sin") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 0);
+				return self.base_sin();
+			}
+		});
+		_meths.put("tan", new DirectNativeMethod("tan") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 0);
+				return self.base_tan();
+			}
+		});
+		_meths.put("log", new DirectNativeMethod("log") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 0);
+				return self.base_log();
+			}
+		});
+		_meths.put("sqrt", new DirectNativeMethod("sqrt") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 0);
+				return self.base_sqrt();
+			}
+		});
+		_meths.put("expt", new DirectNativeMethod("expt") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 1);
+				NATNumeric pow = get(args, 1).asNativeNumeric();
+				return self.base_expt(pow);
+			}
+		});
+		_meths.put("<", new DirectNativeMethod("<") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 1);
+				NATNumeric other = get(args, 1).asNativeNumeric();
+				return self.base__opltx_(other);
+			}
+		});
+		_meths.put(">", new DirectNativeMethod(">") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 1);
+				NATNumeric other = get(args, 1).asNativeNumeric();
+				return self.base__opgtx_(other);
+			}
+		});
+		_meths.put("<=", new DirectNativeMethod("<=") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 1);
+				NATNumeric other = get(args, 1).asNativeNumeric();
+				return self.base__opltx__opeql_(other);
+			}
+		});
+		_meths.put(">=", new DirectNativeMethod(">=") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 1);
+				NATNumeric other = get(args, 1).asNativeNumeric();
+				return self.base__opgtx__opeql_(other);
+			}
+		});
+		_meths.put("=", new DirectNativeMethod("=") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 1);
+				NATNumeric other = get(args, 1).asNativeNumeric();
+				return self.base__opeql_(other);
+			}
+		});
+		_meths.put("!=", new DirectNativeMethod("!=") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumeric self = ctx.base_receiver().asNativeNumeric();
+				checkArity(args, 1);
+				NATNumeric other = get(args, 1).asNativeNumeric();
+				return self.base__opnot__opeql_(other);
+			}
+		});
+	}
+	
+	/**
+	 * Overrides the default AmbientTalk native object behavior of extracting native
+	 * methods based on the 'base_' naming convention. Instead, native AT numbers use
+	 * an explicit hashmap of native methods. This is much faster than the default
+	 * behavior, which requires reflection.
+	 */
+	protected boolean hasLocalMethod(ATSymbol atSelector) throws InterpreterException {
+		if  (_meths.containsKey(atSelector.base_text().asNativeText().javaValue)) {
+			return true;
+		} else {
+			return super.hasLocalMethod(atSelector);
+		}
+	}
+	
+	/**
+	 * @see NATNumeric#hasLocalMethod(ATSymbol)
+	 */
+	protected ATMethod getLocalMethod(ATSymbol selector) throws InterpreterException {
+		ATMethod val = _meths.get(selector.base_text().asNativeText().javaValue);
+		if (val == null) {
+			return super.getLocalMethod(selector);
+			//throw new XSelectorNotFound(selector, this);			
+		}
+		return val;
 	}
 
 }

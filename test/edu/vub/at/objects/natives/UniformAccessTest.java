@@ -108,8 +108,8 @@ public class UniformAccessTest extends AmbientTalkTest {
 	public void testUniformSelectionOnNatives() throws InterpreterException {
 		// (-1).&abs -> <native impl> <+ apply([]) -> 1
 		// [1, 2, 3].&length -> <native impl> <+ apply([]) -> 3
-		evalAndCompareTo("def abs := (-1).&abs", "<native closure:abs>");
-		evalAndCompareTo("def len := [1, 2, 3].&length", "<native closure:length>");
+		evalAndCompareTo("def abs := (-1).&abs", "<closure:abs>");
+		evalAndCompareTo("def len := [1, 2, 3].&length", "<closure:length>");
 		evalAndCompareTo("abs()", NATNumber.ONE);
 		evalAndCompareTo("len()", atThree_);
 		
@@ -135,8 +135,8 @@ public class UniformAccessTest extends AmbientTalkTest {
 	public void testUniformLookupOnNatives() throws InterpreterException {
 		// (-1).&abs -> <native impl> <+ apply([]) -> 1
 		// [1, 2, 3].&length -> <native impl> <+ apply([]) -> 3
-		evalAndCompareTo("def abs := withScope: (-1) do: { &abs }", "<native closure:abs>");
-		evalAndCompareTo("def len := withScope: [1, 2, 3] do: { &length }", "<native closure:length>");
+		evalAndCompareTo("def abs := withScope: (-1) do: { &abs }", "<closure:abs>");
+		evalAndCompareTo("def len := withScope: [1, 2, 3] do: { &length }", "<closure:length>");
 		evalAndCompareTo("abs()", NATNumber.ONE);
 		evalAndCompareTo("len()", atThree_);
 		

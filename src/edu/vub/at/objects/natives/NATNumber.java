@@ -30,16 +30,24 @@ package edu.vub.at.objects.natives;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATFraction;
+import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.DirectNativeMethod;
+import edu.vub.at.objects.mirrors.Reflection;
+
+import java.util.HashMap;
 
 /**
  * The native implementation of an AmbientTalk number.
@@ -346,6 +354,281 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 */
 	public long base_minutes() throws InterpreterException {
 		return javaValue * 60 * 1000;
+	}
+	
+	/**
+	 * This hashmap stores all native methods of native AmbientTalk numbers.
+	 * It is populated when this class is loaded, and shared between all
+	 * AmbientTalk actors on this VM. This is safe, since {@link DirectNativeMethod}
+	 * instances are all immutable.
+	 */
+	private static final HashMap<String, ATMethod> _meths = new HashMap<String, ATMethod>();
+	
+	// initialize NATNumber methods
+	static {
+		_meths.put("doTimes:", new DirectNativeMethod("doTimes:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATClosure code = get(args, 1).asClosure();
+				return self.base_doTimes_(code);
+			}
+		});
+		_meths.put("to:do:", new DirectNativeMethod("to:do:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 2);
+				ATNumber nbr = get(args, 1).asNumber();
+				ATClosure code = get(args, 2).asClosure();
+				return self.base_to_do_(nbr, code);
+			}
+		});
+		_meths.put("to:step:do:", new DirectNativeMethod("to:step:do:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 3);
+				ATNumber nbr = get(args, 1).asNumber();
+				ATNumber step = get(args, 2).asNumber();
+				ATClosure code = get(args, 3).asClosure();
+				return self.base_to_step_do_(nbr, step, code);
+			}
+		});
+		_meths.put("**", new DirectNativeMethod("**") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumber end = get(args, 1).asNumber();
+				return self.base__optms__optms_(end);
+			}
+		});
+		_meths.put("***", new DirectNativeMethod("***") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumber end = get(args, 1).asNumber();
+				return self.base__optms__optms__optms_(end);
+			}
+		});
+		_meths.put("inc", new DirectNativeMethod("inc") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 0);
+				return self.base_inc();
+			}
+		});
+		_meths.put("dec", new DirectNativeMethod("dec") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 0);
+				return self.base_dec();
+			}
+		});
+		_meths.put("abs", new DirectNativeMethod("abs") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 0);
+				return self.base_abs();
+			}
+		});
+		_meths.put("ceiling", new DirectNativeMethod("ceiling") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 0);
+				return self.base_ceiling();
+			}
+		});
+		_meths.put("floor", new DirectNativeMethod("floor") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 0);
+				return self.base_floor();
+			}
+		});
+		_meths.put("round", new DirectNativeMethod("round") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 0);
+				return self.base_round();
+			}
+		});
+		_meths.put("??", new DirectNativeMethod("??") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumber nbr = get(args,1).asNumber();
+				return self.base__opque__opque_(nbr);
+			}
+		});
+		_meths.put("%", new DirectNativeMethod("%") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumber nbr = get(args,1).asNumber();
+				return self.base__oprem_(nbr);
+			}
+		});
+		_meths.put("/-", new DirectNativeMethod("/-") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumber nbr = get(args,1).asNumber();
+				return self.base__opdiv__opmns_(nbr);
+			}
+		});
+		_meths.put("+", new DirectNativeMethod("+") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumeric nbr = get(args,1).asNativeNumeric();
+				return self.base__oppls_(nbr);
+			}
+		});
+		_meths.put("addNumber", new DirectNativeMethod("addNumber") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumber nbr = get(args,1).asNumber();
+				return self.base_addNumber(nbr);
+			}
+		});
+		_meths.put("addFraction", new DirectNativeMethod("addFraction") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATFraction frc = get(args,1).asNativeFraction();
+				return self.base_addFraction(frc);
+			}
+		});
+		_meths.put("-", new DirectNativeMethod("-") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumeric nbr = get(args,1).asNativeNumeric();
+				return self.base__opmns_(nbr);
+			}
+		});
+		_meths.put("subtractNumber", new DirectNativeMethod("subtractNumber") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumber nbr = get(args,1).asNumber();
+				return self.base_subtractNumber(nbr);
+			}
+		});
+		_meths.put("subtractFraction", new DirectNativeMethod("subtractFraction") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATFraction frc = get(args,1).asNativeFraction();
+				return self.base_subtractFraction(frc);
+			}
+		});
+		_meths.put("*", new DirectNativeMethod("*") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumeric nbr = get(args,1).asNativeNumeric();
+				return self.base__optms_(nbr);
+			}
+		});
+		_meths.put("timesNumber", new DirectNativeMethod("timesNumber") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumber nbr = get(args,1).asNumber();
+				return self.base_timesNumber(nbr);
+			}
+		});
+		_meths.put("timesFraction", new DirectNativeMethod("timesFraction") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATFraction frc = get(args,1).asNativeFraction();
+				return self.base_timesFraction(frc);
+			}
+		});
+		_meths.put("/", new DirectNativeMethod("/") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumeric nbr = get(args,1).asNativeNumeric();
+				return self.base__opdiv_(nbr);
+			}
+		});
+		_meths.put("divideNumber", new DirectNativeMethod("divideNumber") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumber nbr = get(args,1).asNumber();
+				return self.base_divideNumber(nbr);
+			}
+		});
+		_meths.put("divideFraction", new DirectNativeMethod("divideFraction") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATFraction frc = get(args,1).asNativeFraction();
+				return self.base_divideFraction(frc);
+			}
+		});
+		_meths.put("<=>", new DirectNativeMethod("<=>") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumeric nbr = get(args,1).asNativeNumeric();
+				return self.base__opltx__opeql__opgtx_(nbr);
+			}
+		});
+		_meths.put("gequalsNumber", new DirectNativeMethod("gequalsNumber") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATNumber nbr = get(args,1).asNumber();
+				return self.base_gequalsNumber(nbr);
+			}
+		});
+		_meths.put("gequalsFraction", new DirectNativeMethod("gequalsFraction") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATFraction frc = get(args,1).asNativeFraction();
+				return self.base_gequalsFraction(frc);
+			}
+		});
+		_meths.put("==", new DirectNativeMethod("==") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 1);
+				ATObject comparand = get(args, 1);
+				return self.base__opeql__opeql_(comparand);
+			}
+		});
+	}
+	
+	/**
+	 * Overrides the default AmbientTalk native object behavior of extracting native
+	 * methods based on the 'base_' naming convention. Instead, native AT numbers use
+	 * an explicit hashmap of native methods. This is much faster than the default
+	 * behavior, which requires reflection.
+	 */
+	protected boolean hasLocalMethod(ATSymbol atSelector) throws InterpreterException {
+		if  (_meths.containsKey(atSelector.base_text().asNativeText().javaValue)) {
+			return true;
+		} else {
+			return super.hasLocalMethod(atSelector);
+		}
+	}
+	
+	/**
+	 * @see NATNumber#hasLocalMethod(ATSymbol)
+	 */
+	protected ATMethod getLocalMethod(ATSymbol selector) throws InterpreterException {
+		ATMethod val = _meths.get(selector.base_text().asNativeText().javaValue);
+		if (val == null) {
+			return super.getLocalMethod(selector);
+			//throw new XSelectorNotFound(selector, this);			
+		}
+		return val;
 	}
 	
 }
