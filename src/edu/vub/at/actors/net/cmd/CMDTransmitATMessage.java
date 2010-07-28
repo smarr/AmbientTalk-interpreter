@@ -70,5 +70,10 @@ public class CMDTransmitATMessage extends VMCommand {
 		remoteHost.getActor(destinationActorId_).event_remoteAccept(senderAddress, serializedATMessage_);
 		// we do not need to send an explicit acknowledgement to the sender: if the transmission over
 		// its socket was successful, it knows that the message has at least arrived without failure.
+		// TODO: this may not be the case... JDK 1.5 documentation for flush() says:
+		// If the intended destination of this stream is an abstraction provided by the underlying operating
+		// system, for example a file, then flushing the stream guarantees only that bytes previously written
+		// to the stream are passed to the operating system for writing; it does not guarantee that they are
+		// actually written to a physical device such as a disk drive.
 	}
 }
