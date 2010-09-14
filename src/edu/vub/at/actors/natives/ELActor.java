@@ -124,7 +124,7 @@ public class ELActor extends EventLoop {
 	 * This object is created when the actor is initialized: i.e. it is the passed
 	 * version of the isolate that was passed to the actor: primitive by the creating actor.
 	 */
-	private NATObject behaviour_;
+	protected NATObject behaviour_;
 	
 	public ELActor(ATActorMirror mirror, ELVirtualMachine host) {
 		super("actor " + mirror.toString());
