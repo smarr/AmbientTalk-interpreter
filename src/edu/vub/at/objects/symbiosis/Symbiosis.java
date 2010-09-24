@@ -679,7 +679,7 @@ public final class Symbiosis {
 		ATTable annotations = NATTable.of(_METAMESSAGE_, _ONEWAYMESSAGE_);
 		ATObject listener = new NATResolutionListener(delayed, targetType);
 		// atFuture<-addResolutionListener(listener)@[MetaMessage,OneWayMessage]
-		atFuture.meta_receive(new NATAsyncMessage(AGSymbol.jAlloc("addResolutionListener"),NATTable.of(listener),annotations));
+		atFuture.meta_receive(NATAsyncMessage.createExternalAsyncMessage(AGSymbol.jAlloc("addResolutionListener"), NATTable.of(listener),annotations));
 		return delayed;
 	}
 	

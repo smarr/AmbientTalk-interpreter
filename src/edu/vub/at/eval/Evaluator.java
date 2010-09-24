@@ -485,9 +485,9 @@ public final class Evaluator {
 	 */
 	public static ATObject trigger(ATObject closure, ATTable arguments) throws InterpreterException {
 		return closure.meta_receive(
-				new NATAsyncMessage(Evaluator._APPLY_,
-							        NATTable.of(arguments),
-							        NATTable.EMPTY));
+				NATAsyncMessage.createExternalAsyncMessage(Evaluator._APPLY_, 
+															NATTable.of(arguments),
+															NATTable.EMPTY));
 	}
 	
 	/**

@@ -34,8 +34,10 @@ import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
+import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
@@ -60,7 +62,7 @@ import java.util.Vector;
  * @author tvcutsem
  */
 public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
-
+	
 	// The primitive methods of a native asynchronous message
 	
 	/** def process(bhv) { nil } */
@@ -80,6 +82,32 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 		}
 	};
 	
+	/** def getLocationLine() { nil } */
+	private static final PrimitiveMethod _PRIM_LINE_ = new PrimitiveMethod(
+			AGSymbol.jAlloc("getLocationLine"), NATTable.EMPTY) {
+
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			int arity = arguments.base_length().asNativeNumber().javaValue;
+			if (arity != 0) {
+				throw new XArityMismatch("getLocationLine", 0, arity);
+			}
+			return ctx.base_lexicalScope().asAsyncMessage().prim_getLocationLine();
+		}
+	};
+	
+	/** def getLocationFilename() { nil } */
+	private static final PrimitiveMethod _PRIM_FILE_ = new PrimitiveMethod(
+		AGSymbol.jAlloc("getLocationFilename"), NATTable.EMPTY) {
+
+		public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+			int arity = arguments.base_length().asNativeNumber().javaValue;
+			if (arity != 0) {
+				throw new XArityMismatch("getLocationFilename", 0, arity);
+			}
+			return ctx.base_lexicalScope().asAsyncMessage().prim_getLocationFilename();
+		}
+	};
+	
     /**
      * Create a new asynchronous message.
      * @param sel the selector of the asynchronous message
@@ -89,6 +117,20 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     public NATAsyncMessage(ATSymbol sel, ATTable arg, ATTable types) throws InterpreterException {
     	super(sel, arg, types, NativeTypeTags._ASYNCMSG_);
         super.meta_addMethod(_PRIM_PRO_);
+		super.meta_addMethod(_PRIM_LINE_);
+		super.meta_addMethod(_PRIM_FILE_);
+    }
+    
+    public static NATAsyncMessage createExternalAsyncMessage(ATSymbol sel, ATTable args, ATTable types) throws InterpreterException{
+    	
+    	ATObject[] unwrapped = types.asNativeTable().elements_;
+    	ATTypeTag[] fulltypes = new ATTypeTag[unwrapped.length + 1];
+		for (int i = 0; i < unwrapped.length; i++) {
+			fulltypes[i] = unwrapped[i].asTypeTag();
+		}
+		fulltypes[unwrapped.length] = NativeTypeTags._EXTERNAL_MSG_;
+    	
+    	return new NATAsyncMessage(sel, args, NATTable.atValue(fulltypes));
     }
     
     /**
@@ -166,4 +208,27 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
   	    return this;
   	}
     
+    public ATObject base_getLocationLine() throws InterpreterException {
+    	return prim_getLocationLine();
+    }
+    
+    public ATObject base_getLocationFilename() throws InterpreterException {
+        return prim_getLocationFilename();
+     }
+    
+    public ATObject prim_getLocationLine() throws InterpreterException {
+    	if ( null != super.impl_getLocation()) { 
+          return NATNumber.atValue(super.impl_getLocation().line);
+    	} else{
+    	  return Evaluator.getNil();
+    	}
+      }
+      
+      public ATObject prim_getLocationFilename() throws InterpreterException {
+    	if ( null != super.impl_getLocation()) { 
+          return NATText.atValue(super.impl_getLocation().fileName);
+    	} else{
+    		return Evaluator.getNil();
+    	}
+      }
 }

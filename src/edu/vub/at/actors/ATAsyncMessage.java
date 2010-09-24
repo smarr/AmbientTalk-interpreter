@@ -62,4 +62,13 @@ public interface ATAsyncMessage extends ATMessage {
      * @param self the ambienttalk object that originally received the 'process' message.
      */
     public ATObject prim_process(ATAsyncMessage self, ATObject receiver) throws InterpreterException;
+    
+    public ATObject prim_getLocationLine() throws InterpreterException;
+      
+    public ATObject prim_getLocationFilename() throws InterpreterException;
+    
+    public ATObject base_getLocationLine() throws InterpreterException;
+    
+    public ATObject base_getLocationFilename() throws InterpreterException;
+      
 }

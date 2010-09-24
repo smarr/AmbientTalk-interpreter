@@ -334,10 +334,10 @@ public class ELActor extends EventLoop {
 		receive(new Event("trigger("+closure+")") {
 			public void process(Object myActorMirror) {
 				try {
-					owner.acceptSelfSend(closure,
-							       new NATAsyncMessage(Evaluator._APPLY_,
-										               NATTable.of(arguments),
-										               NATTable.EMPTY));
+					owner.acceptSelfSend(closure, 
+							NATAsyncMessage.createExternalAsyncMessage(Evaluator._APPLY_, 
+																		NATTable.of(arguments), 
+																		NATTable.EMPTY));
 				} catch (InterpreterException e) {
 					Logging.Actor_LOG.error(myActorMirror + ": error triggering "+ type + " handler with args " + arguments, e);
 				}	

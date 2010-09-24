@@ -228,6 +228,9 @@ public final class NativeTypeTags {
 
   //deftype Required;
     public final static NATTypeTag _REQUIRED_ = NATTypeTag.atValue("Required");
+    
+    //deftype ExternalEvent;
+    public final static NATTypeTag _EXTERNAL_MSG_ = NATTypeTag.atValue("ExternalMessage");
 
     
 }
