@@ -182,6 +182,12 @@ public interface ATActorMirror extends ATObject {
 	 */
 	public ATActorMirror base_getExplicitActorMirror() throws InterpreterException;
 	
+	/**
+	 * Provides access to this actor's "behaviour" object. This is the first
+	 * object created within an actor.
+	 */
+	public ATObject base_behaviour() throws InterpreterException;
+	
     /* -------------------------------------
      * -- Object Passing Protocol Support --
      * ------------------------------------- */

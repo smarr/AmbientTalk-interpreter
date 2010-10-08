@@ -320,6 +320,14 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		return myActor_.receptionists_.exportObject(object);
 	}
 	
+	/**
+	 * Provides access to this actor's "behaviour" object. This is the first
+	 * object created within an actor.
+	 */
+	public ATObject base_behaviour() throws InterpreterException {
+		return myActor_.behaviour_;
+	}
+	
     public ATActorMirror asActorMirror() throws XTypeMismatch {
     	return this;
     }
