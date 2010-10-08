@@ -185,6 +185,10 @@ public interface ATActorMirror extends ATObject {
 	/**
 	 * Provides access to this actor's "behaviour" object. This is the first
 	 * object created within an actor.
+	 * 
+	 * Note: if the behaviour is accessed when evaluating the "init.at" initialization
+	 * file of an actor, the behaviour will <em>not have been initialized</em> yet.
+	 * It will appear as an empty object.
 	 */
 	public ATObject base_behaviour() throws InterpreterException;
 	
