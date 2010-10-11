@@ -176,10 +176,10 @@ public interface ATTable extends ATExpression {
 	 * Selects the subrange of the table specified by the given limits.
 	 * <p>
 	 * Usage example:
-	 * <code>[a, b, c, d, e].select(2,4)</code> returns <code>[b, c, d]</code>
+	 * <code>[a, b, c, d, e].select(2,4)</code> returns <code>[b, c]</code>
 	 * 
-	 * @param start a number representing the lower limit of the range.
-	 * @param stop a number representing the upper limit of the range.
+	 * @param start a number representing the lower limit of the range, inclusive.
+	 * @param stop a number representing the upper limit of the range, not inclusive.
 	 * @return an ATTable resulting of the selection.
 	 */
 	public ATTable base_select(ATNumber start, ATNumber stop) throws InterpreterException;

@@ -418,12 +418,4 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 			return Evaluator.getNil();
 		}
 	}
-	
-    /* -------------------------
-	 * -- Scheduling Protocol --
-	 * ------------------------- */
-	
-	public NATObject getBehaviour() {
-		return myActor_.behaviour_;
-	}
 }

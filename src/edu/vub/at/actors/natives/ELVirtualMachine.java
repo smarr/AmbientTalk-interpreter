@@ -117,6 +117,8 @@ public final class ELVirtualMachine extends EventLoop {
 		vmId_ = new VirtualMachineID();
 		localActors_ = new Hashtable();
 		discoveryActor_ = new ELDiscoveryActor(this);
+		// Initilization of the actor mirror must be done before the initialization of init.at file in the actor!
+		discoveryActor_.initializeActorMirror();
 		localActors_.put(discoveryActor_.getActorID(), discoveryActor_);
 		discoveryActor_.event_init();
 		

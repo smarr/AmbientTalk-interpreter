@@ -40,6 +40,7 @@ import edu.vub.at.actors.net.cmd.CMDJoinServices;
 import edu.vub.at.actors.net.cmd.CMDProvideService;
 import edu.vub.at.actors.net.cmd.CMDRequireService;
 import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
@@ -62,6 +63,14 @@ public final class ELDiscoveryActor extends ELActor {
 		discoveryManager_ = new DiscoveryManager();
 	}
 	
+	public void initializeActorMirror() {
+		// initilializing the actor mirror of the ELDiscoveryActor after creation so that 
+		// this actor mirror points to the ELDiscoveryActor.
+		NATActorMirror mirror = new NATActorMirror(host_);
+		mirror.setActor(this);
+		this.setActorMirror(mirror);
+	}
+	
 	/**
 	 * A dedicated initialization procedure for the discovery actor
 	 */
@@ -74,8 +83,9 @@ public final class ELDiscoveryActor extends ELActor {
 					// initialize lexically visible fields
 					initSharedFields();
 
-					// go on to initialize the root and all lexically visible fields
-					initRootObject();
+					// Note that ELDiscoveryActor does not initialize the root and all lexically visible fields.
+					// In short: the init.at file is NOT loaded for the discovery actor.
+					
 				} catch (InterpreterException e) {
 					Logging.Actor_LOG.error("error while initializing discovery actor", e);
 				}

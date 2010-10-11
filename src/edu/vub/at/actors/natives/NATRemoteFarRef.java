@@ -61,10 +61,6 @@ public class NATRemoteFarRef extends NATFarReference {
 		return sendLoop_.retractUnsentMessages();
 	}
 	
-	protected void finalize() throws Throwable{
-		sendLoop_.stopProcessing();
-	}
-	
 	protected synchronized void notifyStateToSendLoop(boolean state){
 		sendLoop_.setConnected(state);
 	}

@@ -258,6 +258,8 @@ public final class DiscoveryManager {
 			Subscription sub = (Subscription) iter.next();
 			try {
 				// publication type Tp <: subscription type Ts
+				// note that calling base_isSubtypeOf can execute arbitrary ambientTalk code, and 
+				// this code executed won't be traced by the debugger!
 				if (pubTopic.base_isSubtypeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
 					// no need to test for separate actors, publisher is remote to this VM, so surely different actors
 					notify(sub.deserializedHandler_, remoteService);

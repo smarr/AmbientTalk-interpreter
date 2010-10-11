@@ -55,6 +55,7 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.symbiosis.Symbiosis;
+import edu.vub.at.parser.SourceLocation;
 import edu.vub.at.util.logging.Logging;
 
 import java.lang.reflect.InvocationTargetException;
@@ -140,9 +141,6 @@ public class ELActor extends EventLoop {
 		super("discovery actor");
 		this.start();
 		id_ = new ActorID();
-		NATActorMirror mirror = new NATActorMirror(host);
-		mirror.setActor(this);
-		mirror_ = mirror;
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
 	}
@@ -290,6 +288,8 @@ public class ELActor extends EventLoop {
 					
 					// initialize the behaviour using the parameters and the code
 					try {
+						//adding location of the closure to the bhv
+						behaviour_.impl_setLocation(initCode.impl_getLocation());
 						initCode.base_applyInScope(params.asTable(), new NATContext(behaviour_, behaviour_));
 					} catch (InterpreterException e) {
 						System.out.println(">>> Exception while initializing actor " + Evaluator.trunc(initCode.base_bodyExpression().toString(),20) + ":\n"+e.getMessage());
