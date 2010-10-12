@@ -55,7 +55,6 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.symbiosis.Symbiosis;
-import edu.vub.at.parser.SourceLocation;
 import edu.vub.at.util.logging.Logging;
 
 import java.lang.reflect.InvocationTargetException;
@@ -212,17 +211,19 @@ public class ELActor extends EventLoop {
 	 * ----------------------------- */
 
 	/**
-	 * Initialises the root using the contents of the init file stored by
+	 * Initialises the root using the contents of the init.at file configured in
 	 * the hosting virtual machine.
+	 * 
 	 * @throws InterpreterException
 	 */
 	protected void initRootObject() throws InterpreterException {
 		ATAbstractGrammar initialisationCode = host_.getInitialisationCode();
 		
 		// evaluate the initialization code in the context of the global scope
-		NATObject globalScope = Evaluator.getGlobalLexicalScope();
+		NATObject globalScope = Evaluator.getGlobalLexicalScope();		
 		NATContext initCtx = new NATContext(globalScope, globalScope);
 		
+		// note: the return value of the init.at file is ignored
 		initialisationCode.meta_eval(initCtx);
 	}
 	
