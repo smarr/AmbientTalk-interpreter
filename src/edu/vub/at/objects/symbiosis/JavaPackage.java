@@ -49,6 +49,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.util.TempFieldGenerator;
 
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -170,7 +171,9 @@ public final class JavaPackage extends NATObject {
 			  					MethodDictionary methodDict,
 			  					ATObject dynamicParent,
 			  					ATObject lexicalParent,
-			  					byte flags, ATTypeTag[] types) throws InterpreterException {
+			  					byte flags,
+			  					ATTypeTag[] types,
+			  					Set freeVars) throws InterpreterException {
 		return new JavaPackage(map,
     		  				      state,
     		  				      customFields,

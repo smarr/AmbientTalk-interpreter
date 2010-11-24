@@ -67,6 +67,7 @@ import edu.vub.util.TempFieldGenerator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -168,7 +169,8 @@ public class NATMirage extends NATObject {
 			MethodDictionary methodDict,
 			ATObject dynamicParent,
 			ATObject lexicalParent,
-			byte flags, ATTypeTag[] types) throws InterpreterException {
+			byte flags, ATTypeTag[] types,
+			Set freeVars) throws InterpreterException {
 		NATMirage clonedMirage = new NATMirage(map,
 				state,
 				customFields,

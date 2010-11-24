@@ -39,6 +39,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.util.TempFieldGenerator;
 
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -107,7 +108,8 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 			ATObject dynamicParent,
 			ATObject lexicalParent,
 			byte flags,
-			ATTypeTag[] types) throws InterpreterException {
+			ATTypeTag[] types,
+			Set freeVars) throws InterpreterException {
 		return new NATMethodInvocation(map,
 				state,
 				originalCustomFields,

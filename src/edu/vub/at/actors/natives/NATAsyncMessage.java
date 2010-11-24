@@ -55,6 +55,7 @@ import edu.vub.at.parser.SourceLocation;
 import edu.vub.util.TempFieldGenerator;
 
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -160,7 +161,7 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     		                        ATObject dynamicParent,
     		                        ATObject lexicalParent,
     		                        byte flags,
-    		                        ATTypeTag[] types) throws InterpreterException {
+    		                        ATTypeTag[] types, Set freeVars) throws InterpreterException {
 		return new NATAsyncMessage(map,
 				                   state,
 				                   originalCustomFields,

@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives;
 
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Vector;
 
 import edu.vub.at.exceptions.InterpreterException;
@@ -95,7 +96,8 @@ public final class NATFieldSelection extends NATMessage implements ATFieldSelect
 			ATObject dynamicParent,
 			ATObject lexicalParent,
 			byte flags,
-			ATTypeTag[] types) throws InterpreterException {
+			ATTypeTag[] types,
+			Set freeVars) throws InterpreterException {
 		return new NATFieldSelection(map,
 				state,
 				originalCustomFields,

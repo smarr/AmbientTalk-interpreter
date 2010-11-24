@@ -488,7 +488,9 @@ public class NATObject extends NATCallframe implements ATObject {
 				          methodDictionary_,
 				          dynamicParent,
 				          lexicalParent_,
-				          flags_, typeTags_, freeVariables_);
+				          flags_, 
+				          typeTags_,
+				          freeVariables_);
 		
 		return clone;
 	}
@@ -745,8 +747,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	         					  ATObject dynamicParent,
 	         					  ATObject lexicalParent,
 	         					  byte flags,
-	         					  ATTypeTag[] types,
-	         					  Set freeVars) throws InterpreterException {
+	         					  ATTypeTag[] types, Set freeVars) throws InterpreterException {
 		return new NATObject(map,
 	            state,
 	            originalCustomFields,
@@ -754,8 +755,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	            dynamicParent,
 	            lexicalParent,
 	            flags,
-	            types,
-	            freeVars);
+	            types);
 	}
 		
     /* ----------------------------------

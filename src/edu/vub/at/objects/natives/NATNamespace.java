@@ -47,6 +47,7 @@ import edu.vub.util.TempFieldGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -218,7 +219,8 @@ public final class NATNamespace extends NATObject {
 			  MethodDictionary methodDict,
 			  ATObject dynamicParent,
 			  ATObject lexicalParent,
-			  byte flags, ATTypeTag[] types) throws InterpreterException {
+			  byte flags, ATTypeTag[] types,
+			  Set freeVars) throws InterpreterException {
       return new NATNamespace(map,
     		  				    state,
     		  				    customFields,
