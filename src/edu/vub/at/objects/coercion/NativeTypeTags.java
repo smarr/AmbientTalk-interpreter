@@ -222,6 +222,9 @@ public final class NativeTypeTags {
 
 //deftype ObjectOffline <: Exception;
     public final static NATTypeTag _OBJECTOFFLINE_ = NATTypeTag.atValue("ObjectOffline", _EXCEPTION_);
+    
+//deftype SerializationError <: Exception;
+	public final static NATTypeTag _SERIALIZATIONERROR_ = NATTypeTag.atValue("SerializationError", _EXCEPTION_);
 
     // misc
     

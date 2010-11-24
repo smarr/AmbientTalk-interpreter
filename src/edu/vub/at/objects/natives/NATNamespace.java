@@ -42,6 +42,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
 import edu.vub.at.parser.NATParser;
+import edu.vub.util.TempFieldGenerator;
 
 import java.io.File;
 import java.io.IOException;
@@ -186,6 +187,11 @@ public final class NATNamespace extends NATObject {
 
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<ns:"+name_+">");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) {
+		return NATText.atValue("/" + name_.replace('/', '.'));
+		
 	}
 	
 	public static NATObject createFileScopeFor(NATNamespace ns) {

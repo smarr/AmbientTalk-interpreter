@@ -45,6 +45,7 @@ import edu.vub.at.objects.mirrors.DirectNativeMethod;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 import edu.vub.at.parser.SourceLocation;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -180,6 +181,21 @@ public class NATTable extends AGExpression implements ATTable {
 	
 	public NATText meta_print() throws InterpreterException {
 		return Evaluator.printElements(this, "[", ", ","]");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if(objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		
+		StringBuffer out = new StringBuffer("[");
+		for(int i = 0 ; i < elements_.length ; i++) {
+			if(i > 0) { out.append(", "); }
+			out.append(elements_[i].impl_asCode(objectMap).javaValue);
+		}
+		out.append("]");
+		NATText name = objectMap.put(this, NATText.atValue(out.toString()));
+		return name;
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {

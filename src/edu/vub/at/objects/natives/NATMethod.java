@@ -27,6 +27,9 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.util.HashMap;
+
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.eval.PartialBinder;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -39,8 +42,10 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.SourceLocation;
 import edu.vub.at.util.logging.Logging;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * NATMethod implements methods as named functions which are in fact simply containers
@@ -155,6 +160,35 @@ public class NATMethod extends NATByCopy implements ATMethod {
 
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<method:"+name_.meta_print().javaValue+">");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if(objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		StringBuffer out = new StringBuffer("");
+		out.append("def "+ name_.toString());
+		out.append(Evaluator.codeAsList(objectMap, parameters_.asNativeTable()).javaValue);
+		if(annotations_.base_length().asNativeNumber().javaValue > 0)
+			out.append("@"+annotations_.impl_asCode(objectMap).javaValue);
+		out.append("{" + body_.meta_print().javaValue + "}");
+		return NATText.atValue(out.toString());
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap, boolean asClosure) throws InterpreterException {
+		if(objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		
+		if(asClosure) {
+			StringBuffer out = new StringBuffer("");
+			out.append("{");
+			out.append(Evaluator.codeParameterList(objectMap, parameters_.asNativeTable()).javaValue);
+			out.append(body_.meta_print().javaValue + "}");
+			return NATText.atValue(out.toString());
+		} else {
+			return this.impl_asCode(objectMap);
+		}
 	}
 	
 	public ATObject meta_clone() throws InterpreterException {

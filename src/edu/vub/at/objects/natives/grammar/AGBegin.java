@@ -39,7 +39,9 @@ import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -97,6 +99,10 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 	
 	public NATText meta_print() throws InterpreterException {
 		return Evaluator.printAsStatements(statements_);
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("`{" + Evaluator.printAsStatements(statements_).javaValue + "}");
 	}
 	
 	public ATBegin asBegin() throws XTypeMismatch {

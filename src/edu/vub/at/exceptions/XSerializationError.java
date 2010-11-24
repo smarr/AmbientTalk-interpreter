@@ -1,6 +1,6 @@
 /**
  * AmbientTalk/2 Project
- * AGExpression.java created on 31-jul-2006 at 15:28:56
+ * XUndefinedField.java created on 11-aug-2006 at 14:49:30
  * (c) Programming Technology Lab, 2006 - 2007
  * Authors: Tom Van Cutsem & Stijn Mostinckx
  * 
@@ -25,32 +25,31 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package edu.vub.at.objects.natives.grammar;
+package edu.vub.at.exceptions;
 
-import edu.vub.at.exceptions.InterpreterException;
-import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
-import edu.vub.at.objects.grammar.ATExpression;
-import edu.vub.at.objects.grammar.ATStatement;
-import edu.vub.at.objects.natives.NATTable;
-import edu.vub.at.objects.natives.NATText;
-import edu.vub.util.TempFieldGenerator;
 
 /**
- * The common interface of all AGExpression abstract grammar elements.
+ * An XUndefinedSlot exception is raised whenever a variable reference lookup fails,
+ * or a field assignment lookup fails. It generally means a variable was accessed which
+ * is not visible in the lexical scope.
  * 
- * @author tvcutsem
+ * @author tvc
  */
-public abstract class AGExpression extends NATAbstractGrammar implements ATExpression {
+public final class XSerializationError extends InterpreterException {
 	
-	public ATExpression asExpression() { return this; }
+	private static final long serialVersionUID = 8102257604129094096L;
 
-    public ATTable meta_typeTags() throws InterpreterException {
-    	return NATTable.of(NativeTypeTags._EXPRESSION_, NativeTypeTags._ISOLATE_);
-    }
-    
-    public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-    	return NATText.atValue("`(" + this.meta_print().javaValue + ")");
-    }
+	/**
+	 * Creates an XSerializationError exception with a given message.
+	 * @param message describing the type of error
+	 */
+	public XSerializationError(String message) {
+		super(message);
+	}
 	
+	public ATTypeTag getType() {
+		return NativeTypeTags._SERIALIZATIONERROR_;
+	}
 }

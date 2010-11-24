@@ -46,6 +46,7 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.LinkedList;
 import java.util.Vector;
@@ -153,6 +154,14 @@ public final class JavaPackage extends NATObject {
 
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<jpackage:"+path_+">");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if (path_.isEmpty()) {
+			return NATText.atValue("jlobby");
+		} else {
+			return NATText.atValue("jlobby." + path_.subSequence(0, path_.length() - 1));
+		}
 	}
 	
 	protected NATObject createClone(FieldMap map,

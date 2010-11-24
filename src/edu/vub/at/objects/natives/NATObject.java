@@ -58,13 +58,16 @@ import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.grammar.ATUnquoteSplice;
+import edu.vub.at.objects.mirrors.NATMirrorRoot;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.SourceLocation;
 import edu.vub.at.util.logging.Logging;
+import edu.vub.util.TempFieldGenerator;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -175,6 +178,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	 */
 	protected ATTypeTag[] typeTags_;
 	
+	protected Set freeVariables_;
+	
 	/* ------------------
 	 * -- Constructors --
 	 * ------------------ */
@@ -250,7 +255,7 @@ public class NATObject extends NATCallframe implements ATObject {
 		typeTags_ = tags;
 		
 		methodDictionary_ = new MethodDictionary();
-		
+				
 		// bind the dynamic parent to the field named 'super'
 		// we don't pass via meta_defineField as this would trigger mirages too early
 		variableMap_.put(_SUPER_NAME_);
@@ -278,6 +283,35 @@ public class NATObject extends NATCallframe implements ATObject {
 	}
 	
 	/**
+	 * Constructs a new ambienttalk object as a clone of an existing object
+	 * without any free variables.
+	 * 
+	 * The caller of this method *must* ensure that the shares flags are set.
+	 * 
+	 * This constructor is responsible for manually re-initialising any custom field
+	 * objects, because the init method of such custom fields is parameterized by the
+	 * clone, which only comes into existence when this constructor runs.
+	 */
+	protected NATObject(FieldMap map,
+	         Vector state,
+	         LinkedList originalCustomFields,
+	         MethodDictionary methodDict,
+	         ATObject dynamicParent,
+	         ATObject lexicalParent,
+	         byte flags,
+	         ATTypeTag[] types) throws InterpreterException {
+		this(map, 
+				state,
+				originalCustomFields,
+				methodDict,
+				dynamicParent,
+				lexicalParent,
+				flags,
+				types, 
+				null);
+	}
+
+	/**
 	 * Constructs a new ambienttalk object as a clone of an existing object.
 	 * 
 	 * The caller of this method *must* ensure that the shares flags are set.
@@ -293,7 +327,8 @@ public class NATObject extends NATCallframe implements ATObject {
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
-			         ATTypeTag[] types) throws InterpreterException {
+			         ATTypeTag[] types,
+			         Set freeVars) throws InterpreterException {
 		super(map, state, lexicalParent, null);
 		methodDictionary_ = methodDict;
 		
@@ -306,6 +341,8 @@ public class NATObject extends NATCallframe implements ATObject {
 		
 		// set the 'super' field to point to the new dynamic parent
 		setLocalField(_SUPER_NAME_, dynamicParent);
+		
+		freeVariables_ = freeVars;
 		
 		// re-initialize all custom fields
 		if (originalCustomFields != null) {
@@ -329,14 +366,15 @@ public class NATObject extends NATCallframe implements ATObject {
 	public void initializeWithCode(ATClosure code) throws InterpreterException {
 		ATMethod method = code.base_method();
 		
+		// calculate the set of free variables of the initialization expression
+		Set freeVars = method.base_bodyExpression().impl_freeVariables();
+		freeVariables_ = freeVars;
+		
 		// if this object is an isolate and no lexical vars were specified to capture,
 		// calculate the set of free variables automatically
 		if (this.isFlagSet(_IS_ISOLATE_FLAG_) &&
 			method.base_parameters().base_isEmpty().asNativeBoolean().javaValue) {
-			
-			// calculate the set of free variables of the initialization expression
-			Set freeVars = method.base_bodyExpression().impl_freeVariables();
-			
+						
 			// introduce a private scope object that will hold copies
 			// of the lexically free variables of the isolate
 			ATObject scope = new NATObject(Evaluator.getGlobalLexicalScope(), new ATTypeTag[] { NativeTypeTags._ISOLATE_ });
@@ -450,7 +488,7 @@ public class NATObject extends NATCallframe implements ATObject {
 				          methodDictionary_,
 				          dynamicParent,
 				          lexicalParent_,
-				          flags_, typeTags_);
+				          flags_, typeTags_, freeVariables_);
 		
 		return clone;
 	}
@@ -565,6 +603,131 @@ public class NATObject extends NATCallframe implements ATObject {
 		}
 	}
 	
+	public NATText impl_asBodyCode(TempFieldGenerator objectMap) throws InterpreterException {
+		
+		ATObject[] fields = this.meta_listFields().base_filter_(new NativeClosure(this) {
+			public ATObject base_apply(ATTable args) throws InterpreterException {
+				String name = args.base_at(NATNumber.ONE).asField().base_name().toString();
+				ATObject value = args.base_at(NATNumber.ONE).asField().base_readField();
+				return NATBoolean.atValue(!name.equals("super:=") && 
+						!(name.equals("super") && ((value instanceof NATNil) || (value instanceof NATMirrorRoot)))
+				);
+			}
+		}).asNativeTable().elements_;
+		
+		ATObject[] methods = this.meta_listMethods().base_filter_(new NativeClosure(this) {
+			public ATObject base_apply(ATTable args) throws InterpreterException {
+				String name = args.base_at(NATNumber.ONE).asMethod().base_name().toString();
+				return NATBoolean.atValue(!name.equals("super:="));
+			}
+		}).asNativeTable().elements_;
+		
+		ATObject[] typeTags = this.meta_typeTags().base_filter_(new NativeClosure(this) {
+			public ATObject base_apply(ATTable args) throws InterpreterException {
+				ATTypeTag tt = args.base_at(NATNumber.ONE).asTypeTag();
+				return NATBoolean.atValue(tt != NativeTypeTags._ISOLATE_);
+			}
+		}).asNativeTable().elements_;
+		
+		StringBuffer out = new StringBuffer("");
+		out.append("{ ");
+		String separator = "";
+		
+		if (fields.length > 0) {
+			separator = "; ";
+			
+			for (int i = 0; i < fields.length; i++) {
+				if(i > 0)
+					out.append(separator);
+				out.append(((NATField)fields[i]).impl_asCode(objectMap, isFlagSet(_IS_ISOLATE_FLAG_)).asNativeText().javaValue);
+			}
+		}
+		
+		if (methods.length > 0) {
+			out.append(separator);
+			out.append(Evaluator.codeAsStatements(objectMap, methods).javaValue);
+		}
+		
+		String slotnames = out.toString();
+		
+		if (typeTags_.length > 0) {
+			out.append(" } taggedAs: [");
+			out.append(typeTags_[0].impl_asCode(objectMap).javaValue);
+			for (int i = 1; i < typeTags_.length; i++) {
+				out.append(",").append(typeTags_[i].impl_asCode(objectMap).javaValue);
+			}
+			out.append("]");
+		} else {
+			out.append(" }");
+		}
+				
+		return NATText.atValue(out.toString());
+	}
+		
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if(objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		NATText code = this.impl_asBodyCode(objectMap);
+		StringBuffer out = new StringBuffer("");
+		out.append("object: ");
+		out.append(code.javaValue);
+		NATText name = objectMap.put(this, NATText.atValue(out.toString()));
+		return name;
+	}
+	
+	public NATText impl_asMirrorCode(TempFieldGenerator objectMap, NATObject base) throws InterpreterException {
+		if(objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		
+		NATText code = this.impl_asBodyCode(objectMap);
+				
+		ATSymbol baseVariable = null;
+		Iterator it = freeVariables_.iterator();
+		while (it.hasNext()) {
+			ATSymbol freeVar = (ATSymbol) it.next();
+			// extra check to weed out special variables like "super" and variables available in the lexical root
+			if (! (Evaluator.getGlobalLexicalScope().meta_respondsTo(freeVar).asNativeBoolean().javaValue
+					|| OBJLexicalRoot._INSTANCE_.meta_respondsTo(freeVar).asNativeBoolean().javaValue)) {
+				try {
+					NATTable t = (NATTable) this.base_freeVariables();
+					ATClosure c = this.lexicalParent_.impl_lookup(freeVar);
+					ATObject candidate;
+					if (c instanceof NativeClosure.Accessor) {
+						candidate = c.base_apply(NATTable.EMPTY);
+						if (candidate.equals(base)) {
+							baseVariable = freeVar;
+							break;
+						}
+					}
+				} catch(XUndefinedSlot exc) {
+					// silently ignore lexically free variables which cannot be found
+					// the assumption is that these variables will be bound by means of
+					// import statements
+					Logging.Actor_LOG.warn("Undefined lexically free var while serializing to code: "+exc.getFieldName());
+				}
+			}
+		}
+		
+		StringBuffer out = new StringBuffer("");
+
+		if (baseVariable != null) {
+			String baseVariableCode = baseVariable.toString();
+			out.append("{|" + baseVariableCode + "| ");
+			out.append("extend: defaultMirror.new(" + baseVariableCode + ") with: ");
+			out.append(code.javaValue);
+			out.append("}");
+		} else {
+			out.append("(mirror: ");
+			out.append(code.javaValue);
+			out.append(")");
+		}
+				
+		NATText name = objectMap.put(this, NATText.atValue(out.toString()));
+		return name;
+	}
+	
 	public boolean isCallFrame() {
 		return false;
 	}
@@ -582,7 +745,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	         					  ATObject dynamicParent,
 	         					  ATObject lexicalParent,
 	         					  byte flags,
-	         					  ATTypeTag[] types) throws InterpreterException {
+	         					  ATTypeTag[] types,
+	         					  Set freeVars) throws InterpreterException {
 		return new NATObject(map,
 	            state,
 	            originalCustomFields,
@@ -590,7 +754,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	            dynamicParent,
 	            lexicalParent,
 	            flags,
-	            types);
+	            types,
+	            freeVars);
 	}
 		
     /* ----------------------------------
@@ -770,6 +935,10 @@ public class NATObject extends NATCallframe implements ATObject {
 
 	private void unsetFlag(byte flag) {
 		flags_ = (byte) (flags_ & (~flag));
+	}
+	
+	public boolean isIsolate() {
+		return isFlagSet(_IS_ISOLATE_FLAG_);
 	}
 	
 	protected boolean hasLocalMethod(ATSymbol selector) throws InterpreterException {

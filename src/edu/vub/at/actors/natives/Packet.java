@@ -68,6 +68,10 @@ public class Packet implements Serializable {
 		this(object.toString(), object);
 	}
 	
+	public byte[] getPayload() {
+		return payload_;
+	}
+	
 	/**
 	 * Deserialize this message using the default class loader. 
 	 * In 99% of all cases this is okay, but on the Dalvik VM (used by Android)

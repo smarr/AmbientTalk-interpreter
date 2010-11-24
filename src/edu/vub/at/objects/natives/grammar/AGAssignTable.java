@@ -35,7 +35,9 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -100,6 +102,9 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 				valExp_.meta_print().javaValue);
 	}
 	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("`" + this.meta_print().javaValue);
+	}	
 
 	/**
 	 * FV(tblExp[idxExp] := valExp) = FV(tblExp) U FV(idxExp) U FV(valExp)

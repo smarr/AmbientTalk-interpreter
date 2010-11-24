@@ -39,6 +39,7 @@ import edu.vub.at.eval.Import.DelegateMethod;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XSelectorNotFound;
+import edu.vub.at.exceptions.XSerializationError;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATBoolean;
@@ -75,11 +76,14 @@ import edu.vub.at.objects.symbiosis.JavaMethod;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.parser.SourceLocation;
 import edu.vub.at.util.logging.Logging;
+import edu.vub.util.TempFieldGenerator;
 
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -266,6 +270,16 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     }
 
     public abstract NATText meta_print() throws InterpreterException;
+    
+    public NATText meta_asCode() throws InterpreterException {
+    	TempFieldGenerator objectMap = new TempFieldGenerator();
+		NATText name = this.impl_asCode(objectMap);
+		return objectMap.generateCode(name);
+    };
+    
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+    	throw new XSerializationError("Unable to serialize object: " + this.meta_print().javaValue + " (type: " + this.getClass() + ")");
+    };
 
     /* ------------------------------
       * -- ATObject Mirror Fields   --

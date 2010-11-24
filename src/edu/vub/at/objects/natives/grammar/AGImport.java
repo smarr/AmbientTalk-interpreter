@@ -37,7 +37,9 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATImport;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
@@ -153,6 +155,47 @@ public class AGImport extends NATAbstractGrammar implements ATImport {
 		}
 		buff.append(binding[0].meta_print().javaValue).append(" := ").append(binding[1].meta_print().javaValue);
 	}
+	
+	/*
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		StringBuffer expression = new StringBuffer("import " + importedObjectExp_.impl_asCode(objectMap).javaValue);
+		if (aliasDeclarations_ != NATTable.EMPTY) {
+			expression.append(" alias ");
+			if (aliasDeclarations_.isTable()) {
+				ATObject[] aliases = aliasDeclarations_.asNativeTable().elements_;
+				// append first alias
+				codeAliasBinding(objectMap, expression, aliases[0].asNativeTable());
+				for (int i = 1; i < aliases.length; i++) {
+					// append rest of the aliases
+					expression.append(",");
+					codeAliasBinding(objectMap, expression, aliases[i].asNativeTable());
+				}
+			} else {
+				// list of aliases is a quatation
+				expression.append(aliasDeclarations_.impl_asCode(objectMap).javaValue);
+			}
+		}
+		if (excludesDeclarations_ != NATTable.EMPTY) {
+			expression.append(" exclude ");
+			if (excludesDeclarations_.isTable()) {
+				expression.append(Evaluator.codeElements(objectMap, excludesDeclarations_.asNativeTable().elements_, "", ",", "").javaValue);
+			} else {
+				// list of excluded symbols is a quotation
+				expression.append(excludesDeclarations_.impl_asCode(objectMap).javaValue);
+			}
+		}
+		
+		return NATText.atValue(expression.toString());
+	}
+	
+	private void codeAliasBinding(TempFieldGenerator objectMap, StringBuffer buff, NATTable aliasBinding) throws InterpreterException {
+		ATObject[] binding = aliasBinding.elements_;
+		if (binding.length != 2) {
+			throw new XIllegalArgument("Alias binding of import statement is not a table of size two: " + aliasBinding.impl_asCode(objectMap).javaValue);
+		}
+		buff.append(binding[0].impl_asCode(objectMap).javaValue).append(" := ").append(binding[1].impl_asCode(objectMap).javaValue);
+	}
+	*/
 	
 	/**
 	 * FV(import objExp alias nam1 := nam2 exclude nam3) = FV(objExp)

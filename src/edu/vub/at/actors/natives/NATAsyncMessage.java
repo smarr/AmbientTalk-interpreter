@@ -52,6 +52,7 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.SourceLocation;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.LinkedList;
 import java.util.Vector;
@@ -202,6 +203,15 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<async msg:"+base_selector()+Evaluator.printAsList(base_arguments()).javaValue+">");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if(objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		NATText code = NATText.atValue("<-"+base_selector().toString() + Evaluator.codeAsList(objectMap, base_arguments()).javaValue);
+		NATText name = objectMap.put(this, code);
+		return name;
 	}
 
     public ATAsyncMessage asAsyncMessage() throws XTypeMismatch {

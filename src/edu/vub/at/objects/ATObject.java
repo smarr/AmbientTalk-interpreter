@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects;
 
+import java.util.HashMap;
+
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
@@ -51,6 +53,7 @@ import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.parser.SourceLocation;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * ATObject represents the public interface common to any AmbientTalk/2 object.
@@ -723,6 +726,18 @@ public interface ATObject extends ATConversions {
      * @return a text value denoting a human-readable representation of the object.
      */
     public NATText meta_print() throws InterpreterException;
+    
+    /**
+     * This behavioural meta-level operation reifies the act of representing
+     * the base object as self-containing source code. This operation may be
+     * overridden by mirrors to customise the printed representation of
+     * their base object.
+     * 
+     * @return a text value denoting a human-readable representation of the object.
+     */
+    public NATText meta_asCode() throws InterpreterException;
+    
+    public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException;
 
     /* ----------------------------------
      * -- Object Relational Comparison --

@@ -41,7 +41,9 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATCallframe;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -124,6 +126,15 @@ public final class AGDefTable extends AGDefinition implements ATDefTable {
 				sizExp_.meta_print().javaValue + "] { " +
 				initExp_.meta_print().javaValue + "}");
 	}
+	
+	/*
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("def " +
+				tblName_.impl_asCode(objectMap).javaValue + "[" +
+				sizExp_.impl_asCode(objectMap).javaValue + "] { " +
+				initExp_.impl_asCode(objectMap).javaValue + "}");
+	}
+	*/
 	
 	/**
 	 * IV(def t[idx] { body }) = { t }

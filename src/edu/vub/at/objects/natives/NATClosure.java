@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.util.HashMap;
+
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -41,6 +43,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.parser.SourceLocation;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * A NATClosure instance represents a first-class AmbientTalk closure.
@@ -222,6 +225,14 @@ public class NATClosure extends NATByRef implements ATClosure {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<closure:"+method_.base_name()+">");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if(objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		NATText name = objectMap.put(this, ((NATMethod) method_).impl_asCode(objectMap, true));
+		return name;
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {

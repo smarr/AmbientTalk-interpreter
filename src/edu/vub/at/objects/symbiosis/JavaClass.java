@@ -52,6 +52,7 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
+import edu.vub.util.TempFieldGenerator;
 
 import java.lang.ref.SoftReference;
 
@@ -298,6 +299,12 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<java:"+wrappedClass_.toString()+">");
+	}
+	
+	
+
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("jlobby." + wrappedClass_.getCanonicalName());
 	}
 
 	/**

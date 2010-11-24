@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.util.HashMap;
+
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
@@ -34,6 +36,7 @@ import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * NATBoolean is simply a container class for ambienttalk booleans. The native 
@@ -91,6 +94,10 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		
 		public NATText meta_print() throws InterpreterException { return NATText.atValue("true"); }
 		
+		public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+			return NATText.atValue("true"); 
+		}
+		
 		// base interface for true
 		
 		public ATObject base_ifTrue_(ATClosure clo) throws InterpreterException {
@@ -138,6 +145,10 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		public NATFalse() { super(false); }
 		
 		public NATText meta_print() throws InterpreterException { return NATText.atValue("false"); }
+		
+		public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+			return NATText.atValue("false"); 
+		}
 
 		// base interface for false
 		

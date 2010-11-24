@@ -31,7 +31,9 @@ import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.exceptions.XSerializationError;
 import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.exceptions.XUndefinedSlot;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -47,14 +49,23 @@ import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.FieldMap;
 import edu.vub.at.objects.natives.MethodDictionary;
+import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATCallframe;
+import edu.vub.at.objects.natives.NATClosure;
+import edu.vub.at.objects.natives.NATField;
 import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATNil;
+import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.util.logging.Logging;
+import edu.vub.util.TempFieldGenerator;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Vector;
 
@@ -138,7 +149,7 @@ public class NATMirage extends NATObject {
 			         ATObject lexicalParent,
 			         byte flags,
 			         ATTypeTag[] types) throws InterpreterException {
-		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types);
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types, null);
 		mirror_ = Evaluator.getNil();
 	}
 	
@@ -230,6 +241,10 @@ public class NATMirage extends NATObject {
 
 	public NATText magic_print() throws InterpreterException {
 		return super.meta_print();
+	}
+	
+	public NATText magic_asCode() throws InterpreterException {
+		return super.meta_asCode();
 	}
 
 	public ATObject magic_receive(ATAsyncMessage message) throws InterpreterException {
@@ -410,6 +425,32 @@ public class NATMirage extends NATObject {
 					mirror_,
 					AGSymbol.jAlloc("print"),
 					NATTable.EMPTY).asNativeText();
+	}
+	
+	public NATText meta_asCode() throws InterpreterException {
+		String base = mirror_.impl_invoke(
+				mirror_, 
+				AGSymbol.jAlloc("asCode"),
+				//argTable).asNativeText().javaValue;
+				NATTable.EMPTY).asNativeText().javaValue;
+		return NATText.atValue(base);
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if(objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		NATObject theMirror = (NATObject) mirror_;
+		NATText mirrorCode = theMirror.impl_asMirrorCode(objectMap, this);
+		NATText baseCode = super.impl_asBodyCode(objectMap);
+		
+		StringBuffer out = new StringBuffer("");
+		out.append("object: " + baseCode.javaValue);
+		out.append(" mirroredBy: ");
+		out.append(mirrorCode.javaValue);
+		
+		NATText name = objectMap.put(this, NATText.atValue(out.toString()));
+		return name;
 	}
 
 	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {

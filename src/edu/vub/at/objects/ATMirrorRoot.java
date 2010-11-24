@@ -701,6 +701,16 @@ public interface ATMirrorRoot extends ATObject {
     * @return a text value denoting a human-readable representation of the object.
     */
    public NATText base_print() throws InterpreterException;
+   
+   /**
+    * This behavioural meta-level operation reifies the act of representing
+    * the base object as self-containing source code. This operation may be
+    * overridden by mirrors to customise the printed representation of
+    * their base object.
+    * 
+    * @return a text value representating the source code of the object.
+    */
+   public NATText base_asCode()  throws InterpreterException;
 
    /* ----------------------------------
     * -- Object Relational Comparison --

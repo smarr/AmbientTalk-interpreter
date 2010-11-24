@@ -51,6 +51,7 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 import edu.vub.at.parser.SourceLocation;
+import edu.vub.util.TempFieldGenerator;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -145,6 +146,12 @@ public class JavaConstructor extends NATByRef implements ATMethod, ATJavaClosure
 		return NATText.atValue("<java constructor:"+class_+">");
 	}
 	
+	
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("jlobby." + class_.getCanonicalName() + ".&new");
+	}
+
 	public ATMethod asMethod() throws XTypeMismatch {
 		return this;
 	}

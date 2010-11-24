@@ -27,6 +27,8 @@
  */
 package edu.vub.at.actors.net;
 
+import java.util.HashMap;
+
 import edu.vub.at.actors.natives.ELVirtualMachine;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -34,6 +36,7 @@ import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * This class represents the singleton network object which
@@ -82,6 +85,10 @@ public final class OBJNetwork extends NATByCopy {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<native object: network>");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("network");
 	}
 	
 }

@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.util.HashMap;
+
 import edu.vub.at.actors.natives.DiscoveryManager;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -39,6 +41,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * The native implementation of AmbientTalk type tag objects.
@@ -170,6 +173,13 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<type tag:"+typeName_+">");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if(objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		return NATText.atValue("{deftype " + typeName_ + "}()");
 	}
 	
 	/**

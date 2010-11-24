@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.util.HashMap;
+
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalArgument;
@@ -42,6 +44,7 @@ import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.grammar.AGExpression;
 import edu.vub.util.Regexp;
+import edu.vub.util.TempFieldGenerator;
 
 import org.apache.regexp.RE;
 import org.apache.regexp.RESyntaxException;
@@ -79,6 +82,10 @@ public final class NATText extends AGExpression implements ATText {
 		public NATText asNativeText() throws XTypeMismatch { return this; }
 		
 		public NATText meta_print() throws InterpreterException {
+	        return NATText.atValue("\"" + javaValue + "\"");
+		}
+		
+		public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
 	        return NATText.atValue("\"" + javaValue + "\"");
 		}
 		

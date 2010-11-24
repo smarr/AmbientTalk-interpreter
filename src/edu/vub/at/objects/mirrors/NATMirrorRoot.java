@@ -32,6 +32,7 @@ import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalArgument;
+import edu.vub.at.exceptions.XSerializationError;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
 import edu.vub.at.objects.ATContext;
@@ -52,6 +53,7 @@ import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.util.logging.Logging;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * This class denotes the root node of the intercessive mirrors delegation hierarchy.
@@ -242,6 +244,10 @@ public final class NATMirrorRoot extends NATByRef implements ATMirrorRoot {
     
     public NATText base_print() throws InterpreterException {
 		return base_base().magic_print();
+    }
+    
+    public NATText base_asCode() throws InterpreterException {
+		return base_base().magic_asCode();
     }
 	
 	public ATObject base_pass() throws InterpreterException {

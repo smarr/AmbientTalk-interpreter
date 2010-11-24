@@ -36,6 +36,7 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.LinkedList;
 import java.util.Vector;
@@ -83,6 +84,20 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<method invocation:"+base_selector()+Evaluator.printAsList(base_arguments()).javaValue+">");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if (objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		StringBuffer codeString = new StringBuffer("." + base_selector().toString() + Evaluator.codeAsList(objectMap, base_arguments()).javaValue);
+		NATTable annotations = NATTable.atValue(this.typeTags_);
+		if(annotations.base_length().asNativeNumber().javaValue > 0) {
+			codeString.append("@"+annotations.impl_asCode(objectMap).javaValue);
+		}
+		NATText code = NATText.atValue(codeString.toString());
+		NATText name = objectMap.put(this, code);
+		return name;
 	}
 	
 	protected NATObject createClone(FieldMap map,

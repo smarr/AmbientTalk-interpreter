@@ -44,18 +44,22 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
+import edu.vub.at.objects.natives.grammar.AGExpression;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.objects.symbiosis.JavaPackage;
 import edu.vub.at.objects.symbiosis.XJavaException;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.Regexp;
+import edu.vub.util.TempFieldGenerator;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -165,6 +169,58 @@ public final class Evaluator {
 
 	public static final NATText printAsList(ATTable tab) throws InterpreterException {
 		return printElements(tab.asNativeTable(), "(", ", ", ")");
+	}
+	
+	/**
+	 * Auxiliary function used to code the elements of a table using various separators.
+	 */
+	public final static NATText codeElements(TempFieldGenerator objectMap, ATObject[] els,String start, String sep, String stop) throws InterpreterException {
+		if (els.length == 0)
+			return NATText.atValue(String.valueOf(start+stop));
+		
+	    StringBuffer buff = new StringBuffer(start);
+		for (int i = 0; i < els.length; i++) {
+			ATObject e = els[i];
+			if (e instanceof NATAbstractGrammar) {
+				//buff.append(e.toString());
+				buff.append(e.meta_print().javaValue);
+			} else {
+				buff.append(e.impl_asCode(objectMap).asNativeText().javaValue);
+			}
+			//buff.append(e.impl_asCode(objectMap).asNativeText().javaValue);
+			if (i < (els.length - 1)) { buff.append(sep); }
+		}
+		buff.append(stop);
+	    return NATText.atValue(buff.toString());
+	}
+	
+	public final static NATText codeParameterList(TempFieldGenerator objectMap, NATTable params) throws InterpreterException {
+		NATText plist = codeElements(objectMap, params, "", ", ", "");
+		if (plist.javaValue.isEmpty()) {
+			return plist;
+		} else {
+			return NATText.atValue("|" + plist.javaValue + "| ");
+		}
+	}
+	
+	/**
+	 * Auxiliary function used to code the elements of a table using various separators.
+	 */
+	public final static NATText codeElements(TempFieldGenerator objectMap, NATTable tab,String start, String sep, String stop) throws InterpreterException {
+		return codeElements(objectMap, tab.elements_, start, sep, stop);
+	}
+
+	public static final NATText codeAsStatements(TempFieldGenerator objectMap, ATTable tab) throws InterpreterException {
+		return codeElements(objectMap, tab.asNativeTable(), "", "; ", "");
+	}
+	
+	public static final NATText codeAsStatements(TempFieldGenerator objectMap, ATObject[] els) throws InterpreterException {
+		return codeElements(objectMap, els, "", "; ", "");
+	}
+
+
+	public static final NATText codeAsList(TempFieldGenerator objectMap, ATTable tab) throws InterpreterException {
+		return codeElements(objectMap, tab.asNativeTable(), "(", ", ", ")");
 	}
 
 	/**

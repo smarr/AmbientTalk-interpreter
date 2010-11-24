@@ -38,6 +38,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * Instances of this class represent first-class field selections.
@@ -77,6 +78,14 @@ public final class NATFieldSelection extends NATMessage implements ATFieldSelect
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<field selection:"+base_selector().toString()+">");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if (objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		NATText name = objectMap.put(this, NATText.atValue("." + base_selector().toString()));
+		return name;
 	}
 	
 	protected NATObject createClone(FieldMap map,

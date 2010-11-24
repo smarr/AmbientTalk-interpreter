@@ -46,6 +46,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.DirectNativeMethod;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.HashMap;
 
@@ -91,6 +92,10 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	
 	public NATText meta_print() throws InterpreterException {
         return NATText.atValue(String.valueOf(javaValue));
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue(String.valueOf(javaValue));
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {

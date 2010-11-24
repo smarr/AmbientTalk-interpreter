@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.util.HashMap;
+
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
@@ -41,6 +43,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * NATField implements a causally connected field of an object. Rather than storing
@@ -77,6 +80,23 @@ public class NATField extends NATByRef implements ATField {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("<field:"+name_.meta_print().javaValue+">");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return this.impl_asCode(objectMap, false);
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap, boolean isIsolate) throws InterpreterException {
+		if(objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		String def = "";
+		String nameAsCode = name_.toString();
+		if(nameAsCode != "super")
+			def += "def ";
+		//if(isIsolate) // why was this necessary?
+		//	def += "self.";
+		return NATText.atValue(def + nameAsCode + " := " + base_readField().impl_asCode(objectMap).javaValue);
 	}
 	
     public boolean isNativeField() {
@@ -119,11 +139,20 @@ public class NATField extends NATByRef implements ATField {
     		}
     		public NATText meta_print() throws InterpreterException {
     			return NATText.atValue(f.base_readField().toString());
-    		}    		
+    		}
+    		public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+    			return f.base_readField().impl_asCode(objectMap);
+    		}
     	}) {
     		public NATText meta_print() throws InterpreterException {
     			return NATText.atValue("<accessor method for:"+f.base_name()+">");
-    		}   	
+    		}
+    		public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+    			return NATText.atValue("def "
+    					+ f.base_name().impl_asCode(objectMap).javaValue 
+    					+ "(){"+f.base_name().impl_asCode(objectMap).javaValue
+    					+ "}");
+    		}
     	};
     }
     
@@ -135,10 +164,20 @@ public class NATField extends NATByRef implements ATField {
     		public NATText meta_print() throws InterpreterException {
     			return NATText.atValue(""+f.base_name()+" := v");
     		}
+    		public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+    			return NATText.atValue(""+f.base_name()+" := v");
+    		}
     	}) {
     		public NATText meta_print() throws InterpreterException {
     			return NATText.atValue("<mutator method for:"+f.base_name()+">");
-    		}   	
+    		}
+    		public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+    			return NATText.atValue("def "
+    					+ f.base_name().impl_asCode(objectMap).javaValue
+    					+ ".:=(v){"
+    					+ f.base_name().impl_asCode(objectMap).javaValue
+    					+ ":=v}");
+    		}
     	};
     }
 

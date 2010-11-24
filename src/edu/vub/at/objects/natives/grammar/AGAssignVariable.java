@@ -37,7 +37,9 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -89,6 +91,10 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(variableName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("`" + this.meta_print().javaValue);	
 	}
     
     public boolean isVariableAssignment() {

@@ -1714,6 +1714,16 @@ public final class OBJLexicalRoot extends NATByCopy {
 	}
 	
 	/**
+	 * The <tt>asCode:</tt> metaprogramming construct.
+	 * This construct invokes the object mirror's <tt>asCode</tt> method.
+	 * 
+	 * @return a text string being the source code representation of the given object.
+	 */
+	public ATText base_asCode_(ATObject obj) throws InterpreterException {
+		return obj.meta_asCode();
+	}
+	
+	/**
 	 * Compare the receiver object to the <tt>root</tt> object.
 	 * the reason for this custom implementation: during the execution
 	 * of this method, 'this' should refer to the global lexical scope object (the root),

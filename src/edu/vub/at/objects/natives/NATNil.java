@@ -27,6 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.util.HashMap;
+
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XArityMismatch;
@@ -42,6 +44,7 @@ import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * This class encapsulates the behaviour of the native
@@ -240,6 +243,10 @@ public class NATNil extends NATObject implements ATNil {
     }
 
 	public NATText meta_print() throws InterpreterException {
+		return NATText.atValue("nil");
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
 		return NATText.atValue("nil");
 	}
 	
