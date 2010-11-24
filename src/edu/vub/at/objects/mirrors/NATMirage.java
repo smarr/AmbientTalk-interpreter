@@ -149,8 +149,9 @@ public class NATMirage extends NATObject {
 			         ATObject dynamicParent,
 			         ATObject lexicalParent,
 			         byte flags,
-			         ATTypeTag[] types) throws InterpreterException {
-		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types, null);
+			         ATTypeTag[] types,
+			         Set freeVars) throws InterpreterException {
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types, freeVars);
 		mirror_ = Evaluator.getNil();
 	}
 	
@@ -178,7 +179,8 @@ public class NATMirage extends NATObject {
 				dynamicParent,
 				lexicalParent,
 				flags,
-				types);
+				types,
+				freeVars);
         // clonedMirage.mirror := myMirror.new(clonedMirage)
 		clonedMirage.mirror_ = mirror_.impl_invoke(mirror_, NATNil._NEW_NAME_, NATTable.of(clonedMirage));
 		return clonedMirage;

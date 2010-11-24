@@ -65,8 +65,9 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
             ATObject dynamicParent,
             ATObject lexicalParent,
             byte flags,
-            ATTypeTag[] types) throws InterpreterException {
-    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types);
+            ATTypeTag[] types,
+            Set freeVars) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types, freeVars);
     }
 
     public ATMethodInvocation asMethodInvocation() {
@@ -117,7 +118,8 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 				dynamicParent,
 				lexicalParent,
 				flags,
-				types);
+				types,
+				freeVars);
 	}
 	
 }

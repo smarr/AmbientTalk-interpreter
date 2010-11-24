@@ -145,8 +145,9 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
             ATObject dynamicParent,
             ATObject lexicalParent,
             byte flags,
-            ATTypeTag[] types) throws InterpreterException {
-    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types);
+            ATTypeTag[] types,
+            Set freeVars) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types, freeVars);
     }
     
     /**
@@ -161,7 +162,8 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
     		                        ATObject dynamicParent,
     		                        ATObject lexicalParent,
     		                        byte flags,
-    		                        ATTypeTag[] types, Set freeVars) throws InterpreterException {
+    		                        ATTypeTag[] types,
+    		                        Set freeVars) throws InterpreterException {
 		return new NATAsyncMessage(map,
 				                   state,
 				                   originalCustomFields,
@@ -169,7 +171,8 @@ public class NATAsyncMessage extends NATMessage implements ATAsyncMessage {
 				                   dynamicParent,
 				                   lexicalParent,
 				                   flags,
-				                   types);
+				                   types,
+				                   freeVars);
 	}
     
     /**

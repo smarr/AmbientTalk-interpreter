@@ -111,8 +111,9 @@ public final class NATNamespace extends NATObject {
 			  byte flags,
 			  ATTypeTag[] types,
 			  File path,
-			  String name) throws InterpreterException {
-	  super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types);
+			  String name,
+			  Set freeVars) throws InterpreterException {
+	  super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types, freeVars);
 	  path_ = path;
 	  name_ = name;
 	}
@@ -230,7 +231,8 @@ public final class NATNamespace extends NATObject {
     		  				    flags,
     		  				    types,
     		  				    path_,
-    		  				    name_);
+    		  				    name_,
+    		  				    freeVars);
 	}
 	
 }

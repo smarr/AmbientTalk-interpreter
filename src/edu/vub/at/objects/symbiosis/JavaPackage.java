@@ -114,6 +114,7 @@ public final class JavaPackage extends NATObject {
 	
 	/**
 	 * Private constructor used only for cloning
+	 * @param freeVars 
 	 */
 	private JavaPackage(FieldMap map,
 			  		   Vector state,
@@ -123,8 +124,9 @@ public final class JavaPackage extends NATObject {
 			  		   ATObject lexicalParent,
 			  		   byte flags,
 			  		   ATTypeTag[] types,
-			  		   String path) throws InterpreterException {
-		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types);
+			  		   String path,
+			  		   Set freeVars) throws InterpreterException {
+		super(map, state, customFields, methodDict, dynamicParent, lexicalParent, flags, types, freeVars);
 		path_ = path;
 	}
 	
@@ -182,7 +184,8 @@ public final class JavaPackage extends NATObject {
     		  				      lexicalParent,
     		  				      flags,
     		  				      types,
-    		  				      path_);
+    		  				      path_,
+    		  				      freeVars);
 	}
 	
 	/**

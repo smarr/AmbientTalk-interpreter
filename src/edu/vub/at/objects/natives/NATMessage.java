@@ -44,6 +44,7 @@ import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -136,8 +137,9 @@ public abstract class NATMessage extends NATObject implements ATMessage {
             ATObject dynamicParent,
             ATObject lexicalParent,
             byte flags,
-            ATTypeTag[] types) throws InterpreterException {
-    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types);
+            ATTypeTag[] types,
+            Set freeVars) throws InterpreterException {
+    	super(map, state, originalCustomFields, methodDict, dynamicParent, lexicalParent, flags, types, freeVars);
     }
 	
 	public ATSymbol base_selector() throws InterpreterException {
