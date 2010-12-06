@@ -82,13 +82,14 @@ public abstract class EventLoop {
 		eventQueue_ = new EventQueue();
 		askedToStop_ = false;
 		name_ = name;
-
-		Integer stackSize = Integer.getInteger(_ENV_AT_STACK_SIZE_);
-		if (stackSize != null) {
-			processor_ = new EventProcessor(stackSize.intValue());
-		} else{
-			processor_ = new EventProcessor();
-		}
+		processor_ = new EventProcessor();
+	}
+	
+	public EventLoop(String name, int stackSize) {
+		eventQueue_ = new EventQueue();
+		askedToStop_ = false;
+		name_ = name;
+		processor_ = new EventProcessor(stackSize);
 	}
 	
 	/**

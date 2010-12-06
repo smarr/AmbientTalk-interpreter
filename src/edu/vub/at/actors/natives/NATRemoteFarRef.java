@@ -27,9 +27,13 @@
  */
 package edu.vub.at.actors.natives;
 
-import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATLetter;
+import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XTypeMismatch;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
 
@@ -42,27 +46,83 @@ import edu.vub.at.objects.ATTypeTag;
 public class NATRemoteFarRef extends NATFarReference {
 	
 	/**
-	 * When a remote far reference is passed on to another virtual machine, the event loop
-	 * is not taken with it. At the remote end, a new far reference will be created with the
-	 * appropriate event loop.
+	 * When a remote far reference is passed on to another virtual machine, the sendLoop
+	 * is not taken with it. At the remote end, the sendLoop is bound to the 
+	 * FarReferencesThreadPool of the receiving actor.
 	 */
-	private transient final ELFarReference sendLoop_;
-
+	private transient final FarReferencesThreadPool sendLoop_;
+	
+	/** boolean that keeps track if there is a thread of the FarReferencesThreadPool
+	 *  currently transmitting a message. It is used to make meta_retract() wait  
+	 *  for the success/failure of the message currently being sent.
+	 */
+    private boolean transmitting_;
+    
 	public NATRemoteFarRef(ATObjectID objectId, ELActor hostActor, ATTypeTag[] types, boolean isConnected) {
 		super(objectId, types, hostActor, isConnected);
-		sendLoop_ = new ELFarReference(objectId, hostActor, this, isConnected);
+		sendLoop_ = hostActor.getFarReferencesExecutor(); 
+		transmitting_ = false;
 	}
 	
-	protected void transmit(ATAsyncMessage message) throws InterpreterException {
-		sendLoop_.event_transmit(this, message);
+	/**
+	 * Inserts an AmbientTalk message into this far reference's outbox
+	 * and signals a transmit event to the corresponding FarReferencesThreadPool
+	 * to schedule its transmission.
+	 */
+	protected void transmit(ATLetter letter) throws InterpreterException {
+		outbox_.addLast(letter);
+		impl_transmit();
 	}
 	
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {
-		return sendLoop_.retractUnsentMessages();
+		return sendLoop_.sync_event_retractUnsentMessages(this);
 	}
 	
 	protected synchronized void notifyStateToSendLoop(boolean state){
-		sendLoop_.setConnected(state);
+		//if notifying reconnection, start flushing the outbox serially
+		if (state) { impl_transmit(); }
 	}
+	
+	public NATRemoteFarRef asNativeRemoteFarReference() throws XTypeMismatch { return this;}
 
+	/* Following methods are called by a thread within FarReferencesThreadPool */
+	
+	public ATObject impl_serve() throws InterpreterException{
+		synchronized(this) {
+			if (outbox_.size() > 0 && connected_) {
+				NATOutboxLetter next = (NATOutboxLetter) outbox_.removeLast();
+				setTransmitting(true);
+				return next;
+			}
+		}
+		return Evaluator.getNil();
+	}
+    
+	// called from a FarReferencesThreadPool#TransmissionEvent 
+	// after successfully sending a message to 
+	// cause the transmission of next message if any.
+	// Also called from ELActor after adding a message in this outbox.
+	public void impl_transmit() {
+		sendLoop_.event_serve(this);
+	}	
+	// called from a FarReferencesThreadPool#TransmissionEvent 
+	// after the message being transmitted failed.
+	public void impl_transmitFailed(ATLetter letter) {
+		disconnected();
+		// add the message back to the outbox.
+		// it cannot happen that this event_transmit is followed by an event_transmit for another message, 
+		// so the order will be preserved.
+		synchronized(this){
+		  outbox_.addFirst(letter);
+		}
+		setTransmitting(false);
+	}
+	
+	public synchronized void setTransmitting(boolean status) {
+		transmitting_ = status;
+	}
+	
+	public synchronized boolean getTransmitting(){
+		return transmitting_;
+	}
 }

@@ -31,12 +31,17 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import edu.vub.at.actors.ATAsyncMessage;
+import edu.vub.at.actors.ATLetter;
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.util.logging.Logging;
 
 /**
  * Instances of NATLocalFarRef denote far references to objects 'local' to this address space.
@@ -50,64 +55,50 @@ public class NATLocalFarRef extends NATFarReference {
 
 	/** when serializing a far reference, the event loop stays home */
 	private transient final ELActor farObjectHost_;
-	private transient Vector outboxOfOriginalMessages_;
-	private transient Vector outboxOfSerializedMessages_;
-	
+
 	public NATLocalFarRef(ELActor farObjectHost, ATObjectID objectId, ATTypeTag[] types, ELActor myHost, boolean isConnected) {
 		super(objectId, types, myHost, isConnected);
 		farObjectHost_ = farObjectHost;
 	}
-
-	protected void transmit(ATAsyncMessage passedMessage) throws InterpreterException {
-		Packet serializedMessage = new Packet(passedMessage.toString(),
-				NATTable.of(this, passedMessage));
-		
+	
+	protected void transmit(ATLetter letter) throws InterpreterException {
 		synchronized (this) {
 			if (!connected_) {
-				//a local far reference buffers messages when it gets (software) disconnected.
-				//note that a local far reference will never be hardware disconnected.
-				if (outboxOfOriginalMessages_ == null) {
-					outboxOfOriginalMessages_ = new Vector(2);
-					outboxOfSerializedMessages_ = new Vector(2);
-				}
-				outboxOfOriginalMessages_.add(passedMessage);
-				outboxOfSerializedMessages_.add(serializedMessage);
+				outbox_.addLast(letter);
 			} else{
-				farObjectHost_.event_localAccept(this, serializedMessage);
-			}; 
-		}
+				// the far reference itself is the receiver of the asynchronous message
+				farObjectHost_.event_localAccept(this, letter.asNativeOutboxLetter().impl_getSerializedMessage());
+			}
+		}	
 	}
 	
 	//called to notify connected/disconnected
 	protected synchronized void notifyStateToSendLoop(boolean state){
 		//if notifying reconnection, flush the outbox
 		if (state) {
-		  if (outboxOfSerializedMessages_ != null && !outboxOfSerializedMessages_.isEmpty()) {
-			  for (Iterator Iter = outboxOfSerializedMessages_.iterator(); Iter.hasNext();) {
-				 farObjectHost_.event_localAccept(this, (Packet) Iter.next());
+		  if (outbox_.size() > 0) {
+			  for (Iterator Iter = outbox_.iterator(); Iter.hasNext();) {
+				try {
+					ATLetter next = (ATLetter)  Iter.next();
+					NATOutboxLetter letter = next.asNativeOutboxLetter();
+					 farObjectHost_.event_localAccept(this, letter.impl_getSerializedMessage());
+				} catch (XTypeMismatch e) {
+					Logging.RemoteRef_LOG.info(this + ": unexpected type mismatch: " + e.getMessage());
+					e.printStackTrace();
+				}
 			  }
 			  // empty the outbox
-			  outboxOfOriginalMessages_.clear();
-			  outboxOfSerializedMessages_.clear();
+			  outbox_.clear();
 		  }
 		}
 	}
 	
 	/**
-	 * The 'outbox' of a far reference to a local actor is normally empty, except if
+	 * Note that the 'outbox' of a local far reference is normally empty, except if
 	 * the local far reference was disconnected by means of a 'soft disconnect'.
 	 */
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {
-		if (outboxOfOriginalMessages_ != null && !outboxOfOriginalMessages_.isEmpty()) {
-	        ATObject[] messages = new ATObject[outboxOfOriginalMessages_.size()];
-	        outboxOfOriginalMessages_.toArray(messages);
-	        // empty both outboxes
-			outboxOfOriginalMessages_.clear();
-			outboxOfSerializedMessages_.clear();
-			return NATTable.atValue(messages);	
-		} else {
-			return NATTable.EMPTY;		
-		}
+		return impl_retractUnsentMessages();
 	}
 	
 	public ELActor getFarHost() {

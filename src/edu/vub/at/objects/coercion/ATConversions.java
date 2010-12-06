@@ -32,6 +32,8 @@ import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.ATLetter;
 import edu.vub.at.actors.natives.NATFarReference;
+import edu.vub.at.actors.natives.NATRemoteFarRef;
+import edu.vub.at.actors.natives.NATFarReference.NATOutboxLetter;
 import edu.vub.at.eval.Import.DelegateMethod;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -182,6 +184,8 @@ public interface ATConversions {
 	public JavaObject  asJavaObjectUnderSymbiosis() throws XTypeMismatch;
 	public JavaClass   asJavaClassUnderSymbiosis() throws XTypeMismatch;
 	public JavaMethod  asJavaMethodUnderSymbiosis() throws XTypeMismatch;
-	
+	//egb added for pool
+	public NATRemoteFarRef asNativeRemoteFarReference() throws XTypeMismatch;
+	public NATOutboxLetter asNativeOutboxLetter() throws XTypeMismatch;
 
 }

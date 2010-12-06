@@ -33,6 +33,8 @@ import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.ATLetter;
 import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.NATFarReference;
+import edu.vub.at.actors.natives.NATFarReference.NATOutboxLetter;
+import edu.vub.at.actors.natives.NATRemoteFarRef;
 import edu.vub.at.actors.net.SerializationException;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.eval.Import.DelegateMethod;
@@ -606,6 +608,14 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 	    throw new XTypeMismatch(NATIntrospectiveMirror.class, this);
     }
     
+    // added for ref pool
+    public NATRemoteFarRef asNativeRemoteFarReference() throws XTypeMismatch {
+    	throw new XTypeMismatch(NATRemoteFarRef.class, this);
+    }
+	public NATOutboxLetter asNativeOutboxLetter() throws XTypeMismatch{
+    	throw new XTypeMismatch(NATOutboxLetter.class, this);
+    }
+	
     /**
      * Only true objects have a dynamic pointer, native objects denote 'nil' to
      * be their dynamic parent when asked for it. Note that, for native objects,

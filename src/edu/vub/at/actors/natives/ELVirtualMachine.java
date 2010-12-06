@@ -66,6 +66,7 @@ public final class ELVirtualMachine extends EventLoop {
 	
 	public static final String _DEFAULT_GROUP_NAME_ = "AmbientTalk";
 	public static final String _DEFAULT_IP_ADDRESS_ = "0.0.0.0";
+	private static final String _ENV_AT_STACK_SIZE_ = "AT_STACK_SIZE";
 		
 	/** startup parameter to the VM: the code of the init.at file to use */
 	private final ATAbstractGrammar initialisationCode_;
@@ -331,7 +332,13 @@ public final class ELVirtualMachine extends EventLoop {
 		
 		BlockingFuture future = new BlockingFuture();
 		NATActorMirror mirror = new NATActorMirror(this);
-		ELActor processor = new ELActor(mirror, this);
+		ELActor processor;
+		Integer stackSize = Integer.getInteger(_ENV_AT_STACK_SIZE_);
+		if (stackSize != null) {
+			processor = new ELActor(mirror, this, stackSize.intValue());
+		} else{
+			processor = new ELActor(mirror, this);
+		}
 		mirror.setActor(processor); // make mirror refer to the created actor
 		
 		// lock the localActors_ table first to ensure addition is

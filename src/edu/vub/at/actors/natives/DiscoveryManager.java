@@ -253,7 +253,7 @@ public final class DiscoveryManager {
 	 * @param topic an outstanding subscription topic of this VM
 	 * @param remoteService the remote service matching the topic
 	 */
-	public void notifyOfExternalPublication(ATTypeTag pubTopic, ATObject remoteService) {
+	public void notifyOfExternalPublication(ATTypeTag pubTopic, Packet remoteServicePkt) {
 		for (Iterator iter = subscriptions_.iterator(); iter.hasNext();) {
 			Subscription sub = (Subscription) iter.next();
 			try {
@@ -262,7 +262,8 @@ public final class DiscoveryManager {
 				// this code executed won't be traced by the debugger!
 				if (pubTopic.base_isSubtypeOf(sub.deserializedTopic_).asNativeBoolean().javaValue) {
 					// no need to test for separate actors, publisher is remote to this VM, so surely different actors
-					notify(sub.deserializedHandler_, remoteService);
+					sub.subscriberActor_.event_serviceJoined(sub.deserializedHandler_, remoteServicePkt);
+					// egb notify(sub.deserializedHandler_, remoteService);
 					// if the subscription is not permanent, cancel it
 					if (!sub.isPermanentSubscription_) {
 						iter.remove();

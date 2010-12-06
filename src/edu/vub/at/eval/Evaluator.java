@@ -27,6 +27,17 @@
  */
 package edu.vub.at.eval;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
+
+import org.apache.regexp.RE;
+import org.apache.regexp.REProgram;
+
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.natives.ELActor;
 import edu.vub.at.actors.natives.NATAsyncMessage;
@@ -37,6 +48,8 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMirrorRoot;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.NATMirrorRoot;
 import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATNil;
@@ -44,7 +57,6 @@ import edu.vub.at.objects.natives.NATObject;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
-import edu.vub.at.objects.natives.grammar.AGExpression;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
@@ -54,18 +66,6 @@ import edu.vub.at.objects.symbiosis.XJavaException;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.Regexp;
 import edu.vub.util.TempFieldGenerator;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
-
-import org.apache.regexp.RE;
-import org.apache.regexp.REProgram;
 
 /**
  * The Evaluator class serves as a repository for auxiliary evaluation methods.
@@ -391,25 +391,28 @@ public final class Evaluator {
 		_MIRROR_ROOT_.set(createMirrorRoot());
 	}
 	
+	// returns isolate:{ nil } mirrorredBy: (object: { def resolve() { Evaluator.getGlobalLexicalScope}})
+	public static ATObject createSerializedLexicalRoot() {
+		return new NATObject(new ATTypeTag[] {NativeTypeTags._ISOLATE_}) {
+			public ATObject meta_resolve() throws InterpreterException {
+				return Evaluator.getGlobalLexicalScope();
+			}
+			public NATText meta_print() throws InterpreterException {
+				return NATText.atValue("<serialized lexical root>");
+			}
+		};
+	}
 	/**
 	 * A global scope has the sentinel instance as its lexical parent.
 	 */
 	private static NATObject createGlobalLexicalScope() {
-		NATObject root = new NATObject(OBJLexicalRoot._INSTANCE_);
-		/*	public ATObject meta_pass() throws InterpreterException {
-				return new NATObject(OBJLexicalRoot._INSTANCE_) {
-					public ATObject meta_pass() throws InterpreterException {
-						return this;
-					}
-					public ATObject meta_resolve() throws InterpreterException {
-						return Evaluator.getGlobalLexicalScope();
-					}
-					public NATText meta_print() throws InterpreterException {
-						return NATText.atValue("<serialized lexical root>");
-					}
-				};
-			}
-		};*/
+		NATObject root = new NATObject(OBJLexicalRoot._INSTANCE_) {
+			// override meta_pass to avoid the creation of a far reference 
+			// when the root object gets parameter passed.
+			public ATObject meta_pass() throws InterpreterException {
+				return Evaluator.createSerializedLexicalRoot();
+			}	
+		};
 		return root;
 	}
 	
@@ -549,7 +552,7 @@ public final class Evaluator {
 	/**
 	 * Performs <code>closure&lt;-apply(arguments)@[]</code>
 	 * Used when the {@link ELActor} owner of the closure is known.
-	 * @param closure either a closure or a far reference to a closure.
+	 * @param closure a local reference to a closure.
 	 * @param type a description of the type of event handler (used for debugging only)
 	 */
 	public static void trigger(ELActor owner, ATObject closure, ATTable arguments, String type) {

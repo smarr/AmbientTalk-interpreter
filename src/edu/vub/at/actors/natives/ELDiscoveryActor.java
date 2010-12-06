@@ -27,7 +27,6 @@
  */
 package edu.vub.at.actors.natives;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -40,7 +39,6 @@ import edu.vub.at.actors.net.cmd.CMDJoinServices;
 import edu.vub.at.actors.net.cmd.CMDProvideService;
 import edu.vub.at.actors.net.cmd.CMDRequireService;
 import edu.vub.at.actors.net.comm.Address;
-import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
@@ -231,10 +229,9 @@ public final class ELDiscoveryActor extends ELActor {
 			public void process(Object myself) {
 				try {
 					ATTypeTag providedTopic = serializedProvidedTopic.unpack().asTypeTag();
-					ATObject providedService = serializedProvidedService.unpack();
 					// notify subscribers of the new provided service
-					Logging.VirtualMachine_LOG.debug("notifyOfExternalPublication("+providedTopic+","+providedService+")");
-					discoveryManager_.notifyOfExternalPublication(providedTopic, providedService);
+					Logging.VirtualMachine_LOG.debug("notifyOfExternalPublication("+providedTopic+")");
+					discoveryManager_.notifyOfExternalPublication(providedTopic, serializedProvidedService);
 				} catch (InterpreterException e) {
 					Logging.VirtualMachine_LOG.error("error while unserializing remote published service",e);
 				}
@@ -263,9 +260,8 @@ public final class ELDiscoveryActor extends ELActor {
 						// for each serialized object exported under the topic
 						for (Iterator iterator = matchingServices.iterator(); iterator.hasNext();) {
 							Packet serializedService = (Packet) iterator.next();
-							ATObject unserializedService = serializedService.unpack();
-							Logging.VirtualMachine_LOG.debug("notifyOfExternalPublication("+unserializedTopic+","+unserializedService+")");
-							discoveryManager_.notifyOfExternalPublication(unserializedTopic, unserializedService);
+							Logging.VirtualMachine_LOG.debug("notifyOfExternalPublication("+unserializedTopic+")");
+							discoveryManager_.notifyOfExternalPublication(unserializedTopic, serializedService);
 						}
 					} catch (InterpreterException e) {
 						Logging.VirtualMachine_LOG.error("error while unserializing remote published service",e);

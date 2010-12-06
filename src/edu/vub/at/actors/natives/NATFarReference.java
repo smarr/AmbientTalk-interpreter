@@ -28,11 +28,14 @@
 package edu.vub.at.actors.natives;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Vector;
 
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATFarReference;
+import edu.vub.at.actors.ATLetter;
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.natives.NATActorMirror.NATLetter;
 import edu.vub.at.actors.net.ConnectionListener;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -91,15 +94,30 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	// the types with which the remote object is tagged + the FarReference type
 	private final ATTypeTag[] types_;
 
-	// the state of connectivity of the far reference
-	// note that this variable is not transient, it will be passed when the ref is
-	// parameter-passed such that the passed ref is initialized in the correct state
-    protected boolean connected_;
+	/** the state of connectivity of the far reference
+	 * note that this variable is not transient, it will be passed when the ref is
+	 * parameter-passed such that the passed ref is initialized in the correct state
+	 * Note also that access to this variable is synchronized since it may be modified 
+	 * by ELVirtualMachine and  a thread of FarReferencesThreadPool for remote far references.
+	 */
+    protected boolean connected_; 
 	
 	private transient Vector disconnectedListeners_; // lazy initialization
 	private transient Vector reconnectedListeners_; // lazy initialization
 	private transient Vector takenOfflineListeners_; // lazy initialization
+	
     private final transient ELActor owner_;
+    
+    /**
+     *  'outbox' stores all messages sent to the receiver object hosted by another actor.
+	 *  Each far reference represents an outbox of an actor. 
+	 *  It contains objects that implement the {@link ATLetter} interface.
+	 *  
+	 *  Note that access to the outbox is synchronized because it may be modified by:
+	 *  -the owner ELActor and ELVirtualMachine in case of local far references.
+	 *  -the owner ELActor and a thread of FarReferencesThreadPool in case of remote far references.
+     */
+    protected transient LinkedList outbox_ = new LinkedList(); //outbox is not serialized.
 	
 	protected NATFarReference(ATObjectID objectId, ATTypeTag[] types, ELActor owner, boolean isConnected) {
 		int size = types.length;
@@ -146,7 +164,8 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	 * == Implementation of the ConnectionListener interface ==
 	 * ========================================================
 	 */
-    
+    // Note that this methods are called from ELVirtualMachine#ConnectionListenerManager, 
+    // i.e. a different actor than the one owning the reference.
     public synchronized void connected() {
 		// sanity check: don't connect  twice
 		if (!connected_) {
@@ -267,12 +286,14 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
      * ------------------------------ */
 
 	public ATObject meta_receive(ATAsyncMessage message) throws InterpreterException {
-		// the far reference itself is the receiver of the asynchronous message
-		this.transmit(message);
+		// this method is still called by the event loop of the actor where the reference lives
+		// so serialization of the message is done by the ELActor sending the message.
+		NATOutboxLetter letter = new NATOutboxLetter(outbox_, this, message);
+		this.transmit(letter);
 		return Evaluator.getNil();
 	}
 	
-	protected abstract void transmit(ATAsyncMessage passedMessage) throws InterpreterException;
+	protected abstract void transmit(ATLetter letter) throws InterpreterException;
 
 	/**
 	 * The only operation that is allowed to be synchronously invoked on far references is '=='
@@ -554,4 +575,53 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		}
 	}
 	
+	 /**
+	  * An outbox letter is a named subclass of NATLetter (See {@link ATLetter} interface), 
+	  * wrpaaing the AmbientTalk message that is going to be transmitted and its serialized version.
+	  * The constructor is still executed by the {@link ELActor} that schedules a message to be transmitted. 
+	  * This ensures that the serialization of the message happens in the correct thread.
+	  */  
+	public static class NATOutboxLetter extends NATLetter {
+		
+		/**  the serialized version of the original message to be sent.
+		 * Used to be able to retract a message without involving 
+		 * serialization/desearialization because sometimes o != resolve(pass(o))
+		 */
+		private final Packet serializedMessage_;
+		public NATOutboxLetter(LinkedList inbox, ATObject receiver,
+				ATObject message) throws InterpreterException {
+			super(inbox, receiver, message);
+			serializedMessage_ = new Packet(message.toString(),NATTable.of(receiver, message));	
+		}		
+		public ATLetter asLetter() { return this; }
+		public NATOutboxLetter asNativeOutboxLetter() { return this; }
+		public Packet impl_getSerializedMessage() {
+			return serializedMessage_;
+		}
+	}
+	
+	// both local and far references retract messages in the same way.
+	// however, it won't be the same thread calling this method:
+	// in local far references it is called by the owner ELActor thread, while
+	// in remote far references, it is called by a thread of the FarReferencesThreadPool.
+	public ATTable impl_retractUnsentMessages() throws InterpreterException{
+		synchronized (this) {
+			if (outbox_.size() > 0 ) {
+				// def messages := [];
+				// outbox.each: { |letter|  letter.cancel();  messages := messages + [letter.message] };
+				// messages;
+				ATObject[] messages = new ATObject[outbox_.size()];
+				int i = 0;
+				for (Iterator iterator = outbox_.iterator(); iterator.hasNext();) {
+					ATLetter letter = (ATLetter) iterator.next();
+					letter.base_cancel();
+					messages[i] = letter.base_message().asAsyncMessage();
+					i = i + 1;
+				}
+				return NATTable.atValue(messages);	
+			}
+		}
+		// if you arrive here outbox_.size == 0 thus it returns [];
+		return NATTable.EMPTY;		
+	}
 }

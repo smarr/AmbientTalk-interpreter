@@ -119,6 +119,7 @@ public class ELActor extends EventLoop {
 	private final ActorID id_;
 	protected final ELVirtualMachine host_;
 	protected final ReceptionistsSet receptionists_;
+	private FarReferencesThreadPool farReferencesThreadPool_;
 	
 	/*
 	 * This object is created when the actor is initialized: i.e. it is the passed
@@ -133,6 +134,18 @@ public class ELActor extends EventLoop {
 		mirror_ = mirror;
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
+		farReferencesThreadPool_ = new FarReferencesThreadPool(this);
+	}
+	
+	/**constructor dedicated to initialization with stack size for android*/
+	public ELActor(ATActorMirror mirror, ELVirtualMachine host, int stackSize) {
+		super("actor " + mirror.toString(), stackSize);
+		this.start();
+		id_ = new ActorID();
+		mirror_ = mirror;
+		host_ = host;
+		receptionists_ = new ReceptionistsSet(this);
+		farReferencesThreadPool_ = new FarReferencesThreadPool(this);
 	}
 	
 	/** constructor dedicated to initialization of discovery actor */
@@ -143,7 +156,7 @@ public class ELActor extends EventLoop {
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
 	}
-
+		
 	/**
 	 * Actor event loops handle events by allowing the meta-level events to
 	 * process themselves.
@@ -166,6 +179,10 @@ public class ELActor extends EventLoop {
 	
 	public Thread getExecutor() {
 		return processor_;
+	}
+	
+	public FarReferencesThreadPool getFarReferencesExecutor(){
+		return farReferencesThreadPool_;
 	}
 	
 	/**
@@ -594,33 +611,29 @@ public class ELActor extends EventLoop {
 	
 	/**
 	 * When the discovery manager receives a publication from another local actor or
-	 * another remote VM, the actor is asked to compare the incoming publication against
-	 * a subscription that it had announced previously.
-	 * 
-	 * @param requiredTypePkt serialized form of the type attached to the actor's subscription
+	 * another remote VM, it compares the incoming publication against a subscription that
+	 *  it had announced previously. For  each matching subscription ELDiscoveryActor then 
+	 *  calls event_serviceJoined to make ELActor deserialize the remote service object and
+	 *  apply the when:discovered: listeners passing a (remote/local) far reference to it.
+	 *  
 	 * @param myHandler the closure specified as a handler for the actor's subscription
-	 * @param discoveredTypePkt serialized form of the type attached to the new publication
 	 * @param remoteServicePkt serialized form of the reference to the remote discovered service
 	 */
-	public void event_serviceJoined(final Packet requiredTypePkt, final ATFarReference myHandler,
-			                        final Packet discoveredTypePkt, final Packet remoteServicePkt) {
+	public void event_serviceJoined(final ATObject myHandler, final Packet remoteServicePkt) {
+		final ELActor owner = this;
 		receive(new Event("serviceJoined") {
 			public void process(Object myActorMirror) {
+				ATObject unserializedRemoteService = null;
 				try {
-					ATTypeTag requiredType = requiredTypePkt.unpack().asTypeTag();
-					ATTypeTag discoveredType = discoveredTypePkt.unpack().asTypeTag();
-					// is there a match?
-					if (discoveredType.base_isSubtypeOf(requiredType).asNativeBoolean().javaValue) {
-						ATObject remoteService = remoteServicePkt.unpack();
-						// myhandler<-apply([remoteService])@[]
-						Evaluator.trigger(myHandler, NATTable.of(remoteService));
-					}
+					// we unserialize the remote service in the receiver actor, so that 
+					// a remote reference gets the correct pool.
+					unserializedRemoteService = remoteServicePkt.unpack();
+					//make handle receive this message.
+					Evaluator.trigger(myHandler, NATTable.of(unserializedRemoteService));
 				} catch (XIOProblem e) {
-					Logging.Actor_LOG.error("Error deserializing joined types or services: ", e.getCause());
-				} catch (XClassNotFound e) {
-					Logging.Actor_LOG.fatal("Could not find class while deserializing joined types or services: ", e.getCause());
+					Logging.Actor_LOG.error("Error deserializing remote published service: ", e.getCause());
 				} catch (InterpreterException e) {
-					Logging.Actor_LOG.error("Error while joining services: ", e);
+					Logging.Actor_LOG.error(myActorMirror + ": error triggering when:discovered: handler with arg " + unserializedRemoteService, e);
 				}
 			}
 		});
