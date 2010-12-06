@@ -391,17 +391,6 @@ public final class Evaluator {
 		_MIRROR_ROOT_.set(createMirrorRoot());
 	}
 	
-	// returns isolate:{ nil } mirrorredBy: (object: { def resolve() { Evaluator.getGlobalLexicalScope}})
-	public static ATObject createSerializedLexicalRoot() {
-		return new NATObject(new ATTypeTag[] {NativeTypeTags._ISOLATE_}) {
-			public ATObject meta_resolve() throws InterpreterException {
-				return Evaluator.getGlobalLexicalScope();
-			}
-			public NATText meta_print() throws InterpreterException {
-				return NATText.atValue("<serialized lexical root>");
-			}
-		};
-	}
 	/**
 	 * A global scope has the sentinel instance as its lexical parent.
 	 */
@@ -410,10 +399,33 @@ public final class Evaluator {
 			// override meta_pass to avoid the creation of a far reference 
 			// when the root object gets parameter passed.
 			public ATObject meta_pass() throws InterpreterException {
-				return Evaluator.createSerializedLexicalRoot();
+				return createSerializedLexicalRoot();
 			}	
 		};
 		return root;
+	}
+	
+	/**
+	 * returns an object equivalent to:
+	 * <code>
+	 * isolate: { nil } mirroredBy: (mirror: {
+	 *   def resolve() { root } // re-bind to the root of the resolving actor
+	 * })
+	 * </code>
+	 * 
+	 * Note: in principle the code of this method could be called in-line
+	 * in the meta_pass method defined in the createGlboalLexicalScope method above.
+	 * However, this causes the Java serializer to throw a ClassCastException. 
+	 */
+	private static ATObject createSerializedLexicalRoot() {
+		return new NATObject(new ATTypeTag[] {NativeTypeTags._ISOLATE_}) {
+			public ATObject meta_resolve() throws InterpreterException {
+				return Evaluator.getGlobalLexicalScope();
+			}
+			public NATText meta_print() throws InterpreterException {
+				return NATText.atValue("<serialized lexical root>");
+			}
+		};
 	}
 	
     /**
