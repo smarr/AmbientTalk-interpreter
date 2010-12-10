@@ -27,6 +27,7 @@
  */
 package edu.vub.at.actors;
 
+import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -46,5 +47,7 @@ public interface ATFarReference extends ATObject {
 	 * reference will be empty.
 	 */
 	public ATTable meta_retractUnsentMessages() throws InterpreterException;
+	
+	public ATObjectID impl_getObjectId();
 	
 }

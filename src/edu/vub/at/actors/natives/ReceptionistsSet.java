@@ -229,7 +229,7 @@ public class ReceptionistsSet {
 			//check whether the object to disconnect is a far reference.
 			if(object instanceof NATFarReference) {
 				NATFarReference reference = (NATFarReference)object;
-				ATObjectID objId = reference.getObjectId();
+				ATObjectID objId = reference.impl_getObjectId();
 				NATDisconnected disco = new NATDisconnected(object, objId);
 				// notify locally the far reference, no need to broadcast the
 				// 'disconnect' event, neither disconnect publications.

@@ -56,7 +56,7 @@ public class NATRemoteFarRef extends NATFarReference {
 	 *  currently transmitting a message. It is used to make meta_retract() wait  
 	 *  for the success/failure of the message currently being sent.
 	 */
-    private boolean transmitting_;
+    private transient boolean transmitting_;
     
 	public NATRemoteFarRef(ATObjectID objectId, ELActor hostActor, ATTypeTag[] types, boolean isConnected) {
 		super(objectId, types, hostActor, isConnected);

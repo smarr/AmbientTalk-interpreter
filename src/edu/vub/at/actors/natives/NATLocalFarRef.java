@@ -33,6 +33,8 @@ import java.util.Vector;
 import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.actors.ATLetter;
 import edu.vub.at.actors.id.ATObjectID;
+import edu.vub.at.actors.natives.NATActorMirror.NATLetter;
+import edu.vub.at.actors.natives.NATFarReference.NATOutboxLetter;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
@@ -104,5 +106,5 @@ public class NATLocalFarRef extends NATFarReference {
 	public ELActor getFarHost() {
 		return farObjectHost_;
 	}
-
+	
 }

@@ -158,7 +158,7 @@ public class ConnectionListenerManager {
 					ConnectionListener listener = (ConnectionListener) pooled.get();
 					if (listener != null){
 						if (listener instanceof NATFarReference) {
-							ATObjectID destination = ((NATFarReference)listener).getObjectId();
+							ATObjectID destination = ((NATFarReference)listener).impl_getObjectId();
 							if (destination.equals(objId)){
 								listener.takenOffline();
 								//The entry on the table is removed so that the remote far reference is never 
@@ -191,7 +191,7 @@ public class ConnectionListenerManager {
 					ConnectionListener listener = (ConnectionListener) pooled.get();
 					if (listener != null){
 						if (listener instanceof NATFarReference) {
-							ATObjectID destination = ((NATFarReference)listener).getObjectId();
+							ATObjectID destination = ((NATFarReference)listener).impl_getObjectId();
 							if (destination.equals(objId)){
 								listener.disconnected();
 							}
@@ -218,7 +218,7 @@ public class ConnectionListenerManager {
 					ConnectionListener listener = (ConnectionListener) pooled.get();
 					if (listener != null){
 						if (listener instanceof NATFarReference) {
-							ATObjectID destination = ((NATFarReference)listener).getObjectId();
+							ATObjectID destination = ((NATFarReference)listener).impl_getObjectId();
 							if (destination.equals(objId)){
 								listener.connected();
 							}

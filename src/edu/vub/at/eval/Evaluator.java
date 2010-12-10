@@ -395,6 +395,14 @@ public final class Evaluator {
 	 * A global scope has the sentinel instance as its lexical parent.
 	 */
 	private static NATObject createGlobalLexicalScope() {
+		return new NATObject(OBJLexicalRoot._INSTANCE_);
+		
+		/* This will create an unnnecessary remote far references for the
+		 * global lexical scope for isolate objects taking along
+		 * the lexicalParent_. However, lexicaParent_ is rebound 
+		 * upon arrival. As solution, we could pass the root as follows
+		 * by it fails in Android (see issue#44 in the google code site).
+
 		NATObject root = new NATObject(OBJLexicalRoot._INSTANCE_) {
 			// override meta_pass to avoid the creation of a far reference 
 			// when the root object gets parameter passed.
@@ -402,7 +410,7 @@ public final class Evaluator {
 				return createSerializedLexicalRoot();
 			}	
 		};
-		return root;
+		return root; */
 	}
 	
 	/**
@@ -416,8 +424,11 @@ public final class Evaluator {
 	 * Note: in principle the code of this method could be called in-line
 	 * in the meta_pass method defined in the createGlboalLexicalScope method above.
 	 * However, this causes the Java serializer to throw a ClassCastException. 
+	 * 
+	 * IMPORTANT: Not used by now because it raises a java.exception.IndexOutOfBound in Android. 
+	 * See issue#44 in the google code site.
 	 */
-	private static ATObject createSerializedLexicalRoot() {
+	/*private static ATObject createSerializedLexicalRoot() {
 		return new NATObject(new ATTypeTag[] {NativeTypeTags._ISOLATE_}) {
 			public ATObject meta_resolve() throws InterpreterException {
 				return Evaluator.getGlobalLexicalScope();
@@ -426,7 +437,7 @@ public final class Evaluator {
 				return NATText.atValue("<serialized lexical root>");
 			}
 		};
-	}
+	} */
 	
     /**
      * A lobby namespace is a simple empty object

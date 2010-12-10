@@ -132,7 +132,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		owner_.getHost().connectionManager_.addConnectionListener(objectId_.getVirtualMachineId(), this);
 	}
 	
-	public ATObjectID getObjectId() {
+	public ATObjectID impl_getObjectId() {
 		return objectId_;
 	}
 	
@@ -486,7 +486,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		if (this == other) {
 			return NATBoolean._TRUE_;
 		} else if (other.isNativeFarReference()) {
-			ATObjectID otherId = other.asNativeFarReference().getObjectId();
+			ATObjectID otherId = other.asNativeFarReference().impl_getObjectId();
 			return NATBoolean.atValue(objectId_.equals(otherId));
 		} else {
 			return NATBoolean._FALSE_;

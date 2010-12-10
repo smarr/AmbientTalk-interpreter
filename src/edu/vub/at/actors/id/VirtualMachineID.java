@@ -55,6 +55,10 @@ public final class VirtualMachineID implements Serializable {
 		return (int) id_;
 	}
 	
+	public long getID(){
+		return id_;
+	}
+	
 	public String toString() {
 		return "vmid["+id_+"]";
 	}

@@ -138,7 +138,7 @@ public final class FarReferencesThreadPool {
 			super ("transmit( ["+ letter.base_receiver().asFarReference() + ","+ letter.base_message().asAsyncMessage() +"])");
 			letter_ = letter;
 			reference_ = reference;
-			destination_ =  reference_.asNativeFarReference().getObjectId();
+			destination_ =  reference_.asNativeFarReference().impl_getObjectId();
 		}
 		public void process(Object owner){
 			Address destAddress = getDestinationVMAddress();
