@@ -272,7 +272,7 @@ public final class FarReferencesThreadPool {
 							// if there is a thread transmitting a message for this reference:
 							// resolve the future with a BlockingFuture to wait for the result of the transmission.
 							BlockingFuture future = setRetractingFuture(reference);
-							return future;
+							return future.get();
 						} else {
 							// if there is no thread transmitting a message for this reference:
 							// resolve the future immediately with the content of its oubox.
