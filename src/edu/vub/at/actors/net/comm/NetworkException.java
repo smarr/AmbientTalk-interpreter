@@ -27,7 +27,6 @@
  */
 package edu.vub.at.actors.net.comm;
 
-import java.io.IOException;
 
 /**
  * Raised when a VM command object could not properly be sent to its destination
@@ -37,14 +36,14 @@ import java.io.IOException;
  */
 public class NetworkException extends Exception {
 
-	private final IOException cause_;
+	private final Exception cause_;
 	
 	public NetworkException(String msg) {
 		super(msg);
 		cause_ = null;
 	}
 
-	public NetworkException(String msg, IOException cause) {
+	public NetworkException(String msg, Exception cause) {
 		super(msg);
 		cause_ = cause;
 	}
