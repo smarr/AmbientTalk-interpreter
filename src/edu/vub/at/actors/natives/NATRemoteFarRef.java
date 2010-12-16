@@ -60,7 +60,7 @@ public class NATRemoteFarRef extends NATFarReference {
     
 	public NATRemoteFarRef(ATObjectID objectId, ELActor hostActor, ATTypeTag[] types, boolean isConnected) {
 		super(objectId, types, hostActor, isConnected);
-		sendLoop_ = hostActor.getFarReferencesExecutor(); 
+		sendLoop_ = hostActor.getHost().farReferencesThreadPool_; 
 		transmitting_ = false;
 	}
 	

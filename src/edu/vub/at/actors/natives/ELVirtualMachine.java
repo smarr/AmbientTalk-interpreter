@@ -98,6 +98,8 @@ public final class ELVirtualMachine extends EventLoop {
 	/** the actor responsible for hosting the publications and subscriptions of this VM's actors */
 	public final ELDiscoveryActor discoveryActor_;
 	
+	public final FarReferencesThreadPool farReferencesThreadPool_;
+
 	/**
 	 * Construct a new AmbientTalk virtual machine where...
 	 * @param initCode is the code to be executed in each new created actor (the content of the init.at file)
@@ -127,6 +129,8 @@ public final class ELVirtualMachine extends EventLoop {
 		connectionManager_ = new ConnectionListenerManager();
 		communicationBus_ = new CommunicationBus(this, groupName, ipAddress);
 		
+		farReferencesThreadPool_ = new FarReferencesThreadPool(this);
+		
 		Logging.VirtualMachine_LOG.info(this + ": VM created on network " + groupName);
 	}
 	
@@ -145,6 +149,7 @@ public final class ELVirtualMachine extends EventLoop {
 	}
 	
 	public ELVirtualMachine getHost() { return this; }
+	
 	
 	/**
 	 * An event loop handles events by dispatching to the event itself.

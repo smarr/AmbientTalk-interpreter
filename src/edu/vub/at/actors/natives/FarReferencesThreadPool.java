@@ -49,9 +49,9 @@ import edu.vub.at.util.logging.Logging;
 
 /**
  * An instance of the class FarReferencesThreadPool represents a pool of threads for
- * all remote far references belonging to an ELActor. 
+ * all remote far references belonging to an ELVirtualMachine. 
  * 
- * Note that the ELDiscoveryActor is initialized without a FarReferencesThreadPool as it only 
+ * ELDiscoveryActor is initialized without a FarReferencesThreadPool as it only 
  * holds local far references to closures corresponding to when(er):discovered listeners.
  * 
  * FarReferencesThreadPool works together with NATRemoteFarRef to ensure that messages are
@@ -71,11 +71,11 @@ import edu.vub.at.util.logging.Logging;
  */
 public final class FarReferencesThreadPool {
 	
+	
 	/**
-	 * The actor and virtual machine to which this far ref pool belongs.
-	 * One can get the ELVirtualMachine from ELActor, but keep for optimization.
+	 * The virtual machine to which this far ref pool belongs.
+	 * One can get the dispatcher from ELVirtualMachine, but keep for optimization.
 	 */
-	private final ELActor owner_;
 	private final ELVirtualMachine host_;
 
 	/** the network layer used to actually transmit an AmbientTalk message */ 
@@ -93,10 +93,9 @@ public final class FarReferencesThreadPool {
 	 */
 	private final HashMap<ATFarReference, BlockingFuture>  retractFutures_;
 	
-	
-	public FarReferencesThreadPool(ELActor owner) {
-		owner_ = owner;
-		host_ = owner_.getHost();
+
+	public FarReferencesThreadPool(ELVirtualMachine host) {
+		host_ = host;
 		dispatcher_ = host_.communicationBus_;
 		pool = Executors.newCachedThreadPool();
 		retractFutures_ = new HashMap();
@@ -115,7 +114,7 @@ public final class FarReferencesThreadPool {
 			event_ = event;
 		}
 		public void run() {
-			event_.process(owner_);			
+			event_.process(host_);
 		}	
 	}
 	

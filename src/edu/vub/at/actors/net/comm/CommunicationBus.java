@@ -175,10 +175,15 @@ public class CommunicationBus {
 		 * tied to this connection, which will cause this connection to be removed
 		 * from the table.
 		 */
-		public void close() {
+		public synchronized void close() {
 			try {
 				socket_.close();
 			} catch (IOException ioe) { }
+		}
+		
+		public synchronized void send(VMCommand msg) throws IOException{
+			outgoing_.writeObject(msg);
+			outgoing_.flush();
 		}
 	}
 	
@@ -492,8 +497,7 @@ public class CommunicationBus {
 		}
 		
 		try {
-			conn.outgoing_.writeObject(msg);
-			conn.outgoing_.flush();
+			conn.send(msg);
 		} catch (IOException e) {
 			// it is the sender's responsibility to close the connection's socket if something goes wrong
 			// the corresponding CommandProcessor registered on this socket will remove the member from
@@ -517,8 +521,7 @@ public class CommunicationBus {
 	 */
 	private void sendOneAsyncMessage(Connection conn, VMCommand msg, Address recipientVM) {
 		try {
-			conn.outgoing_.writeObject(msg);
-			conn.outgoing_.flush();
+			conn.send(msg);
 		} catch (IOException e) {
 			// it is the sender's responsibility to close the connection's socket if something goes wrong
 			// the CommandProcessor will remove the member from the connection table

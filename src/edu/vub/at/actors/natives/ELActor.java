@@ -119,7 +119,6 @@ public class ELActor extends EventLoop {
 	private final ActorID id_;
 	protected final ELVirtualMachine host_;
 	protected final ReceptionistsSet receptionists_;
-	private FarReferencesThreadPool farReferencesThreadPool_;
 	
 	/*
 	 * This object is created when the actor is initialized: i.e. it is the passed
@@ -134,7 +133,6 @@ public class ELActor extends EventLoop {
 		mirror_ = mirror;
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
-		farReferencesThreadPool_ = new FarReferencesThreadPool(this);
 	}
 	
 	/**constructor dedicated to initialization with stack size for android*/
@@ -145,7 +143,6 @@ public class ELActor extends EventLoop {
 		mirror_ = mirror;
 		host_ = host;
 		receptionists_ = new ReceptionistsSet(this);
-		farReferencesThreadPool_ = new FarReferencesThreadPool(this);
 	}
 	
 	/** constructor dedicated to initialization of discovery actor */
@@ -179,10 +176,6 @@ public class ELActor extends EventLoop {
 	
 	public Thread getExecutor() {
 		return processor_;
-	}
-	
-	public FarReferencesThreadPool getFarReferencesExecutor(){
-		return farReferencesThreadPool_;
 	}
 	
 	/**
