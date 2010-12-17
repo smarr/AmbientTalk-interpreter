@@ -27,6 +27,7 @@
  */
 package edu.vub.at.actors.natives;
 
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -39,6 +40,7 @@ import edu.vub.at.actors.net.cmd.CMDJoinServices;
 import edu.vub.at.actors.net.cmd.CMDProvideService;
 import edu.vub.at.actors.net.cmd.CMDRequireService;
 import edu.vub.at.actors.net.comm.Address;
+import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
@@ -380,6 +382,16 @@ public final class ELDiscoveryActor extends ELActor {
 		} catch (Exception e) {
 			throw (InterpreterException) e;
 		}
+	}
+	
+	public void event_reset() {
+		this.receive(new Event("reset") {
+			public void process(Object myself) {
+				// clean the data structures for publications/subscriptions and listeners.
+				discoveryManager_.reset();
+				Logging.VirtualMachine_LOG.info(this + ": discovery actor reseting");
+			}
+		});
 	}
 	
 }

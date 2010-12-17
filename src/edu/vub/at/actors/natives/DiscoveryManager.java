@@ -371,4 +371,10 @@ public final class DiscoveryManager {
         }
         return (Subscription[]) matches.toArray(new Subscription[matches.size()]);
 	}
+	
+	public void reset(){
+		 disconnectedPublications_.clear();
+		 publications_.clear();
+		 subscriptions_.clear();
+	}
 }

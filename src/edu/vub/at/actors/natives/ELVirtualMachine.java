@@ -28,11 +28,13 @@
 package edu.vub.at.actors.natives;
 
 import edu.vub.at.actors.eventloops.BlockingFuture;
+import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.eventloops.Event;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.actors.id.ActorID;
 import edu.vub.at.actors.id.VirtualMachineID;
+import edu.vub.at.actors.natives.DiscoveryManager.Subscription;
 import edu.vub.at.actors.net.ConnectionListenerManager;
 import edu.vub.at.actors.net.VMAddressBook;
 import edu.vub.at.actors.net.cmd.CMDHandshake;
@@ -45,12 +47,16 @@ import edu.vub.at.actors.net.comm.NetworkException;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.natives.NATMethod;
+import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 import edu.vub.at.util.logging.Logging;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 /**
  * A ELVirtualMachine represents a virtual machine which hosts several actors. The 
@@ -69,7 +75,7 @@ public final class ELVirtualMachine extends EventLoop {
 	private static final String _ENV_AT_STACK_SIZE_ = "AT_STACK_SIZE";
 		
 	/** startup parameter to the VM: the code of the init.at file to use */
-	private final ATAbstractGrammar initialisationCode_;
+	private ATAbstractGrammar initialisationCode_;
 	
 	/** startup parameter to the VM: the list of fields to be initialized in every hosted actor */
 	private final SharedActorField[] sharedFields_;
@@ -363,6 +369,62 @@ public final class ELVirtualMachine extends EventLoop {
 			return (NATLocalFarRef) future.get();
 		} catch (Exception e) {
 			throw (InterpreterException) e;
+		}
+	}
+	
+	/**Does a soft reset of the virtual machine: 
+	 * It removes the VM from the network, restarts data structures 
+	 * (cleans the actors and discoveryActor) and puts it back online.
+	 * 
+	 * This event is synchronous because after its execution the user may need
+	 * to create new actors and we should ensure that it happens in the new environment.
+	 * Currently it is used from iat, and after the reset it re-initializes the evaluator.
+	 * 
+	 * @param initCode is the code to be executed in each new created actor (the content of the init.at file)
+	 * @return 0 if it succeeds, 1 if not.
+	 * @throws InterpreterException
+	 */
+	public ATObject sync_event_softReset(final ATAbstractGrammar initCode){	
+		try {
+			return (ATObject) this.receiveAndWait("reset", new Callable() {
+				public Object call(Object argument) {
+					// disconnect VM from the network so that old actors 
+					// d to this VM re-handshake.
+					communicationBus_.disconnect();
+					// go over all actors and make them stop processing, except for the discovery actor.
+					ELDiscoveryActor discoveryActor;
+					for (Enumeration e = localActors_.elements(); e.hasMoreElements();) {
+						ELActor actor = (ELActor) e.nextElement();
+						if (!(actor instanceof ELDiscoveryActor)){
+							actor.stopProcessing();
+						} else{
+							discoveryActor = (ELDiscoveryActor) actor;
+							// reset the tables of discoveryActor.
+							discoveryActor.event_reset();
+						}
+					}
+					//clear from the data structure all actors.
+					localActors_.clear();
+					// add the discovery actor back to the tables.
+					localActors_.put(discoveryActor_.getActorID(), discoveryActor_);
+					// reinitialize the init code used to initialize actors.
+					initialisationCode_ = initCode;
+					// reset the environment.
+					Evaluator.resetEnvironment();
+					// put the VM back online
+					try {
+						communicationBus_.connect();
+					} catch (NetworkException e) {
+						Logging.VirtualMachine_LOG.fatal(this + ": could not connect to network during reset: ", e);
+						return NATNumber.ONE;
+					}
+					Logging.VirtualMachine_LOG.info(this + ": interpreter reset sucessfully completed");
+					return NATNumber.ZERO;
+				}
+			});
+		} catch (Exception e) {
+			Logging.VirtualMachine_LOG.fatal(this + ": error while reseting:", e);
+			return NATNumber.ONE;
 		}
 	}
 	
