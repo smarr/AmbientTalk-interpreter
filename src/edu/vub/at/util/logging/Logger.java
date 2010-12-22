@@ -29,6 +29,7 @@ package edu.vub.at.util.logging;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * A logger object modelled after the interface of the Log4J framework.
@@ -64,6 +65,10 @@ public class Logger {
 			_LOGS.put(name, logger);
 		}
 		return logger;
+	}
+	
+	public static Object[] getAllInstances() {
+		return _LOGS.values().toArray();
 	}
 	
 	/** When loggers are initialised with this setting, all messages (including debug info) are being logged. */ 
