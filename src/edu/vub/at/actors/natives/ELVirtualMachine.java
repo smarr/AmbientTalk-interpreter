@@ -381,13 +381,14 @@ public final class ELVirtualMachine extends EventLoop {
 	 * Currently it is used from iat, and after the reset it re-initializes the evaluator.
 	 * 
 	 * @param initCode is the code to be executed in each new created actor (the content of the init.at file)
-	 * @return 0 if it succeeds, 1 if not.
+	 * @return nil if it succeeds.
+	 * @throws Exception 
 	 * @throws InterpreterException
 	 */
-	public ATObject sync_event_softReset(final ATAbstractGrammar initCode){	
+	public ATObject sync_event_softReset(final ATAbstractGrammar initCode) throws Exception{	
 		try {
 			return (ATObject) this.receiveAndWait("reset", new Callable() {
-				public Object call(Object argument) {
+				public Object call(Object argument) throws Exception {
 					// disconnect VM from the network so that old actors 
 					// d to this VM re-handshake.
 					communicationBus_.disconnect();
@@ -416,15 +417,15 @@ public final class ELVirtualMachine extends EventLoop {
 						communicationBus_.connect();
 					} catch (NetworkException e) {
 						Logging.VirtualMachine_LOG.fatal(this + ": could not connect to network during reset: ", e);
-						return NATNumber.ONE;
+						throw e;
 					}
 					Logging.VirtualMachine_LOG.info(this + ": interpreter reset sucessfully completed");
-					return NATNumber.ZERO;
+					return Evaluator.getNil();
 				}
 			});
 		} catch (Exception e) {
 			Logging.VirtualMachine_LOG.fatal(this + ": error while reseting:", e);
-			return NATNumber.ONE;
+			throw e;
 		}
 	}
 	

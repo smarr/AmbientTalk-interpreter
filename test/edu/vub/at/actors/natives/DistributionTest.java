@@ -4,6 +4,7 @@ import edu.vub.at.actors.eventloops.Callable;
 import edu.vub.at.actors.net.ConnectionListener;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.objects.ATAbstractGrammar;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.mirrors.NativeClosure;
@@ -267,6 +268,42 @@ public class DistributionTest extends TestCase {
 		if(! getTestResult())
 			fail("Service DiscoveryBus notification has failed to arrive within " + _TIMEOUT_ /1000 + " sec.");
 	}
+	
+	/**
+	 * Uses the when: discovered: and export: as: constructs to make an object on one virtual
+	 * machine accessible to another virtual machine. After a first discovery, it forces a
+	 * soft reset on a virtual machine which makes the vm go offline and back online
+	 * The second vm should discovery it again afterwards.
+	 * @throws Exception
+	 */
+	public synchronized void testServiceDiscoveryWithSoftReset() throws Exception {
+		
+		setTestResult(false);
+		
+		setUpConnectionObservers();
+		
+		virtual1_.event_goOnline();
+		virtual2_.event_goOnline();
+		
+		try {
+			this.wait( _TIMEOUT_ );
+		} catch (InterruptedException e) {};
+		
+		if(! getTestResult())
+			fail("Service DiscoveryBus notification has failed to arrive within " + _TIMEOUT_ /1000 + " sec.");
+		
+		ATAbstractGrammar initCode = virtual1_.getInitialisationCode();
+		virtual1_.sync_event_softReset(initCode);
+		
+		try {
+			this.wait( _TIMEOUT_ );
+		} catch (InterruptedException e) {};
+		
+		if(! getTestResult())
+			fail("Service DiscoveryBus notification after reset has failed to arrive within " + _TIMEOUT_ /1000 + " sec.");
+		
+	}
+
 		
 	/**
 	 * This test uses the whenever: disconnected: to detect when a far reference has become

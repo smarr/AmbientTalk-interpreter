@@ -505,12 +505,7 @@ public class CommunicationBus {
 			conn.close();
 			Logging.Network_LOG.error("Error while trying to send command " + msg.toString() + " to " + recipientVM, e);
 			throw new NetworkException("Error while trying to transmit message " + msg, e);
-		} catch (ArrayIndexOutOfBoundsException e1){ 
-			// TODO: Remove! TEMPORARY CODE TILL WE FIGURE OUT WHY WE GET THIS EXCEPTION.
-			conn.close();
-			Logging.Network_LOG.error("Error while trying to send command " + msg.toString() + " to " + recipientVM, e1);
-			throw new NetworkException("Error while trying to send command " +  msg, e1);
-		}
+		} 
 	}
 	
 	/**
