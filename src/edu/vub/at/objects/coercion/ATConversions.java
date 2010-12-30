@@ -121,6 +121,8 @@ public interface ATConversions {
 	 */
 	public boolean isFarReference() throws InterpreterException;
 	
+	public boolean isNativeAbstractGrammar() throws InterpreterException;
+	
 	public ATClosure   asClosure() throws InterpreterException;
 	public ATSymbol    asSymbol() throws InterpreterException;
 	public ATTable     asTable() throws InterpreterException;

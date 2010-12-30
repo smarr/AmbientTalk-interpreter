@@ -281,35 +281,6 @@ public class NATObject extends NATCallframe implements ATObject {
 			Logging.Actor_LOG.error("Error testing for Isolate type, ignored:", e);
 		}
 	}
-	
-	/**
-	 * Constructs a new ambienttalk object as a clone of an existing object
-	 * without any free variables.
-	 * 
-	 * The caller of this method *must* ensure that the shares flags are set.
-	 * 
-	 * This constructor is responsible for manually re-initialising any custom field
-	 * objects, because the init method of such custom fields is parameterized by the
-	 * clone, which only comes into existence when this constructor runs.
-	 */
-	protected NATObject(FieldMap map,
-	         Vector state,
-	         LinkedList originalCustomFields,
-	         MethodDictionary methodDict,
-	         ATObject dynamicParent,
-	         ATObject lexicalParent,
-	         byte flags,
-	         ATTypeTag[] types) throws InterpreterException {
-		this(map, 
-				state,
-				originalCustomFields,
-				methodDict,
-				dynamicParent,
-				lexicalParent,
-				flags,
-				types, 
-				null);
-	}
 
 	/**
 	 * Constructs a new ambienttalk object as a clone of an existing object.
@@ -607,6 +578,7 @@ public class NATObject extends NATCallframe implements ATObject {
 	
 	public NATText impl_asBodyCode(TempFieldGenerator objectMap) throws InterpreterException {
 		
+		// filter out super field when it is nil or if it points to the mirror root
 		ATObject[] fields = this.meta_listFields().base_filter_(new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
 				String name = args.base_at(NATNumber.ONE).asField().base_name().toString();
@@ -617,6 +589,7 @@ public class NATObject extends NATCallframe implements ATObject {
 			}
 		}).asNativeTable().elements_;
 		
+		// filter out super:=
 		ATObject[] methods = this.meta_listMethods().base_filter_(new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
 				String name = args.base_at(NATNumber.ONE).asMethod().base_name().toString();
@@ -755,7 +728,8 @@ public class NATObject extends NATCallframe implements ATObject {
 	            dynamicParent,
 	            lexicalParent,
 	            flags,
-	            types);
+	            types,
+	            freeVars);
 	}
 		
     /* ----------------------------------

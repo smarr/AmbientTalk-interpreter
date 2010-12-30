@@ -35,6 +35,7 @@ import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.grammar.ATAssignmentSymbol;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * An assignment symbol is created by suffixing an ordinary symbol with a :=. It can be created 
@@ -85,6 +86,10 @@ public class AGAssignmentSymbol extends AGSymbol implements ATAssignmentSymbol {
 	}
 
 	public NATText meta_print() {
+		return NATText.atValue(toString());
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
 		return NATText.atValue(toString());
 	}
 

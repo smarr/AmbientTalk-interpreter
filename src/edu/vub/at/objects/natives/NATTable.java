@@ -194,8 +194,20 @@ public class NATTable extends AGExpression implements ATTable {
 			out.append(elements_[i].impl_asCode(objectMap).javaValue);
 		}
 		out.append("]");
-		NATText name = objectMap.put(this, NATText.atValue(out.toString()));
+		NATText code = NATText.atValue(out.toString());
+		NATText name = objectMap.put(this, code);
 		return name;
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		StringBuffer out = new StringBuffer("[");
+		for(int i = 0 ; i < elements_.length ; i++) {
+			if(i > 0) { out.append(", "); }
+			out.append(elements_[i].impl_asUnquotedCode(objectMap).javaValue);
+		}
+		out.append("]");
+		NATText code = NATText.atValue(out.toString());
+		return code;
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {

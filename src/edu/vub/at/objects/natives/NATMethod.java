@@ -167,11 +167,11 @@ public class NATMethod extends NATByCopy implements ATMethod {
 			return objectMap.getName(this);
 		}
 		StringBuffer out = new StringBuffer("");
-		out.append("def "+ name_.toString());
-		out.append(Evaluator.codeAsList(objectMap, parameters_.asNativeTable()).javaValue);
+		out.append("def "+ name_.meta_print().javaValue);
+		out.append(Evaluator.codeAsList(objectMap, parameters_).javaValue);
 		if(annotations_.base_length().asNativeNumber().javaValue > 0)
 			out.append("@"+annotations_.impl_asCode(objectMap).javaValue);
-		out.append("{" + body_.meta_print().javaValue + "}");
+		out.append("{" + Evaluator.codeAsStatements(objectMap, body_.base_statements()).javaValue + "}");
 		return NATText.atValue(out.toString());
 	}
 	
@@ -183,14 +183,14 @@ public class NATMethod extends NATByCopy implements ATMethod {
 		if(asClosure) {
 			StringBuffer out = new StringBuffer("");
 			out.append("{");
-			out.append(Evaluator.codeParameterList(objectMap, parameters_.asNativeTable()).javaValue);
-			out.append(body_.meta_print().javaValue + "}");
+			out.append(Evaluator.codeAsParameterList(objectMap, parameters_).javaValue);
+			out.append(Evaluator.codeAsStatements(objectMap, body_.base_statements()).javaValue + "}");
 			return NATText.atValue(out.toString());
 		} else {
 			return this.impl_asCode(objectMap);
 		}
 	}
-	
+
 	public ATObject meta_clone() throws InterpreterException {
 		return this;
 	}

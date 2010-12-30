@@ -39,6 +39,7 @@ import edu.vub.at.objects.grammar.ATMessageCreation;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.Set;
 
@@ -119,6 +120,19 @@ public abstract class AGMessageCreation extends AGExpression implements ATMessag
 		               selector_.meta_print().javaValue +
 		               Evaluator.printAsList(arguments_).javaValue +
 		               "@" + annotations_.meta_print().javaValue);
+		}
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if (annotations_ == NATTable.EMPTY) {
+			return NATText.atValue(this.getMessageToken() +
+		               selector_.impl_asUnquotedCode(objectMap).javaValue +
+		               Evaluator.codeAsList(objectMap, arguments_).javaValue);
+		} else {
+			return NATText.atValue(this.getMessageToken() +
+		               selector_.impl_asUnquotedCode(objectMap).javaValue +
+		               Evaluator.codeAsList(objectMap, arguments_).javaValue +
+		               "@" + annotations_.impl_asUnquotedCode(objectMap).javaValue);
 		}
 	}
 	

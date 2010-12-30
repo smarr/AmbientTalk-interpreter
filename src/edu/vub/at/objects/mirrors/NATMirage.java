@@ -432,12 +432,11 @@ public class NATMirage extends NATObject {
 	}
 	
 	public NATText meta_asCode() throws InterpreterException {
-		String base = mirror_.impl_invoke(
+		return mirror_.impl_invoke(
 				mirror_, 
 				AGSymbol.jAlloc("asCode"),
 				//argTable).asNativeText().javaValue;
-				NATTable.EMPTY).asNativeText().javaValue;
-		return NATText.atValue(base);
+				NATTable.EMPTY).asNativeText();
 	}
 	
 	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {

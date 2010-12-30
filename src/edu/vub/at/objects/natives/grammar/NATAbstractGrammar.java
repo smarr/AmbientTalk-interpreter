@@ -28,12 +28,16 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XSerializationError;
 import edu.vub.at.objects.ATAbstractGrammar;
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATTable;
+import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.SourceLocation;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * @author tvcutsem
@@ -66,5 +70,19 @@ public abstract class NATAbstractGrammar extends NATByCopy implements ATAbstract
     		throw new RuntimeException("Trying to override source location of "+this.toString()+" from "+loc_+" to "+loc);
     	}
     }
+    
+    // "normal" serialization results in the quoted value
+    // for unquoted values use impl_asUnquotedCode
+    public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+    	NATText code = this.impl_asUnquotedCode(objectMap);
+    	return NATText.atValue("`" + code.javaValue);
+    }
+    
+    // should be overridden in the subclasses
+    public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+    	throw new XSerializationError("Unable to serialize object: " + this.meta_print().javaValue + " (type: " + this.getClass() + ")");
+    }
+    
+    public boolean isNativeAbstractGrammar() { return true; }
     
 }

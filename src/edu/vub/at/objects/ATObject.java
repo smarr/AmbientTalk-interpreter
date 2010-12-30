@@ -738,6 +738,8 @@ public interface ATObject extends ATConversions {
     public NATText meta_asCode() throws InterpreterException;
     
     public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException;
+    
+    public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException;
 
     /* ----------------------------------
      * -- Object Relational Comparison --

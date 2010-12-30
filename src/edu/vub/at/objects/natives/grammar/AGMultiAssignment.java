@@ -89,8 +89,8 @@ public final class AGMultiAssignment extends NATAbstractGrammar implements ATMul
 		return NATText.atValue(parameters_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
 	
-	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-		return NATText.atValue("`" + this.meta_print().javaValue);
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue(parameters_.impl_asUnquotedCode(objectMap).javaValue + " := " + valueExp_.impl_asUnquotedCode(objectMap).javaValue);
 	}
 	
 	/**

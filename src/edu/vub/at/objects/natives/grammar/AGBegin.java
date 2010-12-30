@@ -101,8 +101,11 @@ public final class AGBegin extends NATAbstractGrammar implements ATBegin {
 		return Evaluator.printAsStatements(statements_);
 	}
 	
-	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-		return NATText.atValue("`{" + Evaluator.printAsStatements(statements_).javaValue + "}");
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		objectMap.incQuoteLevel();
+		NATText code = Evaluator.codeAsStatements(objectMap, statements_);
+		objectMap.decQuoteLevel();
+		return NATText.atValue("{" + code.javaValue + "}");
 	}
 	
 	public ATBegin asBegin() throws XTypeMismatch {

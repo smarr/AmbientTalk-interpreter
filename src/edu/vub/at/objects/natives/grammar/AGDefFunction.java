@@ -44,6 +44,7 @@ import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -158,6 +159,13 @@ public final class AGDefFunction extends AGDefinition implements ATDefMethod {
 				selectorExp_.meta_print().javaValue +
 				Evaluator.printAsList(argumentExps_).javaValue +
 				" { " + bodyStmts_.meta_print().javaValue + " }");
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("def " +
+				selectorExp_.impl_asUnquotedCode(objectMap).javaValue +
+				Evaluator.codeAsList(objectMap, argumentExps_).javaValue +
+				" { " + bodyStmts_.impl_asUnquotedCode(objectMap).javaValue + " }");
 	}
 	
     public ATTable meta_typeTags() throws InterpreterException {

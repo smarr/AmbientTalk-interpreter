@@ -27,7 +27,10 @@
  */
 package edu.vub.at.objects.natives;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.Vector;
 
 import edu.vub.at.actors.natives.DiscoveryManager;
 import edu.vub.at.eval.Evaluator;
@@ -39,6 +42,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.mirrors.NATMirrorRoot;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.util.TempFieldGenerator;
@@ -176,10 +180,45 @@ public class NATTypeTag extends NATByCopy implements ATTypeTag {
 	}
 	
 	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-		if(objectMap.contains(this)) {
-			return objectMap.getName(this);
+		if(objectMap.containsType(this)) {
+			return objectMap.getTypeName(this);
 		}
-		return NATText.atValue("{deftype " + typeName_ + "}()");
+		String typeName = typeName_.toString();
+		
+		final Set<NATTypeTag> natives = NativeTypeTags.getNativeTypeTags();
+		ATObject[] pTypes = parentTypes_.base_filter_(new NativeClosure(this) {
+			public ATObject base_apply(ATTable args) throws InterpreterException {
+				NATTypeTag tt = (NATTypeTag) args.base_at(NATNumber.ONE);
+				// filter out the root type and types native to the interpreter
+				return NATBoolean.atValue(
+						!(args.base_at(NATNumber.ONE).equals(NATTypeTag.OBJRootType._INSTANCE_) &&
+						!(natives.contains(args.base_at(NATNumber.ONE))))
+				);
+			}
+		}).asNativeTable().elements_;
+		
+		NATText name;
+		if (pTypes.length == 0) {
+			name = objectMap.putType(
+					this, 
+					NATText.atValue(typeName), 
+					NATText.atValue("deftype " + typeName));
+			
+		} else {
+			StringBuffer out = new StringBuffer("deftype " + typeName + " <: ");
+			for (int i = 0 ; i < pTypes.length ; i++) {
+				NATText parentName = pTypes[i].impl_asCode(objectMap);
+				out.append(parentName.javaValue);
+				if (i < pTypes.length - 1) {
+					out.append(", ");
+				}
+			}
+			name = objectMap.putType(
+					this, 
+					NATText.atValue(typeName), 
+					NATText.atValue(out.toString()));
+		}
+		return name;
 	}
 	
 	/**

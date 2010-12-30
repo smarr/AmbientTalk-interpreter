@@ -171,31 +171,8 @@ public final class Evaluator {
 		return printElements(tab.asNativeTable(), "(", ", ", ")");
 	}
 	
-	/**
-	 * Auxiliary function used to code the elements of a table using various separators.
-	 */
-	public final static NATText codeElements(TempFieldGenerator objectMap, ATObject[] els,String start, String sep, String stop) throws InterpreterException {
-		if (els.length == 0)
-			return NATText.atValue(String.valueOf(start+stop));
-		
-	    StringBuffer buff = new StringBuffer(start);
-		for (int i = 0; i < els.length; i++) {
-			ATObject e = els[i];
-			if (e instanceof NATAbstractGrammar) {
-				//buff.append(e.toString());
-				buff.append(e.meta_print().javaValue);
-			} else {
-				buff.append(e.impl_asCode(objectMap).asNativeText().javaValue);
-			}
-			//buff.append(e.impl_asCode(objectMap).asNativeText().javaValue);
-			if (i < (els.length - 1)) { buff.append(sep); }
-		}
-		buff.append(stop);
-	    return NATText.atValue(buff.toString());
-	}
-	
-	public final static NATText codeParameterList(TempFieldGenerator objectMap, NATTable params) throws InterpreterException {
-		NATText plist = codeElements(objectMap, params, "", ", ", "");
+	public final static NATText printAsParameterList(ATTable params) throws InterpreterException {
+		NATText plist = printElements(params.asNativeTable(), "", ",", "");
 		if (plist.javaValue.isEmpty()) {
 			return plist;
 		} else {
@@ -206,8 +183,31 @@ public final class Evaluator {
 	/**
 	 * Auxiliary function used to code the elements of a table using various separators.
 	 */
-	public final static NATText codeElements(TempFieldGenerator objectMap, NATTable tab,String start, String sep, String stop) throws InterpreterException {
-		return codeElements(objectMap, tab.elements_, start, sep, stop);
+	public final static NATText codeElements(TempFieldGenerator objectMap, ATObject[] els,String start, String sep, String stop) throws InterpreterException {
+		if (els.length == 0)
+			return NATText.atValue(String.valueOf(start+stop));
+		
+	    StringBuffer buff = new StringBuffer(start);
+		for (int i = 0; i < els.length; i++) {
+			ATObject e = els[i];
+			buff.append(e.impl_asUnquotedCode(objectMap).asNativeText().javaValue);
+			if (i < (els.length - 1)) { buff.append(sep); }
+		}
+		buff.append(stop);
+	    return NATText.atValue(buff.toString());
+	}
+	
+	public final static NATText codeElements(TempFieldGenerator objectMap, ATTable tab,String start, String sep, String stop) throws InterpreterException {
+		return codeElements(objectMap, tab.asNativeTable().elements_, start, sep, stop);
+	}
+	
+	public final static NATText codeAsParameterList(TempFieldGenerator objectMap, ATTable params) throws InterpreterException {
+		NATText plist = codeElements(objectMap, params.asNativeTable(), "", ",", "");
+		if (plist.javaValue.isEmpty()) {
+			return plist;
+		} else {
+			return NATText.atValue("|" + plist.javaValue + "| ");
+		}
 	}
 
 	public static final NATText codeAsStatements(TempFieldGenerator objectMap, ATTable tab) throws InterpreterException {
@@ -220,7 +220,7 @@ public final class Evaluator {
 
 
 	public static final NATText codeAsList(TempFieldGenerator objectMap, ATTable tab) throws InterpreterException {
-		return codeElements(objectMap, tab.asNativeTable(), "(", ", ", ")");
+		return codeElements(objectMap, tab.asNativeTable(), "(", ",", ")");
 	}
 
 	/**

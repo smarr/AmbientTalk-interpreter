@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATQuote;
 import edu.vub.at.objects.grammar.ATStatement;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -73,6 +74,13 @@ public final class AGQuote extends AGExpression implements ATQuote {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("`("+ stmt_.meta_print().javaValue + ")");
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		objectMap.incQuoteLevel();
+		NATText code = NATText.atValue("`("+ stmt_.impl_asUnquotedCode(objectMap).javaValue + ")");
+		objectMap.decQuoteLevel();
+		return code;
 	}
 	
 	public ATQuote asQuote() throws InterpreterException {

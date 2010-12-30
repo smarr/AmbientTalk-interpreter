@@ -34,6 +34,7 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSelection;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -81,6 +82,10 @@ public final class AGSelection extends AGExpression implements ATSelection {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(rcvExp_.meta_print().javaValue + ".&" + selector_.meta_print().javaValue);
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue(rcvExp_.impl_asUnquotedCode(objectMap).javaValue + ".&" + selector_.impl_asUnquotedCode(objectMap).javaValue);
 	}
 	
 	/**

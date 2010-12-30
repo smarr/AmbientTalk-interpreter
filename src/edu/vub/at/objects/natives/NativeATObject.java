@@ -273,6 +273,8 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 
     public abstract NATText meta_print() throws InterpreterException;
     
+    // start of serialization
+    // create a new temp field generator and start recursive serialization
     public NATText meta_asCode() throws InterpreterException {
     	TempFieldGenerator objectMap = new TempFieldGenerator();
 		NATText name = this.impl_asCode(objectMap);
@@ -281,6 +283,12 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     
 	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
     	throw new XSerializationError("Unable to serialize object: " + this.meta_print().javaValue + " (type: " + this.getClass() + ")");
+    };
+    
+    // abstract grammar elements can be serialized without a quote
+    // for other objects this defaults to impl_asCode
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+    	return this.impl_asCode(objectMap);
     };
 
     /* ------------------------------
@@ -441,6 +449,8 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 	public boolean isNativeFarReference() {
 		return false;
 	}
+	
+	public boolean isNativeAbstractGrammar () { return false; };
     
     // Conversions for concurrency and distribution related object
     public boolean isFarReference() throws InterpreterException {

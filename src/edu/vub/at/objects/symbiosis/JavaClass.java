@@ -304,7 +304,14 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 	
 
 	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-		return NATText.atValue("jlobby." + wrappedClass_.getCanonicalName());
+		String simpleClassName = wrappedClass_.getSimpleName();
+		char[] simpleClassNameChars = simpleClassName.toCharArray();
+		if (Character.isLowerCase(simpleClassNameChars[0])) {
+			String packageName = wrappedClass_.getPackage().getName();
+			return NATText.atValue("jlobby." + packageName + ".class(`" + simpleClassName + ")");
+		} else {
+			return NATText.atValue("jlobby." + wrappedClass_.getCanonicalName());
+		}
 	}
 
 	/**

@@ -38,6 +38,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATDefExternalMethod;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * A 'closure method' is literally a function that sits in between of a full closure and a method.

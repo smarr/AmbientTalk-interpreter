@@ -33,6 +33,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATLookup;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -76,6 +77,10 @@ public final class AGLookup extends AGExpression implements ATLookup {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("&" + selector_.meta_print().javaValue);
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("&" + selector_.impl_asUnquotedCode(objectMap).javaValue);
 	}
 	
 	/**

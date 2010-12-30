@@ -38,6 +38,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATFieldSelection;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * @author tvcutsem
@@ -81,6 +82,17 @@ public final class AGFieldSelectionCreation extends AGMessageCreation
 			return NATText.atValue(this.getMessageToken() +
 		               base_selector().meta_print().javaValue +
 		               "@" + base_annotations().meta_print().javaValue);
+		}
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if (base_annotations() == NATTable.EMPTY) {
+			return NATText.atValue(this.getMessageToken() +
+		               base_selector().impl_asUnquotedCode(objectMap).javaValue);
+		} else {
+			return NATText.atValue(this.getMessageToken() +
+		               base_selector().impl_asUnquotedCode(objectMap).javaValue +
+		               "@" + base_annotations().impl_asUnquotedCode(objectMap).javaValue);
 		}
 	}
 

@@ -95,7 +95,11 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		public NATText meta_print() throws InterpreterException { return NATText.atValue("true"); }
 		
 		public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-			return NATText.atValue("true"); 
+			if (objectMap.contains(this)) {
+				return objectMap.getName(this);
+			}
+			NATText name = objectMap.put(this, NATText.atValue("true"));
+			return name;
 		}
 		
 		// base interface for true
@@ -147,7 +151,11 @@ public abstract class NATBoolean extends NATByCopy implements ATBoolean {
 		public NATText meta_print() throws InterpreterException { return NATText.atValue("false"); }
 		
 		public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-			return NATText.atValue("false"); 
+			if (objectMap.contains(this)) {
+				return objectMap.getName(this);
+			}
+			NATText name = objectMap.put(this, NATText.atValue("false"));
+			return name; 
 		}
 
 		// base interface for false

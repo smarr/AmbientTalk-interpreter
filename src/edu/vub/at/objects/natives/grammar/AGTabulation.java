@@ -35,6 +35,7 @@ import edu.vub.at.objects.grammar.ATTabulation;
 import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.Set;
 
@@ -90,6 +91,11 @@ public final class AGTabulation extends AGExpression implements ATTabulation {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(tblExp_.meta_print().javaValue + "[" +
 				              idxExp_.meta_print().javaValue + "]");
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue(tblExp_.impl_asUnquotedCode(objectMap).javaValue + "[" +
+				              idxExp_.impl_asUnquotedCode(objectMap).javaValue + "]");
 	}
 	
 	/**

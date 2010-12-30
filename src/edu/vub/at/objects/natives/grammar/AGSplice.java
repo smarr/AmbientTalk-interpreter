@@ -35,6 +35,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSplice;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.Set;
 
@@ -72,6 +73,14 @@ public class AGSplice extends AGExpression implements ATSplice {
 
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("@"+ splExp_.meta_print().javaValue);
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return this.impl_asUnquotedCode(objectMap);
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("@"+ splExp_.impl_asUnquotedCode(objectMap).javaValue);
 	}
 
 	public boolean isSplice() { return true; }

@@ -29,7 +29,9 @@ package edu.vub.at.objects.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.grammar.AGAssignmentSymbol;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * The public interface to a symbol reference AG element.

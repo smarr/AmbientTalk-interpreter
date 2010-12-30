@@ -38,6 +38,7 @@ import edu.vub.at.objects.grammar.ATApplication;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.Set;
 
@@ -109,6 +110,10 @@ public final class AGApplication extends AGExpression implements ATApplication {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(funExp_.meta_print().javaValue + Evaluator.printAsList(arguments_).javaValue);
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue(funExp_.impl_asUnquotedCode(objectMap).javaValue + Evaluator.codeAsList(objectMap, arguments_).javaValue);
 	}
 	
 	/**

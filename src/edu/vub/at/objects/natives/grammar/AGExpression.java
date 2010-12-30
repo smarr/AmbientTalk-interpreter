@@ -28,6 +28,7 @@
 package edu.vub.at.objects.natives.grammar;
 
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XSerializationError;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATExpression;
@@ -48,9 +49,14 @@ public abstract class AGExpression extends NATAbstractGrammar implements ATExpre
     public ATTable meta_typeTags() throws InterpreterException {
     	return NATTable.of(NativeTypeTags._EXPRESSION_, NativeTypeTags._ISOLATE_);
     }
-    
+
     public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-    	return NATText.atValue("`(" + this.meta_print().javaValue + ")");
+    	NATText code = this.impl_asUnquotedCode(objectMap);
+    	return NATText.atValue("`(" + code.javaValue + ")");
+    }
+    
+    public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+    	return this.impl_asCode(objectMap);
     }
 	
 }

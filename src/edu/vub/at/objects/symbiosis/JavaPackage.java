@@ -163,7 +163,18 @@ public final class JavaPackage extends NATObject {
 		if (path_.isEmpty()) {
 			return NATText.atValue("jlobby");
 		} else {
-			return NATText.atValue("jlobby." + path_.subSequence(0, path_.length() - 1));
+			StringBuffer out = new StringBuffer("jlobby");
+			String path = new String("" + path_.subSequence(0, path_.length() - 1));
+			String[] parts = path.split("\\.");
+			for (String p : parts) {
+				char[] partChars = p.toCharArray();
+				if (Character.isUpperCase(partChars[0])) {
+					out.append(".package(`" + p + ")");
+				} else {
+					out.append("." + p);
+				}
+			}
+			return NATText.atValue(out.toString());
 		}
 	}
 	

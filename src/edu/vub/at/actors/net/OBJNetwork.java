@@ -88,7 +88,11 @@ public final class OBJNetwork extends NATByCopy {
 	}
 	
 	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-		return NATText.atValue("network");
+		if (objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		NATText name = objectMap.put(this, NATText.atValue("network"));
+		return name;
 	}
 	
 }

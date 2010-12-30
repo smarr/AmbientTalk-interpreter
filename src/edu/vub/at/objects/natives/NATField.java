@@ -91,7 +91,7 @@ public class NATField extends NATByRef implements ATField {
 			return objectMap.getName(this);
 		}
 		String def = "";
-		String nameAsCode = name_.toString();
+		String nameAsCode = name_.meta_print().javaValue;
 		if(nameAsCode != "super")
 			def += "def ";
 		//if(isIsolate) // why was this necessary?

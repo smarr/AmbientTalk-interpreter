@@ -2491,6 +2491,16 @@ public final class OBJLexicalRoot extends NATByCopy {
 				return _INSTANCE_.base_print_(obj);
 			}
 		});
+		_meths.put("asCode:", new DirectNativeMethod("asCode:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				if (ctx.base_receiver() != _INSTANCE_) {
+					throw new XIllegalOperation("native top-level method invoked on illegal object: "+ctx.base_receiver());
+				}
+				checkArity(args, 1);
+				ATObject obj = get(args, 1);
+				return _INSTANCE_.base_asCode_(obj);
+			}
+		});
 		_meths.put("==", new DirectNativeMethod("==") {
 			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
 				if (ctx.base_receiver() != _INSTANCE_) {

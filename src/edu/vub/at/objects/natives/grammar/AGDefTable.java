@@ -127,14 +127,12 @@ public final class AGDefTable extends AGDefinition implements ATDefTable {
 				initExp_.meta_print().javaValue + "}");
 	}
 	
-	/*
-	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
 		return NATText.atValue("def " +
-				tblName_.impl_asCode(objectMap).javaValue + "[" +
-				sizExp_.impl_asCode(objectMap).javaValue + "] { " +
-				initExp_.impl_asCode(objectMap).javaValue + "}");
+				tblName_.impl_asUnquotedCode(objectMap).javaValue + "[" +
+				sizExp_.impl_asUnquotedCode(objectMap).javaValue + "] { " +
+				initExp_.impl_asUnquotedCode(objectMap).javaValue + "}");
 	}
-	*/
 	
 	/**
 	 * IV(def t[idx] { body }) = { t }

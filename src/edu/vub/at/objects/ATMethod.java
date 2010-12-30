@@ -30,6 +30,8 @@ package edu.vub.at.objects;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATBegin;
 import edu.vub.at.objects.grammar.ATSymbol;
+import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 /**
  * ATMethods are the AmbientTalk's representation of methods as named functions. These
@@ -113,4 +115,5 @@ public interface ATMethod extends ATObject {
 	 * @return an {@link ATTable} containing the annotations of the method.
 	 */
 	public ATTable base_annotations() throws InterpreterException;
+
 }

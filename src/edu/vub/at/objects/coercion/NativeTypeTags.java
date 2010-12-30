@@ -27,6 +27,11 @@
  */
 package edu.vub.at.objects.coercion;
 
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Vector;
+
+import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATTypeTag;
 
@@ -37,6 +42,8 @@ import edu.vub.at.objects.natives.NATTypeTag;
  * @author tvcutsem
  */
 public final class NativeTypeTags {
+	
+	private static HashSet<NATTypeTag> nativeTypeTags_ = null;
 
 	/* Java implementation of lobby.at.types.at: */
 
@@ -234,6 +241,29 @@ public final class NativeTypeTags {
     
     //deftype ExternalEvent;
     public final static NATTypeTag _EXTERNAL_MSG_ = NATTypeTag.atValue("ExternalMessage");
+    
+    public static HashSet<NATTypeTag> getNativeTypeTags() {
+    	if (nativeTypeTags_ == null) {
+
+    		nativeTypeTags_ = new HashSet<NATTypeTag>();
+    		Field[] fields = NativeTypeTags.class.getFields();
+    		for (Field f : fields) {
+    			Object fi;
+    			try {
+    				fi = f.get(NativeTypeTags.class);
+    				if (fi instanceof NATTypeTag) {
+    					NATTypeTag tt = (NATTypeTag) fi;
+    					nativeTypeTags_.add(tt);
+    				}
+    			} catch (SecurityException e) {
+    				// ignore
+    			} catch (IllegalAccessException e) {
+    				// ignore
+    			}
+    		}
+    	}
+    	return nativeTypeTags_;
+    }
 
     
 }

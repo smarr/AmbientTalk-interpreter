@@ -149,7 +149,14 @@ public class JavaConstructor extends NATByRef implements ATMethod, ATJavaClosure
 	
 	
 	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-		return NATText.atValue("jlobby." + class_.getCanonicalName() + ".&new");
+		String simpleClassName = class_.getSimpleName();
+		char[] simpleClassNameChars = simpleClassName.toCharArray();
+		if (Character.isLowerCase(simpleClassNameChars[0])) {
+			String packageName = class_.getPackage().getName();
+			return NATText.atValue("jlobby." + packageName + ".class(`" + simpleClassName + ").&new");
+		} else {
+			return NATText.atValue("jlobby." + class_.getCanonicalName() + ".&new");
+		}
 	}
 
 	public ATMethod asMethod() throws XTypeMismatch {

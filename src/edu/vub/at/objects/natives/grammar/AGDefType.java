@@ -40,6 +40,7 @@ import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.NATTypeTag;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -104,6 +105,15 @@ public final class AGDefType extends AGDefinition implements ATDefType {
 		} else {
 			return NATText.atValue("deftype " + typeName_.meta_print().javaValue + " <: " +
 					Evaluator.printElements(parentTypeExpressions_.asNativeTable(), "", ",", "").javaValue);
+		}
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		if (parentTypeExpressions_ == NATTable.EMPTY) {
+			return NATText.atValue("deftype " + typeName_.impl_asUnquotedCode(objectMap).javaValue);
+		} else {
+			return NATText.atValue("deftype " + typeName_.impl_asUnquotedCode(objectMap).javaValue + " <: " +
+					Evaluator.codeElements(objectMap, parentTypeExpressions_.asNativeTable(), "", ",", "").javaValue);
 		}
 	}
 	

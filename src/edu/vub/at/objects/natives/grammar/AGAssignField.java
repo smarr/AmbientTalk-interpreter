@@ -101,8 +101,10 @@ public final class AGAssignField extends NATAbstractGrammar implements ATAssignF
 		return NATText.atValue(rcvExp_.meta_print().javaValue + "." + fieldName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
 	
-	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-		return NATText.atValue("`" + this.meta_print().javaValue);
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue(rcvExp_.impl_asUnquotedCode(objectMap).javaValue + 
+				"." + fieldName_.impl_asUnquotedCode(objectMap).javaValue + 
+				" := " + valueExp_.impl_asUnquotedCode(objectMap).javaValue);
 	}
 
 	/**

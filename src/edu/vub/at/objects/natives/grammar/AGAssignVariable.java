@@ -93,8 +93,8 @@ public final class AGAssignVariable extends NATAbstractGrammar implements ATAssi
 		return NATText.atValue(variableName_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
 	}
 	
-	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-		return NATText.atValue("`" + this.meta_print().javaValue);	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue(variableName_.impl_asUnquotedCode(objectMap).javaValue + " := " + valueExp_.impl_asUnquotedCode(objectMap).javaValue);
 	}
     
     public boolean isVariableAssignment() {

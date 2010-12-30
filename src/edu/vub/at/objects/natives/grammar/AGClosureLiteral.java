@@ -39,6 +39,7 @@ import edu.vub.at.objects.natives.NATClosure;
 import edu.vub.at.objects.natives.NATMethod;
 import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.Set;
 
@@ -102,8 +103,23 @@ public final class AGClosureLiteral extends AGExpression implements ATClosureLit
 				},
 				new NativeClosure(this) {
 					public ATObject base_apply(ATTable args) throws InterpreterException {
-						  return NATText.atValue(Evaluator.printElements(arguments_.asNativeTable(), "{ |", ", ", " | ").javaValue +
+						  return NATText.atValue(Evaluator.printElements(arguments_.asNativeTable(), "{ |", ",", "| ").javaValue +
 			                       body_.meta_print().javaValue+"}");
+					}
+				}).asNativeText();
+	}
+	
+	public NATText impl_asUnquotedCode(final TempFieldGenerator objectMap) throws InterpreterException {
+		return arguments_.base_isEmpty().base_ifTrue_ifFalse_(
+				new NativeClosure(this) {
+					public ATObject base_apply(ATTable args) throws InterpreterException {
+						return NATText.atValue("{ "+ body_.impl_asUnquotedCode(objectMap).javaValue + " }");
+					}
+				},
+				new NativeClosure(this) {
+					public ATObject base_apply(ATTable args) throws InterpreterException {
+						  return NATText.atValue("{" + Evaluator.codeAsParameterList(objectMap, arguments_.asNativeTable()).javaValue +
+			                       body_.impl_asUnquotedCode(objectMap).javaValue+"}");
 					}
 				}).asNativeText();
 	}

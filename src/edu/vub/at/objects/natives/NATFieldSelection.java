@@ -86,7 +86,7 @@ public final class NATFieldSelection extends NATMessage implements ATFieldSelect
 		if (objectMap.contains(this)) {
 			return objectMap.getName(this);
 		}
-		NATText name = objectMap.put(this, NATText.atValue("." + base_selector().toString()));
+		NATText name = objectMap.put(this, NATText.atValue("." + base_selector().meta_print().javaValue));
 		return name;
 	}
 	

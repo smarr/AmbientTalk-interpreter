@@ -36,6 +36,7 @@ import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.SourceLocation;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -104,6 +105,14 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	}
 	
 	public NATText meta_print() throws InterpreterException {
+		return NATText.atValue(txt_);
+	}
+	
+	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("`" + txt_);
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
 		return NATText.atValue(txt_);
 	}
 	

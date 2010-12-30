@@ -37,6 +37,7 @@ import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATMessageSend;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.SourceLocation;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.Set;
 
@@ -96,6 +97,11 @@ public final class AGMessageSend extends AGExpression implements ATMessageSend {
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(rcvExp_.meta_print().javaValue +
 				               ((message_.isMessageCreation()) ? "" : "<+") + message_.meta_print().javaValue);
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue(rcvExp_.impl_asUnquotedCode(objectMap).javaValue +
+				               ((message_.isMessageCreation()) ? "" : "<+") + message_.impl_asUnquotedCode(objectMap).javaValue);
 	}
 	
 	/**

@@ -35,6 +35,7 @@ import edu.vub.at.objects.grammar.ATDefinition;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -84,6 +85,10 @@ public final class AGDefField extends AGDefinition implements ATDefField {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("def " + name_.meta_print().javaValue + " := " + valueExp_.meta_print().javaValue);
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("def " + name_.impl_asUnquotedCode(objectMap).javaValue + " := " + valueExp_.impl_asUnquotedCode(objectMap).javaValue);
 	}
 	
 	/**

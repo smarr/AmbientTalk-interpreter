@@ -34,6 +34,7 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.grammar.ATExpression;
 import edu.vub.at.objects.grammar.ATUnquote;
 import edu.vub.at.objects.natives.NATText;
+import edu.vub.util.TempFieldGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -74,6 +75,10 @@ public class AGUnquote extends AGExpression implements ATUnquote {
 
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue("#("+ unqExp_.meta_print().javaValue + ")");
+	}
+	
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue("#("+ unqExp_.impl_asUnquotedCode(objectMap).javaValue + ")");
 	}
 	
 	/**

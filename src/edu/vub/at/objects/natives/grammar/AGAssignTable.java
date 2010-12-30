@@ -102,8 +102,10 @@ public final class AGAssignTable extends NATAbstractGrammar implements ATAssignT
 				valExp_.meta_print().javaValue);
 	}
 	
-	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-		return NATText.atValue("`" + this.meta_print().javaValue);
+	public NATText impl_asUnquotedCode(TempFieldGenerator objectMap) throws InterpreterException {
+		return NATText.atValue(tblExp_.impl_asUnquotedCode(objectMap).javaValue + "[" +
+				idxExp_.impl_asUnquotedCode(objectMap).javaValue + "] := " +
+				valExp_.impl_asUnquotedCode(objectMap).javaValue);
 	}	
 
 	/**

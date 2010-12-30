@@ -247,7 +247,15 @@ public class NATNil extends NATObject implements ATNil {
 	}
 	
 	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
-		return NATText.atValue("nil");
+		if (objectMap.contains(this)) {
+			return objectMap.getName(this);
+		}
+		NATText name = objectMap.put(this, NATText.atValue("nil"));
+		if (objectMap.inQuote()) {
+			return NATText.atValue("#" + name.javaValue);
+		} else {
+			return name;
+		}
 	}
 	
 }

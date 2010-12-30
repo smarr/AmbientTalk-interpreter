@@ -92,7 +92,7 @@ public final class NATMethodInvocation extends NATMessage implements ATMethodInv
 		if (objectMap.contains(this)) {
 			return objectMap.getName(this);
 		}
-		StringBuffer codeString = new StringBuffer("." + base_selector().toString() + Evaluator.codeAsList(objectMap, base_arguments()).javaValue);
+		StringBuffer codeString = new StringBuffer("." + base_selector().meta_print().javaValue + Evaluator.codeAsList(objectMap, base_arguments()).javaValue);
 		NATTable annotations = NATTable.atValue(this.typeTags_);
 		if(annotations.base_length().asNativeNumber().javaValue > 0) {
 			codeString.append("@"+annotations.impl_asCode(objectMap).javaValue);
