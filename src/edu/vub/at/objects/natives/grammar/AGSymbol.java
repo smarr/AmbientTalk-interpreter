@@ -31,9 +31,12 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATObject;
+import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATText;
+import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.natives.NATBoolean;
+import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.parser.SourceLocation;
 import edu.vub.util.TempFieldGenerator;
@@ -106,6 +109,10 @@ public class AGSymbol extends AGExpression implements ATSymbol {
 	
 	public NATText meta_print() throws InterpreterException {
 		return NATText.atValue(txt_);
+	}
+	
+	public ATTable meta_typeTags() throws InterpreterException {
+		return NATTable.of(NativeTypeTags._SYMBOL_, NativeTypeTags._ISOLATE_);
 	}
 	
 	public NATText impl_asCode(TempFieldGenerator objectMap) throws InterpreterException {
