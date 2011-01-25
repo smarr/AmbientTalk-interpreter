@@ -379,10 +379,10 @@ public interface ATNumeric extends ATExpression {
 	/**
 	 * Returns true if the receiver is different than the numeric data type passed as argument.
 	 *
-	 * @param other a numeric data type.
+	 * @param other an object which compared to this one only if it is a numeric data type.
 	 * @return a {@link ATBoolean} resulting of evaluating <code> (receiver <=> other) != 0</code> 
 	 * @throws XTypeMismatch if other is not an {@link ATNumeric} object.
 	 */	
-	public ATBoolean base__opnot__opeql_(ATNumeric other) throws InterpreterException; // !=
+	public ATBoolean base__opnot__opeql_(ATObject other) throws InterpreterException; // !=
 
 }

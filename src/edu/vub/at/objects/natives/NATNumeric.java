@@ -27,7 +27,8 @@
  */
 package edu.vub.at.objects.natives;
 
-import edu.vub.at.eval.Evaluator;
+import java.util.HashMap;
+
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
@@ -40,13 +41,7 @@ import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.DirectNativeMethod;
-import edu.vub.at.objects.mirrors.JavaInterfaceAdaptor;
 import edu.vub.at.objects.natives.grammar.AGExpression;
-
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A common superclass of both numbers and fractions to factor out common base-level behaviour.
@@ -152,8 +147,12 @@ public abstract class NATNumeric extends AGExpression implements ATNumeric {
 	/**
 	 * a != b iff (a <=> b) != 0
 	 */
-	public ATBoolean base__opnot__opeql_(ATNumeric other) throws InterpreterException {
-		return NATBoolean.atValue(! this.base__opltx__opeql__opgtx_(other).equals(NATNumber.ZERO));
+	public ATBoolean base__opnot__opeql_(ATObject other) throws InterpreterException {
+		if (other instanceof ATNumeric) {
+			return NATBoolean.atValue(! this.base__opltx__opeql__opgtx_(other.asNativeNumeric()).equals(NATNumber.ZERO));
+		} else {
+			return NATBoolean._TRUE_;
+		}
 	}
 	
 	/**
@@ -253,8 +252,7 @@ public abstract class NATNumeric extends AGExpression implements ATNumeric {
 			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
 				NATNumeric self = ctx.base_receiver().asNativeNumeric();
 				checkArity(args, 1);
-				NATNumeric other = get(args, 1).asNativeNumeric();
-				return self.base__opnot__opeql_(other);
+				return self.base__opnot__opeql_(get(args, 1));
 			}
 		});
 	}
