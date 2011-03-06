@@ -54,7 +54,8 @@ public class AGAsyncMessageCreation extends AGMessageCreation implements ATAsync
 	protected ATMessage createMessage(ATContext ctx, ATSymbol selector, ATTable evaluatedArgs, ATTable annotations) throws InterpreterException {
 		// dirty trick to pass source location of the AGASyncMessageCreation to the actorMirror.
 		// this table is anycase created by the interpreter.
-		evaluatedArgs.impl_setLocation(this.impl_getLocation());
+		
+		annotations.impl_setLocation(this.impl_getLocation());
 		return OBJLexicalRoot._INSTANCE_.base_reflectOnActor().base_createMessage(selector, evaluatedArgs, annotations);
 
 	}
