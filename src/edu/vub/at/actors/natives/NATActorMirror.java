@@ -108,7 +108,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		}).asAsyncMessage();
 		// if the message was indeed annotated, set the correct location informal on the original message.
 		if (! returnMsg.equals(msg)){
-			msg.impl_setLocation(arguments.impl_getLocation());
+			msg.impl_setLocation(types.impl_getLocation());
 		}
 		return returnMsg;
 	}
