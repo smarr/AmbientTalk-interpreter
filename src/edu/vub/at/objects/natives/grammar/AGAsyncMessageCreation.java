@@ -27,6 +27,7 @@
  */
 package edu.vub.at.objects.natives.grammar;
 
+import edu.vub.at.actors.ATAsyncMessage;
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMessage;
@@ -51,7 +52,11 @@ public class AGAsyncMessageCreation extends AGMessageCreation implements ATAsync
 	}
 	
 	protected ATMessage createMessage(ATContext ctx, ATSymbol selector, ATTable evaluatedArgs, ATTable annotations) throws InterpreterException {
+		// dirty trick to pass source location of the AGASyncMessageCreation to the actorMirror.
+		// this table is anycase created by the interpreter.
+		evaluatedArgs.impl_setLocation(this.impl_getLocation());
 		return OBJLexicalRoot._INSTANCE_.base_reflectOnActor().base_createMessage(selector, evaluatedArgs, annotations);
+
 	}
 	
 	protected ATObject newQuoted(ATSymbol quotedSel, ATTable quotedArgs, ATExpression quotedAnnotations) {

@@ -98,7 +98,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	public ATAsyncMessage base_createMessage(ATSymbol selector, ATTable arguments, ATTable types) throws InterpreterException {
 		ATAsyncMessage msg = new NATAsyncMessage(selector, arguments, types);
 		// types.inject: msg into: { |constructingMsg, type| type.annotate(constructingMsg) }
-		return types.base_inject_into_(msg, new NativeClosure(this) {
+		ATAsyncMessage returnMsg = types.base_inject_into_(msg, new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
 				checkArity(args, 2);
 				ATObject newMessage = get(args, 1);
@@ -106,6 +106,11 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 				return type.asTypeTag().base_annotateMessage(newMessage);
 			}
 		}).asAsyncMessage();
+		// if the message was indeed annotated, set the correct location informal on the original message.
+		if (! returnMsg.equals(msg)){
+			msg.impl_setLocation(arguments.impl_getLocation());
+		}
+		return returnMsg;
 	}
 	
 	public ATObject base_createMirror(ATObject reflectee) throws InterpreterException {
@@ -333,6 +338,10 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 	}
 	
     public ATActorMirror asActorMirror() throws XTypeMismatch {
+    	return this;
+    }
+    
+    public NATActorMirror asNativeActorMirror() throws XTypeMismatch {
     	return this;
     }
     
