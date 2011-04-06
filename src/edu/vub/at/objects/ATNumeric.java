@@ -29,6 +29,7 @@ package edu.vub.at.objects;
 
 import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.grammar.ATExpression;
+import edu.vub.at.objects.natives.NATText;
 
 /**
  * ATNumeric is the public interface common to numbers and fractions.
@@ -385,4 +386,10 @@ public interface ATNumeric extends ATExpression {
 	 */	
 	public ATBoolean base__opnot__opeql_(ATObject other) throws InterpreterException; // !=
 
+	/**
+	 * Converts the numeric value into a text string.
+	 * @return a text (an AmbientTalk string) encoding a decimal representation of the numeric value.
+	 */
+	public ATText base_toText() throws InterpreterException;
+	
 }

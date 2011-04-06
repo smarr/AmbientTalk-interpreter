@@ -38,6 +38,7 @@ import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.DirectNativeMethod;

@@ -218,6 +218,8 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// 9 /- 2 => 4
 			assertEquals(4, NATNumber.atValue(9).base__opdiv__opmns_(NATNumber.atValue(2)).asNativeNumber().javaValue);
+			// 3.toText() => "3"
+			assertEquals(NATText.atValue("3"), NATNumber.atValue(3).base_toText());
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}
@@ -236,6 +238,8 @@ public class PrimitivesTest extends AmbientTalkTest {
 			assertEquals(1, NATFraction.atValue(1.8).base_floor().asNativeNumber().javaValue);
 			// 1.4.ceiling() => 2
 			assertEquals(2, NATFraction.atValue(1.4).base_ceiling().asNativeNumber().javaValue);
+			// (3.14).toText() => "3.14"
+			assertEquals(NATText.atValue("3.14"), NATFraction.atValue(3.14).base_toText());
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}

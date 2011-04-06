@@ -42,6 +42,7 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.DirectNativeMethod;
@@ -362,6 +363,13 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	}
 	
 	/**
+	 * NUM(n).toText() = TXT(String.valueOf(n))
+	 */
+	public ATText base_toText() throws InterpreterException {
+		return NATText.atValue(String.valueOf(javaValue));
+	}
+	
+	/**
 	 * This hashmap stores all native methods of native AmbientTalk numbers.
 	 * It is populated when this class is loaded, and shared between all
 	 * AmbientTalk actors on this VM. This is safe, since {@link DirectNativeMethod}
@@ -606,6 +614,13 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 				checkArity(args, 1);
 				ATObject comparand = get(args, 1);
 				return self.base__opeql__opeql_(comparand);
+			}
+		});
+		_meths.put("toText", new DirectNativeMethod("toText") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 0);
+				return self.base_toText();
 			}
 		});
 	}

@@ -38,6 +38,7 @@ import edu.vub.at.objects.ATNumber;
 import edu.vub.at.objects.ATNumeric;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
+import edu.vub.at.objects.ATText;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.util.TempFieldGenerator;
 
@@ -219,5 +220,12 @@ public final class NATFraction extends NATNumeric implements ATFraction {
 		} else {
 			return NATNumber.ZERO; // 0
 		}
+	}
+	
+	/**
+	 * FRC(n).toText() = TXT(String.valueOf(n))
+	 */
+	public ATText base_toText() throws InterpreterException {
+		return NATText.atValue(String.valueOf(javaValue));
 	}
 }
