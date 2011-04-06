@@ -76,6 +76,17 @@ public class PrimitivesTest extends AmbientTalkTest {
 			
 			// "ambienttalk" ~= "java" => false
 			assertFalse(TXTambienttalk_.base__optil__opeql_(NATText.atValue("java")).asNativeBoolean().javaValue);
+			
+			// "A".toNumber => 10
+			assertEquals(NATNumber.atValue(Character.getNumericValue('A')), NATText.atValue("A").base_toNumber());
+			
+			// "ambienttalk".toNumber => XTypeMismatch, expected Character, given NATText
+			try {
+			  TXTambienttalk_.base_toNumber();
+			} catch (XTypeMismatch e) {
+			  assertEquals(Character.class, e.getExpectedType());
+			  assertEquals(TXTambienttalk_, e.getFailedObject());
+			}
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
 		}

@@ -173,4 +173,13 @@ public interface ATText extends ATExpression {
 	 * @throws XIllegalArgument if the text cannot be converted into a number or a fraction
 	 */
 	public ATNumeric base_parseNumeric() throws InterpreterException;
+	
+	/**
+	 * Converts a single AmbientTalk character (i.e. a text of length 1) into its corresponding
+	 * numeric Unicode value. See {@link java.lang.Character#getNumericValue(char)}.
+	 * @return a number that represents the unicode value of the text character
+	 * @throws XTypeMismatch if the receiver text is not a character (i.e. if it has length() > 1)
+	 */
+	public ATNumber base_toNumber() throws InterpreterException;
+	
 }

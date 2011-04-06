@@ -217,6 +217,14 @@ public final class NATText extends AGExpression implements ATText {
 			}
 		}
 		
+		public ATNumber base_toNumber() throws InterpreterException {
+			if (javaValue.length() == 1) {
+				return NATNumber.atValue(Character.getNumericValue(javaValue.charAt(0)));
+			} else {
+				throw new XTypeMismatch(Character.class, this);
+			}
+		}
+		
 		/** Convert this text into a Java character */
 		public char asChar() throws XTypeMismatch {
 			if (javaValue.length() == 1) {
