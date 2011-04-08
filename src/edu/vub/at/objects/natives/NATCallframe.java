@@ -71,6 +71,7 @@ public class NATCallframe extends NATByRef implements ATObject {
 	
     /**
      * The lexical parent 'scope' of this call frame/object.
+     * TODO(tvcutsem): shouldn't this field be marked transient so that isolates don't copy it?
      */
 	protected ATObject lexicalParent_;
 	
