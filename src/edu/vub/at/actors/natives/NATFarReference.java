@@ -606,9 +606,9 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		 * serialization/desearialization because sometimes o != resolve(pass(o))
 		 */
 		private final Packet serializedMessage_;
-		public NATOutboxLetter(LinkedList inbox, ATObject receiver,
+		public NATOutboxLetter(LinkedList outbox, ATObject receiver,
 				ATObject message) throws InterpreterException {
-			super(inbox, receiver, message);
+			super(outbox, receiver, message);
 			serializedMessage_ = new Packet(message.toString(),NATTable.of(receiver, message));	
 		}		
 		public ATLetter asLetter() { return this; }

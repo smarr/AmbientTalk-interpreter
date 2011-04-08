@@ -142,7 +142,8 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 						if (arity != 0) {
 							throw new XArityMismatch("cancel", 0, arity);
 						}
-						discoveryActor.event_cancelPublication(pub); // XXX sync_event
+						// Note: this used to be an asynchronous event_cancelPublication, see issue #50
+						discoveryActor.sync_event_cancelPublication(pub);
 						return Evaluator.getNil();
 			      }
 			});
@@ -175,7 +176,8 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 						if (arity != 0) {
 							throw new XArityMismatch("cancel", 0, arity);
 						}
-						discoveryActor.event_cancelSubscription(sub); // XXX sync_event
+						// Note: this used to be an asynchronous event_cancelSubscription, see issue #50
+						discoveryActor.sync_event_cancelSubscription(sub);
 						return Evaluator.getNil();
 			      }
 			});
@@ -376,7 +378,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 		private static final AGSymbol _RCVR_ = AGSymbol.jAlloc("receiver");
 		private static final AGSymbol _MSG_ = AGSymbol.jAlloc("message");
 		private static final AGSymbol _CANCEL_ = AGSymbol.jAlloc("cancel");
-		public NATLetter(final LinkedList inbox, ATObject receiver, ATObject message) throws InterpreterException {
+		public NATLetter(final LinkedList mailbox, ATObject receiver, ATObject message) throws InterpreterException {
 			super(new ATTypeTag[] { NativeTypeTags._LETTER_ });
 			meta_defineField(_RCVR_, receiver);
 			meta_defineField(_MSG_, message);
@@ -387,7 +389,10 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 						if (arity != 0) {
 							throw new XArityMismatch("cancel", 0, arity);
 						}
-						inbox.remove(thisLetter);
+						// Note: if the receiver and message fields are changed by an AmbientTalk program
+						// canceling the letter will still remove the original letter, not a letter that corresponds
+						// to the new receiver and message.
+						mailbox.remove(thisLetter);
 						return Evaluator.getNil();
 			      }
 			});
