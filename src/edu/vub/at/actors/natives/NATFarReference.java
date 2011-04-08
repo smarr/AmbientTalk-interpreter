@@ -39,12 +39,14 @@ import edu.vub.at.actors.natives.NATActorMirror.NATLetter;
 import edu.vub.at.actors.net.ConnectionListener;
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
+import edu.vub.at.exceptions.XArityMismatch;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XObjectOffline;
 import edu.vub.at.exceptions.XSelectorNotFound;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATField;
 import edu.vub.at.objects.ATMethod;
 import edu.vub.at.objects.ATNil;
@@ -54,6 +56,7 @@ import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
+import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.NATBoolean;
 import edu.vub.at.objects.natives.NATByCopy;
 import edu.vub.at.objects.natives.NATNil;
@@ -510,16 +513,21 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		public NATDisconnectionSubscription(final NATFarReference reference, ATClosure handler) throws InterpreterException {
 			this.meta_defineField(_REFERENCE_, reference);
 			this.meta_defineField(_HANDLER_, handler);
-			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
-				public ATObject base_apply(ATTable args) throws InterpreterException {
-					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_, NATTable.EMPTY).asNativeFarReference();
-					if(reference instanceof NATFarReference) {
-						NATFarReference remote = (NATFarReference)reference;
-						ATObject handler = scope_.impl_callField(_HANDLER_);
-						remote.removeDisconnectionListener(handler.asClosure());
-					}
-					return Evaluator.getNil();
-				}
+			this.meta_addMethod(new PrimitiveMethod(_CANCEL_, NATTable.EMPTY) {
+			      public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+						int arity = arguments.base_length().asNativeNumber().javaValue;
+						if (arity != 0) {
+							throw new XArityMismatch("cancel", 0, arity);
+						}
+						NATDisconnectionSubscription scope = NATDisconnectionSubscription.this;
+						NATFarReference reference = scope.impl_invokeAccessor(scope, _REFERENCE_, NATTable.EMPTY).asNativeFarReference();
+						if(reference instanceof NATFarReference) {
+							NATFarReference remote = (NATFarReference)reference;
+							ATObject handler = scope.impl_callField(_HANDLER_);
+							remote.removeDisconnectionListener(handler.asClosure());
+						}
+						return Evaluator.getNil();
+			      }
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
@@ -534,16 +542,21 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		public NATReconnectionSubscription(final NATFarReference reference, ATClosure handler) throws InterpreterException {
 			this.meta_defineField(_REFERENCE_, reference);
 			this.meta_defineField(_HANDLER_, handler);
-			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
-				public ATObject base_apply(ATTable args) throws InterpreterException {
-					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
-					if(reference instanceof NATFarReference) {
-						NATFarReference remote = (NATFarReference)reference;
-						ATObject handler = scope_.impl_callField(_HANDLER_);
-						remote.removeReconnectionListener(handler.asClosure());
-					}
-					return Evaluator.getNil();
-				}
+			this.meta_addMethod(new PrimitiveMethod(_CANCEL_, NATTable.EMPTY) {
+			      public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+						int arity = arguments.base_length().asNativeNumber().javaValue;
+						if (arity != 0) {
+							throw new XArityMismatch("cancel", 0, arity);
+						}
+						NATReconnectionSubscription scope = NATReconnectionSubscription.this;
+						NATFarReference reference = scope.impl_invokeAccessor(scope, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
+						if(reference instanceof NATFarReference) {
+							NATFarReference remote = (NATFarReference)reference;
+							ATObject handler = scope.impl_callField(_HANDLER_);
+							remote.removeReconnectionListener(handler.asClosure());
+						}
+						return Evaluator.getNil();
+			      }
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
@@ -558,16 +571,21 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 		public NATExpiredSubscription(final NATFarReference reference, ATClosure handler) throws InterpreterException {
 			this.meta_defineField(_REFERENCE_, reference);
 			this.meta_defineField(_HANDLER_, handler);
-			this.meta_defineField(_CANCEL_, 	new NativeClosure(this) {
-				public ATObject base_apply(ATTable args) throws InterpreterException {
-					NATFarReference reference = scope_.impl_invokeAccessor(scope_, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
-					if(reference instanceof NATFarReference) {
-						NATFarReference remote = (NATFarReference)reference;
-						ATObject handler = scope_.impl_callField(_HANDLER_);
-						remote.removeTakenOfflineListener(handler.asClosure());
-					}
-					return Evaluator.getNil();
-				}
+			this.meta_addMethod(new PrimitiveMethod(_CANCEL_, NATTable.EMPTY) {
+			      public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+						int arity = arguments.base_length().asNativeNumber().javaValue;
+						if (arity != 0) {
+							throw new XArityMismatch("cancel", 0, arity);
+						}
+						NATExpiredSubscription scope = NATExpiredSubscription.this;
+						NATFarReference reference = scope.impl_invokeAccessor(scope, _REFERENCE_,NATTable.EMPTY).asNativeFarReference();
+						if(reference instanceof NATFarReference) {
+							NATFarReference remote = (NATFarReference)reference;
+							ATObject handler = scope.impl_callField(_HANDLER_);
+							remote.removeTakenOfflineListener(handler.asClosure());
+						}
+						return Evaluator.getNil();
+			      }
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
@@ -577,7 +595,7 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 	
 	 /**
 	  * An outbox letter is a named subclass of NATLetter (See {@link ATLetter} interface), 
-	  * wrpaaing the AmbientTalk message that is going to be transmitted and its serialized version.
+	  * wrapping the AmbientTalk message that is going to be transmitted and its serialized version.
 	  * The constructor is still executed by the {@link ELActor} that schedules a message to be transmitted. 
 	  * This ensures that the serialization of the message happens in the correct thread.
 	  */  
@@ -614,10 +632,15 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 				int i = 0;
 				for (Iterator iterator = outbox_.iterator(); iterator.hasNext();) {
 					ATLetter letter = (ATLetter) iterator.next();
-					letter.base_cancel();
+					// no need to call cancel(), just clear the outbox at the end
+					// since we'll be removing all letters. Also, calling cancel()
+					// leads to a ConcurrentModificationException since it will try
+					// to remove the letter while we are iterating over the list
+					// letter.base_cancel();
 					messages[i] = letter.base_message().asAsyncMessage();
 					i = i + 1;
 				}
+				outbox_.clear(); // empty the outbox
 				return NATTable.atValue(messages);	
 			}
 		}

@@ -39,6 +39,7 @@ import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATBoolean;
 import edu.vub.at.objects.ATClosure;
+import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATNil;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
@@ -47,6 +48,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NativeClosure;
+import edu.vub.at.objects.mirrors.PrimitiveMethod;
 import edu.vub.at.objects.natives.NATByRef;
 import edu.vub.at.objects.natives.NATMethodInvocation;
 import edu.vub.at.objects.natives.NATNumber;
@@ -134,11 +136,15 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 				              final Publication pub) throws InterpreterException {
 			meta_defineField(_TOPIC_, topic);
 			meta_defineField(_SERVICE_, service);
-			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
-				public ATObject base_apply(ATTable args) throws InterpreterException {
-					discoveryActor.event_cancelPublication(pub);
-					return Evaluator.getNil();
-				}
+			meta_addMethod(new PrimitiveMethod(_CANCEL_, NATTable.EMPTY) {
+			      public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+						int arity = arguments.base_length().asNativeNumber().javaValue;
+						if (arity != 0) {
+							throw new XArityMismatch("cancel", 0, arity);
+						}
+						discoveryActor.event_cancelPublication(pub); // XXX sync_event
+						return Evaluator.getNil();
+			      }
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
@@ -163,11 +169,15 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 				               final Subscription sub) throws InterpreterException {
 			meta_defineField(_TOPIC_, topic);
 			meta_defineField(_HANDLER_, handler);
-			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
-				public ATObject base_apply(ATTable args) throws InterpreterException {
-					discoveryActor.event_cancelSubscription(sub);
-					return Evaluator.getNil();
-				}
+			meta_addMethod(new PrimitiveMethod(_CANCEL_, NATTable.EMPTY) {
+			      public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+						int arity = arguments.base_length().asNativeNumber().javaValue;
+						if (arity != 0) {
+							throw new XArityMismatch("cancel", 0, arity);
+						}
+						discoveryActor.event_cancelSubscription(sub); // XXX sync_event
+						return Evaluator.getNil();
+			      }
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
@@ -370,11 +380,16 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 			super(new ATTypeTag[] { NativeTypeTags._LETTER_ });
 			meta_defineField(_RCVR_, receiver);
 			meta_defineField(_MSG_, message);
-			meta_defineField(_CANCEL_, 	new NativeClosure(this) {
-				public ATObject base_apply(ATTable args) throws InterpreterException {
-					inbox.remove(this);
-					return Evaluator.getNil();
-				}
+			final NATLetter thisLetter = this;
+			meta_addMethod(new PrimitiveMethod(_CANCEL_, NATTable.EMPTY) {
+			      public ATObject base_apply(ATTable arguments, ATContext ctx) throws InterpreterException {
+						int arity = arguments.base_length().asNativeNumber().javaValue;
+						if (arity != 0) {
+							throw new XArityMismatch("cancel", 0, arity);
+						}
+						inbox.remove(thisLetter);
+						return Evaluator.getNil();
+			      }
 			});
 		}
 		public NATText meta_print() throws InterpreterException {
