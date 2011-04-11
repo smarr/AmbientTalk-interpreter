@@ -152,21 +152,14 @@ public final class ELDiscoveryActor extends ELActor {
      * In other words: remote objects that had already discovered the object linked
      * to this publication will maintain their connection.
      * 
-     * Note: this used to be an asynchronous event_cancelPublication, see issue #50
-     * 
      * @param pub - the original publication object to cancel
      */
-	public void sync_event_cancelPublication(final Publication pub) {
-		try {
-			this.receiveAndWait("cancelPublication("+pub.providedTypeTag_+")", new Callable() {
-				public Object call(Object myself) throws Exception {
-					discoveryManager_.deleteLocalPublication(pub);
-					return null;
-				}
-			});
-		} catch (Exception e) {
-			Logging.EventLoop_LOG.fatal("unexpected exception", e);
-		}
+	public void event_cancelPublication(final Publication pub) {
+		this.receive(new Event("cancelPublication("+pub.providedTypeTag_+")") {
+			public void process(Object myself) {
+				discoveryManager_.deleteLocalPublication(pub);
+			}
+		});
 	}
 	
 	/**
@@ -219,21 +212,14 @@ public final class ELDiscoveryActor extends ELActor {
      * object will no longer discover new services. However, it will not send 
      * lostResolution events as these signal that the client has become unreachable.
      * 
-     * Note: this used to be an asynchronous event_cancelSubscription, see issue #50
-     * 
      * @param sub - the original subscription object to cancel
      */
-	public void sync_event_cancelSubscription(final Subscription sub) {
-		try {
-			this.receiveAndWait("cancelSubscription("+sub.requiredTypeTag_+")", new Callable() {
-				public Object call(Object myself) throws Exception {
-					discoveryManager_.deleteLocalSubscription(sub);
-					return null;
-				}
-			});
-		} catch (Exception e) {
-			Logging.EventLoop_LOG.fatal("unexpected exception", e);
-		}
+	public void event_cancelSubscription(final Subscription sub) {
+		this.receive(new Event("cancelSubscription("+sub.requiredTypeTag_+")") {
+			public void process(Object myself) {
+				discoveryManager_.deleteLocalSubscription(sub);
+			}
+		});
 	}
 	
 	

@@ -142,8 +142,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 						if (arity != 0) {
 							throw new XArityMismatch("cancel", 0, arity);
 						}
-						// Note: this used to be an asynchronous event_cancelPublication, see issue #50
-						discoveryActor.sync_event_cancelPublication(pub);
+						discoveryActor.event_cancelPublication(pub);
 						return Evaluator.getNil();
 			      }
 			});
@@ -176,8 +175,7 @@ public class NATActorMirror extends NATByRef implements ATActorMirror {
 						if (arity != 0) {
 							throw new XArityMismatch("cancel", 0, arity);
 						}
-						// Note: this used to be an asynchronous event_cancelSubscription, see issue #50
-						discoveryActor.sync_event_cancelSubscription(sub);
+						discoveryActor.event_cancelSubscription(sub);
 						return Evaluator.getNil();
 			      }
 			});
