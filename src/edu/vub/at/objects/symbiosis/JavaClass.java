@@ -174,6 +174,16 @@ public final class JavaClass extends NATObject implements ATTypeTag {
 				Logging.Actor_LOG.fatal("Error while initializing Java Class as type tag: " + wrappedClass.getName(), e);
 			}
 		}
+		
+		Class nestedClasses[] = wrappedClass.getDeclaredClasses();
+		for (Class nested : nestedClasses) {
+			String simpleName = nested.getSimpleName();
+			try {
+				super.meta_defineField(AGSymbol.jAlloc(simpleName), JavaClass.wrapperFor(nested));
+			} catch (InterpreterException e) {
+				Logging.Actor_LOG.error("Could not assign nested class " + nested.getName() + " to field " + simpleName + " in class " + wrappedClass.getName(), e);
+			}
+		}
 	}
 	
 	/** return the class object denoted by this AmbientTalk symbiont */

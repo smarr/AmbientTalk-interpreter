@@ -29,6 +29,7 @@ package edu.vub.at.objects.symbiosis;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -826,6 +827,43 @@ public class SymbiosisTest extends AmbientTalkTest {
 		assertFalse(vec.meta_isTaggedAs(jSetType).asNativeBoolean().javaValue);
 	}
 	
+	/**
+	 * Test whether AmbientTalk can use Java 1.5 enums. These are compiled into static inner classes.
+	 * 
+	 * Checks if all fields of the enum are translated to AmbientTalk fields.
+	 * Checks if each object supports the 'ordinal' method.
+	 */
+	
+	public enum enumTest { ZERO, ONE, TWO };
+	
+	public void testEnums() throws InterpreterException {
+		JavaClass enumTest = atTestClass.impl_invoke(atTestClass, AGSymbol.jAlloc("enumTest"), NATTable.EMPTY).asJavaClassUnderSymbiosis();
+		assertNotSame(Evaluator.getNil(), enumTest);
+		
+		// verify that all fields are present
+		NATTable f = enumTest.meta_listFields().asNativeTable();
+		Set<String> toCheck = new HashSet<String>();
+		toCheck.add("ZERO");
+		toCheck.add("ONE");
+		toCheck.add("TWO");
+
+		for (ATObject o : f.elements_) {
+			ATField jf = o.asField();
+			toCheck.remove(jf.base_name().toString());
+		}
+		assertTrue(toCheck.isEmpty());
+		
+		// try calling ZERO
+		JavaObject zero = enumTest.impl_invoke(enumTest, AGSymbol.jAlloc("ZERO"), NATTable.EMPTY).asJavaObjectUnderSymbiosis();
+		int zeroValue = zero.impl_invoke(zero, AGSymbol.jAlloc("ordinal"), NATTable.EMPTY).asNativeNumber().javaValue;
+		assertEquals(0, zeroValue);
+		
+		// check the ordinal value of TWO by using the valueOf method. Also compare it to the 'regular' way of obtaining TWO.
+		ATObject twoObj = enumTest.impl_invoke(enumTest, AGSymbol.jAlloc("valueOf"), NATTable.of(NATText.atValue("TWO")));
+		int twoValue = twoObj.impl_invoke(twoObj, AGSymbol.jAlloc("ordinal"), NATTable.EMPTY).asNativeNumber().javaValue;
+		assertEquals(2, twoValue);
+		assertEquals(twoObj, enumTest.impl_invoke(enumTest, AGSymbol.jAlloc("TWO"), NATTable.EMPTY));
+	}
 }
 
 class lowercaseClassTest { }
