@@ -98,9 +98,34 @@ public class NATLocalFarRef extends NATFarReference {
 	/**
 	 * Note that the 'outbox' of a local far reference is normally empty, except if
 	 * the local far reference was disconnected by means of a 'soft disconnect'.
+	 * 
+	 * In pseudocode this method does the following:
+	 * def messages := [];
+	 * outbox.each: { |letter|  letter.cancel();  messages := messages + [letter.message] };
+	 * messages;
+	 * 
 	 */
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {
-		return impl_retractUnsentMessages();
+		synchronized (this) {
+			if (outbox_.size() > 0 ) {
+				ATObject[] messages = new ATObject[outbox_.size()];
+				int i = 0;
+				for (Iterator iterator = outbox_.iterator(); iterator.hasNext();) {
+					ATLetter letter = (ATLetter) iterator.next();
+					// no need to call cancel(), just clear the outbox at the end
+					// since we'll be removing all letters. Also, calling cancel()
+					// leads to a ConcurrentModificationException since it will try
+					// to remove the letter while we are iterating over the list
+					// letter.base_cancel();
+					messages[i] = letter.base_message().asAsyncMessage();
+					i = i + 1;
+				}
+				outbox_.clear(); // empty the outbox
+				return NATTable.atValue(messages);	
+			}
+		}
+		// if you arrive here outbox_.size == 0 thus it returns [];
+		return NATTable.EMPTY;		
 	}
 	
 	public ELActor getFarHost() {

@@ -617,34 +617,4 @@ public abstract class NATFarReference extends NATByCopy implements ATFarReferenc
 			return serializedMessage_;
 		}
 	}
-	
-	// both local and far references retract messages in the same way.
-	// however, it won't be the same thread calling this method:
-	// in local far references it is called by the owner ELActor thread, while
-	// in remote far references, it is called by a thread of the FarReferencesThreadPool.
-	public ATTable impl_retractUnsentMessages() throws InterpreterException{
-		synchronized (this) {
-			if (outbox_.size() > 0 ) {
-				// def messages := [];
-				// outbox.each: { |letter|  letter.cancel();  messages := messages + [letter.message] };
-				// messages;
-				ATObject[] messages = new ATObject[outbox_.size()];
-				int i = 0;
-				for (Iterator iterator = outbox_.iterator(); iterator.hasNext();) {
-					ATLetter letter = (ATLetter) iterator.next();
-					// no need to call cancel(), just clear the outbox at the end
-					// since we'll be removing all letters. Also, calling cancel()
-					// leads to a ConcurrentModificationException since it will try
-					// to remove the letter while we are iterating over the list
-					// letter.base_cancel();
-					messages[i] = letter.base_message().asAsyncMessage();
-					i = i + 1;
-				}
-				outbox_.clear(); // empty the outbox
-				return NATTable.atValue(messages);	
-			}
-		}
-		// if you arrive here outbox_.size == 0 thus it returns [];
-		return NATTable.EMPTY;		
-	}
 }

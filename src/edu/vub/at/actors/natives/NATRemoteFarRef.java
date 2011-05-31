@@ -36,6 +36,8 @@ import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.ATTypeTag;
+import edu.vub.at.objects.mirrors.NativeClosure;
+import edu.vub.at.objects.natives.NATTable;
 
 /**
  * Instances of NATRemoteFarRef represent far references to physically remote actors.
@@ -70,12 +72,47 @@ public class NATRemoteFarRef extends NATFarReference {
 	 * to schedule its transmission.
 	 */
 	protected void transmit(ATLetter letter) throws InterpreterException {
-		outbox_.addLast(letter);
+		synchronized(this){
+			 outbox_.addLast(letter);
+		}
 		impl_transmit();
 	}
 	
+	/**
+	 * In pseudocode this method does the following:
+	 * outbox.each: { |letter|  letter.cancel(); };
+	 * def messages := outbox.map: { |letter| letter.message };
+	 * messages;
+	 * 
+	 * In contrast to the implementation in NATLocalFarReference, the retract is split into parts because 
+	 * it needs to be synchronized with FarReferenceThreadPool (which may be transmitting a message when retract is issued)
+	 * 
+	 * So, First we ask FarReferencesThreadPool to retract the letters from the outbox and cancel them.
+	 * Second, the ELActor issuing the retract will extract the asynchronous message from them.
+	 * It is important that ELActor does this, because AT code should only be evaluated within an EventLoop.
+	 * Otherwise the coerser thinks a non-event loop is trying to evaluate AT code.
+	 */
 	public ATTable meta_retractUnsentMessages() throws InterpreterException {
-		return sendLoop_.sync_event_retractUnsentMessages(this);
+		ATTable outgoingLetters = sendLoop_.sync_event_retractUnsentMessages(this);
+		return outgoingLetters.base_map_(new NativeClosure(this){
+			public ATObject base_apply(ATTable args) throws InterpreterException {
+				ATLetter letter = this.get(args,1).asLetter();
+				return letter.base_message().asAsyncMessage();
+			}
+			
+		});
+	}
+	// cancels and returns a copy of the outbox.
+	public ATTable impl_retractOutgoingLetters() throws InterpreterException {
+		synchronized (this) {
+			if (outbox_.size() > 0 ) {
+				ATObject[] outgoing = (ATObject[]) outbox_.toArray(new ATObject[outbox_.size()]);
+				outbox_.clear(); // empty the outbox
+				return NATTable.atValue(outgoing);	
+			}
+		}
+		// if you arrive here outbox_.size == 0 thus it returns [];
+		return NATTable.EMPTY;	
 	}
 	
 	protected synchronized void notifyStateToSendLoop(boolean state){
@@ -91,7 +128,8 @@ public class NATRemoteFarRef extends NATFarReference {
 		synchronized(this) {
 			if (outbox_.size() > 0 && connected_) {
 				NATOutboxLetter next = (NATOutboxLetter) outbox_.removeLast();
-				setTransmitting(true);
+				//setTransmitting(true);
+				transmitting_ = true;
 				return next;
 			}
 		}

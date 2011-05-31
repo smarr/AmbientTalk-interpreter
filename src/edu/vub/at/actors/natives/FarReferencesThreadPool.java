@@ -247,7 +247,7 @@ public final class FarReferencesThreadPool {
 	private synchronized void handleRetractRequest(ATFarReference reference) throws XTypeMismatch, InterpreterException{	
 		BlockingFuture retractFuture = retractFutures_.remove(reference);
 		if (retractFuture != null) {
-			retractFuture.resolve(reference.asNativeFarReference().impl_retractUnsentMessages());
+			retractFuture.resolve(reference.asNativeRemoteFarReference().impl_retractOutgoingLetters());
 		}
 	}
 	
@@ -275,7 +275,7 @@ public final class FarReferencesThreadPool {
 						} else {
 							// if there is no thread transmitting a message for this reference:
 							// resolve the future immediately with the content of its oubox.
-							return reference.asNativeFarReference().impl_retractUnsentMessages();
+							return reference.asNativeRemoteFarReference().impl_retractOutgoingLetters();
 						}
 					}
 				}
