@@ -127,7 +127,7 @@ public class NATRemoteFarRef extends NATFarReference {
 	public ATObject impl_serve() throws InterpreterException{
 		synchronized(this) {
 			if (outbox_.size() > 0 && connected_) {
-				NATOutboxLetter next = (NATOutboxLetter) outbox_.removeLast();
+				NATOutboxLetter next = (NATOutboxLetter) outbox_.removeFirst();
 				//setTransmitting(true);
 				transmitting_ = true;
 				return next;
