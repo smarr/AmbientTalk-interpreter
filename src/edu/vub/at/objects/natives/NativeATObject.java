@@ -80,7 +80,9 @@ import edu.vub.at.parser.SourceLocation;
 import edu.vub.at.util.logging.Logging;
 import edu.vub.util.TempFieldGenerator;
 
+import java.io.IOException;
 import java.io.InvalidObjectException;
+import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -359,10 +361,26 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 	 */
 	public Object writeReplace() throws ObjectStreamException {
 		try {
-			return this.meta_pass();
+			Object o = this.meta_pass();
+			// egb: code for bugFix#53.
+			int looped = 0;
+			// if meta pass returned a mirage, we need to call meta_pass again 
+			// otherwise we will serialize NATMirage instead of what the programmer defined in pass()
+			while( o instanceof NATMirage && (! ((NATMirage) o).isIsolate() ) && !(o.equals(this)) ){
+			  o = ((NATMirage) o).meta_pass();
+			  //TODO: While we don't have cycle detection on serialization, warn the developer.		 
+			  looped++;
+			  if ( looped == 20) Logging.Actor_LOG.warn("Pass chained called more than 20 times on " + o);
+			}
+			return o;
 		} catch(InterpreterException e) {
 			throw new InvalidObjectException("Failed to pass object " + this + ": " + e.getMessage());
 		}
+	}
+	
+	private void writeObject(ObjectOutputStream oos) throws IOException {
+		
+		oos.defaultWriteObject();
 	}
 	
     public abstract ATObject meta_resolve() throws InterpreterException;
@@ -374,7 +392,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		try {
 			return this.meta_resolve();
 		} catch(InterpreterException e) {
-			throw new SerializationException(e);
+			throw new SerializationException(e); 
 		}
 	}
 
