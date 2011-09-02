@@ -28,6 +28,8 @@
 package edu.vub.at.objects.natives;
 
 import java.util.HashMap;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import edu.vub.at.eval.Evaluator;
 import edu.vub.at.exceptions.InterpreterException;
@@ -46,14 +48,6 @@ import edu.vub.at.objects.natives.grammar.AGExpression;
 import edu.vub.util.Regexp;
 import edu.vub.util.TempFieldGenerator;
 
-import org.apache.regexp.RE;
-import org.apache.regexp.RESyntaxException;
-
-/*
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-*/
 
 /**
  * The native implementation of an AmbientTalk text string.
@@ -127,49 +121,47 @@ public final class NATText extends AGExpression implements ATText {
 		
 		/**
 		 * Split the string according to the given regular expression.
-		 * For regular expression syntax, see the Apache Regexp API of class {@link RE}.
+		 * For regular expression syntax, see the Java regex API of class {@link Pattern}.
 		 */
 		public ATTable base_split(ATText regexp) throws InterpreterException {
-			 try {
-				 String[] elements = new RE(Regexp.compile(regexp.asNativeText().javaValue)).split(javaValue);
-				 ATObject[] tbl = new ATObject[elements.length];
-				 for (int i = 0; i < elements.length; i++) {
-					 tbl[i] = NATText.atValue(elements[i]);
-				 }
-				 return NATTable.atValue(tbl);
-			 } catch (RESyntaxException e) {
+			try {
+				String[] elements = Pattern.compile(regexp.asNativeText().javaValue).split(javaValue);
+				ATObject[] tbl = new ATObject[elements.length];
+				for (int i = 0; i < elements.length; i++) {
+					tbl[i] = NATText.atValue(elements[i]);
+				}
+				return NATTable.atValue(tbl);
+			} catch(PatternSyntaxException e) {
 				throw new XIllegalArgument("Illegal argument to split: " + e.getMessage());
-			 }
+			}
 		}
 		
 		public ATNil base_find_do_(ATText regexp, final ATClosure consumer) throws InterpreterException {
-			 try {
-				 RE pattern = new RE(Regexp.compile(regexp.asNativeText().javaValue));
-				 Regexp.findAll(pattern, javaValue, new Regexp.StringRunnable() {
-					 public void run(String match) throws InterpreterException {
-						 consumer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(match) }));
-					 }
-				 });
-				 return Evaluator.getNil();
-			 } catch (RESyntaxException e) {
+			try {
+				Regexp.findAll(regexp.asNativeText().javaValue, javaValue, new Regexp.StringRunnable() {
+					public void run(String match) throws InterpreterException {
+						consumer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(match) }));
+					}
+				});
+				return Evaluator.getNil();
+			} catch(PatternSyntaxException e) {
 				throw new XIllegalArgument("Illegal argument to find:do: " + e.getMessage());
-			 }
+			}
 		}
 		
 		public ATText base_replace_by_(ATText regexp, final ATClosure transformer) throws InterpreterException {
-			 try {
-				 RE pattern = new RE(Regexp.compile(regexp.asNativeText().javaValue));
-				 return NATText.atValue(Regexp.replaceAll(pattern, javaValue, new Regexp.StringCallable() {
-					 public String call(String match) throws InterpreterException {
-						 ATObject replacement = transformer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(match) }));
-						 return replacement.asNativeText().javaValue;
-					 }
-				 }));
-			 } catch (RESyntaxException e) {
+			try {
+				return NATText.atValue(Regexp.replaceAll(regexp.asNativeText().javaValue, javaValue, new Regexp.StringCallable() {
+					public String call(String match) throws InterpreterException {
+						ATObject replacement = transformer.base_apply(NATTable.atValue(new ATObject[] { NATText.atValue(match) }));
+						return replacement.asNativeText().javaValue;
+					}
+				}));
+			} catch(PatternSyntaxException e) {
 				throw new XIllegalArgument("Illegal argument to replace:by: " + e.getMessage());
-			 }
+			}
 		}
-		
+
 		public ATText base_toUpperCase() {
 			return NATText.atValue(javaValue.toUpperCase());
 		}
@@ -199,8 +191,8 @@ public final class NATText extends AGExpression implements ATText {
 		
 		public ATBoolean base__optil__opeql_(ATText regexp) throws InterpreterException {
 			try {
-				return NATBoolean.atValue(new RE(Regexp.compile(regexp.asNativeText().javaValue)).match(javaValue));
-			} catch (RESyntaxException e) {
+				return NATBoolean.atValue(Pattern.matches(regexp.asNativeText().javaValue, javaValue));
+			} catch(PatternSyntaxException e) {
 				throw new XIllegalArgument("Illegal regular expression for ~=: " + e.getMessage());
 			}
 		}

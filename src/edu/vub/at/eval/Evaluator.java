@@ -34,9 +34,7 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
-
-import org.apache.regexp.RE;
-import org.apache.regexp.REProgram;
+import java.util.regex.Pattern;
 
 import edu.vub.at.actors.ATFarReference;
 import edu.vub.at.actors.natives.ELActor;
@@ -492,14 +490,14 @@ public final class Evaluator {
 		}
 	}
 	
-    private static final REProgram _UPPERCASE_ = Regexp.compile("[A-Z]");
+    private static final Pattern _UPPERCASE_ = Pattern.compile("[A-Z]");
 	
 	private static final String classnameToValuename(String classname, String prefix) {
 		// first, get rid of the given prefix by replacing it with ""
-		String classnameWithoutPrefix = new RE(prefix).subst(classname, "",RE.REPLACE_FIRSTONLY);
+		String classnameWithoutPrefix = Pattern.compile(prefix).matcher(classname).replaceFirst("");
 		 // next, replace all uppercased letters "L" by " l"		 
         try {
-        	return Regexp.replaceAll(new RE(_UPPERCASE_), classnameWithoutPrefix, new Regexp.StringCallable() {
+        	return Regexp.replaceAll(_UPPERCASE_, classnameWithoutPrefix, new Regexp.StringCallable() {
             	public String call(String uppercaseLetter) {
             		return " " + Character.toLowerCase(uppercaseLetter.charAt(0));
             	}
