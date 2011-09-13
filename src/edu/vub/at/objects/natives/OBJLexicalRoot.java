@@ -1763,7 +1763,7 @@ public final class OBJLexicalRoot extends NATByCopy {
 	 * AmbientTalk actors on this VM. This is safe, since {@link DirectNativeMethod}
 	 * instances are all immutable.
 	 */
-	private static final HashMap<String, ATMethod> _meths = new HashMap<String, ATMethod>();
+	public static final HashMap<String, ATMethod> _meths = new HashMap<String, ATMethod>();
 
 	static {
 		_meths.put("nil", new DirectNativeMethod("nil") {
