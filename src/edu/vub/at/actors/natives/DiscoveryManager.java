@@ -327,6 +327,7 @@ public final class DiscoveryManager {
 						// if the subscription is not permanent, cancel it
 						if (!sub.isPermanentSubscription_) {
 							this.deleteLocalSubscription(sub);
+							return;
 						}
 					}
 				}
