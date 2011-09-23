@@ -63,6 +63,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Arrays;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -148,7 +149,7 @@ public final class Symbiosis {
 				// argument types do not match
 				Object[] actuals = null;
 				Class[] params;
-				LinkedList matchingMethods = new LinkedList();
+				LinkedList<Method> matchingMethods = new LinkedList<Method>();
 				// this boolean keeps track of whether or not failure to resolve the overloaded
 				// method is solely because of an arity mismatch, not because of a type mismatch
 				
@@ -159,13 +160,13 @@ public final class Symbiosis {
 					// is the method a varargs method?
 					if ((params.length == 1) && params[0].equals(ATObject[].class)) {
 						actuals = new Object[] { atArgs };
-						matchingMethods.addFirst(methods[i]);
+						addOrReplaceLessSpecific(matchingMethods, methods[i]);
 					// does the arity match?
 					} else if (params.length == atArgs.length) {
 						// can it be invoked with the given actuals?
 						try {
 							actuals = atArgsToJavaArgs(atArgs, params);
-							matchingMethods.addFirst(methods[i]);
+							addOrReplaceLessSpecific(matchingMethods, methods[i]);
 						} catch(XTypeMismatch e) {
 							// types don't match
 							failedDueToArityOnly = false;
@@ -173,7 +174,7 @@ public final class Symbiosis {
 					} else {
 				      // arity does not match
 					}
-				}
+				}				
 				
 				switch (matchingMethods.size()) {
 				    case 0: {
@@ -200,6 +201,52 @@ public final class Symbiosis {
 		}
 	}
 	
+	/**
+	 * This method inserts a method in a list of methods as follows:
+	 * if the list contains a less specific version of this method (according to isMoreSpecificThan) 
+	 * the less specific method is replaced with the more specific one,
+	 * if the list contains a more specific version of this method no action is taken
+	 * otherwise the method is added to the list
+	 *
+	 * @param methods a list of java methods
+	 * @param candidate a method to be added or to replace a less specific version
+	 * @return whether the list was altered or not
+	 */
+	private static boolean addOrReplaceLessSpecific(LinkedList<Method> methods, Method candidate) {
+		for (int j = 0; j < methods.size(); j++) {
+			if (isMoreSpecificThan(candidate, methods.get(j))) {
+				methods.set(j, candidate);
+				return true;
+			}
+			if (isMoreSpecificThan(methods.get(j), candidate)) {
+				return false;
+			}
+		}
+		methods.addFirst(candidate);
+		return true;
+	}
+
+	/** 
+	 * Indicates if a method is more specific than another based on return type
+	 * this is if the methods were declared by the same class, 
+	 * have the same name and formal parameter types but different return types and if the 
+	 * return type of the former method is more specific than that of the latter.
+	 * 
+	 * @param candidate a java method
+	 * @param method a java method
+	 * @return whether a method is more specific than another method based on return type
+	 */
+	private static boolean isMoreSpecificThan(Method candidate, Method method) {
+		Boolean moreSpecific = candidate.getDeclaringClass().equals(method.getDeclaringClass());
+		moreSpecific = moreSpecific && candidate.getName().equals(method.getName());
+		Class[] candidatePTypes = candidate.getParameterTypes();
+		Class[] methodPTypes = method.getParameterTypes();
+		moreSpecific = moreSpecific && Arrays.equals(candidatePTypes, methodPTypes);
+		moreSpecific = moreSpecific && !(candidate.getReturnType().equals(method.getReturnType()));
+		moreSpecific = moreSpecific && (method.getReturnType().isAssignableFrom(candidate.getReturnType()));
+		return moreSpecific;
+	}
+
 	/**
 	 * Creates a new instance of a Java class.
 	 * 
