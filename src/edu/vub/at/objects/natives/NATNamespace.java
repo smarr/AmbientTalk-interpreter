@@ -41,6 +41,7 @@ import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.grammar.ATSymbol;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.parser.NATParser;
 import edu.vub.util.TempFieldGenerator;
 
@@ -84,6 +85,7 @@ import java.util.Vector;
 public final class NATNamespace extends NATObject {
 
 	private static final String _AT_EXT_ = ".at";
+	private static final AGSymbol _UP_SELECTOR_ = AGSymbol.jAlloc("<<");
 	private final File path_;
 	private final String name_;
 	
@@ -126,9 +128,15 @@ public final class NATNamespace extends NATObject {
 		// first, convert the AmbientTalk name to a Java selector. Java selectors are always valid filenames because
 		// they do not contain special operator characters
 		String javaSelector = Reflection.upSelector(selector);
-		
-		// first, try to see if the file exists and corresponds to a directory
-		File dir = new File(path_, javaSelector);
+		String javaUpSelector = Reflection.upSelector(_UP_SELECTOR_);
+		File dir;
+		if (javaSelector.equals(javaUpSelector)) {
+			dir = path_.getParentFile();
+			javaSelector = "..";
+		} else {
+			// first, try to see if the file exists and corresponds to a directory
+			dir = new File(path_, javaSelector);
+		}
 		if (dir.exists() && dir.isDirectory()) {
              // create a new namespace object for this directory
 			final NATNamespace childNS = new NATNamespace(name_ + File.separator + javaSelector, dir);
