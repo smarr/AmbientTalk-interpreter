@@ -287,10 +287,6 @@ public final class OBJLexicalRoot extends NATByCopy {
 		return Evaluator.getLobbyNamespace();
 	}
 	
-	public ATObject base_break(NATTable args) {
-		return Evaluator.getNil();
-	}
-	
 	/**
 	 * <tt>root</tt> evaluates to the global lexical scope object.
 	 * This is the top-level object in which the definitions of
