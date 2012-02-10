@@ -631,7 +631,7 @@ public final class Symbiosis {
         	// directly match a target Java interface
 			return atObj;
 		// -- STRINGS --
-		} else if (targetType == String.class) {
+		} else if (targetType == String.class || targetType == CharSequence.class) {
 			return atObj.asNativeText().javaValue;
 		// -- ARRAYS --
 		} else if (targetType.isArray()) {

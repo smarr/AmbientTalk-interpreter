@@ -782,6 +782,23 @@ public class SymbiosisTest extends AmbientTalkTest {
 	}
 	
 	/**
+	 * Android's view subclasses typically accept either resource IDs (ints) or instances of CharSequence.
+	 * This test verifies that calling such methods works.
+	 * 
+	 * For an example, see android.widget.TextView#setText.
+	 */
+	public String charSequenceOverload(CharSequence cs) { return "(cs)"; }
+	public String charSequenceOverload(int res) { return "(int)"; }
+	
+	public void testCharSequenceStringOverloading() throws InterpreterException {
+		ATObject int_result = atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("charSequenceOverload"), NATTable.of(NATNumber.ONE));
+		assertEquals("(int)", int_result.asNativeText().javaValue);
+		
+		ATObject cs_result = atTestObject.impl_invoke(atTestObject, AGSymbol.jAlloc("charSequenceOverload"), NATTable.of(NATText.atValue("hallo")));
+		assertEquals("(cs)", cs_result.asNativeText().javaValue);
+	}
+	
+	/**
 	 * Tests whether Java interface types are correctly treated as AT/2 types.
 	 * Test cases: interface java.util.Set extends java.util.Collection
 	 */
