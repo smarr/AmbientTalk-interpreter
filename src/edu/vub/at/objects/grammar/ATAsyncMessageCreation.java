@@ -33,7 +33,7 @@ package edu.vub.at.objects.grammar;
  * <code>def msg := <-m()</code>.
  * 
  * This interface does not describe the interface to the actual first-class message
- * (that is the {@link ATAsyncMessage} interface).
+ * (that is the {@link edu.vub.at.actors.ATAsyncMessage} interface).
  * It only describes the interface to the AG component that evaluates to such a message.
  * 
  * @author smostinc

@@ -57,7 +57,7 @@ public interface ATNil extends ATObject {
     
     /**
      * This method is invoked when a new instance of the object is created
-     * using {@link this#base_new(ATObject[])}. The default implementation
+     * using {@link #base_new(ATObject[])}. The default implementation
      * does nothing, but can be overridden to re-initialize the cloned
      * instance.
      */
@@ -65,7 +65,7 @@ public interface ATNil extends ATObject {
     
     /**
      * Creates a new instance (a clone) of the receiver and initialises it
-     * by invoking its {@link this#base_init(ATObject[])} method.
+     * by invoking its {@link #base_init(ATObject[])} method.
      */
     public ATObject base_new(ATObject[] initargs) throws InterpreterException;
 }
