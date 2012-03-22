@@ -42,22 +42,27 @@ import java.io.IOException;
  * @see edu.vub.at.actors.natives.Packet
  * @see edu.vub.at.objects.natives.NATNamespace
  * 
- * @author tvc
+ * @author tvcutsem
  */
 public class XIOProblem extends InterpreterException {
 
 	private static final long serialVersionUID = -2356169455943359670L;
 
+	private final String message_;
+	
 	/**
-	 * Constructor wrapping an IOExceptions to be reported to the AmbientTalk interpreter.
+	 * Constructor wrapping an IOException to be reported to the AmbientTalk
+	 * interpreter.
+	 * 
 	 * @param cause the underlying exception to be reported.
 	 */
 	public XIOProblem(IOException cause) {
 		super(cause);
+		message_ = cause.getMessage();
 	}
 
 	public String getMessage() {
-		return  getCause().getClass() + ": " + getCause().getMessage();
+		return "XIOProblem: " + message_;
 	}
 
 	public ATTypeTag getType() {
