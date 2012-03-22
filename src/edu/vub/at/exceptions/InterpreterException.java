@@ -38,10 +38,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringBufferInputStream;
-import java.io.StringWriter;
-
-import com.sun.tools.javac.jvm.ClassWriter.StringOverflow;
 
 /**
  * The abstract superclass of all AmbientTalk interpreter exceptions.
