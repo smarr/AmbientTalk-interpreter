@@ -32,10 +32,20 @@ import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTypeTag;
 import edu.vub.at.objects.natives.NATException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringBufferInputStream;
+import java.io.StringWriter;
+
+import com.sun.tools.javac.jvm.ClassWriter.StringOverflow;
 
 /**
+ * The abstract superclass of all AmbientTalk interpreter exceptions.
+ * 
  * TODO tvcutsem Shouldn't we parameterize NATExceptions with an ATContext and possibly
  * also an ATAbstractGrammar for evaluation errors. This allows the user to inspect
  * both which expression was evaluated at exception-raising-time and allows him to inspect
@@ -47,11 +57,22 @@ public abstract class InterpreterException extends Exception {
 
 	private static final long serialVersionUID = 511962997881825680L;
 
-	// The ambienttalk stack trace of the exception
-	protected final InvocationStack runtimeStack_;
+	/**
+	 * The ambienttalk stack trace of the exception.
+	 * Marked transient so it does not get serialized together with the
+	 * exception. In fact, the invocationstack will get serialized
+	 * as a String and will be restored in the field printedStackTrace_.
+	 */
+	protected final transient InvocationStack runtimeStack_;
 
-	private final Throwable cause_;
+	private final transient Throwable cause_;
 
+	/**
+	 * Holds a deserialized stack trace. For an unserialized
+	 * exception, this field is always <tt>null</tt>.
+	 */
+	private String printedStackTrace_;
+	
 	/**
 	 * Constructs a new ad hoc InterpreterException instance for
 	 * a given type tag, with a given message.
@@ -111,6 +132,9 @@ public abstract class InterpreterException extends Exception {
 
 	/**
 	 * @return the stack trace at the time this exception was raised
+	 * Note: if this exception is an unserialized version of
+	 * a remote exception, it will not have a runtime stack and will return
+	 * <tt>null</tt>.
 	 */
 	public InvocationStack getAmbientTalkStackTrace() {
 		return runtimeStack_;
@@ -120,7 +144,11 @@ public abstract class InterpreterException extends Exception {
 	 * @param out
 	 */
 	public void printAmbientTalkStackTrace(PrintStream out) {
-		runtimeStack_.printStackTrace(out);
+		if (runtimeStack_ != null) {
+			runtimeStack_.printStackTrace(out);
+		} else {
+			out.print(printedStackTrace_);
+		}
 	}
 
 	/**
@@ -184,5 +212,15 @@ public abstract class InterpreterException extends Exception {
 		} else {
 			return super.toString() + " caused by " + cause_.toString();
 		}
+	}
+	
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		this.printAmbientTalkStackTrace(new PrintStream(baos, true));
+		out.writeUTF(baos.toString());
+	}
+	
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		printedStackTrace_ = in.readUTF();
 	}
 }
