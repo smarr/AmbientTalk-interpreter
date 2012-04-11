@@ -28,8 +28,10 @@
 package edu.vub.at.actors.natives;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 
 import edu.vub.at.actors.id.ATObjectID;
 import edu.vub.at.eval.Evaluator;
@@ -195,10 +197,11 @@ public class ReceptionistsSet {
 	}
 	
 	private void takeOfflineAll() throws XIllegalOperation {
-		for(Object key : exportedObjectsTable_.keySet()){
-			ATObject value = (ATObject) exportedObjectsTable_.get(key);
-			takeOfflineObject(value);
-		}	
+		List<ATObject> obj = new ArrayList<ATObject>(exportedObjectsTable_.values());
+		for (ATObject atObject : obj) {
+			takeOfflineObject(atObject);		
+		}
+		
 	}
 	
 	/**
