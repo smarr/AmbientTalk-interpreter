@@ -389,7 +389,7 @@ public final class ELDiscoveryActor extends ELActor {
 			public void process(Object myself) {
 				// clean the data structures for publications/subscriptions and listeners.
 				discoveryManager_.reset();
-				Logging.VirtualMachine_LOG.info(this + ": discovery actor reseting");
+				Logging.Actor_LOG.info(this + ": discovery actor reset sucessfully completed");
 			}
 		});
 	}

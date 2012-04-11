@@ -186,6 +186,21 @@ public class ReceptionistsSet {
 		}
 	}
 	
+	public void softReset() throws XIllegalOperation {
+		takeOfflineAll();
+		exportedObjectsTable_.clear();
+		exportedObjectIds_.clear();
+		remoteReferences_.clear();
+		farReferences_.clear();
+	}
+	
+	private void takeOfflineAll() throws XIllegalOperation {
+		for(Object key : exportedObjectsTable_.keySet()){
+			ATObject value = (ATObject) exportedObjectsTable_.get(key);
+			takeOfflineObject(value);
+		}	
+	}
+	
 	/**
 	 * A disconnected object is defined as:
 	 * object: {

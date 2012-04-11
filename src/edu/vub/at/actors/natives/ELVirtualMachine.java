@@ -396,13 +396,8 @@ public final class ELVirtualMachine extends EventLoop {
 					ELDiscoveryActor discoveryActor;
 					for (Enumeration e = localActors_.elements(); e.hasMoreElements();) {
 						ELActor actor = (ELActor) e.nextElement();
-						if (!(actor instanceof ELDiscoveryActor)){
-							actor.stopProcessing();
-						} else{
-							discoveryActor = (ELDiscoveryActor) actor;
-							// reset the tables of discoveryActor.
-							discoveryActor.event_reset();
-						}
+						// reset the tables of discoveryActor.
+						actor.event_reset();
 					}
 					//clear from the data structure all actors.
 					localActors_.clear();

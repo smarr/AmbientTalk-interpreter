@@ -631,4 +631,20 @@ public class ELActor extends EventLoop {
 			}
 		});
 	}
+	
+	public void event_reset() {
+		this.receive(new Event("reset") {
+			public void process(Object myself) {
+				// clean the data structures for publications/subscriptions and listeners.
+				try {
+					receptionists_.softReset();
+				} catch (XIllegalOperation e) {
+					Logging.Actor_LOG.error(this + ": actor reset failed");
+				}
+				currentActor().stopProcessing();
+				Logging.Actor_LOG.info(this + ": actor reset sucessfully completed");
+			}
+		});
+	}
+	
 }
