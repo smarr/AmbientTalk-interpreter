@@ -46,8 +46,6 @@ import edu.vub.at.objects.ATContext;
 import edu.vub.at.objects.ATMirrorRoot;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
-import edu.vub.at.objects.ATTypeTag;
-import edu.vub.at.objects.coercion.NativeTypeTags;
 import edu.vub.at.objects.mirrors.NATMirrorRoot;
 import edu.vub.at.objects.natives.NATException;
 import edu.vub.at.objects.natives.NATNil;
@@ -57,7 +55,6 @@ import edu.vub.at.objects.natives.NATText;
 import edu.vub.at.objects.natives.OBJLexicalRoot;
 import edu.vub.at.objects.natives.grammar.AGSplice;
 import edu.vub.at.objects.natives.grammar.AGSymbol;
-import edu.vub.at.objects.natives.grammar.NATAbstractGrammar;
 import edu.vub.at.objects.symbiosis.JavaObject;
 import edu.vub.at.objects.symbiosis.JavaPackage;
 import edu.vub.at.objects.symbiosis.XJavaException;
@@ -305,41 +302,43 @@ public final class Evaluator {
 	}
 	
 	/**
-	 * Returns the raw contents of a file in a String (using this JVM's default character encoding)
+	 * Returns the raw contents of a file in a String (using UTF-8 encoding)
 	 */
 	public static String loadContentOfFile(File file) throws IOException {
 		InputStream is = new FileInputStream(file);
+		try {
+		    // Get the size of the file
+		    long length = file.length();
 		
-	    // Get the size of the file
-	    long length = file.length();
-	
-	    // You cannot create an array using a long type.
-	    // It needs to be an int type.
-	    // Before converting to an int type, check
-	    // to ensure that file is not larger than Integer.MAX_VALUE.
-	    if (length > Integer.MAX_VALUE) {
-	        throw new IOException("File is too large: "+file.getName());
-	    }
-	
-	    // Create the byte array to hold the data
-	    byte[] bytes = new byte[(int)length];
-	
-	    // Read in the bytes
-	    int offset = 0;
-	    int numRead = 0;
-	    while (offset < bytes.length
-	           && (numRead=is.read(bytes, offset, bytes.length-offset)) >= 0) {
-	        offset += numRead;
-	    }
-	
-	    // Ensure all the bytes have been read in
-	    if (offset < bytes.length) {
-	        throw new IOException("Could not completely read file "+file.getName());
-	    }
-	
-	    // Close the input stream and return bytes
-	    is.close();
-	    return new String(bytes);
+		    // You cannot create an array using a long type.
+		    // It needs to be an int type.
+		    // Before converting to an int type, check
+		    // to ensure that file is not larger than Integer.MAX_VALUE.
+		    if (length > Integer.MAX_VALUE) {
+		        throw new IOException("File is too large: "+file.getName());
+		    }
+		
+		    // Create the byte array to hold the data
+		    byte[] bytes = new byte[(int)length];
+		
+		    // Read in the bytes
+		    int offset = 0;
+		    int numRead = 0;
+		    while (offset < bytes.length
+		           && (numRead=is.read(bytes, offset, bytes.length-offset)) >= 0) {
+		        offset += numRead;
+		    }
+		
+		    // Ensure all the bytes have been read in
+		    if (offset < bytes.length) {
+		        throw new IOException("Could not completely read file "+file.getName());
+		    }
+		    
+		    return new String(bytes, "UTF-8");	    
+		} finally {
+			// Close the input stream
+			is.close();
+		}
 	}
 
 	/**
