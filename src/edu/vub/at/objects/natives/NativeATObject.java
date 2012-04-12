@@ -685,6 +685,29 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
 		return NATBoolean.atValue(this == other);
     }
     
+    /**
+     * Java method invocations of hashCode() are forwarded to
+     * AmbientTalk 'hashCode' method invocation if the object is tagged as Hashable
+     */
+    public int hashCode() {
+    	try {
+    		if (this.meta_isTaggedAs(NativeTypeTags._HASHABLE_).asNativeBoolean().javaValue) {
+    			return this.base_hashCode().asNativeNumber().javaValue;
+    		} else {
+    			return super.hashCode();
+    		}
+		} catch (InterpreterException e) {
+			return super.hashCode();
+		}
+    }
+    
+    /**
+     * By default, the hashcode is the Java hashcode
+     */
+    public ATNumber base_hashCode() throws InterpreterException {
+    	return NATNumber.atValue(super.hashCode());
+    }
+    
     /*public ATObject base_new(ATObject[] initargs) throws InterpreterException {
     	return this.meta_newInstance(NATTable.atValue(initargs));
     }*/

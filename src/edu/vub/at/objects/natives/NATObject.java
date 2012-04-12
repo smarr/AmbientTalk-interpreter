@@ -399,6 +399,14 @@ public class NATObject extends NATCallframe implements ATObject {
     public ATBoolean base__opeql__opeql_(ATObject comparand) throws InterpreterException {
     	return this.impl_invoke(this, NATNil._EQL_NAME_, NATTable.of(comparand)).asBoolean();
     }
+    
+    public ATNumber base_hashCode() throws InterpreterException {
+    	if (this.meta_isTaggedAs(NativeTypeTags._HASHABLE_).asNativeBoolean().javaValue) {
+    		return this.impl_invoke(this, AGSymbol.jAlloc("hashCode"), NATTable.EMPTY).asNativeNumber();
+    	} else {
+    		return NATNumber.atValue(this.hashCode());
+    	}
+    }
 
 	/* ------------------------------------------
 	 * -- Slot accessing and mutating protocol --

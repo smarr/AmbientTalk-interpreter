@@ -242,6 +242,8 @@ public final class NativeTypeTags {
     //deftype ExternalEvent;
     public final static NATTypeTag _EXTERNAL_MSG_ = NATTypeTag.atValue("ExternalMessage");
     
+    public final static NATTypeTag _HASHABLE_ = NATTypeTag.atValue("Hashable");
+    
     public static HashSet<NATTypeTag> getNativeTypeTags() {
     	if (nativeTypeTags_ == null) {
 
