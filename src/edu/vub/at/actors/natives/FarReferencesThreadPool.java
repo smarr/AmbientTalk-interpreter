@@ -200,13 +200,19 @@ public final class FarReferencesThreadPool {
 		receive(new Event("serve()") {
 			public void process(Object owner) {
 				try {
-					ATObject result = reference.asNativeRemoteFarReference().impl_serve();
-					// do not span a new thread to transmit, try to transmit it itself. 
-					// Not comparing to Evaluator.getNil() because it will return a different instance.
-					if (!( result instanceof NATNil)) {
-						TransmissionEvent transmit = new TransmissionEvent(reference, result.asNativeOutboxLetter());
-						transmit.process(owner);
-					}
+					synchronized (this) {
+						if ( reference.asNativeRemoteFarReference().getTransmitting()){
+								// if it is transmitting don't do anything and next time it will dequeue the ref.
+						} else{
+							ATObject result = reference.asNativeRemoteFarReference().impl_serve();
+							// do not span a new thread to transmit, try to transmit it itself. 
+							// Not comparing to Evaluator.getNil() because it will return a different instance.
+							if (!( result instanceof NATNil)) {
+								TransmissionEvent transmit = new TransmissionEvent(reference, result.asNativeOutboxLetter());
+								transmit.process(owner);
+							}
+						}
+					}	
 				} catch (InterpreterException e) {
 					Logging.RemoteRef_LOG.warn(this + ": serve() failed ", e);
 				}
