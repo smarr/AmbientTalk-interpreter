@@ -692,13 +692,26 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     public int hashCode() {
     	try {
     		if (this.meta_isTaggedAs(NativeTypeTags._HASHABLE_).asNativeBoolean().javaValue) {
-    			return this.base_hashCode().asNativeNumber().javaValue;
+    			if (this.meta_respondsTo(NATNil._HASHC_NAME_).asNativeBoolean().javaValue) {
+    				try {
+    					return this.base_hashCode().asNativeNumber().javaValue;
+    				} catch (InterpreterException e) {
+    					// something went wrong when computing the hashcode (AT level)
+    					// return 0 in an attempt to signal this to the programmer asap
+    					Logging.Actor_LOG.error("Error executing base_hashCode:", e);
+    					return 0; 
+    				}
+    			} else {
+    				Logging.Actor_LOG.warn("Object is tagged as Hashable but does not implement hashCode, falling back to Java hashCode.");
+    				return super.hashCode();
+    			}
     		} else {
     			return super.hashCode();
     		}
-		} catch (InterpreterException e) {
-			return super.hashCode();
-		}
+    	} catch (InterpreterException e) {
+    		Logging.Actor_LOG.warn("Error in hashCode (falling back to Java hashcode):", e);
+    		return super.hashCode();
+    	}
     }
     
     /**
