@@ -31,6 +31,7 @@ import edu.vub.at.actors.eventloops.BlockingFuture;
 import edu.vub.at.actors.eventloops.EventLoop;
 import edu.vub.at.actors.eventloops.EventLoop.EventProcessor;
 import edu.vub.at.actors.natives.ELActor;
+import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.exceptions.XIllegalOperation;
 import edu.vub.at.exceptions.XTypeMismatch;
 import edu.vub.at.objects.ATObject;
@@ -166,19 +167,7 @@ public final class Coercer implements InvocationHandler, Serializable {
 				}	
 			}
 		} else {
-			
-			final ATObject[] symbioticArgs;
-            // support for variable-arity invocations from within AmbientTalk
-			if ((arguments != null) && (arguments.length == 1) && (arguments[0] instanceof ATObject[])) {
-				// no need to convert arguments
-				symbioticArgs = (ATObject[]) arguments[0];
-			} else {
-				symbioticArgs = new ATObject[(arguments == null) ? 0 : arguments.length];
-				for (int i = 0; i < symbioticArgs.length; i++) {
-					symbioticArgs[i] = Symbiosis.javaToAmbientTalk(arguments[i]);
-				}
-			}
-			
+					
 			// if the current thread is not an actor thread, treat the Java invocation
 			// as a message send instead and enqueue it in my actor's thread
 			
@@ -195,12 +184,12 @@ public final class Coercer implements InvocationHandler, Serializable {
 				// invocation as a pure asynchronous message send, if the returntype is void
 				if (Symbiosis.isEvent(method)) {
 					// asynchronous symbiotic invocation
-					owningActor.event_symbioticInvocation(principal_, method, symbioticArgs);
+					owningActor.event_symbioticInvocation(principal_, method, arguments);
 					return null; // void return type
 				} else {
 					// because a message send is asynchronous and Java threads work synchronously,
 					// we'll have to make the Java thread wait for the result
-					BlockingFuture future = owningActor.sync_event_symbioticInvocation(principal_, method, symbioticArgs);
+					BlockingFuture future = owningActor.sync_event_symbioticInvocation(principal_, method, arguments);
 					if (method.getReturnType().equals(BlockingFuture.class)) {
 						// future-type symbiotic invocation
 						return future;
@@ -211,6 +200,7 @@ public final class Coercer implements InvocationHandler, Serializable {
 				}
 			} else {
 				// perform an immediate symbiotic invocation
+				ATObject[] symbioticArgs = Coercer.convertArguments(arguments);
 				ATObject result = Reflection.downInvocation(principal_, method, symbioticArgs);
 				// properly 'cast' the returned object into the appropriate interface
 				return Symbiosis.ambientTalkToJava(result, method.getReturnType());		
@@ -224,6 +214,21 @@ public final class Coercer implements InvocationHandler, Serializable {
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
 		in.defaultReadObject();
 		wrappingThread_ = Thread.currentThread();
+	}
+	
+	public static ATObject[] convertArguments(Object[] arguments) throws InterpreterException {
+		final ATObject[] symbioticArgs;
+        // support for variable-arity invocations from within AmbientTalk
+		if ((arguments != null) && (arguments.length == 1) && (arguments[0] instanceof ATObject[])) {
+			// no need to convert arguments
+			symbioticArgs = (ATObject[]) arguments[0];
+		} else {
+			symbioticArgs = new ATObject[(arguments == null) ? 0 : arguments.length];
+			for (int i = 0; i < symbioticArgs.length; i++) {
+				symbioticArgs[i] = Symbiosis.javaToAmbientTalk(arguments[i]);
+			}
+		}
+		return symbioticArgs;
 	}
 		
 }
