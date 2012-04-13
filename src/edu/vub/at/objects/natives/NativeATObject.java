@@ -73,6 +73,7 @@ import edu.vub.at.objects.mirrors.NATIntrospectiveMirror;
 import edu.vub.at.objects.mirrors.NATMirage;
 import edu.vub.at.objects.mirrors.NativeClosure;
 import edu.vub.at.objects.mirrors.Reflection;
+import edu.vub.at.objects.natives.grammar.AGSymbol;
 import edu.vub.at.objects.symbiosis.JavaClass;
 import edu.vub.at.objects.symbiosis.JavaMethod;
 import edu.vub.at.objects.symbiosis.JavaObject;
@@ -692,7 +693,7 @@ public abstract class NativeATObject implements ATObject, ATExpression, Serializ
     public int hashCode() {
     	try {
     		if (this.meta_isTaggedAs(NativeTypeTags._HASHABLE_).asNativeBoolean().javaValue) {
-    			if (this.meta_respondsTo(NATNil._HASHC_NAME_).asNativeBoolean().javaValue) {
+    			if (this.meta_respondsTo(Evaluator._HASHC_NAME_).asNativeBoolean().javaValue) {
     				try {
     					return this.base_hashCode().asNativeNumber().javaValue;
     				} catch (InterpreterException e) {

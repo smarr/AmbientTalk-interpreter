@@ -120,7 +120,6 @@ public class NATNil extends NATObject implements ATNil {
 	public static final AGSymbol _NEW_NAME_ = AGSymbol.jAlloc("new");
 	public static final AGSymbol _INI_NAME_ = AGSymbol.jAlloc("init");
 	public static final ATSymbol _NEQ_NAME_ = AGSymbol.jAlloc("!=");
-	public static final AGSymbol _HASHC_NAME_ = AGSymbol.jAlloc("hashCode");
 
 	// The primitive methods themselves
 	
