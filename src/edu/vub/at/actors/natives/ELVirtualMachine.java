@@ -54,6 +54,7 @@ import edu.vub.at.objects.natives.NATTable;
 import edu.vub.at.objects.natives.grammar.AGBegin;
 import edu.vub.at.util.logging.Logging;
 
+import java.io.PrintStream;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -105,6 +106,8 @@ public final class ELVirtualMachine extends EventLoop {
 	public final ELDiscoveryActor discoveryActor_;
 	
 	public final FarReferencesThreadPool farReferencesThreadPool_;
+	
+	private final PrintStream output_;
 
 	/**
 	 * Construct a new AmbientTalk virtual machine where...
@@ -112,9 +115,11 @@ public final class ELVirtualMachine extends EventLoop {
 	 * @param fields are all of the fields that should be present in each new created actor (e.g. the 'system' object of IAT)
 	 * @param groupName is the name of the overlay network to join
 	 */
-	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields, String groupName, String ipAddress) {
+	public ELVirtualMachine(ATAbstractGrammar initCode, SharedActorField[] fields, String groupName, String ipAddress, PrintStream out) {
 		super("virtual machine");
 		this.start();
+		
+		output_ = out;
 		
 		// used to initialize actors
 		initialisationCode_ = initCode;
@@ -156,6 +161,7 @@ public final class ELVirtualMachine extends EventLoop {
 	
 	public ELVirtualMachine getHost() { return this; }
 	
+	public PrintStream getOutput() {return output_;}
 	
 	/**
 	 * An event loop handles events by dispatching to the event itself.

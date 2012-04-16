@@ -92,7 +92,8 @@ public class ELActor extends EventLoop {
 						Evaluator.getNil(),
 						new SharedActorField[] { },
 						ELVirtualMachine._DEFAULT_GROUP_NAME_,
-						ELVirtualMachine._DEFAULT_IP_ADDRESS_);
+						ELVirtualMachine._DEFAULT_IP_ADDRESS_,
+						System.out);
 				return host.createEmptyActor().getFarHost();
 			} catch (InterpreterException e) {
 				throw new RuntimeException("Failed to initialize default actor: " + e.getMessage());
@@ -304,13 +305,13 @@ public class ELActor extends EventLoop {
 						behaviour_.impl_setLocation(initCode.impl_getLocation());
 						initCode.base_applyInScope(params.asTable(), new NATContext(behaviour_, behaviour_));
 					} catch (InterpreterException e) {
-						System.out.println(">>> Exception while initializing actor " + Evaluator.trunc(initCode.base_bodyExpression().toString(),20) + ":\n"+e.getMessage());
-						e.printAmbientTalkStackTrace(System.out);
+						host_.getOutput().println(">>> Exception while initializing actor " + Evaluator.trunc(initCode.base_bodyExpression().toString(),20) + ":\n"+e.getMessage());
+						e.printAmbientTalkStackTrace(host_.getOutput());
 						Logging.Actor_LOG.error(behaviour_ + ": could not initialize actor behaviour", e);
 					}
 				} catch (InterpreterException e) {
-					System.out.println(">>> Exception while creating actor: " + e.getMessage());
-					e.printAmbientTalkStackTrace(System.out);
+					host_.getOutput().println(">>> Exception while creating actor: " + e.getMessage());
+					e.printAmbientTalkStackTrace(host_.getOutput());
 					Logging.Actor_LOG.error(behaviour_ + ": could not initialize actor behaviour", e);
 				}
 			}
@@ -414,8 +415,8 @@ public class ELActor extends EventLoop {
 					ATObject result = mirror_.base_serve();
 					Logging.Actor_LOG.debug(mirror_ + ": serve() returned " + result);
 				} catch (InterpreterException e) {
-					System.out.println(">>> Exception in actor " + myActorMirror + ": "+e.getMessage());
-					e.printAmbientTalkStackTrace(System.out);
+					host_.getOutput().println(">>> Exception in actor " + myActorMirror + ": "+e.getMessage());
+					e.printAmbientTalkStackTrace(host_.getOutput());
 					Logging.Actor_LOG.error(mirror_ + ": serve() failed ", e);
 				}
 			}
@@ -430,8 +431,8 @@ public class ELActor extends EventLoop {
 			// signal a serve event for every message that is accepted
 			// event_serve();
 		} catch (InterpreterException e) {
-			System.out.println(">>> Exception in actor " + getImplicitActorMirror() + ": "+e.getMessage());
-			e.printAmbientTalkStackTrace(System.out);
+			host_.getOutput().println(">>> Exception in actor " + getImplicitActorMirror() + ": "+e.getMessage());
+			e.printAmbientTalkStackTrace(host_.getOutput());
 			Logging.Actor_LOG.error(mirror_ + ": scheduling "+ msg + " failed ", e);
 		}
 	}
@@ -456,8 +457,8 @@ public class ELActor extends EventLoop {
 					ATObject[] atArgs = Coercer.convertArguments(jargs);
 					Reflection.downInvocation(principal, method, atArgs);
 				} catch (InterpreterException e) {
-					System.out.println(">>> Exception in actor " + actorMirror + ": "+e.getMessage());
-					e.printAmbientTalkStackTrace(System.out);
+					host_.getOutput().println(">>> Exception in actor " + actorMirror + ": "+e.getMessage());
+					e.printAmbientTalkStackTrace(host_.getOutput());
 					Logging.Actor_LOG.error("asynchronous symbiotic invocation of "+method.getName()+" failed", e);
 				}
 			}
