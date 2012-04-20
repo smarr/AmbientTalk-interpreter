@@ -137,10 +137,11 @@ public final class NATNamespace extends NATObject {
 			// first, try to see if the file exists and corresponds to a directory
 			dir = new File(path_, javaSelector);
 		}
+		
 		if (dir.exists() && dir.isDirectory()) {
              // create a new namespace object for this directory
 			final NATNamespace childNS = new NATNamespace(name_ + File.separator + javaSelector, dir);
-
+			assertCaseSensitive(dir);
 			// bind the new child namespace to the selector
 			this.meta_defineField(selector, childNS);
 			return new NativeClosure(this) {
@@ -152,7 +153,7 @@ public final class NATNamespace extends NATObject {
 			// try to see if a file with extension .at exists corresponding to the selector
 			File src = new File(path_, javaSelector + _AT_EXT_);
 			if (src.exists() && src.isFile()) {
-			
+				assertCaseSensitive(src);
                  // bind the missing slot to nil to prevent calling this dNU recursively when evaluating the code in the file
 				this.meta_defineField(selector, Evaluator.getNil());
 				
@@ -192,6 +193,20 @@ public final class NATNamespace extends NATObject {
                  // perform the default dNU behaviour, which means raising a 'selector not found' exception
 				return super.meta_doesNotUnderstand(selector);
 			}
+		}
+	}
+
+	// Verify that the case of the last component of the path matches that in the file system 
+	private void assertCaseSensitive(File dir) throws InterpreterException {
+		try {
+			String given = dir.getName();
+			String actual = dir.getCanonicalFile().getName();
+			if (! given.equals(actual)) {
+				String message = String.format("Part of selector ('%s') has different case than filesystem component '%s'.", given, actual);
+				throw new XIOProblem(new IOException(message));
+			}
+		} catch (IOException e) {
+			// both calls in meta_doesNotUnderstand verify that the file exists.
 		}
 	}
 

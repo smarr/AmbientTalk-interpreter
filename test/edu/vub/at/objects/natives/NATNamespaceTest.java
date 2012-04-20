@@ -67,6 +67,15 @@ public class NATNamespaceTest extends TestCase {
 			fw.write("def x := 0; \n def y := /.at.test.file1; \n self");
 			fw.close();
 			
+			NATObject lobby = Evaluator.getLobbyNamespace();
+			// create the namespace 'at' bound to the path /tmp/at
+			NATNamespace atNS = new NATNamespace("/at", at_);
+			// bind the name 'at' to the atNS namespace in the lobby
+			try {
+				lobby.meta_defineField(AGSymbol.jAlloc("at"), atNS);
+			} catch (InterpreterException e) {
+				// already exists. good enough.
+			}
 		} catch (IOException e) {
 			fail(e.getMessage());
 		}
@@ -86,11 +95,6 @@ public class NATNamespaceTest extends TestCase {
 	public void testNamespaces() {
 		try {
 			NATObject lobby = Evaluator.getLobbyNamespace();
-			
-			// create the namespace 'at' bound to the path /tmp/at
-			NATNamespace atNS = new NATNamespace("/at", at_);
-			// bind the name 'at' to the atNS namespace in the lobby
-			lobby.meta_defineField(AGSymbol.jAlloc("at"), atNS);
 
 			// now, try to select the 'at' slot from the lobby
 			ATObject at = lobby.impl_invokeAccessor(lobby, AGSymbol.jAlloc("at"), NATTable.EMPTY);
@@ -131,10 +135,8 @@ public class NATNamespaceTest extends TestCase {
 		try {
 			NATObject lobby = Evaluator.getLobbyNamespace();
 			
-			// create the namespace 'at' bound to the path /tmp/at
-			NATNamespace atNS = new NATNamespace("/at", at_);
-			// bind the name 'at' to the atNS namespace in the lobby
-			lobby.impl_invoke(lobby, AGAssignmentSymbol.jAlloc("at:="), NATTable.of(atNS));
+			// select '/.at'
+			ATObject atNS = lobby.impl_invokeAccessor(lobby, AGSymbol.jAlloc("at"), NATTable.EMPTY);
 
 			// select '/.at.test'
 			ATObject test = atNS.impl_invokeAccessor(atNS, AGSymbol.jAlloc("test"), NATTable.EMPTY);
@@ -155,6 +157,40 @@ public class NATNamespaceTest extends TestCase {
 			}
 		} catch (InterpreterException e) {
 			fail(e.getMessage());
+		}
+	}
+	
+	/**
+	 * AmbientTalk has traditionally been developed on OSX machines, which are case insensitive.
+	 * This allows a file "at/hello/world.at" to be referenced both as /.at.hello.world and /.at.HellO.WoRLD.
+	 * Using such code on a case sensitive system (like Linux or (apparently) windows 7) causes errors.
+	 * 
+	 * See Issue #60 for more details.
+	 */
+	public void testCaseInsensitiveNamespaces() throws InterpreterException {
+		NATObject lobby = Evaluator.getLobbyNamespace();
+
+		// try to select the 'at' slot from the lobby
+		ATObject at = lobby.impl_invokeAccessor(lobby, AGSymbol.jAlloc("at"), NATTable.EMPTY);
+		// the at slot should equal a namespace object
+		assertTrue(at instanceof NATNamespace);
+		assertEquals("<ns:/at>", at.meta_print().javaValue);
+		
+		try {
+			ATObject testFail = at.impl_invokeAccessor(at, AGSymbol.jAlloc("tesT"), NATTable.EMPTY);
+			fail("Accessing /.at.tesT should generate an exception");
+		} catch (InterpreterException e) {
+			// ok.
+		}
+
+		ATObject test = at.impl_invokeAccessor(at, AGSymbol.jAlloc("test"), NATTable.EMPTY);
+		
+		// select at.test.file1 which should load file1 and return 1
+		try {
+			ATObject result = test.impl_invokeAccessor(test, AGSymbol.jAlloc("FiLe1"), NATTable.EMPTY);
+			fail("Accessing /.at.test.FiLe1 should generate an exception");
+		} catch (InterpreterException e) {
+			// ok.
 		}
 	}
 	
