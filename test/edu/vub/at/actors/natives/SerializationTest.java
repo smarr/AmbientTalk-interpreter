@@ -76,7 +76,6 @@ public class SerializationTest extends AmbientTalkTest {
 	public void testTXTSerialization() throws IOException, ClassNotFoundException {
 		NATText boeTXT = NATText.atValue("boe");
 		Object cpy = copy(boeTXT);
-		System.out.println(cpy.getClass());
 		NATText boeTXT2 = (NATText) cpy; 
 		assertEquals(boeTXT.toString(), boeTXT2.toString());
 	}
