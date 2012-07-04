@@ -182,7 +182,7 @@ public final class Coercer implements InvocationHandler, Serializable {
 				
 				// if the invoked method is part of an EventListener interface, treat the
 				// invocation as a pure asynchronous message send, if the returntype is void
-				if (Symbiosis.isEvent(method)) {
+				if (Symbiosis.isEvent(method) || method.isAnnotationPresent(Async.class)) {
 					// asynchronous symbiotic invocation
 					owningActor.event_symbioticInvocation(principal_, method, arguments);
 					return null; // void return type

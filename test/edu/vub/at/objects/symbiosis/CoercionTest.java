@@ -9,6 +9,7 @@ import edu.vub.at.exceptions.InterpreterException;
 import edu.vub.at.objects.ATObject;
 import edu.vub.at.objects.ATTable;
 import edu.vub.at.objects.base.BaseClosure;
+import edu.vub.at.objects.coercion.Async;
 import edu.vub.at.objects.coercion.Coercer;
 import edu.vub.at.objects.natives.NATNumber;
 import edu.vub.at.objects.natives.NATObject;
@@ -114,5 +115,24 @@ public class CoercionTest extends AmbientTalkTest {
 		assertTrue(coercedObject.equals(unwrapped));
 		// their hashcodes should be equal as well
 		assertTrue(unwrapped.hashCode() == coercedObject.hashCode());
+	}
+	
+	interface AsyncInterfaceTest {
+		@Async
+		void sleepLong();
+	};
+	
+	public void testAsyncInvocation() throws InterpreterException {
+		ATObject sleeper = evalInActor(
+				"def sleeper := object: { \n" +
+				"  def sleepLong() { 1.to: 5000000 do: { |x| } }; \n" +
+				"}; \n" +
+				"def ait := jlobby.edu.vub.at.objects.symbiosis.CoercionTest.AsyncInterfaceTest;  \n" +
+				"jlobby.edu.vub.at.objects.coercion.Coercer.coerce(sleeper, ait)");
+		AsyncInterfaceTest ait = (AsyncInterfaceTest) sleeper;
+		long then = System.currentTimeMillis();
+		ait.sleepLong();
+		long now = System.currentTimeMillis();
+		assertTrue("sleepLong() should return immediately", now - then < 500);
 	}
 }
