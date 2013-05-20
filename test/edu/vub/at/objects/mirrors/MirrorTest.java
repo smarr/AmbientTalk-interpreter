@@ -234,10 +234,10 @@ public class MirrorTest extends AmbientTalkTest {
 				"def objects := [ nil, true, 1, emptyObject, emptyObject.getSuper(), reflect: nil, mirror: { nil } ]; \n" +
 				"def mirrors[objects.length] { nil }; \n" +
 				"\n" +
-				"1.to: objects.length do: { | i | \n" +
+				"1.to: objects.length-1 do: { | i | \n" +
 				"  mirrors[i] := reflect: objects[i]; \n" +
 				"}; \n" +
-				"1.to: objects.length do: { | i | \n" +
+				"1.to: objects.length-1 do: { | i | \n" +
 				"  (objects[i] == mirrors[i].base) \n" +
 				"    .ifFalse: { at.unit.fail(\"down(up(\" + objects[i] + \")) != \" + objects[i]); } \n" +
 				"} \n");

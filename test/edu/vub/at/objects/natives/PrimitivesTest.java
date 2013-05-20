@@ -176,9 +176,9 @@ public class PrimitivesTest extends AmbientTalkTest {
 			});
 			assertEquals("123", buff.toString());
 			
-			// 3.to: 5 do: { |i| buff2 << i; nil } => buff2 = 34
+			// 3.to: 4 do: { |i| buff2 << i; nil } => buff2 = 34
 			final StringBuffer buff2 = new StringBuffer();
-			NATNumber.atValue(3).base_to_do_(NATNumber.atValue(5), new NativeClosure(null) {
+			NATNumber.atValue(3).base_to_do_(NATNumber.atValue(4), new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					buff2.append(getNbr(args, 1));
 					return Evaluator.getNil();
@@ -186,9 +186,9 @@ public class PrimitivesTest extends AmbientTalkTest {
 			});
 			assertEquals("34", buff2.toString());
 			
-			// 50.to: 0 step: 10 do: { |i| buff3 << i; nil } => buff3 = 5040302010
+			// 50.downTo: 1 step: 10 do: { |i| buff3 << i; nil } => buff3 = 5040302010
 			final StringBuffer buff3 = new StringBuffer();
-			NATNumber.atValue(50).base_to_step_do_(NATNumber.atValue(0), NATNumber.atValue(10), new NativeClosure(null) {
+			NATNumber.atValue(50).base_downTo_step_do_(NATNumber.atValue(1), NATNumber.atValue(10), new NativeClosure(null) {
 				public ATObject base_apply(ATTable args) throws InterpreterException {
 					buff3.append(getNbr(args, 1));
 					return Evaluator.getNil();
