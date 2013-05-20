@@ -128,7 +128,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	 * NBR(start).to: NBR(stop) do: { |i| code } => for i = start to stop do code.eval(i) ; nil
 	 * Also works if stop > start, in which case it becomes a downTo.
 	 * 
-	 * If start = stop, the code is not executed.
+	 * The upper bound is inclusive.
 	 */
 	public ATNil base_to_do_(ATNumber end, ATClosure code) throws InterpreterException {
 		return this.base_to_step_do_(end, NATNumber.ONE, code);
@@ -136,7 +136,7 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 	
 	/**
 	 * NBR(start).to: NBR(stop) step: NBR(inc) do: { |i| code } =>
-	 *   for i = start; i < stop; i++ do code.eval(i) ; nil
+	 *   for i = start; i <= stop; i++ do code.eval(i) ; nil
 	 * Also works if stop > start, in which case it becomes a downTo.
 	 */
 	public ATNil base_to_step_do_(ATNumber end, ATNumber inc, ATClosure code) throws InterpreterException {
@@ -144,13 +144,44 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 		int step = inc.asNativeNumber().javaValue;
 		int start = javaValue;
 		if (start > stop) {
-			for (int i = start; i > stop; i -= step) {
+			return Evaluator.getNil();
+			//for (int i = start; i >= stop; i -= step) {
+			//	code.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(i) }));
+			//}
+		} else {
+			for (int i = start; i <= stop; i+= step) {
+				code.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(i) }));
+			}
+		}
+		return Evaluator.getNil();
+	}
+	
+	/**
+	 * NBR(up).downTo: NBR(down) do: { |i| code }
+	 * 
+	 * The upper bound is inclusive.
+	 */
+	public ATNil base_downTo_do_(ATNumber end, ATClosure code) throws InterpreterException {
+		return this.base_downTo_step_do_(end, NATNumber.ONE, code);
+	}
+	
+	/**
+	 * NBR(start).downTo: NBR(stop) step: NBR(inc) do: { |i| code } =>
+	 *   for i = start; i >= stop; i-- do code.eval(i) ; nil
+	 */
+	public ATNil base_downTo_step_do_(ATNumber end, ATNumber inc, ATClosure code) throws InterpreterException {
+		int stop = end.asNativeNumber().javaValue;
+		int step = inc.asNativeNumber().javaValue;
+		int start = javaValue;
+		if (start > stop) {
+			for (int i = start; i >= stop; i -= step) {
 				code.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(i) }));
 			}
 		} else {
-			for (int i = start; i < stop; i+= step) {
-				code.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(i) }));
-			}
+			return Evaluator.getNil();
+			//for (int i = start; i <= stop; i+= step) {
+			//	code.base_apply(NATTable.atValue(new ATObject[] { NATNumber.atValue(i) }));
+			//}
 		}
 		return Evaluator.getNil();
 	}
@@ -404,6 +435,25 @@ public final class NATNumber extends NATNumeric implements ATNumber {
 				ATNumber step = get(args, 2).asNumber();
 				ATClosure code = get(args, 3).asClosure();
 				return self.base_to_step_do_(nbr, step, code);
+			}
+		});
+		_meths.put("downTo:do:", new DirectNativeMethod("downTo:do:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 2);
+				ATNumber nbr = get(args, 1).asNumber();
+				ATClosure code = get(args, 2).asClosure();
+				return self.base_downTo_do_(nbr, code);
+			}
+		});
+		_meths.put("downTo:step:do:", new DirectNativeMethod("downTo:step:do:") {
+			public ATObject base_apply(ATTable args, ATContext ctx) throws InterpreterException {
+				NATNumber self = ctx.base_receiver().asNativeNumber();
+				checkArity(args, 3);
+				ATNumber nbr = get(args, 1).asNumber();
+				ATNumber step = get(args, 2).asNumber();
+				ATClosure code = get(args, 3).asClosure();
+				return self.base_downTo_step_do_(nbr, step, code);
 			}
 		});
 		_meths.put("**", new DirectNativeMethod("**") {

@@ -303,11 +303,11 @@ public class NATTable extends AGExpression implements ATTable {
 	}
 	
 	/**
-	 * tab.select(start, stop) == els = [ ] ; start.to: stop do: { |i| els << tab[i] } ; els
+	 * tab.select(start, stop) == els = [ ] ; start.to: stop-1 do: { |i| els << tab[i] } ; els
 	 */
 	public ATTable base_select(ATNumber first, ATNumber last) throws InterpreterException {
 		final LinkedList selection = new LinkedList();
-		first.base_to_do_(last, new NativeClosure(this) {
+		first.base_to_do_(last.base_dec(), new NativeClosure(this) {
 			public ATObject base_apply(ATTable args) throws InterpreterException {
 			    selection.add(base_at(args.base_at(NATNumber.ONE).asNumber()));
 			    return Evaluator.getNil();
